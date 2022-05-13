@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/doug-martin/goqu/v9"
+	goqu "github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
 )
 
@@ -321,5 +321,7 @@ func qualifyTable(expr exp.Expression, parent string) exp.Expression {
 		return expr.Table(parent)
 	default:
 		panic(fmt.Sprintf("unhandled expression type: %T", expr))
+		// linter complains without this return
+		return
 	}
 }

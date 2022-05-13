@@ -44,7 +44,7 @@ var keywords = map[string]int{
 	EqualOp:                tEQ,
 	NotEqualOp:             tNE,
 	ContainsOp:             tCO,
-	StarsWithOp:            tSW,
+	StartsWithOp:           tSW,
 	EndsWithOp:             tEW,
 	GreaterThanOp:          tGT,
 	GreaterThanOrEqualToOp: tGE,

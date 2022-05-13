@@ -1,0 +1,60 @@
+objects:
+  - name: ExprStatement
+    fields:
+      - name: expr
+        type: Expr
+  - name: PresenceExpr  # attrPath SP "pr"
+    fields:
+      - name: attr
+        type: Expr
+      - name: operator
+  - name: CompareExpr # attrPath SP compareOp SP compValue
+    fields:
+      - name: lhe
+        exported_name: LHE
+        type: Expr
+      - name: operator
+      - name: rhe
+        exported_name: RHE
+        type: Expr
+  - name: RegexExpr
+    fields:
+      - name: lhe
+        exported_name: LHE
+        type: Expr
+      - name: Operator
+      - name: Value
+        type: interface{}
+  - name: ParenExpr
+    fields:
+      - name: Operator
+      - name: SubExpr
+        type: Expr
+  - name: LogExpr
+    fields:
+      - name: lhe
+        exported_name: LHE
+        type: Expr
+      - name: Operator
+      - name: RHS
+        type: Expr
+  - name: ValuePath # valuePath = attrPath "[" valFilter "]"
+    fields:
+      - name: ParentAttr
+        type: Expr
+      - name: SubExpr
+        type: Expr
+  - name: NumberExpr
+    fields:
+      - name: Lit
+        type: int
+  - name: IdentifierExpr
+    fields:
+      - name: Lit
+  - name: AttrValueExpr
+    fields:
+      - name: Lit
+  - name: BoolExpr
+    fields:
+      - name: Lit
+        type: bool

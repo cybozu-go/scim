@@ -1,0 +1,28 @@
+name: CI
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go: [ '1.18', '1.17' ]
+    name: Go ${{ matrix.go }} test
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Check documentation generator
+        run: |
+          find . -name '*.md' | xargs env AUTODOC_DRYRUN=1 perl tools/autodoc.pl
+      - name: Install Go stable version
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{ matrix.go }}
+      - name: Test
+        run: go test -v -race -coverprofile=coverage.out -coverpkg=./... ./...
+      - name: Upload code coverage to codecov
+        if: matrix.go == '1.18'
+        uses: codecov/codecov-action@v1
+        with:
+          file: ./coverage.out
+

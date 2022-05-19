@@ -319,7 +319,5 @@ func qualifyTable(expr exp.Expression, parent string) exp.Expression {
 		return expr.Table(parent)
 	default:
 		panic(fmt.Sprintf("unhandled expression type: %T", expr))
-		// linter complains without this return
-		return nil
 	}
 }

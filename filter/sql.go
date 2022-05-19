@@ -104,11 +104,9 @@ func (sv *sqlVisitor) sqlValue(v interface{}) (interface{}, error) {
 	switch v := v.(type) {
 	case string:
 		return v, nil
-	case AttrValueExpr:
+	case interface{ Lit() string }: // IdentifierExpr, AttrValueExpr
 		return v.Lit(), nil
 	case BoolExpr:
-		return v.Lit(), nil
-	case IdentifierExpr:
 		return v.Lit(), nil
 	case NumberExpr:
 		return v.Lit(), nil

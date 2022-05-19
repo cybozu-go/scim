@@ -136,9 +136,8 @@ func isWhiteSpace(ch rune) bool {
 func (s *scanner) peek() rune {
 	if !s.reachEOF() {
 		return s.src[s.offset]
-	} else {
-		return -1
 	}
+	return -1
 }
 
 func (s *scanner) next() {
@@ -175,7 +174,6 @@ func (s *scanner) scanAttrValue() string {
 			s.next()
 			break
 		}
-
 	}
 	return string(ret)
 }

@@ -36,6 +36,8 @@ const (
 	tUNKNOWN = 0
 )
 
+var _ = tUNKNOWN // avoid unused error
+
 var keywords = map[string]int{
 	NotOp:                  tNOT,
 	AndOp:                  tAND,

@@ -1,0 +1,12 @@
+package_name: resource
+output: resource/options_gen.go
+interfaces:
+  - name: GetOption
+    comment: |
+      GetOption describes an Option that can be passed to `Get()`.
+options:
+  - ident: Extension
+    interface: GetOption
+    argument_type: string
+    comment: |
+      WithEstension specifies the extension name to be used.

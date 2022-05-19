@@ -1,0 +1,97 @@
+common:
+  - name: id
+    required: true
+  - name: externalID
+    json: externalId
+  - name: meta
+    type: '*Meta'
+  - name: schemas
+    type: '[]string'
+objects:
+  - name: Meta
+    skipCommonFields: true
+    fields:
+      - name: resourceType
+      - name: created
+        type: time.Time
+      - name: lastModified
+        type: time.Time
+      - name: location
+      - name: version
+  - name: User
+    fields:
+      - name: userName
+        validator: requiredString
+        required: true
+      - name: displayName
+      - name: name
+        type: '*Names'
+      - name: nickName
+      - name: profileUrl
+        exported_name: ProfileURL
+        validator: validateProfileURL
+      - name: title
+      - name: userType
+      - name: preferredLanguage
+      - name: timezone
+      - name: active
+        type: bool
+      - name: password
+      - name: emails
+        type: '[]string'
+        validator: validateEmails
+      - name: phoneNumbers
+        type: '[]string'
+      - name: ims
+        exported_name: IMS
+        type: '[]string'
+      - name: addresses
+        type: '[]string'
+      - name: groups
+        type: '[]string'
+      - name: entitlements
+        type: '[]string'
+      - name: roles
+        type: '[]string'
+      - name: x509Certificates
+        type: '[]string'
+  - name: Names
+    skipCommonFields: true
+    fields:
+      - name: formatted
+      - name: familyName 
+      - name: givenName
+      - name: middleName
+      - name: honorificPrefix
+      - name: honorificSuffix
+  - name: EnterpriseUser
+    schema: 'urn:ietf:params:scim:schemas:extension:enterprise:2.0:User'
+    fields:
+      - name: employeeNumber
+      - name: costCenter
+      - name: organization
+      - name: division
+      - name: department
+      - name: manager
+        type: '*EnterpriseManager'
+  - name: EnterpriseManager
+    skipCommonFields: true
+    fields:
+      - name: id
+      - name: ref
+        json: '$ref'
+        exported_name: Reference
+      - name: displayName
+        readOnly: true
+  - name: Group
+    fields:
+      - name: displayName
+      - name: members
+        type: '[]*User'
+  - name: GroupMember
+    fields:
+      - name: value
+      - name: ref
+        json: '$ref'
+      - name: display
+

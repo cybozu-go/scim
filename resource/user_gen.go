@@ -253,7 +253,7 @@ func (v *User) MarshalJSON() ([]byte, error) {
 		Key   string
 		Value interface{}
 	}
-	pairs := make([]pair, 23)
+	pairs := make([]pair, 0, 23)
 	if v.active != nil {
 		pairs = append(pairs, pair{Key: "active", Value: *(v.active)})
 	}

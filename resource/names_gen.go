@@ -99,7 +99,7 @@ func (v *Names) MarshalJSON() ([]byte, error) {
 		Key   string
 		Value interface{}
 	}
-	pairs := make([]pair, 6)
+	pairs := make([]pair, 0, 6)
 	if v.familyName != nil {
 		pairs = append(pairs, pair{Key: "familyName", Value: *(v.familyName)})
 	}

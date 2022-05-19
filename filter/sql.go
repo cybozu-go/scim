@@ -286,7 +286,7 @@ func (sv *sqlVisitor) visitValuePath(v ValuePath) error {
 	accum := sv.accum
 	sv.accum = nil
 
-	exprs := make([]exp.Expression, len(accum))
+	exprs := make([]exp.Expression, 0, len(accum))
 	for _, expr := range accum {
 		exprs = append(exprs, qualifyTable(expr, parent.Lit()))
 	}

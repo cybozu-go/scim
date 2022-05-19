@@ -90,7 +90,7 @@ func (v *Group) MarshalJSON() ([]byte, error) {
 		Key   string
 		Value interface{}
 	}
-	pairs := make([]pair, 6)
+	pairs := make([]pair, 0, 6)
 	if v.displayName != nil {
 		pairs = append(pairs, pair{Key: "displayName", Value: *(v.displayName)})
 	}

@@ -146,7 +146,7 @@ func generateObject(object *codegen.Object) error {
 	o.L(`Key string`)
 	o.L(`Value interface{}`)
 	o.L(`}`)
-	o.L(`pairs := make([]pair, %d)`, len(object.Fields()))
+	o.L(`pairs := make([]pair, 0, %d)`, len(object.Fields()))
 	for _, field := range object.Fields() {
 		o.L(`if v.%s != nil {`, field.Name(false))
 		if IsIndirect(field) {

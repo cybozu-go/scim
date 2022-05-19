@@ -89,7 +89,7 @@ func (v *Meta) MarshalJSON() ([]byte, error) {
 		Key   string
 		Value interface{}
 	}
-	pairs := make([]pair, 5)
+	pairs := make([]pair, 0, 5)
 	if v.created != nil {
 		pairs = append(pairs, pair{Key: "created", Value: *(v.created)})
 	}

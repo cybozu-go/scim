@@ -140,7 +140,7 @@ func (v *EnterpriseUser) MarshalJSON() ([]byte, error) {
 		Key   string
 		Value interface{}
 	}
-	pairs := make([]pair, 10)
+	pairs := make([]pair, 0, 10)
 	if v.costCenter != nil {
 		pairs = append(pairs, pair{Key: "costCenter", Value: *(v.costCenter)})
 	}

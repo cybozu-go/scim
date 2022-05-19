@@ -66,7 +66,7 @@ func (v *EnterpriseManager) MarshalJSON() ([]byte, error) {
 		Key   string
 		Value interface{}
 	}
-	pairs := make([]pair, 3)
+	pairs := make([]pair, 0, 3)
 	if v.displayName != nil {
 		pairs = append(pairs, pair{Key: "displayName", Value: *(v.displayName)})
 	}

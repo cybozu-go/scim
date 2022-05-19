@@ -295,8 +295,8 @@ func generateObject(object *codegen.Object) error {
 	}
 	o.L(`default:`)
 	o.L(`var x interface{}`)
-	o.L(`if rt, ok := registry.Get(tok); ok {`)
-	o.L(`x = reflect.New(rt).Interface()`)
+	o.L(`if rx, ok := registry.Get(tok); ok {`)
+	o.L(`x = rx`)
 	o.L(`if err := dec.Decode(x); err != nil {`)
 	o.L("return fmt.Errorf(`failed to decode value for key %%q: %%w`, tok, err)")
 	o.L(`}`)

@@ -17,11 +17,14 @@ func (r *Registry) Register(uri string, data interface{}) {
 	r.objects[uri] = reflect.TypeOf(data)
 }
 
-func (r *Registry) Get(uri string) (reflect.Type, bool) {
+func (r *Registry) Get(uri string) (interface{}, bool) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	rt, ok := r.objects[uri]
-	return rt, ok
+	if !ok {
+		return nil, false
+	}
+	return reflect.New(rt).Interface(), true
 }
 
 var registry = &Registry{

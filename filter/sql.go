@@ -134,7 +134,6 @@ func (sv *sqlVisitor) visit(v interface{}) error {
 	default:
 		return fmt.Errorf(`unhandled statement type: %T`, v)
 	}
-	return nil
 }
 
 func (sv *sqlVisitor) visitLogExpr(v LogExpr) error {

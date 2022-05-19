@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"reflect"
 	"sort"
 	"sync"
 )
@@ -464,8 +463,8 @@ LOOP:
 				v.schemas = x
 			default:
 				var x interface{}
-				if rt, ok := registry.Get(tok); ok {
-					x = reflect.New(rt).Interface()
+				if rx, ok := registry.Get(tok); ok {
+					x = rx
 					if err := dec.Decode(x); err != nil {
 						return fmt.Errorf(`failed to decode value for key %q: %w`, tok, err)
 					}

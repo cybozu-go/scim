@@ -223,7 +223,7 @@ func (v *User) X509Certificates() []string {
 	return v.x509Certificates
 }
 
-func (v User) MarshalJSON() ([]byte, error) {
+func (v *User) MarshalJSON() ([]byte, error) {
 	type pair struct {
 		Key   string
 		Value interface{}

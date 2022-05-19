@@ -56,7 +56,7 @@ func (v *EnterpriseManager) Reference() string {
 	return *(v.ref)
 }
 
-func (v EnterpriseManager) MarshalJSON() ([]byte, error) {
+func (v *EnterpriseManager) MarshalJSON() ([]byte, error) {
 	type pair struct {
 		Key   string
 		Value interface{}

@@ -123,7 +123,7 @@ func (v *EnterpriseUser) Schemas() []string {
 	return v.schemas
 }
 
-func (v EnterpriseUser) MarshalJSON() ([]byte, error) {
+func (v *EnterpriseUser) MarshalJSON() ([]byte, error) {
 	type pair struct {
 		Key   string
 		Value interface{}

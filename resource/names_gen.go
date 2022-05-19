@@ -86,7 +86,7 @@ func (v *Names) MiddleName() string {
 	return *(v.middleName)
 }
 
-func (v Names) MarshalJSON() ([]byte, error) {
+func (v *Names) MarshalJSON() ([]byte, error) {
 	type pair struct {
 		Key   string
 		Value interface{}

@@ -77,7 +77,7 @@ func (v *Meta) Version() string {
 	return *(v.version)
 }
 
-func (v Meta) MarshalJSON() ([]byte, error) {
+func (v *Meta) MarshalJSON() ([]byte, error) {
 	type pair struct {
 		Key   string
 		Value interface{}

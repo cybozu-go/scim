@@ -27,7 +27,6 @@ func (r *Registry) Get(uri string) (reflect.Type, bool) {
 var registry = &Registry{
 	objects: make(map[string]reflect.Type),
 }
-var initRegistryOnce sync.Once
 
 func RegisterExtension(uri string, data interface{}) {
 	registry.Register(uri, data)

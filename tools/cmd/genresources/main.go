@@ -135,7 +135,7 @@ func generateObject(object *codegen.Object) error {
 		o.L(`}`)
 	}
 
-	o.LL(`func (v %s) MarshalJSON() ([]byte, error) {`, object.Name(true))
+	o.LL(`func (v *%s) MarshalJSON() ([]byte, error) {`, object.Name(true))
 	o.L(`type pair struct {`)
 	o.L(`Key string`)
 	o.L(`Value interface{}`)

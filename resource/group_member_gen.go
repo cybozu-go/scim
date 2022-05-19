@@ -90,7 +90,7 @@ func (v *GroupMember) Value() string {
 	return *(v.value)
 }
 
-func (v GroupMember) MarshalJSON() ([]byte, error) {
+func (v *GroupMember) MarshalJSON() ([]byte, error) {
 	type pair struct {
 		Key   string
 		Value interface{}

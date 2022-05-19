@@ -77,7 +77,7 @@ func (v *Group) Schemas() []string {
 	return v.schemas
 }
 
-func (v Group) MarshalJSON() ([]byte, error) {
+func (v *Group) MarshalJSON() ([]byte, error) {
 	type pair struct {
 		Key   string
 		Value interface{}

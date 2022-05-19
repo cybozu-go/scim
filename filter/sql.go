@@ -57,6 +57,7 @@ func SQL(src, table string, options ...SQLOption) (string, []interface{}, error)
 
 	dialect = "default"
 	mapper = nilMapper
+	//nolint:forcetypeassert
 	for _, option := range options {
 		switch option.Ident() {
 		case identColumnMapper{}:
@@ -104,11 +105,9 @@ func (sv *sqlVisitor) sqlValue(v interface{}) (interface{}, error) {
 	switch v := v.(type) {
 	case string:
 		return v, nil
-	case AttrValueExpr:
+	case interface{ Lit() string }: // IdentifierExpr, AttrValueExpr
 		return v.Lit(), nil
 	case BoolExpr:
-		return v.Lit(), nil
-	case IdentifierExpr:
 		return v.Lit(), nil
 	case NumberExpr:
 		return v.Lit(), nil
@@ -134,7 +133,6 @@ func (sv *sqlVisitor) visit(v interface{}) error {
 	default:
 		return fmt.Errorf(`unhandled statement type: %T`, v)
 	}
-	return nil
 }
 
 func (sv *sqlVisitor) visitLogExpr(v LogExpr) error {
@@ -288,7 +286,7 @@ func (sv *sqlVisitor) visitValuePath(v ValuePath) error {
 	accum := sv.accum
 	sv.accum = nil
 
-	var exprs []exp.Expression
+	exprs := make([]exp.Expression, 0, len(accum))
 	for _, expr := range accum {
 		exprs = append(exprs, qualifyTable(expr, parent.Lit()))
 	}
@@ -321,7 +319,5 @@ func qualifyTable(expr exp.Expression, parent string) exp.Expression {
 		return expr.Table(parent)
 	default:
 		panic(fmt.Sprintf("unhandled expression type: %T", expr))
-		// linter complains without this return
-		return
 	}
 }

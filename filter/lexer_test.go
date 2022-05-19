@@ -36,7 +36,7 @@ func testScanner(t *testing.T, src string, expectTok int) {
 		t.Errorf("Expect Scanner{%q}.Scan() = _, %#v want %#v", src, lit, src)
 	}
 
-	tok, lit, _, err = s.Scan()
+	tok, _, _, err = s.Scan()
 	if err != nil {
 		t.Errorf(`error scanning: %s`, err)
 	}
@@ -65,5 +65,4 @@ func TestScanner(t *testing.T) {
 	testScanner(t, ")", tRPAREN)
 	testScanner(t, "[", tLBOXP)
 	testScanner(t, "]", tRBOXP)
-
 }

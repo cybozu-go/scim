@@ -36,6 +36,8 @@ const (
 	tUNKNOWN = 0
 )
 
+var _ = tUNKNOWN // avoid unused error
+
 var keywords = map[string]int{
 	NotOp:                  tNOT,
 	AndOp:                  tAND,
@@ -75,6 +77,7 @@ func newScanner(src string) *scanner {
 	return &scanner{src: []rune(src)}
 }
 
+//nolint:nonamedreturns
 func (s *scanner) Scan() (tok int, lit interface{}, pos position, err error) {
 	s.skipWhiteSpace()
 	pos = s.position()
@@ -134,9 +137,8 @@ func isWhiteSpace(ch rune) bool {
 func (s *scanner) peek() rune {
 	if !s.reachEOF() {
 		return s.src[s.offset]
-	} else {
-		return -1
 	}
+	return -1
 }
 
 func (s *scanner) next() {
@@ -173,7 +175,6 @@ func (s *scanner) scanAttrValue() string {
 			s.next()
 			break
 		}
-
 	}
 	return string(ret)
 }

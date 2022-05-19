@@ -9,6 +9,14 @@ import (
 	"time"
 )
 
+const (
+	metaCreatedJSONKey      = "created"
+	metaLastModifiedJSONKey = "lastModified"
+	metaLocationJSONKey     = "location"
+	metaResourceTypeJSONKey = "resourceType"
+	metaVersionJSONKey      = "version"
+)
+
 type Meta struct {
 	created       *time.Time
 	lastModified  *time.Time
@@ -81,7 +89,7 @@ func (v *Meta) MarshalJSON() ([]byte, error) {
 		Key   string
 		Value interface{}
 	}
-	var pairs []pair
+	pairs := make([]pair, 5)
 	if v.created != nil {
 		pairs = append(pairs, pair{Key: "created", Value: *(v.created)})
 	}
@@ -125,6 +133,7 @@ func (v *Meta) Get(name string, options ...GetOption) (interface{}, bool) {
 	defer v.mu.RUnlock()
 
 	var ext string
+	//nolint:forcetypeassert
 	for _, option := range options {
 		switch option.Ident() {
 		case identExtension{}:
@@ -132,27 +141,27 @@ func (v *Meta) Get(name string, options ...GetOption) (interface{}, bool) {
 		}
 	}
 	switch name {
-	case "created":
+	case metaCreatedJSONKey:
 		if v.created == nil {
 			return nil, false
 		}
 		return *(v.created), true
-	case "lastModified":
+	case metaLastModifiedJSONKey:
 		if v.lastModified == nil {
 			return nil, false
 		}
 		return *(v.lastModified), true
-	case "location":
+	case metaLocationJSONKey:
 		if v.location == nil {
 			return nil, false
 		}
 		return *(v.location), true
-	case "resourceType":
+	case metaResourceTypeJSONKey:
 		if v.resourceType == nil {
 			return nil, false
 		}
 		return *(v.resourceType), true
-	case "version":
+	case metaVersionJSONKey:
 		if v.version == nil {
 			return nil, false
 		}
@@ -184,7 +193,7 @@ func (v *Meta) Set(name string, value interface{}) error {
 	v.mu.Lock()
 	defer v.mu.Unlock()
 	switch name {
-	case "created":
+	case metaCreatedJSONKey:
 		var tmp time.Time
 		tmp, ok := value.(time.Time)
 		if !ok {
@@ -192,7 +201,7 @@ func (v *Meta) Set(name string, value interface{}) error {
 		}
 		v.created = &tmp
 		return nil
-	case "lastModified":
+	case metaLastModifiedJSONKey:
 		var tmp time.Time
 		tmp, ok := value.(time.Time)
 		if !ok {
@@ -200,7 +209,7 @@ func (v *Meta) Set(name string, value interface{}) error {
 		}
 		v.lastModified = &tmp
 		return nil
-	case "location":
+	case metaLocationJSONKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -208,7 +217,7 @@ func (v *Meta) Set(name string, value interface{}) error {
 		}
 		v.location = &tmp
 		return nil
-	case "resourceType":
+	case metaResourceTypeJSONKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -216,7 +225,7 @@ func (v *Meta) Set(name string, value interface{}) error {
 		}
 		v.resourceType = &tmp
 		return nil
-	case "version":
+	case metaVersionJSONKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -270,31 +279,31 @@ LOOP:
 			}
 		case string:
 			switch tok {
-			case "created":
+			case metaCreatedJSONKey:
 				var x time.Time
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "created": %w`, err)
 				}
 				v.created = &x
-			case "lastModified":
+			case metaLastModifiedJSONKey:
 				var x time.Time
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "lastModified": %w`, err)
 				}
 				v.lastModified = &x
-			case "location":
+			case metaLocationJSONKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "location": %w`, err)
 				}
 				v.location = &x
-			case "resourceType":
+			case metaResourceTypeJSONKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "resourceType": %w`, err)
 				}
 				v.resourceType = &x
-			case "version":
+			case metaVersionJSONKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "version": %w`, err)

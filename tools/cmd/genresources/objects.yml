@@ -28,8 +28,10 @@ objects:
         type: '*Names'
       - name: nickName
       - name: profileUrl
+        unexported_name: profileURL
         exported_name: ProfileURL
         validator: validateProfileURL
+        json: profileUrl
       - name: title
       - name: userType
       - name: preferredLanguage

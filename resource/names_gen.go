@@ -8,6 +8,15 @@ import (
 	"sync"
 )
 
+const (
+	namesFamilyNameJSONKey      = "familyName"
+	namesFormattedJSONKey       = "formatted"
+	namesGivenNameJSONKey       = "givenName"
+	namesHonorificPrefixJSONKey = "honorificPrefix"
+	namesHonorificSuffixJSONKey = "honorificSuffix"
+	namesMiddleNameJSONKey      = "middleName"
+)
+
 type Names struct {
 	familyName      *string
 	formatted       *string
@@ -90,7 +99,7 @@ func (v *Names) MarshalJSON() ([]byte, error) {
 		Key   string
 		Value interface{}
 	}
-	var pairs []pair
+	pairs := make([]pair, 6)
 	if v.familyName != nil {
 		pairs = append(pairs, pair{Key: "familyName", Value: *(v.familyName)})
 	}
@@ -137,6 +146,7 @@ func (v *Names) Get(name string, options ...GetOption) (interface{}, bool) {
 	defer v.mu.RUnlock()
 
 	var ext string
+	//nolint:forcetypeassert
 	for _, option := range options {
 		switch option.Ident() {
 		case identExtension{}:
@@ -144,32 +154,32 @@ func (v *Names) Get(name string, options ...GetOption) (interface{}, bool) {
 		}
 	}
 	switch name {
-	case "familyName":
+	case namesFamilyNameJSONKey:
 		if v.familyName == nil {
 			return nil, false
 		}
 		return *(v.familyName), true
-	case "formatted":
+	case namesFormattedJSONKey:
 		if v.formatted == nil {
 			return nil, false
 		}
 		return *(v.formatted), true
-	case "givenName":
+	case namesGivenNameJSONKey:
 		if v.givenName == nil {
 			return nil, false
 		}
 		return *(v.givenName), true
-	case "honorificPrefix":
+	case namesHonorificPrefixJSONKey:
 		if v.honorificPrefix == nil {
 			return nil, false
 		}
 		return *(v.honorificPrefix), true
-	case "honorificSuffix":
+	case namesHonorificSuffixJSONKey:
 		if v.honorificSuffix == nil {
 			return nil, false
 		}
 		return *(v.honorificSuffix), true
-	case "middleName":
+	case namesMiddleNameJSONKey:
 		if v.middleName == nil {
 			return nil, false
 		}
@@ -201,7 +211,7 @@ func (v *Names) Set(name string, value interface{}) error {
 	v.mu.Lock()
 	defer v.mu.Unlock()
 	switch name {
-	case "familyName":
+	case namesFamilyNameJSONKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -209,7 +219,7 @@ func (v *Names) Set(name string, value interface{}) error {
 		}
 		v.familyName = &tmp
 		return nil
-	case "formatted":
+	case namesFormattedJSONKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -217,7 +227,7 @@ func (v *Names) Set(name string, value interface{}) error {
 		}
 		v.formatted = &tmp
 		return nil
-	case "givenName":
+	case namesGivenNameJSONKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -225,7 +235,7 @@ func (v *Names) Set(name string, value interface{}) error {
 		}
 		v.givenName = &tmp
 		return nil
-	case "honorificPrefix":
+	case namesHonorificPrefixJSONKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -233,7 +243,7 @@ func (v *Names) Set(name string, value interface{}) error {
 		}
 		v.honorificPrefix = &tmp
 		return nil
-	case "honorificSuffix":
+	case namesHonorificSuffixJSONKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -241,7 +251,7 @@ func (v *Names) Set(name string, value interface{}) error {
 		}
 		v.honorificSuffix = &tmp
 		return nil
-	case "middleName":
+	case namesMiddleNameJSONKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -296,37 +306,37 @@ LOOP:
 			}
 		case string:
 			switch tok {
-			case "familyName":
+			case namesFamilyNameJSONKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "familyName": %w`, err)
 				}
 				v.familyName = &x
-			case "formatted":
+			case namesFormattedJSONKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "formatted": %w`, err)
 				}
 				v.formatted = &x
-			case "givenName":
+			case namesGivenNameJSONKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "givenName": %w`, err)
 				}
 				v.givenName = &x
-			case "honorificPrefix":
+			case namesHonorificPrefixJSONKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "honorificPrefix": %w`, err)
 				}
 				v.honorificPrefix = &x
-			case "honorificSuffix":
+			case namesHonorificSuffixJSONKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "honorificSuffix": %w`, err)
 				}
 				v.honorificSuffix = &x
-			case "middleName":
+			case namesMiddleNameJSONKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "middleName": %w`, err)

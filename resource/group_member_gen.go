@@ -8,6 +8,16 @@ import (
 	"sync"
 )
 
+const (
+	groupMemberDisplayJSONKey    = "display"
+	groupMemberExternalIDJSONKey = "externalId"
+	groupMemberIDJSONKey         = "id"
+	groupMemberMetaJSONKey       = "meta"
+	groupMemberRefJSONKey        = "$ref"
+	groupMemberSchemasJSONKey    = "schemas"
+	groupMemberValueJSONKey      = "value"
+)
+
 type GroupMember struct {
 	display       *string
 	externalID    *string
@@ -94,7 +104,7 @@ func (v *GroupMember) MarshalJSON() ([]byte, error) {
 		Key   string
 		Value interface{}
 	}
-	var pairs []pair
+	pairs := make([]pair, 7)
 	if v.display != nil {
 		pairs = append(pairs, pair{Key: "display", Value: *(v.display)})
 	}
@@ -144,6 +154,7 @@ func (v *GroupMember) Get(name string, options ...GetOption) (interface{}, bool)
 	defer v.mu.RUnlock()
 
 	var ext string
+	//nolint:forcetypeassert
 	for _, option := range options {
 		switch option.Ident() {
 		case identExtension{}:
@@ -151,37 +162,37 @@ func (v *GroupMember) Get(name string, options ...GetOption) (interface{}, bool)
 		}
 	}
 	switch name {
-	case "display":
+	case groupMemberDisplayJSONKey:
 		if v.display == nil {
 			return nil, false
 		}
 		return *(v.display), true
-	case "externalId":
+	case groupMemberExternalIDJSONKey:
 		if v.externalID == nil {
 			return nil, false
 		}
 		return *(v.externalID), true
-	case "id":
+	case groupMemberIDJSONKey:
 		if v.id == nil {
 			return nil, false
 		}
 		return *(v.id), true
-	case "meta":
+	case groupMemberMetaJSONKey:
 		if v.meta == nil {
 			return nil, false
 		}
 		return v.meta, true
-	case "$ref":
+	case groupMemberRefJSONKey:
 		if v.ref == nil {
 			return nil, false
 		}
 		return *(v.ref), true
-	case "schemas":
+	case groupMemberSchemasJSONKey:
 		if v.schemas == nil {
 			return nil, false
 		}
 		return v.schemas, true
-	case "value":
+	case groupMemberValueJSONKey:
 		if v.value == nil {
 			return nil, false
 		}
@@ -213,7 +224,7 @@ func (v *GroupMember) Set(name string, value interface{}) error {
 	v.mu.Lock()
 	defer v.mu.Unlock()
 	switch name {
-	case "display":
+	case groupMemberDisplayJSONKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -221,7 +232,7 @@ func (v *GroupMember) Set(name string, value interface{}) error {
 		}
 		v.display = &tmp
 		return nil
-	case "externalId":
+	case groupMemberExternalIDJSONKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -229,7 +240,7 @@ func (v *GroupMember) Set(name string, value interface{}) error {
 		}
 		v.externalID = &tmp
 		return nil
-	case "id":
+	case groupMemberIDJSONKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -237,7 +248,7 @@ func (v *GroupMember) Set(name string, value interface{}) error {
 		}
 		v.id = &tmp
 		return nil
-	case "meta":
+	case groupMemberMetaJSONKey:
 		var tmp *Meta
 		tmp, ok := value.(*Meta)
 		if !ok {
@@ -245,7 +256,7 @@ func (v *GroupMember) Set(name string, value interface{}) error {
 		}
 		v.meta = tmp
 		return nil
-	case "$ref":
+	case groupMemberRefJSONKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -253,7 +264,7 @@ func (v *GroupMember) Set(name string, value interface{}) error {
 		}
 		v.ref = &tmp
 		return nil
-	case "schemas":
+	case groupMemberSchemasJSONKey:
 		var tmp []string
 		tmp, ok := value.([]string)
 		if !ok {
@@ -261,7 +272,7 @@ func (v *GroupMember) Set(name string, value interface{}) error {
 		}
 		v.schemas = tmp
 		return nil
-	case "value":
+	case groupMemberValueJSONKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -317,43 +328,43 @@ LOOP:
 			}
 		case string:
 			switch tok {
-			case "display":
+			case groupMemberDisplayJSONKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "display": %w`, err)
 				}
 				v.display = &x
-			case "externalId":
+			case groupMemberExternalIDJSONKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "externalId": %w`, err)
 				}
 				v.externalID = &x
-			case "id":
+			case groupMemberIDJSONKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "id": %w`, err)
 				}
 				v.id = &x
-			case "meta":
+			case groupMemberMetaJSONKey:
 				var x *Meta
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "meta": %w`, err)
 				}
 				v.meta = x
-			case "$ref":
+			case groupMemberRefJSONKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "$ref": %w`, err)
 				}
 				v.ref = &x
-			case "schemas":
+			case groupMemberSchemasJSONKey:
 				var x []string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "schemas": %w`, err)
 				}
 				v.schemas = x
-			case "value":
+			case groupMemberValueJSONKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "value": %w`, err)

@@ -8,6 +8,12 @@ import (
 	"sync"
 )
 
+const (
+	enterpriseManagerDisplayNameJSONKey = "displayName"
+	enterpriseManagerIDJSONKey          = "id"
+	enterpriseManagerReferenceJSONKey   = "$ref"
+)
+
 type EnterpriseManager struct {
 	displayName   *string
 	id            *string
@@ -60,7 +66,7 @@ func (v *EnterpriseManager) MarshalJSON() ([]byte, error) {
 		Key   string
 		Value interface{}
 	}
-	var pairs []pair
+	pairs := make([]pair, 3)
 	if v.displayName != nil {
 		pairs = append(pairs, pair{Key: "displayName", Value: *(v.displayName)})
 	}
@@ -98,6 +104,7 @@ func (v *EnterpriseManager) Get(name string, options ...GetOption) (interface{},
 	defer v.mu.RUnlock()
 
 	var ext string
+	//nolint:forcetypeassert
 	for _, option := range options {
 		switch option.Ident() {
 		case identExtension{}:
@@ -105,17 +112,17 @@ func (v *EnterpriseManager) Get(name string, options ...GetOption) (interface{},
 		}
 	}
 	switch name {
-	case "displayName":
+	case enterpriseManagerDisplayNameJSONKey:
 		if v.displayName == nil {
 			return nil, false
 		}
 		return *(v.displayName), true
-	case "id":
+	case enterpriseManagerIDJSONKey:
 		if v.id == nil {
 			return nil, false
 		}
 		return *(v.id), true
-	case "$ref":
+	case enterpriseManagerReferenceJSONKey:
 		if v.ref == nil {
 			return nil, false
 		}
@@ -147,7 +154,7 @@ func (v *EnterpriseManager) Set(name string, value interface{}) error {
 	v.mu.Lock()
 	defer v.mu.Unlock()
 	switch name {
-	case "displayName":
+	case enterpriseManagerDisplayNameJSONKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -155,7 +162,7 @@ func (v *EnterpriseManager) Set(name string, value interface{}) error {
 		}
 		v.displayName = &tmp
 		return nil
-	case "id":
+	case enterpriseManagerIDJSONKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -163,7 +170,7 @@ func (v *EnterpriseManager) Set(name string, value interface{}) error {
 		}
 		v.id = &tmp
 		return nil
-	case "$ref":
+	case enterpriseManagerReferenceJSONKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -215,19 +222,19 @@ LOOP:
 			}
 		case string:
 			switch tok {
-			case "displayName":
+			case enterpriseManagerDisplayNameJSONKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "displayName": %w`, err)
 				}
 				v.displayName = &x
-			case "id":
+			case enterpriseManagerIDJSONKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "id": %w`, err)
 				}
 				v.id = &x
-			case "$ref":
+			case enterpriseManagerReferenceJSONKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "$ref": %w`, err)

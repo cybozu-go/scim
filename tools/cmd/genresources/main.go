@@ -90,6 +90,12 @@ func generateObject(object *codegen.Object) error {
 
 	o.L(`package resource`)
 
+	o.LL(`const (`)
+	for _, f := range object.Fields() {
+		o.L(`%s%sJSONKey = %q`, object.Name(false), f.Name(true), f.JSON())
+	}
+	o.L(`)`)
+
 	if schema := object.String(`schema`); schema != "" {
 		o.LL(`const %sSchemaURI = %q`, object.Name(true), schema)
 		o.L(`func init() {`)
@@ -140,7 +146,7 @@ func generateObject(object *codegen.Object) error {
 	o.L(`Key string`)
 	o.L(`Value interface{}`)
 	o.L(`}`)
-	o.L(`var pairs []pair`)
+	o.L(`pairs := make([]pair, %d)`, len(object.Fields()))
 	for _, field := range object.Fields() {
 		o.L(`if v.%s != nil {`, field.Name(false))
 		if IsIndirect(field) {
@@ -176,6 +182,7 @@ func generateObject(object *codegen.Object) error {
 	o.L(`v.mu.RLock()`)
 	o.L(`defer v.mu.RUnlock()`)
 	o.LL(`var ext string`)
+	o.L(`//nolint:forcetypeassert`)
 	o.L(`for _, option := range options {`)
 	o.L(`switch option.Ident() {`)
 	o.L(`case identExtension{}:`)
@@ -185,7 +192,7 @@ func generateObject(object *codegen.Object) error {
 
 	o.L(`switch name {`)
 	for _, field := range object.Fields() {
-		o.L(`case %q:`, field.JSON())
+		o.L(`case %s%sJSONKey:`, object.Name(false), field.Name(true))
 		o.L(`if v.%s == nil {`, field.Name(false))
 		o.L(`return nil, false`)
 		o.L(`}`)
@@ -221,7 +228,7 @@ func generateObject(object *codegen.Object) error {
 	o.L(`defer v.mu.Unlock()`)
 	o.L(`switch name {`)
 	for _, field := range object.Fields() {
-		o.L(`case %q:`, field.JSON())
+		o.L(`case %s%sJSONKey:`, object.Name(false), field.Name(true))
 		o.L(`var tmp %s`, field.Type())
 		o.L(`tmp, ok := value.(%s)`, field.Type())
 		o.L(`if !ok {`)
@@ -282,7 +289,7 @@ func generateObject(object *codegen.Object) error {
 	o.L(`case string:`)
 	o.L(`switch tok {`)
 	for _, field := range object.Fields() {
-		o.L(`case %q:`, field.JSON())
+		o.L(`case %s%sJSONKey:`, object.Name(false), field.Name(true))
 		o.L(`var x %s`, field.Type())
 		o.L(`if err := dec.Decode(&x); err != nil {`)
 		o.L("return fmt.Errorf(`failed to decode value for key %q: %%w`, err)", field.JSON())

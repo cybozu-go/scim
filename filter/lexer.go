@@ -77,6 +77,7 @@ func newScanner(src string) *scanner {
 	return &scanner{src: []rune(src)}
 }
 
+//nolint:nonamedreturns
 func (s *scanner) Scan() (tok int, lit interface{}, pos position, err error) {
 	s.skipWhiteSpace()
 	pos = s.position()

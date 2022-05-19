@@ -57,6 +57,7 @@ func SQL(src, table string, options ...SQLOption) (string, []interface{}, error)
 
 	dialect = "default"
 	mapper = nilMapper
+	//nolint:forcetypeassert
 	for _, option := range options {
 		switch option.Ident() {
 		case identColumnMapper{}:
@@ -285,7 +286,7 @@ func (sv *sqlVisitor) visitValuePath(v ValuePath) error {
 	accum := sv.accum
 	sv.accum = nil
 
-	var exprs []exp.Expression
+	exprs := make([]exp.Expression, len(accum))
 	for _, expr := range accum {
 		exprs = append(exprs, qualifyTable(expr, parent.Lit()))
 	}

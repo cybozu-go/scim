@@ -147,23 +147,8 @@ func (call *CreateGroupCall) ExternalID(v string) *CreateGroupCall {
 	return call
 }
 
-func (call *CreateGroupCall) ID(v string) *CreateGroupCall {
-	call.builder.ID(v)
-	return call
-}
-
 func (call *CreateGroupCall) Members(v ...*resource.User) *CreateGroupCall {
 	call.builder.Members(v...)
-	return call
-}
-
-func (call *CreateGroupCall) Meta(v *resource.Meta) *CreateGroupCall {
-	call.builder.Meta(v)
-	return call
-}
-
-func (call *CreateGroupCall) Schemas(v ...string) *CreateGroupCall {
-	call.builder.Schemas(v...)
 	return call
 }
 
@@ -264,23 +249,8 @@ func (call *ReplaceGroupCall) ExternalID(v string) *ReplaceGroupCall {
 	return call
 }
 
-func (call *ReplaceGroupCall) ID(v string) *ReplaceGroupCall {
-	call.builder.ID(v)
-	return call
-}
-
 func (call *ReplaceGroupCall) Members(v ...*resource.User) *ReplaceGroupCall {
 	call.builder.Members(v...)
-	return call
-}
-
-func (call *ReplaceGroupCall) Meta(v *resource.Meta) *ReplaceGroupCall {
-	call.builder.Meta(v)
-	return call
-}
-
-func (call *ReplaceGroupCall) Schemas(v ...string) *ReplaceGroupCall {
-	call.builder.Schemas(v...)
 	return call
 }
 

@@ -167,23 +167,8 @@ func (call *CreateUserCall) ExternalID(v string) *CreateUserCall {
 	return call
 }
 
-func (call *CreateUserCall) Groups(v ...string) *CreateUserCall {
-	call.builder.Groups(v...)
-	return call
-}
-
-func (call *CreateUserCall) ID(v string) *CreateUserCall {
-	call.builder.ID(v)
-	return call
-}
-
 func (call *CreateUserCall) IMS(v ...string) *CreateUserCall {
 	call.builder.IMS(v...)
-	return call
-}
-
-func (call *CreateUserCall) Meta(v *resource.Meta) *CreateUserCall {
-	call.builder.Meta(v)
 	return call
 }
 
@@ -219,11 +204,6 @@ func (call *CreateUserCall) ProfileURL(v string) *CreateUserCall {
 
 func (call *CreateUserCall) Roles(v ...string) *CreateUserCall {
 	call.builder.Roles(v...)
-	return call
-}
-
-func (call *CreateUserCall) Schemas(v ...string) *CreateUserCall {
-	call.builder.Schemas(v...)
 	return call
 }
 
@@ -369,23 +349,8 @@ func (call *ReplaceUserCall) ExternalID(v string) *ReplaceUserCall {
 	return call
 }
 
-func (call *ReplaceUserCall) Groups(v ...string) *ReplaceUserCall {
-	call.builder.Groups(v...)
-	return call
-}
-
-func (call *ReplaceUserCall) ID(v string) *ReplaceUserCall {
-	call.builder.ID(v)
-	return call
-}
-
 func (call *ReplaceUserCall) IMS(v ...string) *ReplaceUserCall {
 	call.builder.IMS(v...)
-	return call
-}
-
-func (call *ReplaceUserCall) Meta(v *resource.Meta) *ReplaceUserCall {
-	call.builder.Meta(v)
 	return call
 }
 
@@ -421,11 +386,6 @@ func (call *ReplaceUserCall) ProfileURL(v string) *ReplaceUserCall {
 
 func (call *ReplaceUserCall) Roles(v ...string) *ReplaceUserCall {
 	call.builder.Roles(v...)
-	return call
-}
-
-func (call *ReplaceUserCall) Schemas(v ...string) *ReplaceUserCall {
-	call.builder.Schemas(v...)
 	return call
 }
 

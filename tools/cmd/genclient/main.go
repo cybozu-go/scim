@@ -12,6 +12,8 @@ import (
 
 	"github.com/goccy/go-yaml"
 	"github.com/lestrrat-go/codegen"
+	"github.com/lestrrat-go/scim/resource"
+	"github.com/lestrrat-go/scim/schema"
 	"github.com/lestrrat-go/xstrings"
 )
 
@@ -185,12 +187,58 @@ func generateCall(o *codegen.Output, svc Service, call *codegen.Object, resource
 	o.L(`}`)
 	o.L(`}`)
 
-	resource, ok := resources[call.String(`resource`)]
+	rs, ok := resources[call.String(`resource`)]
 	if !ok {
 		return fmt.Errorf(`resouce %q not found`, call.String(`resource`))
 	}
 
-	for _, field := range append(resource.Fields(), optional...) {
+	var fields []codegen.Field
+
+	rschema, ok := schema.Get(call.String(`resource`))
+	if !ok {
+		fields = append(rs.Fields(), optional...)
+	} else {
+		mutabilities := make(map[string]struct{})
+		if iface, ok := call.Extra(`allowedMutability`); ok {
+			if vam, ok := iface.([]interface{}); ok {
+				for _, v := range vam {
+					if sv, ok := v.(string); ok {
+						mutabilities[sv] = struct{}{}
+					}
+				}
+			}
+		}
+
+		allowed := make(map[string]struct{})
+		if len(mutabilities) > 0 {
+			attrs := rschema.Attributes()
+			// I found out RFC7643 talks about “externalId” field, but it’s not in any of the defined schemas :(
+			eid := resource.NewSchemaAttributeBuilder().
+				Name(`externalId`).
+				Mutability(resource.MutWriteOnly).
+				MustBuild()
+
+			for _, attr := range append(attrs, eid) {
+				mut := string(attr.Mutability())
+				if _, ok := mutabilities[mut]; !ok {
+					continue
+				}
+
+				allowed[attr.Name()] = struct{}{}
+			}
+		}
+
+		for _, f := range append(rs.Fields(), optional...) {
+			if len(mutabilities) > 0 {
+				if _, ok := allowed[f.JSON()]; !ok {
+					continue
+				}
+			}
+			fields = append(fields, f)
+		}
+	}
+
+	for _, field := range fields {
 		var typ string
 		var isSlice bool
 		if IsSlice(field) {
@@ -232,7 +280,7 @@ func generateCall(o *codegen.Output, svc Service, call *codegen.Object, resource
 		o.L(`return call`)
 		o.L(`}`)
 
-		o.LL(`func (call *%[1]s) Validator(v resource.%[2]sValidator) *%[1]s {`, call.Name(true), resource.Name(true))
+		o.LL(`func (call *%[1]s) Validator(v resource.%[2]sValidator) *%[1]s {`, call.Name(true), rs.Name(true))
 		o.L(`call.builder.Validator(v)`)
 		o.L(`return call`)
 		o.L(`}`)
@@ -268,7 +316,7 @@ func generateCall(o *codegen.Output, svc Service, call *codegen.Object, resource
 
 	resType := call.String(`response_type`)
 	if resType == "" {
-		resType = `resource.` + resource.Name(true)
+		resType = `resource.` + rs.Name(true)
 	}
 
 	var errPrefix string

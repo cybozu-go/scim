@@ -1,0 +1,42 @@
+services:
+  - name: SearchService
+    calls:
+    - name: SearchCall
+      method: http.MethodPost
+      resource: SearchRequest
+      response_type: resource.ListResponse
+      path: /.search
+      jsonPayload: true
+  - name: UserService
+    calls:
+    - name: GetUserCall
+      method: http.MethodGet
+      resource: PartialResourceRepresentationRequest
+      response_type: resource.User
+      path: /Users
+      makeURLTemplate: |
+        func (call {{ .ObjectName }}) makeURL() string {
+          return call.client.baseURL + "{{ .Path }}/" + call.id
+        }
+      fields:
+        - name: id
+          required: true
+    - name: CreateUserCall
+      method: http.MethodPost
+      resource: User
+      path: /Users
+      jsonPayload: true
+    - name: ReplaceUserCall
+      method: http.MethodPut
+      resource: User
+      path: /Users
+      jsonPayload: true
+      #    - name: ModifyUserCall
+      #      method: http.MethodPatch
+      #      builder: resource.UserBuilder
+    - name: DeleteUserCall
+      method: http.MethodDelete
+      resource: User
+      path: /Users
+
+

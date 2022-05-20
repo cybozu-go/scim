@@ -135,11 +135,7 @@ func (v *EnterpriseUser) Schemas() []string {
 	return v.schemas
 }
 
-func (v *EnterpriseUser) MarshalJSON() ([]byte, error) {
-	type pair struct {
-		Key   string
-		Value interface{}
-	}
+func (v *EnterpriseUser) makePairs() []pair {
 	pairs := make([]pair, 0, 10)
 	if v.costCenter != nil {
 		pairs = append(pairs, pair{Key: "costCenter", Value: *(v.costCenter)})
@@ -177,6 +173,11 @@ func (v *EnterpriseUser) MarshalJSON() ([]byte, error) {
 	sort.Slice(pairs, func(i, j int) bool {
 		return pairs[i].Key < pairs[j].Key
 	})
+	return pairs
+}
+
+func (v *EnterpriseUser) MarshalJSON() ([]byte, error) {
+	pairs := v.makePairs()
 
 	var buf bytes.Buffer
 	enc := json.NewEncoder(&buf)
@@ -500,7 +501,15 @@ LOOP:
 	return nil
 }
 
+func (v *EnterpriseUser) AsMap(dst map[string]interface{}) error {
+	for _, pair := range v.makePairs() {
+		dst[pair.Key] = pair.Value
+	}
+	return nil
+}
+
 type EnterpriseUserBuilder struct {
+	once      sync.Once
 	mu        sync.Mutex
 	err       error
 	validator EnterpriseUserValidator
@@ -508,17 +517,29 @@ type EnterpriseUserBuilder struct {
 }
 
 func (b *Builder) EnterpriseUser() *EnterpriseUserBuilder {
-	return &EnterpriseUserBuilder{}
+	return NewEnterpriseUserBuilder()
+}
+
+func NewEnterpriseUserBuilder() *EnterpriseUserBuilder {
+	var b EnterpriseUserBuilder
+	b.init()
+	return &b
+}
+
+func (b *EnterpriseUserBuilder) init() {
+	b.err = nil
+	b.validator = nil
+	b.object = &EnterpriseUser{}
+
+	b.object.schemas = []string{EnterpriseUserSchemaURI}
 }
 
 func (b *EnterpriseUserBuilder) CostCenter(v string) *EnterpriseUserBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
-	}
-	if b.object == nil {
-		b.object = &EnterpriseUser{}
 	}
 	if err := b.object.Set("costCenter", v); err != nil {
 		b.err = err
@@ -529,11 +550,9 @@ func (b *EnterpriseUserBuilder) CostCenter(v string) *EnterpriseUserBuilder {
 func (b *EnterpriseUserBuilder) Department(v string) *EnterpriseUserBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
-	}
-	if b.object == nil {
-		b.object = &EnterpriseUser{}
 	}
 	if err := b.object.Set("department", v); err != nil {
 		b.err = err
@@ -544,11 +563,9 @@ func (b *EnterpriseUserBuilder) Department(v string) *EnterpriseUserBuilder {
 func (b *EnterpriseUserBuilder) Division(v string) *EnterpriseUserBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
-	}
-	if b.object == nil {
-		b.object = &EnterpriseUser{}
 	}
 	if err := b.object.Set("division", v); err != nil {
 		b.err = err
@@ -559,11 +576,9 @@ func (b *EnterpriseUserBuilder) Division(v string) *EnterpriseUserBuilder {
 func (b *EnterpriseUserBuilder) EmployeeNumber(v string) *EnterpriseUserBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
-	}
-	if b.object == nil {
-		b.object = &EnterpriseUser{}
 	}
 	if err := b.object.Set("employeeNumber", v); err != nil {
 		b.err = err
@@ -574,11 +589,9 @@ func (b *EnterpriseUserBuilder) EmployeeNumber(v string) *EnterpriseUserBuilder 
 func (b *EnterpriseUserBuilder) ExternalID(v string) *EnterpriseUserBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
-	}
-	if b.object == nil {
-		b.object = &EnterpriseUser{}
 	}
 	if err := b.object.Set("externalId", v); err != nil {
 		b.err = err
@@ -589,11 +602,9 @@ func (b *EnterpriseUserBuilder) ExternalID(v string) *EnterpriseUserBuilder {
 func (b *EnterpriseUserBuilder) ID(v string) *EnterpriseUserBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
-	}
-	if b.object == nil {
-		b.object = &EnterpriseUser{}
 	}
 	if err := b.object.Set("id", v); err != nil {
 		b.err = err
@@ -604,11 +615,9 @@ func (b *EnterpriseUserBuilder) ID(v string) *EnterpriseUserBuilder {
 func (b *EnterpriseUserBuilder) Manager(v *EnterpriseManager) *EnterpriseUserBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
-	}
-	if b.object == nil {
-		b.object = &EnterpriseUser{}
 	}
 	if err := b.object.Set("manager", v); err != nil {
 		b.err = err
@@ -619,11 +628,9 @@ func (b *EnterpriseUserBuilder) Manager(v *EnterpriseManager) *EnterpriseUserBui
 func (b *EnterpriseUserBuilder) Meta(v *Meta) *EnterpriseUserBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
-	}
-	if b.object == nil {
-		b.object = &EnterpriseUser{}
 	}
 	if err := b.object.Set("meta", v); err != nil {
 		b.err = err
@@ -634,11 +641,9 @@ func (b *EnterpriseUserBuilder) Meta(v *Meta) *EnterpriseUserBuilder {
 func (b *EnterpriseUserBuilder) Organization(v string) *EnterpriseUserBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
-	}
-	if b.object == nil {
-		b.object = &EnterpriseUser{}
 	}
 	if err := b.object.Set("organization", v); err != nil {
 		b.err = err
@@ -649,11 +654,9 @@ func (b *EnterpriseUserBuilder) Organization(v string) *EnterpriseUserBuilder {
 func (b *EnterpriseUserBuilder) Schemas(v ...string) *EnterpriseUserBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
-	}
-	if b.object == nil {
-		b.object = &EnterpriseUser{}
 	}
 	if err := b.object.Set("schemas", v); err != nil {
 		b.err = err
@@ -664,11 +667,9 @@ func (b *EnterpriseUserBuilder) Schemas(v ...string) *EnterpriseUserBuilder {
 func (b *EnterpriseUserBuilder) Extension(uri string, value interface{}) *EnterpriseUserBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
-	}
-	if b.object == nil {
-		b.object = &EnterpriseUser{}
 	}
 	if err := b.object.Set(uri, value); err != nil {
 		b.err = err
@@ -679,6 +680,7 @@ func (b *EnterpriseUserBuilder) Extension(uri string, value interface{}) *Enterp
 func (b *EnterpriseUserBuilder) Validator(v EnterpriseUserValidator) *EnterpriseUserBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
 	}
@@ -687,15 +689,17 @@ func (b *EnterpriseUserBuilder) Validator(v EnterpriseUserValidator) *Enterprise
 }
 
 func (b *EnterpriseUserBuilder) Build() (*EnterpriseUser, error) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	object := b.object
 	validator := b.validator
-	b.object = nil
-	b.validator = nil
+	err := b.err
+	b.once = sync.Once{}
+	if err != nil {
+		return nil, err
+	}
 	if object == nil {
 		return nil, fmt.Errorf("resource.EnterpriseUserBuilder: object was not initialized")
-	}
-	if err := b.err; err != nil {
-		return nil, err
 	}
 	if validator == nil {
 		validator = DefaultEnterpriseUserValidator

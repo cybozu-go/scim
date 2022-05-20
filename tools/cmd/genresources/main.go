@@ -37,6 +37,8 @@ func yaml2json(fn string) ([]byte, error) {
 }
 
 func _main() error {
+	codegen.RegisterZeroVal(`AuthenticationSchemeType`, `InvalidAuthenticationScheme`)
+
 	var objectsFile = flag.String("objects", "objects.yml", "")
 	flag.Parse()
 	jsonSrc, err := yaml2json(*objectsFile)
@@ -141,11 +143,7 @@ func generateObject(object *codegen.Object) error {
 		o.L(`}`)
 	}
 
-	o.LL(`func (v *%s) MarshalJSON() ([]byte, error) {`, object.Name(true))
-	o.L(`type pair struct {`)
-	o.L(`Key string`)
-	o.L(`Value interface{}`)
-	o.L(`}`)
+	o.LL(`func (v *%s) makePairs() []pair {`, object.Name(true))
 	o.L(`pairs := make([]pair, 0, %d)`, len(object.Fields()))
 	for _, field := range object.Fields() {
 		o.L(`if v.%s != nil {`, field.Name(false))
@@ -162,6 +160,11 @@ func generateObject(object *codegen.Object) error {
 	o.L(`sort.Slice(pairs, func(i, j int) bool {`)
 	o.L(`return pairs[i].Key < pairs[j].Key`)
 	o.L(`})`)
+	o.L(`return pairs`)
+	o.L(`}`)
+
+	o.LL(`func (v *%s) MarshalJSON() ([]byte, error) {`, object.Name(true))
+	o.L(`pairs := v.makePairs()`)
 	o.LL(`var buf bytes.Buffer`)
 	o.L(`enc := json.NewEncoder(&buf)`)
 	o.L(`buf.WriteByte('{')`)
@@ -325,7 +328,15 @@ func generateObject(object *codegen.Object) error {
 	o.L(`return nil`)
 	o.L(`}`)
 
+	o.LL(`func (v *%s) AsMap(dst map[string]interface{}) error {`, object.Name(true))
+	o.L(`for _, pair := range v.makePairs() {`)
+	o.L(`dst[pair.Key] = pair.Value`)
+	o.L(`}`)
+	o.L(`return nil`)
+	o.L(`}`)
+
 	o.LL(`type %sBuilder struct {`, object.Name(true))
+	o.L(`once sync.Once`)
 	o.L(`mu sync.Mutex`)
 	o.L(`err error`)
 	o.L(`validator %sValidator`, object.Name(true))
@@ -333,7 +344,22 @@ func generateObject(object *codegen.Object) error {
 	o.L(`}`)
 
 	o.LL(`func (b *Builder) %[1]s() *%[1]sBuilder {`, object.Name(true))
-	o.L(`return &%sBuilder{}`, object.Name(true))
+	o.L(`return New%sBuilder()`, object.Name(true))
+	o.L(`}`)
+
+	o.LL(`func New%[1]sBuilder() *%[1]sBuilder {`, object.Name(true))
+	o.L(`var b %sBuilder`, object.Name(true))
+	o.L(`b.init()`)
+	o.L(`return &b`)
+	o.L(`}`)
+
+	o.LL(`func (b *%sBuilder) init() {`, object.Name(true))
+	o.L(`b.err = nil`)
+	o.L(`b.validator = nil`)
+	o.L(`b.object = &%s{}`, object.Name(true))
+	if schema := object.String(`schema`); schema != "" {
+		o.LL(`b.object.schemas = []string{%sSchemaURI}`, object.Name(true))
+	}
 	o.L(`}`)
 
 	for _, field := range object.Fields() {
@@ -345,11 +371,9 @@ func generateObject(object *codegen.Object) error {
 		}
 		o.L(`b.mu.Lock()`)
 		o.L(`defer b.mu.Unlock()`)
+		o.L(`b.once.Do(b.init)`)
 		o.L(`if b.err != nil {`)
 		o.L(`return b`)
-		o.L(`}`)
-		o.L(`if b.object == nil {`)
-		o.L(`b.object = &%s{}`, object.Name(true))
 		o.L(`}`)
 		o.L(`if err := b.object.Set(%q, v); err != nil {`, field.JSON())
 		o.L(`b.err = err`)
@@ -361,11 +385,9 @@ func generateObject(object *codegen.Object) error {
 	o.LL(`func (b *%[1]sBuilder) Extension(uri string, value interface{}) *%[1]sBuilder {`, object.Name(true))
 	o.L(`b.mu.Lock()`)
 	o.L(`defer b.mu.Unlock()`)
+	o.L(`b.once.Do(b.init)`)
 	o.L(`if b.err != nil {`)
 	o.L(`return b`)
-	o.L(`}`)
-	o.L(`if b.object == nil {`)
-	o.L(`b.object = &%s{}`, object.Name(true))
 	o.L(`}`)
 	o.L(`if err := b.object.Set(uri, value); err != nil {`)
 	o.L(`b.err = err`)
@@ -376,6 +398,7 @@ func generateObject(object *codegen.Object) error {
 	o.LL(`func (b *%[1]sBuilder) Validator(v %[1]sValidator) *%[1]sBuilder {`, object.Name(true))
 	o.L(`b.mu.Lock()`)
 	o.L(`defer b.mu.Unlock()`)
+	o.L(`b.once.Do(b.init)`)
 	o.L(`if b.err != nil {`)
 	o.L(`return b`)
 	o.L(`}`)
@@ -384,15 +407,17 @@ func generateObject(object *codegen.Object) error {
 	o.L(`}`)
 
 	o.LL(`func (b *%[1]sBuilder) Build() (*%[1]s, error) {`, object.Name(true))
+	o.L(`b.mu.Lock()`)
+	o.L(`defer b.mu.Unlock()`)
 	o.L(`object := b.object`)
 	o.L(`validator := b.validator`)
-	o.L(`b.object = nil`)
-	o.L(`b.validator = nil`)
+	o.L(`err := b.err`)
+	o.L(`b.once = sync.Once{}`)
+	o.L(`if err != nil {`)
+	o.L(`return nil, err`)
+	o.L(`}`)
 	o.L(`if object == nil {`)
 	o.L(`return nil, fmt.Errorf("resource.%sBuilder: object was not initialized")`, object.Name(true))
-	o.L(`}`)
-	o.L(`if err := b.err; err != nil {`)
-	o.L(`return nil, err`)
 	o.L(`}`)
 	o.L(`if validator == nil {`)
 	o.L(`validator = Default%sValidator`, object.Name(true))

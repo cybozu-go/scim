@@ -248,11 +248,7 @@ func (v *User) X509Certificates() []string {
 	return v.x509Certificates
 }
 
-func (v *User) MarshalJSON() ([]byte, error) {
-	type pair struct {
-		Key   string
-		Value interface{}
-	}
+func (v *User) makePairs() []pair {
 	pairs := make([]pair, 0, 23)
 	if v.active != nil {
 		pairs = append(pairs, pair{Key: "active", Value: *(v.active)})
@@ -329,6 +325,11 @@ func (v *User) MarshalJSON() ([]byte, error) {
 	sort.Slice(pairs, func(i, j int) bool {
 		return pairs[i].Key < pairs[j].Key
 	})
+	return pairs
+}
+
+func (v *User) MarshalJSON() ([]byte, error) {
+	pairs := v.makePairs()
 
 	var buf bytes.Buffer
 	enc := json.NewEncoder(&buf)
@@ -912,7 +913,15 @@ LOOP:
 	return nil
 }
 
+func (v *User) AsMap(dst map[string]interface{}) error {
+	for _, pair := range v.makePairs() {
+		dst[pair.Key] = pair.Value
+	}
+	return nil
+}
+
 type UserBuilder struct {
+	once      sync.Once
 	mu        sync.Mutex
 	err       error
 	validator UserValidator
@@ -920,17 +929,27 @@ type UserBuilder struct {
 }
 
 func (b *Builder) User() *UserBuilder {
-	return &UserBuilder{}
+	return NewUserBuilder()
+}
+
+func NewUserBuilder() *UserBuilder {
+	var b UserBuilder
+	b.init()
+	return &b
+}
+
+func (b *UserBuilder) init() {
+	b.err = nil
+	b.validator = nil
+	b.object = &User{}
 }
 
 func (b *UserBuilder) Active(v bool) *UserBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
-	}
-	if b.object == nil {
-		b.object = &User{}
 	}
 	if err := b.object.Set("active", v); err != nil {
 		b.err = err
@@ -941,11 +960,9 @@ func (b *UserBuilder) Active(v bool) *UserBuilder {
 func (b *UserBuilder) Addresses(v ...string) *UserBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
-	}
-	if b.object == nil {
-		b.object = &User{}
 	}
 	if err := b.object.Set("addresses", v); err != nil {
 		b.err = err
@@ -956,11 +973,9 @@ func (b *UserBuilder) Addresses(v ...string) *UserBuilder {
 func (b *UserBuilder) DisplayName(v string) *UserBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
-	}
-	if b.object == nil {
-		b.object = &User{}
 	}
 	if err := b.object.Set("displayName", v); err != nil {
 		b.err = err
@@ -971,11 +986,9 @@ func (b *UserBuilder) DisplayName(v string) *UserBuilder {
 func (b *UserBuilder) Emails(v ...string) *UserBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
-	}
-	if b.object == nil {
-		b.object = &User{}
 	}
 	if err := b.object.Set("emails", v); err != nil {
 		b.err = err
@@ -986,11 +999,9 @@ func (b *UserBuilder) Emails(v ...string) *UserBuilder {
 func (b *UserBuilder) Entitlements(v ...string) *UserBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
-	}
-	if b.object == nil {
-		b.object = &User{}
 	}
 	if err := b.object.Set("entitlements", v); err != nil {
 		b.err = err
@@ -1001,11 +1012,9 @@ func (b *UserBuilder) Entitlements(v ...string) *UserBuilder {
 func (b *UserBuilder) ExternalID(v string) *UserBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
-	}
-	if b.object == nil {
-		b.object = &User{}
 	}
 	if err := b.object.Set("externalId", v); err != nil {
 		b.err = err
@@ -1016,11 +1025,9 @@ func (b *UserBuilder) ExternalID(v string) *UserBuilder {
 func (b *UserBuilder) Groups(v ...string) *UserBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
-	}
-	if b.object == nil {
-		b.object = &User{}
 	}
 	if err := b.object.Set("groups", v); err != nil {
 		b.err = err
@@ -1031,11 +1038,9 @@ func (b *UserBuilder) Groups(v ...string) *UserBuilder {
 func (b *UserBuilder) ID(v string) *UserBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
-	}
-	if b.object == nil {
-		b.object = &User{}
 	}
 	if err := b.object.Set("id", v); err != nil {
 		b.err = err
@@ -1046,11 +1051,9 @@ func (b *UserBuilder) ID(v string) *UserBuilder {
 func (b *UserBuilder) IMS(v ...string) *UserBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
-	}
-	if b.object == nil {
-		b.object = &User{}
 	}
 	if err := b.object.Set("ims", v); err != nil {
 		b.err = err
@@ -1061,11 +1064,9 @@ func (b *UserBuilder) IMS(v ...string) *UserBuilder {
 func (b *UserBuilder) Meta(v *Meta) *UserBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
-	}
-	if b.object == nil {
-		b.object = &User{}
 	}
 	if err := b.object.Set("meta", v); err != nil {
 		b.err = err
@@ -1076,11 +1077,9 @@ func (b *UserBuilder) Meta(v *Meta) *UserBuilder {
 func (b *UserBuilder) Name(v *Names) *UserBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
-	}
-	if b.object == nil {
-		b.object = &User{}
 	}
 	if err := b.object.Set("name", v); err != nil {
 		b.err = err
@@ -1091,11 +1090,9 @@ func (b *UserBuilder) Name(v *Names) *UserBuilder {
 func (b *UserBuilder) NickName(v string) *UserBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
-	}
-	if b.object == nil {
-		b.object = &User{}
 	}
 	if err := b.object.Set("nickName", v); err != nil {
 		b.err = err
@@ -1106,11 +1103,9 @@ func (b *UserBuilder) NickName(v string) *UserBuilder {
 func (b *UserBuilder) Password(v string) *UserBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
-	}
-	if b.object == nil {
-		b.object = &User{}
 	}
 	if err := b.object.Set("password", v); err != nil {
 		b.err = err
@@ -1121,11 +1116,9 @@ func (b *UserBuilder) Password(v string) *UserBuilder {
 func (b *UserBuilder) PhoneNumbers(v ...string) *UserBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
-	}
-	if b.object == nil {
-		b.object = &User{}
 	}
 	if err := b.object.Set("phoneNumbers", v); err != nil {
 		b.err = err
@@ -1136,11 +1129,9 @@ func (b *UserBuilder) PhoneNumbers(v ...string) *UserBuilder {
 func (b *UserBuilder) PreferredLanguage(v string) *UserBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
-	}
-	if b.object == nil {
-		b.object = &User{}
 	}
 	if err := b.object.Set("preferredLanguage", v); err != nil {
 		b.err = err
@@ -1151,11 +1142,9 @@ func (b *UserBuilder) PreferredLanguage(v string) *UserBuilder {
 func (b *UserBuilder) ProfileURL(v string) *UserBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
-	}
-	if b.object == nil {
-		b.object = &User{}
 	}
 	if err := b.object.Set("profileUrl", v); err != nil {
 		b.err = err
@@ -1166,11 +1155,9 @@ func (b *UserBuilder) ProfileURL(v string) *UserBuilder {
 func (b *UserBuilder) Roles(v ...string) *UserBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
-	}
-	if b.object == nil {
-		b.object = &User{}
 	}
 	if err := b.object.Set("roles", v); err != nil {
 		b.err = err
@@ -1181,11 +1168,9 @@ func (b *UserBuilder) Roles(v ...string) *UserBuilder {
 func (b *UserBuilder) Schemas(v ...string) *UserBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
-	}
-	if b.object == nil {
-		b.object = &User{}
 	}
 	if err := b.object.Set("schemas", v); err != nil {
 		b.err = err
@@ -1196,11 +1181,9 @@ func (b *UserBuilder) Schemas(v ...string) *UserBuilder {
 func (b *UserBuilder) Timezone(v string) *UserBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
-	}
-	if b.object == nil {
-		b.object = &User{}
 	}
 	if err := b.object.Set("timezone", v); err != nil {
 		b.err = err
@@ -1211,11 +1194,9 @@ func (b *UserBuilder) Timezone(v string) *UserBuilder {
 func (b *UserBuilder) Title(v string) *UserBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
-	}
-	if b.object == nil {
-		b.object = &User{}
 	}
 	if err := b.object.Set("title", v); err != nil {
 		b.err = err
@@ -1226,11 +1207,9 @@ func (b *UserBuilder) Title(v string) *UserBuilder {
 func (b *UserBuilder) UserName(v string) *UserBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
-	}
-	if b.object == nil {
-		b.object = &User{}
 	}
 	if err := b.object.Set("userName", v); err != nil {
 		b.err = err
@@ -1241,11 +1220,9 @@ func (b *UserBuilder) UserName(v string) *UserBuilder {
 func (b *UserBuilder) UserType(v string) *UserBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
-	}
-	if b.object == nil {
-		b.object = &User{}
 	}
 	if err := b.object.Set("userType", v); err != nil {
 		b.err = err
@@ -1256,11 +1233,9 @@ func (b *UserBuilder) UserType(v string) *UserBuilder {
 func (b *UserBuilder) X509Certificates(v ...string) *UserBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
-	}
-	if b.object == nil {
-		b.object = &User{}
 	}
 	if err := b.object.Set("x509Certificates", v); err != nil {
 		b.err = err
@@ -1271,11 +1246,9 @@ func (b *UserBuilder) X509Certificates(v ...string) *UserBuilder {
 func (b *UserBuilder) Extension(uri string, value interface{}) *UserBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
-	}
-	if b.object == nil {
-		b.object = &User{}
 	}
 	if err := b.object.Set(uri, value); err != nil {
 		b.err = err
@@ -1286,6 +1259,7 @@ func (b *UserBuilder) Extension(uri string, value interface{}) *UserBuilder {
 func (b *UserBuilder) Validator(v UserValidator) *UserBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
 	}
@@ -1294,15 +1268,17 @@ func (b *UserBuilder) Validator(v UserValidator) *UserBuilder {
 }
 
 func (b *UserBuilder) Build() (*User, error) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	object := b.object
 	validator := b.validator
-	b.object = nil
-	b.validator = nil
+	err := b.err
+	b.once = sync.Once{}
+	if err != nil {
+		return nil, err
+	}
 	if object == nil {
 		return nil, fmt.Errorf("resource.UserBuilder: object was not initialized")
-	}
-	if err := b.err; err != nil {
-		return nil, err
 	}
 	if validator == nil {
 		validator = DefaultUserValidator

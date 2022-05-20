@@ -1,0 +1,113 @@
+package server_test
+
+import (
+	"context"
+	"fmt"
+	"math/rand"
+	"net/http/httptest"
+	"os"
+	"testing"
+
+	"github.com/lestrrat-go/scim/client"
+	"github.com/lestrrat-go/scim/resource"
+	"github.com/lestrrat-go/scim/server"
+	"github.com/stretchr/testify/require"
+)
+
+type mockBackend struct {
+	users map[string]*resource.User
+}
+
+func (m *mockBackend) CreateUser(in *resource.User) (*resource.User, error) {
+	id := fmt.Sprintf(`%d`, rand.Int63()) // TODO: check for clashes
+
+	var b resource.UserBuilder
+	user, err := b.ID(id).
+		UserName(in.UserName()).
+		ExternalID(in.ExternalID()).
+		Name(in.Name()).
+		Build()
+	if err != nil {
+		return nil, err
+	}
+	m.users[id] = user
+	return user, nil
+}
+
+func (m *mockBackend) RetrieveUser(id string) (*resource.User, error) {
+	user, ok := m.users[id]
+	if !ok {
+		return nil, fmt.Errorf(`user not found`)
+	}
+	return user, nil
+}
+
+func (mockBackend) Search(*resource.SearchRequest) (*resource.ListResponse, error) {
+	var b resource.Builder
+
+	return b.ListResponse().
+		TotalResults(2).
+		StartIndex(1).
+		ItemsPerPage(10).
+		Resources(
+			b.User().
+				ID("2819c223-7f76-413861904646").
+				UserName("jsmith").
+				DisplayName("Smith, James").
+				MustBuild(),
+			b.Group().
+				ID("c8596b90-7539-4f20968d1908").
+				DisplayName("Smith Family").
+				MustBuild(),
+		).
+		Build()
+}
+
+func TestServer(t *testing.T) {
+	t.Run("mock server", func(t *testing.T) {
+		hh, err := server.NewServer(&mockBackend{
+			users: make(map[string]*resource.User),
+		})
+		require.NoError(t, err, `server.NewServer should succeed`)
+
+		srv := httptest.NewServer(hh)
+
+		cl := client.New(srv.URL, client.WithClient(srv.Client()))
+
+		t.Run("search via /.search", func(t *testing.T) {
+			lr, err := cl.Search().Search().
+				Attributes(`displayName`, `userName`).
+				Filter(`displayName sw "smith"`).
+				StartIndex(1).
+				Count(10).
+				Do(context.TODO())
+			require.NoError(t, err, `cl.Search should succeed`)
+			t.Logf("%#v", lr)
+		})
+		t.Run("/Users", func(t *testing.T) {
+			t.Run("POST /Users", func(t *testing.T) {
+				createdUser, err := cl.User().CreateUser().
+					UserName("bjensen").
+					ExternalID("bjensen").
+					Name((&resource.NamesBuilder{}).
+						Formatted("Ms. Barbara J Jensen III").
+						FamilyName("Jensen").
+						GivenName("Barbara").
+						MustBuild()).
+					Do(context.TODO())
+				require.NoError(t, err, `CreateUser should succeed`)
+				t.Run(fmt.Sprintf("GET /Users/%s", createdUser.ID()), func(t *testing.T) {
+					_, err := cl.User().GetUser(createdUser.ID()).
+						Trace(os.Stdout).
+						Do(context.TODO())
+					require.NoError(t, err, `GetUser should succeed`)
+				})
+			})
+			t.Run("GET /Users/foobar", func(t *testing.T) {
+				_, err := cl.User().GetUser("foobar").
+					Do(context.TODO())
+				require.Error(t, err, `GetUser should fail`)
+			})
+		})
+	})
+}

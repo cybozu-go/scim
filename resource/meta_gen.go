@@ -84,11 +84,7 @@ func (v *Meta) Version() string {
 	return *(v.version)
 }
 
-func (v *Meta) MarshalJSON() ([]byte, error) {
-	type pair struct {
-		Key   string
-		Value interface{}
-	}
+func (v *Meta) makePairs() []pair {
 	pairs := make([]pair, 0, 5)
 	if v.created != nil {
 		pairs = append(pairs, pair{Key: "created", Value: *(v.created)})
@@ -111,6 +107,11 @@ func (v *Meta) MarshalJSON() ([]byte, error) {
 	sort.Slice(pairs, func(i, j int) bool {
 		return pairs[i].Key < pairs[j].Key
 	})
+	return pairs
+}
+
+func (v *Meta) MarshalJSON() ([]byte, error) {
+	pairs := v.makePairs()
 
 	var buf bytes.Buffer
 	enc := json.NewEncoder(&buf)
@@ -334,7 +335,15 @@ LOOP:
 	return nil
 }
 
+func (v *Meta) AsMap(dst map[string]interface{}) error {
+	for _, pair := range v.makePairs() {
+		dst[pair.Key] = pair.Value
+	}
+	return nil
+}
+
 type MetaBuilder struct {
+	once      sync.Once
 	mu        sync.Mutex
 	err       error
 	validator MetaValidator
@@ -342,17 +351,27 @@ type MetaBuilder struct {
 }
 
 func (b *Builder) Meta() *MetaBuilder {
-	return &MetaBuilder{}
+	return NewMetaBuilder()
+}
+
+func NewMetaBuilder() *MetaBuilder {
+	var b MetaBuilder
+	b.init()
+	return &b
+}
+
+func (b *MetaBuilder) init() {
+	b.err = nil
+	b.validator = nil
+	b.object = &Meta{}
 }
 
 func (b *MetaBuilder) Created(v time.Time) *MetaBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
-	}
-	if b.object == nil {
-		b.object = &Meta{}
 	}
 	if err := b.object.Set("created", v); err != nil {
 		b.err = err
@@ -363,11 +382,9 @@ func (b *MetaBuilder) Created(v time.Time) *MetaBuilder {
 func (b *MetaBuilder) LastModified(v time.Time) *MetaBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
-	}
-	if b.object == nil {
-		b.object = &Meta{}
 	}
 	if err := b.object.Set("lastModified", v); err != nil {
 		b.err = err
@@ -378,11 +395,9 @@ func (b *MetaBuilder) LastModified(v time.Time) *MetaBuilder {
 func (b *MetaBuilder) Location(v string) *MetaBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
-	}
-	if b.object == nil {
-		b.object = &Meta{}
 	}
 	if err := b.object.Set("location", v); err != nil {
 		b.err = err
@@ -393,11 +408,9 @@ func (b *MetaBuilder) Location(v string) *MetaBuilder {
 func (b *MetaBuilder) ResourceType(v string) *MetaBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
-	}
-	if b.object == nil {
-		b.object = &Meta{}
 	}
 	if err := b.object.Set("resourceType", v); err != nil {
 		b.err = err
@@ -408,11 +421,9 @@ func (b *MetaBuilder) ResourceType(v string) *MetaBuilder {
 func (b *MetaBuilder) Version(v string) *MetaBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
-	}
-	if b.object == nil {
-		b.object = &Meta{}
 	}
 	if err := b.object.Set("version", v); err != nil {
 		b.err = err
@@ -423,11 +434,9 @@ func (b *MetaBuilder) Version(v string) *MetaBuilder {
 func (b *MetaBuilder) Extension(uri string, value interface{}) *MetaBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
-	}
-	if b.object == nil {
-		b.object = &Meta{}
 	}
 	if err := b.object.Set(uri, value); err != nil {
 		b.err = err
@@ -438,6 +447,7 @@ func (b *MetaBuilder) Extension(uri string, value interface{}) *MetaBuilder {
 func (b *MetaBuilder) Validator(v MetaValidator) *MetaBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
 	}
@@ -446,15 +456,17 @@ func (b *MetaBuilder) Validator(v MetaValidator) *MetaBuilder {
 }
 
 func (b *MetaBuilder) Build() (*Meta, error) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	object := b.object
 	validator := b.validator
-	b.object = nil
-	b.validator = nil
+	err := b.err
+	b.once = sync.Once{}
+	if err != nil {
+		return nil, err
+	}
 	if object == nil {
 		return nil, fmt.Errorf("resource.MetaBuilder: object was not initialized")
-	}
-	if err := b.err; err != nil {
-		return nil, err
 	}
 	if validator == nil {
 		validator = DefaultMetaValidator

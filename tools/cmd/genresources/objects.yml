@@ -96,4 +96,112 @@ objects:
       - name: ref
         json: '$ref'
       - name: display
-
+  - name: GenericSupport
+    skipCommonFields: true
+    fields:
+      - name: supported
+        type: bool
+        required: true
+  - name: BulkSupport
+    skipCommonFields: true
+    fields:
+      - name: supported
+        type: bool
+        required: true
+      - name: maxOperations
+        type: int
+        required: true
+      - name: maxPayloadSize
+        type: int
+        required: true
+  - name: FilterSupport
+    skipCommonFields: true
+    fields:
+      - name: supported
+        type: bool
+        required: true
+      - name: maxResults
+        type: int
+        required: true
+  - name: AuthenticationScheme
+    skipCommonFields: true
+    fields:
+      - name: typ
+        json: type
+        type: AuthenticationSchemeType
+        required: true
+      - name: name
+        required: true
+      - name: description
+        required: true
+      - name: specURI
+        json: specUri
+      - name: documentationURI
+        json: documentationUri
+  - name: ServiceProviderConfig
+    schema: urn:ietf:params:scim:schemas:core:2.0:ServiceProviderConfig
+    skipCommonFields: true
+    fields:
+      - name: schemas
+        type: '[]string'
+      - name: documentationURI
+        json: documentationUri
+      - name: patch
+        required: true
+        type: '*GenericSupport'
+      - name: bulk
+        required: true
+        type: '*BulkSupport'
+      - name: filter
+        required: true
+        type: '*FilterSupport'
+      - name: changePassword
+        required: true
+        type: '*GenericSupport'
+      - name: sort
+        required: true
+        type: '*GenericSupport'
+      - name: etag
+        required: true
+        type: '*GenericSupport'
+      - name: authenticationSchemes
+        type: '[]AuthenticationScheme'
+        required: true
+  - name: SearchRequest
+    schema: urn:ietf:params:scim:api:messages:2.0:SearchRequest
+    skipCommonFields: true
+    fields:
+      - name: attributes
+        type: "[]string"
+      - name: exludedAttributes
+        type: "[]string"
+      - name: filter
+      - name: schemas
+        type: '[]string'
+      - name: sortBy
+      - name: sortOrder
+      - name: startIndex
+        type: int
+      - name: count
+        type: int
+  - name: ListResponse
+    schema: urn:ietf:params:scim:api:messages:2.0:ListResponse
+    skipCommonFields: true
+    fields:
+      - name: totalResults
+        type: int
+      - name: itemsPerPage
+        type: int
+      - name: schemas
+        type: '[]string'
+      - name: startIndex
+        type: int
+      - name: Resources
+        type: "[]interface{}"
+  - name: PartialResourceRepresentationRequest
+    skipCommonFields: true
+    fields:
+      - name: attributes
+        type: "[]string"
+      - name: excludedAttributes
+        type: "[]string"

@@ -94,11 +94,7 @@ func (v *Names) MiddleName() string {
 	return *(v.middleName)
 }
 
-func (v *Names) MarshalJSON() ([]byte, error) {
-	type pair struct {
-		Key   string
-		Value interface{}
-	}
+func (v *Names) makePairs() []pair {
 	pairs := make([]pair, 0, 6)
 	if v.familyName != nil {
 		pairs = append(pairs, pair{Key: "familyName", Value: *(v.familyName)})
@@ -124,6 +120,11 @@ func (v *Names) MarshalJSON() ([]byte, error) {
 	sort.Slice(pairs, func(i, j int) bool {
 		return pairs[i].Key < pairs[j].Key
 	})
+	return pairs
+}
+
+func (v *Names) MarshalJSON() ([]byte, error) {
+	pairs := v.makePairs()
 
 	var buf bytes.Buffer
 	enc := json.NewEncoder(&buf)
@@ -367,7 +368,15 @@ LOOP:
 	return nil
 }
 
+func (v *Names) AsMap(dst map[string]interface{}) error {
+	for _, pair := range v.makePairs() {
+		dst[pair.Key] = pair.Value
+	}
+	return nil
+}
+
 type NamesBuilder struct {
+	once      sync.Once
 	mu        sync.Mutex
 	err       error
 	validator NamesValidator
@@ -375,17 +384,27 @@ type NamesBuilder struct {
 }
 
 func (b *Builder) Names() *NamesBuilder {
-	return &NamesBuilder{}
+	return NewNamesBuilder()
+}
+
+func NewNamesBuilder() *NamesBuilder {
+	var b NamesBuilder
+	b.init()
+	return &b
+}
+
+func (b *NamesBuilder) init() {
+	b.err = nil
+	b.validator = nil
+	b.object = &Names{}
 }
 
 func (b *NamesBuilder) FamilyName(v string) *NamesBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
-	}
-	if b.object == nil {
-		b.object = &Names{}
 	}
 	if err := b.object.Set("familyName", v); err != nil {
 		b.err = err
@@ -396,11 +415,9 @@ func (b *NamesBuilder) FamilyName(v string) *NamesBuilder {
 func (b *NamesBuilder) Formatted(v string) *NamesBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
-	}
-	if b.object == nil {
-		b.object = &Names{}
 	}
 	if err := b.object.Set("formatted", v); err != nil {
 		b.err = err
@@ -411,11 +428,9 @@ func (b *NamesBuilder) Formatted(v string) *NamesBuilder {
 func (b *NamesBuilder) GivenName(v string) *NamesBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
-	}
-	if b.object == nil {
-		b.object = &Names{}
 	}
 	if err := b.object.Set("givenName", v); err != nil {
 		b.err = err
@@ -426,11 +441,9 @@ func (b *NamesBuilder) GivenName(v string) *NamesBuilder {
 func (b *NamesBuilder) HonorificPrefix(v string) *NamesBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
-	}
-	if b.object == nil {
-		b.object = &Names{}
 	}
 	if err := b.object.Set("honorificPrefix", v); err != nil {
 		b.err = err
@@ -441,11 +454,9 @@ func (b *NamesBuilder) HonorificPrefix(v string) *NamesBuilder {
 func (b *NamesBuilder) HonorificSuffix(v string) *NamesBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
-	}
-	if b.object == nil {
-		b.object = &Names{}
 	}
 	if err := b.object.Set("honorificSuffix", v); err != nil {
 		b.err = err
@@ -456,11 +467,9 @@ func (b *NamesBuilder) HonorificSuffix(v string) *NamesBuilder {
 func (b *NamesBuilder) MiddleName(v string) *NamesBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
-	}
-	if b.object == nil {
-		b.object = &Names{}
 	}
 	if err := b.object.Set("middleName", v); err != nil {
 		b.err = err
@@ -471,11 +480,9 @@ func (b *NamesBuilder) MiddleName(v string) *NamesBuilder {
 func (b *NamesBuilder) Extension(uri string, value interface{}) *NamesBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
-	}
-	if b.object == nil {
-		b.object = &Names{}
 	}
 	if err := b.object.Set(uri, value); err != nil {
 		b.err = err
@@ -486,6 +493,7 @@ func (b *NamesBuilder) Extension(uri string, value interface{}) *NamesBuilder {
 func (b *NamesBuilder) Validator(v NamesValidator) *NamesBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
 	}
@@ -494,15 +502,17 @@ func (b *NamesBuilder) Validator(v NamesValidator) *NamesBuilder {
 }
 
 func (b *NamesBuilder) Build() (*Names, error) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	object := b.object
 	validator := b.validator
-	b.object = nil
-	b.validator = nil
+	err := b.err
+	b.once = sync.Once{}
+	if err != nil {
+		return nil, err
+	}
 	if object == nil {
 		return nil, fmt.Errorf("resource.NamesBuilder: object was not initialized")
-	}
-	if err := b.err; err != nil {
-		return nil, err
 	}
 	if validator == nil {
 		validator = DefaultNamesValidator

@@ -1,0 +1,12 @@
+package_name: server
+output: server/options_gen.go
+interfaces:
+  - name: HandlerOption
+    comment: |
+      HandlerOption describes an option that can be passed to `(server.Builder).Handler()`.
+options:
+  - ident: Path
+    interface: HandlerOption
+    argument_type: string
+    comment: |
+      WithPath specifies the path that the handler should be registered at

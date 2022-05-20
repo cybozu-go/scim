@@ -99,11 +99,7 @@ func (v *GroupMember) Value() string {
 	return *(v.value)
 }
 
-func (v *GroupMember) MarshalJSON() ([]byte, error) {
-	type pair struct {
-		Key   string
-		Value interface{}
-	}
+func (v *GroupMember) makePairs() []pair {
 	pairs := make([]pair, 0, 7)
 	if v.display != nil {
 		pairs = append(pairs, pair{Key: "display", Value: *(v.display)})
@@ -132,6 +128,11 @@ func (v *GroupMember) MarshalJSON() ([]byte, error) {
 	sort.Slice(pairs, func(i, j int) bool {
 		return pairs[i].Key < pairs[j].Key
 	})
+	return pairs
+}
+
+func (v *GroupMember) MarshalJSON() ([]byte, error) {
+	pairs := v.makePairs()
 
 	var buf bytes.Buffer
 	enc := json.NewEncoder(&buf)
@@ -395,7 +396,15 @@ LOOP:
 	return nil
 }
 
+func (v *GroupMember) AsMap(dst map[string]interface{}) error {
+	for _, pair := range v.makePairs() {
+		dst[pair.Key] = pair.Value
+	}
+	return nil
+}
+
 type GroupMemberBuilder struct {
+	once      sync.Once
 	mu        sync.Mutex
 	err       error
 	validator GroupMemberValidator
@@ -403,17 +412,27 @@ type GroupMemberBuilder struct {
 }
 
 func (b *Builder) GroupMember() *GroupMemberBuilder {
-	return &GroupMemberBuilder{}
+	return NewGroupMemberBuilder()
+}
+
+func NewGroupMemberBuilder() *GroupMemberBuilder {
+	var b GroupMemberBuilder
+	b.init()
+	return &b
+}
+
+func (b *GroupMemberBuilder) init() {
+	b.err = nil
+	b.validator = nil
+	b.object = &GroupMember{}
 }
 
 func (b *GroupMemberBuilder) Display(v string) *GroupMemberBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
-	}
-	if b.object == nil {
-		b.object = &GroupMember{}
 	}
 	if err := b.object.Set("display", v); err != nil {
 		b.err = err
@@ -424,11 +443,9 @@ func (b *GroupMemberBuilder) Display(v string) *GroupMemberBuilder {
 func (b *GroupMemberBuilder) ExternalID(v string) *GroupMemberBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
-	}
-	if b.object == nil {
-		b.object = &GroupMember{}
 	}
 	if err := b.object.Set("externalId", v); err != nil {
 		b.err = err
@@ -439,11 +456,9 @@ func (b *GroupMemberBuilder) ExternalID(v string) *GroupMemberBuilder {
 func (b *GroupMemberBuilder) ID(v string) *GroupMemberBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
-	}
-	if b.object == nil {
-		b.object = &GroupMember{}
 	}
 	if err := b.object.Set("id", v); err != nil {
 		b.err = err
@@ -454,11 +469,9 @@ func (b *GroupMemberBuilder) ID(v string) *GroupMemberBuilder {
 func (b *GroupMemberBuilder) Meta(v *Meta) *GroupMemberBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
-	}
-	if b.object == nil {
-		b.object = &GroupMember{}
 	}
 	if err := b.object.Set("meta", v); err != nil {
 		b.err = err
@@ -469,11 +482,9 @@ func (b *GroupMemberBuilder) Meta(v *Meta) *GroupMemberBuilder {
 func (b *GroupMemberBuilder) Ref(v string) *GroupMemberBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
-	}
-	if b.object == nil {
-		b.object = &GroupMember{}
 	}
 	if err := b.object.Set("$ref", v); err != nil {
 		b.err = err
@@ -484,11 +495,9 @@ func (b *GroupMemberBuilder) Ref(v string) *GroupMemberBuilder {
 func (b *GroupMemberBuilder) Schemas(v ...string) *GroupMemberBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
-	}
-	if b.object == nil {
-		b.object = &GroupMember{}
 	}
 	if err := b.object.Set("schemas", v); err != nil {
 		b.err = err
@@ -499,11 +508,9 @@ func (b *GroupMemberBuilder) Schemas(v ...string) *GroupMemberBuilder {
 func (b *GroupMemberBuilder) Value(v string) *GroupMemberBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
-	}
-	if b.object == nil {
-		b.object = &GroupMember{}
 	}
 	if err := b.object.Set("value", v); err != nil {
 		b.err = err
@@ -514,11 +521,9 @@ func (b *GroupMemberBuilder) Value(v string) *GroupMemberBuilder {
 func (b *GroupMemberBuilder) Extension(uri string, value interface{}) *GroupMemberBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
-	}
-	if b.object == nil {
-		b.object = &GroupMember{}
 	}
 	if err := b.object.Set(uri, value); err != nil {
 		b.err = err
@@ -529,6 +534,7 @@ func (b *GroupMemberBuilder) Extension(uri string, value interface{}) *GroupMemb
 func (b *GroupMemberBuilder) Validator(v GroupMemberValidator) *GroupMemberBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.init)
 	if b.err != nil {
 		return b
 	}
@@ -537,15 +543,17 @@ func (b *GroupMemberBuilder) Validator(v GroupMemberValidator) *GroupMemberBuild
 }
 
 func (b *GroupMemberBuilder) Build() (*GroupMember, error) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	object := b.object
 	validator := b.validator
-	b.object = nil
-	b.validator = nil
+	err := b.err
+	b.once = sync.Once{}
+	if err != nil {
+		return nil, err
+	}
 	if object == nil {
 		return nil, fmt.Errorf("resource.GroupMemberBuilder: object was not initialized")
-	}
-	if err := b.err; err != nil {
-		return nil, err
 	}
 	if validator == nil {
 		validator = DefaultGroupMemberValidator

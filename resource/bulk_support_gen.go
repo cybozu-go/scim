@@ -9,68 +9,68 @@ import (
 )
 
 const (
-	enterpriseManagerDisplayNameJSONKey = "displayName"
-	enterpriseManagerIDJSONKey          = "id"
-	enterpriseManagerReferenceJSONKey   = "$ref"
+	bulkSupportMaxOperationsJSONKey  = "maxOperations"
+	bulkSupportMaxPayloadSizeJSONKey = "maxPayloadSize"
+	bulkSupportSupportedJSONKey      = "supported"
 )
 
-type EnterpriseManager struct {
-	displayName   *string
-	id            *string
-	ref           *string
-	privateParams map[string]interface{}
-	mu            sync.RWMutex
+type BulkSupport struct {
+	maxOperations  *int
+	maxPayloadSize *int
+	supported      *bool
+	privateParams  map[string]interface{}
+	mu             sync.RWMutex
 }
 
-type EnterpriseManagerValidator interface {
-	Validate(*EnterpriseManager) error
+type BulkSupportValidator interface {
+	Validate(*BulkSupport) error
 }
 
-type EnterpriseManagerValidateFunc func(v *EnterpriseManager) error
+type BulkSupportValidateFunc func(v *BulkSupport) error
 
-func (f EnterpriseManagerValidateFunc) Validate(v *EnterpriseManager) error {
+func (f BulkSupportValidateFunc) Validate(v *BulkSupport) error {
 	return f(v)
 }
 
-var DefaultEnterpriseManagerValidator EnterpriseManagerValidator
+var DefaultBulkSupportValidator BulkSupportValidator
 
-func (v *EnterpriseManager) DisplayName() string {
+func (v *BulkSupport) MaxOperations() int {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	if v.displayName == nil {
-		return ""
+	if v.maxOperations == nil {
+		return 0
 	}
-	return *(v.displayName)
+	return *(v.maxOperations)
 }
 
-func (v *EnterpriseManager) ID() string {
+func (v *BulkSupport) MaxPayloadSize() int {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	if v.id == nil {
-		return ""
+	if v.maxPayloadSize == nil {
+		return 0
 	}
-	return *(v.id)
+	return *(v.maxPayloadSize)
 }
 
-func (v *EnterpriseManager) Reference() string {
+func (v *BulkSupport) Supported() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	if v.ref == nil {
-		return ""
+	if v.supported == nil {
+		return false
 	}
-	return *(v.ref)
+	return *(v.supported)
 }
 
-func (v *EnterpriseManager) makePairs() []pair {
+func (v *BulkSupport) makePairs() []pair {
 	pairs := make([]pair, 0, 3)
-	if v.displayName != nil {
-		pairs = append(pairs, pair{Key: "displayName", Value: *(v.displayName)})
+	if v.maxOperations != nil {
+		pairs = append(pairs, pair{Key: "maxOperations", Value: *(v.maxOperations)})
 	}
-	if v.id != nil {
-		pairs = append(pairs, pair{Key: "id", Value: *(v.id)})
+	if v.maxPayloadSize != nil {
+		pairs = append(pairs, pair{Key: "maxPayloadSize", Value: *(v.maxPayloadSize)})
 	}
-	if v.ref != nil {
-		pairs = append(pairs, pair{Key: "$ref", Value: *(v.ref)})
+	if v.supported != nil {
+		pairs = append(pairs, pair{Key: "supported", Value: *(v.supported)})
 	}
 	for k, v := range v.privateParams {
 		pairs = append(pairs, pair{Key: k, Value: v})
@@ -81,7 +81,7 @@ func (v *EnterpriseManager) makePairs() []pair {
 	return pairs
 }
 
-func (v *EnterpriseManager) MarshalJSON() ([]byte, error) {
+func (v *BulkSupport) MarshalJSON() ([]byte, error) {
 	pairs := v.makePairs()
 
 	var buf bytes.Buffer
@@ -100,7 +100,7 @@ func (v *EnterpriseManager) MarshalJSON() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func (v *EnterpriseManager) Get(name string, options ...GetOption) (interface{}, bool) {
+func (v *BulkSupport) Get(name string, options ...GetOption) (interface{}, bool) {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 
@@ -113,21 +113,21 @@ func (v *EnterpriseManager) Get(name string, options ...GetOption) (interface{},
 		}
 	}
 	switch name {
-	case enterpriseManagerDisplayNameJSONKey:
-		if v.displayName == nil {
+	case bulkSupportMaxOperationsJSONKey:
+		if v.maxOperations == nil {
 			return nil, false
 		}
-		return *(v.displayName), true
-	case enterpriseManagerIDJSONKey:
-		if v.id == nil {
+		return *(v.maxOperations), true
+	case bulkSupportMaxPayloadSizeJSONKey:
+		if v.maxPayloadSize == nil {
 			return nil, false
 		}
-		return *(v.id), true
-	case enterpriseManagerReferenceJSONKey:
-		if v.ref == nil {
+		return *(v.maxPayloadSize), true
+	case bulkSupportSupportedJSONKey:
+		if v.supported == nil {
 			return nil, false
 		}
-		return *(v.ref), true
+		return *(v.supported), true
 	default:
 		pp := v.privateParams
 		if pp == nil {
@@ -151,33 +151,33 @@ func (v *EnterpriseManager) Get(name string, options ...GetOption) (interface{},
 	}
 }
 
-func (v *EnterpriseManager) Set(name string, value interface{}) error {
+func (v *BulkSupport) Set(name string, value interface{}) error {
 	v.mu.Lock()
 	defer v.mu.Unlock()
 	switch name {
-	case enterpriseManagerDisplayNameJSONKey:
-		var tmp string
-		tmp, ok := value.(string)
+	case bulkSupportMaxOperationsJSONKey:
+		var tmp int
+		tmp, ok := value.(int)
 		if !ok {
-			return fmt.Errorf(`expected string for field "displayName", but got %T`, value)
+			return fmt.Errorf(`expected int for field "maxOperations", but got %T`, value)
 		}
-		v.displayName = &tmp
+		v.maxOperations = &tmp
 		return nil
-	case enterpriseManagerIDJSONKey:
-		var tmp string
-		tmp, ok := value.(string)
+	case bulkSupportMaxPayloadSizeJSONKey:
+		var tmp int
+		tmp, ok := value.(int)
 		if !ok {
-			return fmt.Errorf(`expected string for field "id", but got %T`, value)
+			return fmt.Errorf(`expected int for field "maxPayloadSize", but got %T`, value)
 		}
-		v.id = &tmp
+		v.maxPayloadSize = &tmp
 		return nil
-	case enterpriseManagerReferenceJSONKey:
-		var tmp string
-		tmp, ok := value.(string)
+	case bulkSupportSupportedJSONKey:
+		var tmp bool
+		tmp, ok := value.(bool)
 		if !ok {
-			return fmt.Errorf(`expected string for field "$ref", but got %T`, value)
+			return fmt.Errorf(`expected bool for field "supported", but got %T`, value)
 		}
-		v.ref = &tmp
+		v.supported = &tmp
 		return nil
 	default:
 		pp := v.privateParams
@@ -190,10 +190,10 @@ func (v *EnterpriseManager) Set(name string, value interface{}) error {
 	}
 }
 
-func (v *EnterpriseManager) UnmarshalJSON(data []byte) error {
-	v.displayName = nil
-	v.id = nil
-	v.ref = nil
+func (v *BulkSupport) UnmarshalJSON(data []byte) error {
+	v.maxOperations = nil
+	v.maxPayloadSize = nil
+	v.supported = nil
 	v.privateParams = nil
 	dec := json.NewDecoder(bytes.NewReader(data))
 	{ // first token
@@ -223,24 +223,24 @@ LOOP:
 			}
 		case string:
 			switch tok {
-			case enterpriseManagerDisplayNameJSONKey:
-				var x string
+			case bulkSupportMaxOperationsJSONKey:
+				var x int
 				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "displayName": %w`, err)
+					return fmt.Errorf(`failed to decode value for key "maxOperations": %w`, err)
 				}
-				v.displayName = &x
-			case enterpriseManagerIDJSONKey:
-				var x string
+				v.maxOperations = &x
+			case bulkSupportMaxPayloadSizeJSONKey:
+				var x int
 				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "id": %w`, err)
+					return fmt.Errorf(`failed to decode value for key "maxPayloadSize": %w`, err)
 				}
-				v.id = &x
-			case enterpriseManagerReferenceJSONKey:
-				var x string
+				v.maxPayloadSize = &x
+			case bulkSupportSupportedJSONKey:
+				var x bool
 				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "$ref": %w`, err)
+					return fmt.Errorf(`failed to decode value for key "supported": %w`, err)
 				}
-				v.ref = &x
+				v.supported = &x
 			default:
 				var x interface{}
 				if rx, ok := registry.Get(tok); ok {
@@ -266,77 +266,77 @@ LOOP:
 	return nil
 }
 
-func (v *EnterpriseManager) AsMap(dst map[string]interface{}) error {
+func (v *BulkSupport) AsMap(dst map[string]interface{}) error {
 	for _, pair := range v.makePairs() {
 		dst[pair.Key] = pair.Value
 	}
 	return nil
 }
 
-type EnterpriseManagerBuilder struct {
+type BulkSupportBuilder struct {
 	once      sync.Once
 	mu        sync.Mutex
 	err       error
-	validator EnterpriseManagerValidator
-	object    *EnterpriseManager
+	validator BulkSupportValidator
+	object    *BulkSupport
 }
 
-func (b *Builder) EnterpriseManager() *EnterpriseManagerBuilder {
-	return NewEnterpriseManagerBuilder()
+func (b *Builder) BulkSupport() *BulkSupportBuilder {
+	return NewBulkSupportBuilder()
 }
 
-func NewEnterpriseManagerBuilder() *EnterpriseManagerBuilder {
-	var b EnterpriseManagerBuilder
+func NewBulkSupportBuilder() *BulkSupportBuilder {
+	var b BulkSupportBuilder
 	b.init()
 	return &b
 }
 
-func (b *EnterpriseManagerBuilder) init() {
+func (b *BulkSupportBuilder) init() {
 	b.err = nil
 	b.validator = nil
-	b.object = &EnterpriseManager{}
+	b.object = &BulkSupport{}
 }
 
-func (b *EnterpriseManagerBuilder) DisplayName(v string) *EnterpriseManagerBuilder {
+func (b *BulkSupportBuilder) MaxOperations(v int) *BulkSupportBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.once.Do(b.init)
 	if b.err != nil {
 		return b
 	}
-	if err := b.object.Set("displayName", v); err != nil {
+	if err := b.object.Set("maxOperations", v); err != nil {
 		b.err = err
 	}
 	return b
 }
 
-func (b *EnterpriseManagerBuilder) ID(v string) *EnterpriseManagerBuilder {
+func (b *BulkSupportBuilder) MaxPayloadSize(v int) *BulkSupportBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.once.Do(b.init)
 	if b.err != nil {
 		return b
 	}
-	if err := b.object.Set("id", v); err != nil {
+	if err := b.object.Set("maxPayloadSize", v); err != nil {
 		b.err = err
 	}
 	return b
 }
 
-func (b *EnterpriseManagerBuilder) Reference(v string) *EnterpriseManagerBuilder {
+func (b *BulkSupportBuilder) Supported(v bool) *BulkSupportBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.once.Do(b.init)
 	if b.err != nil {
 		return b
 	}
-	if err := b.object.Set("$ref", v); err != nil {
+	if err := b.object.Set("supported", v); err != nil {
 		b.err = err
 	}
 	return b
 }
 
-func (b *EnterpriseManagerBuilder) Extension(uri string, value interface{}) *EnterpriseManagerBuilder {
+func (b *BulkSupportBuilder) Extension(uri string, value interface{}) *BulkSupportBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.once.Do(b.init)
@@ -349,7 +349,7 @@ func (b *EnterpriseManagerBuilder) Extension(uri string, value interface{}) *Ent
 	return b
 }
 
-func (b *EnterpriseManagerBuilder) Validator(v EnterpriseManagerValidator) *EnterpriseManagerBuilder {
+func (b *BulkSupportBuilder) Validator(v BulkSupportValidator) *BulkSupportBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.once.Do(b.init)
@@ -360,7 +360,7 @@ func (b *EnterpriseManagerBuilder) Validator(v EnterpriseManagerValidator) *Ente
 	return b
 }
 
-func (b *EnterpriseManagerBuilder) Build() (*EnterpriseManager, error) {
+func (b *BulkSupportBuilder) Build() (*BulkSupport, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	object := b.object
@@ -371,10 +371,10 @@ func (b *EnterpriseManagerBuilder) Build() (*EnterpriseManager, error) {
 		return nil, err
 	}
 	if object == nil {
-		return nil, fmt.Errorf("resource.EnterpriseManagerBuilder: object was not initialized")
+		return nil, fmt.Errorf("resource.BulkSupportBuilder: object was not initialized")
 	}
 	if validator == nil {
-		validator = DefaultEnterpriseManagerValidator
+		validator = DefaultBulkSupportValidator
 	}
 	if validator != nil {
 		if err := validator.Validate(object); err != nil {
@@ -384,7 +384,7 @@ func (b *EnterpriseManagerBuilder) Build() (*EnterpriseManager, error) {
 	return object, nil
 }
 
-func (b *EnterpriseManagerBuilder) MustBuild() *EnterpriseManager {
+func (b *BulkSupportBuilder) MustBuild() *BulkSupport {
 	object, err := b.Build()
 	if err != nil {
 		panic(err)

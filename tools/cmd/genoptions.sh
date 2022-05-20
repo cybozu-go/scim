@@ -16,7 +16,7 @@ popd > /dev/null
 
 EXE="$DIR/.genoptions"
 
-for dir in filter resource; do
+for dir in client filter resource server; do
   echo "  ⌛ Processing $dir/options.yaml"
   "$EXE" -objects="$dir/options.yaml"
 done

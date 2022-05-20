@@ -1,0 +1,23 @@
+package_name: client
+output: client/options_gen.go
+interfaces:
+  - name: RequestOption
+    comment: |
+      RequestOption is a type of option that can be passed to any of the
+      client request methods.
+  - name: NewOption
+    comment: |
+      NewOption is a type of option that can be passed to `client.New()`
+options:
+  - ident: Client
+    interface: NewOption
+    argument_type: '*http.Client'
+    comment: |
+      WithClient specifies the http.Client instance to use.
+  - ident: Trace
+    interface: RequestOption
+    argument_type: io.Writer
+    comment: |
+      WithTrace allows users to specify a destination to write out the
+      details of a request 
+

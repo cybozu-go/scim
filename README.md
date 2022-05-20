@@ -11,6 +11,33 @@ SCIM tools for Go (Work In Progress)
 # SYNOPSIS
 
 <!-- INCLUDE(./examples/client_user_create_example_test.go) -->
+```go
+package examples_test
+
+import (
+  "context"
+  "fmt"
+  "testing"
+
+  "github.com/lestrrat-go/scim/client"
+)
+
+func TestClient_CreateUser(t *testing.T) {
+  const baseURL = `https://scim.example.com`
+  cl := client.New(baseURL)
+
+  user, err := cl.User().CreateUser().
+    DisplayName(`Daisuke Maki`).
+    ExternalID(`lestrrat`).
+    Do(context.TODO())
+  if err != nil {
+    fmt.Printf("failed to create user: %s", err)
+  }
+
+  _ = user
+}
+```
+source: [./examples/client_user_create_example_test.go](https://github.com/lestrrat-go/scim/blob/main/./examples/client_user_create_example_test.go)
 <!-- END INCLUDE -->
 
 # TODO

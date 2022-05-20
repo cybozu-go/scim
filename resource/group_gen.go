@@ -17,6 +17,12 @@ const (
 	groupSchemasJSONKey     = "schemas"
 )
 
+const GroupSchemaURI = "urn:ietf:params:scim:schemas:core:2.0:Group"
+
+func init() {
+	RegisterExtension(GroupSchemaURI, Group{})
+}
+
 type Group struct {
 	displayName   *string
 	externalID    *string
@@ -388,6 +394,8 @@ func (b *GroupBuilder) init() {
 	b.err = nil
 	b.validator = nil
 	b.object = &Group{}
+
+	b.object.schemas = []string{GroupSchemaURI}
 }
 
 func (b *GroupBuilder) DisplayName(v string) *GroupBuilder {

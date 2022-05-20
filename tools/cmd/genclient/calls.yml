@@ -26,11 +26,19 @@ services:
       resource: User
       path: /Users
       jsonPayload: true
+      successStatus: http.StatusCreated
     - name: ReplaceUserCall
       method: http.MethodPut
       resource: User
       path: /Users
+      makeURLTemplate: |
+        func (call {{ .ObjectName }}) makeURL() string {
+          return call.client.baseURL + "{{ .Path }}/" + call.id
+        }
       jsonPayload: true
+      fields:
+        - name: id
+          required: true
       #    - name: ModifyUserCall
       #      method: http.MethodPatch
       #      builder: resource.UserBuilder
@@ -38,5 +46,13 @@ services:
       method: http.MethodDelete
       resource: User
       path: /Users
-
+      successStatus: http.StatusNoContent
+      makeURLTemplate: |
+        func (call {{ .ObjectName }}) makeURL() string {
+          return call.client.baseURL + "{{ .Path }}/" + call.id
+        }
+      response_type: none
+      fields:
+        - name: id
+          required: true
 

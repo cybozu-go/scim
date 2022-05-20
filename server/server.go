@@ -36,6 +36,8 @@ func (f MiddlewareFunc) Wrap(h http.Handler) http.Handler {
 
 type Backend interface {
 	CreateUser(user *resource.User) (*resource.User, error)
+	DeleteUser(id string) error
+	ReplaceUser(id string, user *resource.User) error
 	RetrieveUser(string) (*resource.User, error)
 	Search(*resource.SearchRequest) (*resource.ListResponse, error)
 }
@@ -169,7 +171,7 @@ func ServiceProviderConfig(config *resource.ServiceProviderConfig) http.Handler 
 func UsersEndpoint(b Backend) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
-		case http.MethodGet:
+		case http.MethodGet, http.MethodPut, http.MethodDelete:
 			// We must match the path path/(id)
 			i := strings.LastIndexByte(r.URL.Path, '/')
 			if i < 0 || i == len(r.URL.Path) { // pedantic
@@ -181,9 +183,34 @@ func UsersEndpoint(b Backend) http.Handler {
 			// Everything after the last slash is the ID
 			id := r.URL.Path[i+1:]
 
+			if r.Method == http.MethodDelete {
+				if err := b.DeleteUser(id); err != nil {
+					// TODO: log
+					w.WriteHeader(http.StatusInternalServerError)
+					return
+				}
+				w.WriteHeader(http.StatusNoContent)
+				return
+			}
+
+			if r.Method == http.MethodPut {
+				var user resource.User
+				if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+					// TODO: log
+					w.WriteHeader(http.StatusBadRequest)
+					return
+				}
+
+				if err := b.ReplaceUser(id, &user); err != nil {
+					// TODO: log
+					w.WriteHeader(http.StatusInternalServerError)
+					return
+				}
+			}
 			// TODO: handle "attributes" and stuff?
 			user, err := b.RetrieveUser(id)
 			if err != nil {
+				// TODO: distinguish between error and not found error
 				// TODO: log
 				w.WriteHeader(http.StatusInternalServerError)
 				return
@@ -207,7 +234,7 @@ func UsersEndpoint(b Backend) http.Handler {
 			}
 
 			w.Header().Set(ctKey, mimeSCIM)
-			w.WriteHeader(http.StatusOK)
+			w.WriteHeader(http.StatusCreated)
 			_ = json.NewEncoder(w).Encode(created)
 		default:
 			w.WriteHeader(http.StatusBadRequest)

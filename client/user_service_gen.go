@@ -75,14 +75,17 @@ func (call *GetUserCall) Do(ctx context.Context) (*resource.User, error) {
 	if err := payload.AsMap(m); err != nil {
 		return nil, fmt.Errorf(`failed to convert resource into map: %w`, err)
 	}
-	for key, value := range m {
-		switch value := value.(type) {
-		case []string:
-			for _, x := range value {
-				vals.Add(key, x)
+	if len(m) > 0 {
+		vals = make(url.Values)
+		for key, value := range m {
+			switch value := value.(type) {
+			case []string:
+				for _, x := range value {
+					vals.Add(key, x)
+				}
+			default:
+				vals.Add(key, fmt.Sprintf(`%s`, value))
 			}
-		default:
-			vals.Add(key, fmt.Sprintf(`%s`, value))
 		}
 	}
 	if enc := vals.Encode(); len(enc) > 0 {
@@ -107,13 +110,13 @@ func (call *GetUserCall) Do(ctx context.Context) (*resource.User, error) {
 	if err != nil {
 		return nil, fmt.Errorf(`failed to send request to %q: %w`, u, err)
 	}
+	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf(`call response returned error status (%d)`, res.StatusCode)
+		return nil, fmt.Errorf(`expected call response %d, got (%d)`, http.StatusOK, res.StatusCode)
 	}
 
 	var respayload resource.User
-	defer res.Body.Close()
 	if err := json.NewDecoder(res.Body).Decode(&respayload); err != nil {
 		return nil, fmt.Errorf(`failed to decode call response: %w`, err)
 	}
@@ -149,7 +152,7 @@ func (call *CreateUserCall) DisplayName(v string) *CreateUserCall {
 	return call
 }
 
-func (call *CreateUserCall) Emails(v ...string) *CreateUserCall {
+func (call *CreateUserCall) Emails(v ...*resource.Email) *CreateUserCall {
 	call.builder.Emails(v...)
 	return call
 }
@@ -307,13 +310,13 @@ func (call *CreateUserCall) Do(ctx context.Context) (*resource.User, error) {
 	if err != nil {
 		return nil, fmt.Errorf(`failed to send request to %q: %w`, u, err)
 	}
+	defer res.Body.Close()
 
-	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf(`call response returned error status (%d)`, res.StatusCode)
+	if res.StatusCode != http.StatusCreated {
+		return nil, fmt.Errorf(`expected call response %d, got (%d)`, http.StatusCreated, res.StatusCode)
 	}
 
 	var respayload resource.User
-	defer res.Body.Close()
 	if err := json.NewDecoder(res.Body).Decode(&respayload); err != nil {
 		return nil, fmt.Errorf(`failed to decode call response: %w`, err)
 	}
@@ -325,12 +328,14 @@ type ReplaceUserCall struct {
 	builder *resource.UserBuilder
 	client  *Client
 	trace   io.Writer
+	id      string
 }
 
-func (svc *UserService) ReplaceUser() *ReplaceUserCall {
+func (svc *UserService) ReplaceUser(id string) *ReplaceUserCall {
 	return &ReplaceUserCall{
 		builder: resource.NewUserBuilder(),
 		client:  svc.client,
+		id:      id,
 	}
 }
 
@@ -349,7 +354,7 @@ func (call *ReplaceUserCall) DisplayName(v string) *ReplaceUserCall {
 	return call
 }
 
-func (call *ReplaceUserCall) Emails(v ...string) *ReplaceUserCall {
+func (call *ReplaceUserCall) Emails(v ...*resource.Email) *ReplaceUserCall {
 	call.builder.Emails(v...)
 	return call
 }
@@ -464,8 +469,8 @@ func (call *ReplaceUserCall) Trace(w io.Writer) *ReplaceUserCall {
 	return call
 }
 
-func (call *ReplaceUserCall) makeURL() string {
-	return call.client.baseURL + "/Users"
+func (call ReplaceUserCall) makeURL() string {
+	return call.client.baseURL + "/Users/" + call.id
 }
 
 func (call *ReplaceUserCall) Do(ctx context.Context) (*resource.User, error) {
@@ -507,13 +512,13 @@ func (call *ReplaceUserCall) Do(ctx context.Context) (*resource.User, error) {
 	if err != nil {
 		return nil, fmt.Errorf(`failed to send request to %q: %w`, u, err)
 	}
+	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf(`call response returned error status (%d)`, res.StatusCode)
+		return nil, fmt.Errorf(`expected call response %d, got (%d)`, http.StatusOK, res.StatusCode)
 	}
 
 	var respayload resource.User
-	defer res.Body.Close()
 	if err := json.NewDecoder(res.Body).Decode(&respayload); err != nil {
 		return nil, fmt.Errorf(`failed to decode call response: %w`, err)
 	}
@@ -525,12 +530,14 @@ type DeleteUserCall struct {
 	builder *resource.UserBuilder
 	client  *Client
 	trace   io.Writer
+	id      string
 }
 
-func (svc *UserService) DeleteUser() *DeleteUserCall {
+func (svc *UserService) DeleteUser(id string) *DeleteUserCall {
 	return &DeleteUserCall{
 		builder: resource.NewUserBuilder(),
 		client:  svc.client,
+		id:      id,
 	}
 }
 
@@ -549,7 +556,7 @@ func (call *DeleteUserCall) DisplayName(v string) *DeleteUserCall {
 	return call
 }
 
-func (call *DeleteUserCall) Emails(v ...string) *DeleteUserCall {
+func (call *DeleteUserCall) Emails(v ...*resource.Email) *DeleteUserCall {
 	call.builder.Emails(v...)
 	return call
 }
@@ -654,14 +661,14 @@ func (call *DeleteUserCall) Trace(w io.Writer) *DeleteUserCall {
 	return call
 }
 
-func (call *DeleteUserCall) makeURL() string {
-	return call.client.baseURL + "/Users"
+func (call DeleteUserCall) makeURL() string {
+	return call.client.baseURL + "/Users/" + call.id
 }
 
-func (call *DeleteUserCall) Do(ctx context.Context) (*resource.User, error) {
+func (call *DeleteUserCall) Do(ctx context.Context) error {
 	payload, err := call.builder.Build()
 	if err != nil {
-		return nil, fmt.Errorf(`failed to generate request payload for DeleteUserCall: %w`, err)
+		return fmt.Errorf(`failed to generate request payload for DeleteUserCall: %w`, err)
 	}
 
 	trace := call.trace
@@ -674,16 +681,19 @@ func (call *DeleteUserCall) Do(ctx context.Context) (*resource.User, error) {
 	var vals url.Values
 	m := make(map[string]interface{})
 	if err := payload.AsMap(m); err != nil {
-		return nil, fmt.Errorf(`failed to convert resource into map: %w`, err)
+		return fmt.Errorf(`failed to convert resource into map: %w`, err)
 	}
-	for key, value := range m {
-		switch value := value.(type) {
-		case []string:
-			for _, x := range value {
-				vals.Add(key, x)
+	if len(m) > 0 {
+		vals = make(url.Values)
+		for key, value := range m {
+			switch value := value.(type) {
+			case []string:
+				for _, x := range value {
+					vals.Add(key, x)
+				}
+			default:
+				vals.Add(key, fmt.Sprintf(`%s`, value))
 			}
-		default:
-			vals.Add(key, fmt.Sprintf(`%s`, value))
 		}
 	}
 	if enc := vals.Encode(); len(enc) > 0 {
@@ -691,7 +701,7 @@ func (call *DeleteUserCall) Do(ctx context.Context) (*resource.User, error) {
 	}
 	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, u, nil)
 	if err != nil {
-		return nil, fmt.Errorf(`failed to create new HTTP request: %w`, err)
+		return fmt.Errorf(`failed to create new HTTP request: %w`, err)
 	}
 	req.Header.Set(`Accept`, `application/scim+json`)
 
@@ -706,18 +716,13 @@ func (call *DeleteUserCall) Do(ctx context.Context) (*resource.User, error) {
 		fmt.Fprintf(trace, "%s\n", buf)
 	}
 	if err != nil {
-		return nil, fmt.Errorf(`failed to send request to %q: %w`, u, err)
+		return fmt.Errorf(`failed to send request to %q: %w`, u, err)
 	}
-
-	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf(`call response returned error status (%d)`, res.StatusCode)
-	}
-
-	var respayload resource.User
 	defer res.Body.Close()
-	if err := json.NewDecoder(res.Body).Decode(&respayload); err != nil {
-		return nil, fmt.Errorf(`failed to decode call response: %w`, err)
+
+	if res.StatusCode != http.StatusNoContent {
+		return fmt.Errorf(`expected call response %d, got (%d)`, http.StatusNoContent, res.StatusCode)
 	}
 
-	return &respayload, nil
+	return nil
 }

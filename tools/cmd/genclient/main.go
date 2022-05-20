@@ -270,11 +270,18 @@ func generateCall(o *codegen.Output, svc Service, call *codegen.Object, resource
 	if resType == "" {
 		resType = `resource.` + resource.Name(true)
 	}
-	o.LL(`func (call *%s) Do(ctx context.Context) (*%s, error) {`, call.Name(true), resType)
+
+	var errPrefix string
+	if resType == "none" {
+		o.LL(`func (call *%s) Do(ctx context.Context) error {`, call.Name(true))
+	} else {
+		errPrefix = "nil, "
+		o.LL(`func (call *%s) Do(ctx context.Context) (*%s, error) {`, call.Name(true), resType)
+	}
 
 	o.L(`payload, err := call.builder.Build()`)
 	o.L(`if err != nil {`)
-	o.L("return nil, fmt.Errorf(`failed to generate request payload for %s: %%w`, err)", call.Name(true))
+	o.L("return %sfmt.Errorf(`failed to generate request payload for %s: %%w`, err)", errPrefix, call.Name(true))
 	o.L(`}`)
 	o.LL(`trace := call.trace`)
 	o.L(`u := call.makeURL()`)
@@ -285,15 +292,17 @@ func generateCall(o *codegen.Output, svc Service, call *codegen.Object, resource
 	if jsonPayload {
 		o.LL(`var body bytes.Buffer`)
 		o.L(`if err := json.NewEncoder(&body).Encode(payload); err != nil {`)
-		o.L("return nil, fmt.Errorf(`failed to encode call request: %%w`, err)")
+		o.L("return %sfmt.Errorf(`failed to encode call request: %%w`, err)", errPrefix)
 		o.L(`}`)
 		o.LL(`req, err := http.NewRequestWithContext(ctx, %s, u, &body)`, call.String(`method`))
 	} else {
 		o.LL(`var vals url.Values`)
 		o.L(`m := make(map[string]interface{})`)
 		o.L(`if err := payload.AsMap(m); err != nil {`)
-		o.L("return nil, fmt.Errorf(`failed to convert resource into map: %%w`, err)")
+		o.L("return %sfmt.Errorf(`failed to convert resource into map: %%w`, err)", errPrefix)
 		o.L(`}`)
+		o.L(`if len(m) > 0 {`)
+		o.L(`vals = make(url.Values)`)
 		o.L(`for key, value := range m {`)
 		// HACK: this needs to be fixed
 		o.L(`switch value := value.(type) {`)
@@ -306,6 +315,7 @@ func generateCall(o *codegen.Output, svc Service, call *codegen.Object, resource
 		o.L("vals.Add(key, fmt.Sprintf(`%%s`, value))")
 		o.L(`}`)
 		o.L(`}`)
+		o.L(`}`)
 
 		o.L(`if enc := vals.Encode(); len(enc) > 0 {`)
 		o.L(`u = u + "?"+ vals.Encode()`)
@@ -314,7 +324,7 @@ func generateCall(o *codegen.Output, svc Service, call *codegen.Object, resource
 	}
 
 	o.L(`if err != nil {`)
-	o.L("return nil, fmt.Errorf(`failed to create new HTTP request: %%w`, err)")
+	o.L("return %sfmt.Errorf(`failed to create new HTTP request: %%w`, err)", errPrefix)
 	o.L(`}`)
 	if jsonPayload {
 		o.LL("req.Header.Set(`Content-Type`, `application/scim+json`)")
@@ -332,19 +342,27 @@ func generateCall(o *codegen.Output, svc Service, call *codegen.Object, resource
 	o.L(`fmt.Fprintf(trace, "%%s\n", buf)`)
 	o.L(`}`)
 	o.L(`if err != nil {`)
-	o.L("return nil, fmt.Errorf(`failed to send request to %%q: %%w`, u, err)")
+	o.L("return %sfmt.Errorf(`failed to send request to %%q: %%w`, u, err)", errPrefix)
 	o.L(`}`)
-
-	o.LL(`if res.StatusCode != http.StatusOK {`)
-	o.L("return nil, fmt.Errorf(`call response returned error status (%%d)`, res.StatusCode)")
-	o.L(`}`)
-
-	o.LL(`var respayload %s`, resType)
 	o.L(`defer res.Body.Close()`)
-	o.L(`if err := json.NewDecoder(res.Body).Decode(&respayload); err != nil {`)
-	o.L("return nil, fmt.Errorf(`failed to decode call response: %%w`, err)")
+
+	successStatus := call.String(`successStatus`)
+	if successStatus == "" {
+		successStatus = `http.StatusOK`
+	}
+	o.LL(`if res.StatusCode != %s {`, successStatus)
+	o.L("return %sfmt.Errorf(`expected call response %%d, got (%%d)`, %s, res.StatusCode)", errPrefix, successStatus)
 	o.L(`}`)
-	o.LL(`return &respayload, nil`)
+
+	if resType == "none" {
+		o.LL(`return nil`)
+	} else {
+		o.LL(`var respayload %s`, resType)
+		o.L(`if err := json.NewDecoder(res.Body).Decode(&respayload); err != nil {`)
+		o.L("return nil, fmt.Errorf(`failed to decode call response: %%w`, err)")
+		o.L(`}`)
+		o.LL(`return &respayload, nil`)
+	}
 	o.L(`}`)
 
 	return nil

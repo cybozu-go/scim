@@ -38,6 +38,9 @@ func yaml2json(fn string) ([]byte, error) {
 
 func _main() error {
 	codegen.RegisterZeroVal(`AuthenticationSchemeType`, `InvalidAuthenticationScheme`)
+	codegen.RegisterZeroVal(`Mutability`, `MutReadOnly`)
+	codegen.RegisterZeroVal(`Returned`, `ReturnedAlways`)
+	codegen.RegisterZeroVal(`Uniqueness`, `UniqNone`)
 
 	var objectsFile = flag.String("objects", "objects.yml", "")
 	flag.Parse()

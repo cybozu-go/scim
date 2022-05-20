@@ -19,6 +19,7 @@ objects:
       - name: location
       - name: version
   - name: User
+    schema: "urn:ietf:params:scim:schemas:core:2.0:User"
     fields:
       - name: userName
         validator: requiredString
@@ -40,7 +41,7 @@ objects:
         type: bool
       - name: password
       - name: emails
-        type: '[]string'
+        type: '[]*Email'
         validator: validateEmails
       - name: phoneNumbers
         type: '[]string'
@@ -57,6 +58,16 @@ objects:
         type: '[]string'
       - name: x509Certificates
         type: '[]string'
+  - name: Email
+    skipCommonFields: true
+    fields:
+      - name: value
+      - name: display
+      - name: typ
+        exported_name: Type
+        json: type
+      - name: primary
+        type: bool
   - name: Names
     skipCommonFields: true
     fields:
@@ -86,6 +97,7 @@ objects:
       - name: displayName
         readOnly: true
   - name: Group
+    schema: urn:ietf:params:scim:schemas:core:2.0:Group
     fields:
       - name: displayName
       - name: members
@@ -205,3 +217,41 @@ objects:
         type: "[]string"
       - name: excludedAttributes
         type: "[]string"
+  - name: Schema
+    skipCommonFields: true
+    fields:
+      - name: id
+        required: true
+      - name: name
+      - name: description
+      - name: attributes
+        type: '[]*SchemaAttribute'
+  - name: SchemaAttribute
+    skipCommonFields: true
+    fields:
+      - name: name
+      - name: typ
+        json: type
+        exported_name: Type
+      - name: fallbackType
+        type: '*SchemaAttribute'
+      - name: subAttributes
+        type: '[]*SchemaAttribute'
+      - name: multiValued
+        type: bool
+      - name: description
+      - name: required
+        type: bool
+      - name: canonicalValues
+        type: '[]interface{}'
+      - name: caseExact
+        type: bool
+      - name: mutability
+        type: Mutability
+      - name: returned
+        type: Returned
+      - name: uniqueness
+        type: Uniqueness
+      - name: referenceTypes
+        type: '[]string'
+

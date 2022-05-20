@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 	"net/http/httptest"
-	"os"
+	"sync"
 	"testing"
 
 	"github.com/lestrrat-go/scim/client"
@@ -15,10 +15,37 @@ import (
 )
 
 type mockBackend struct {
+	mu    sync.RWMutex
 	users map[string]*resource.User
 }
 
+func (m *mockBackend) DeleteUser(id string) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	if _, ok := m.users[id]; !ok {
+		return fmt.Errorf(`id not found`)
+	}
+	delete(m.users, id)
+	return nil
+}
+
+func (m *mockBackend) ReplaceUser(id string, in *resource.User) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	// TODO: no check is beig done here
+	_, err := m.RetrieveUser(id)
+	if err != nil {
+		return err
+	}
+
+	// HACK: attributes may need to be merged, etc
+	m.users[id] = in
+	return nil
+}
+
 func (m *mockBackend) CreateUser(in *resource.User) (*resource.User, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
 	id := fmt.Sprintf(`%d`, rand.Int63()) // TODO: check for clashes
 
 	var b resource.UserBuilder
@@ -35,6 +62,8 @@ func (m *mockBackend) CreateUser(in *resource.User) (*resource.User, error) {
 }
 
 func (m *mockBackend) RetrieveUser(id string) (*resource.User, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
 	user, ok := m.users[id]
 	if !ok {
 		return nil, fmt.Errorf(`user not found`)
@@ -42,7 +71,10 @@ func (m *mockBackend) RetrieveUser(id string) (*resource.User, error) {
 	return user, nil
 }
 
-func (mockBackend) Search(*resource.SearchRequest) (*resource.ListResponse, error) {
+func (m *mockBackend) Search(*resource.SearchRequest) (*resource.ListResponse, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+
 	var b resource.Builder
 
 	return b.ListResponse().
@@ -89,7 +121,11 @@ func TestServer(t *testing.T) {
 				createdUser, err := cl.User().CreateUser().
 					UserName("bjensen").
 					ExternalID("bjensen").
-					Name((&resource.NamesBuilder{}).
+					Emails(resource.NewEmailBuilder().
+						Value("babs@jensen.org").
+						Primary(true).
+						MustBuild()).
+					Name(resource.NewNamesBuilder().
 						Formatted("Ms. Barbara J Jensen III").
 						FamilyName("Jensen").
 						GivenName("Barbara").
@@ -98,9 +134,18 @@ func TestServer(t *testing.T) {
 				require.NoError(t, err, `CreateUser should succeed`)
 				t.Run(fmt.Sprintf("GET /Users/%s", createdUser.ID()), func(t *testing.T) {
 					_, err := cl.User().GetUser(createdUser.ID()).
-						Trace(os.Stdout).
 						Do(context.TODO())
 					require.NoError(t, err, `GetUser should succeed`)
+				})
+				t.Run(fmt.Sprintf("DELETE /Users/%s", createdUser.ID()), func(t *testing.T) {
+					err := cl.User().DeleteUser(createdUser.ID()).
+						Do(context.TODO())
+					require.NoError(t, err, `DeleteUser should succeed`)
+				})
+				t.Run(fmt.Sprintf("GET /Users/%s (after delete)", createdUser.ID()), func(t *testing.T) {
+					_, err := cl.User().GetUser(createdUser.ID()).
+						Do(context.TODO())
+					require.Error(t, err, `GetUser should fail`)
 				})
 			})
 			t.Run("GET /Users/foobar", func(t *testing.T) {

@@ -1,0 +1,40 @@
+objects:
+  - name: Resource
+    fields:
+      - name: id
+        required: true
+      - name: name
+      - name: description
+      - name: attributes
+        type: '[]Attribute'
+  - name: Attribute
+    fields:
+      - name: name
+      - name: typ
+        exported_name: Type
+      - name: fallbackType
+        type: Attribute
+      - name: subAttributes
+        type: '[]Attribute'
+      - name: multiValued
+        type: bool
+      - name: description
+      - name: required
+        type: bool
+      - name: canonicalValues
+        type: '[]interface{}'
+      - name: caseExact
+        type: bool
+      - name: mutability
+        type: Mutability
+      - name: returned
+        type: Returned
+      - name: uniqueness
+        type: Uniqueness
+      - name: referenceTypes
+        type: '[]ReferenceType'
+  - name: Schema
+    fields:
+      - name: id
+      - name: attributes
+        type: '[]Attribute'

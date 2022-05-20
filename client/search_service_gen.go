@@ -133,13 +133,13 @@ func (call *SearchCall) Do(ctx context.Context) (*resource.ListResponse, error) 
 	if err != nil {
 		return nil, fmt.Errorf(`failed to send request to %q: %w`, u, err)
 	}
+	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf(`call response returned error status (%d)`, res.StatusCode)
+		return nil, fmt.Errorf(`expected call response %d, got (%d)`, http.StatusOK, res.StatusCode)
 	}
 
 	var respayload resource.ListResponse
-	defer res.Body.Close()
 	if err := json.NewDecoder(res.Body).Decode(&respayload); err != nil {
 		return nil, fmt.Errorf(`failed to decode call response: %w`, err)
 	}

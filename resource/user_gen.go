@@ -34,11 +34,17 @@ const (
 	userX509CertificatesJSONKey  = "x509Certificates"
 )
 
+const UserSchemaURI = "urn:ietf:params:scim:schemas:core:2.0:User"
+
+func init() {
+	RegisterExtension(UserSchemaURI, User{})
+}
+
 type User struct {
 	active            *bool
 	addresses         []string
 	displayName       *string
-	emails            []string
+	emails            []*Email
 	entitlements      []string
 	externalID        *string
 	groups            []string
@@ -98,7 +104,7 @@ func (v *User) DisplayName() string {
 	return *(v.displayName)
 }
 
-func (v *User) Emails() []string {
+func (v *User) Emails() []*Email {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.emails
@@ -527,10 +533,10 @@ func (v *User) Set(name string, value interface{}) error {
 		v.displayName = &tmp
 		return nil
 	case userEmailsJSONKey:
-		var tmp []string
-		tmp, ok := value.([]string)
+		var tmp []*Email
+		tmp, ok := value.([]*Email)
 		if !ok {
-			return fmt.Errorf(`expected []string for field "emails", but got %T`, value)
+			return fmt.Errorf(`expected []*Email for field "emails", but got %T`, value)
 		}
 		v.emails = tmp
 		return nil
@@ -769,7 +775,7 @@ LOOP:
 				}
 				v.displayName = &x
 			case userEmailsJSONKey:
-				var x []string
+				var x []*Email
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "emails": %w`, err)
 				}
@@ -942,6 +948,8 @@ func (b *UserBuilder) init() {
 	b.err = nil
 	b.validator = nil
 	b.object = &User{}
+
+	b.object.schemas = []string{UserSchemaURI}
 }
 
 func (b *UserBuilder) Active(v bool) *UserBuilder {
@@ -983,7 +991,7 @@ func (b *UserBuilder) DisplayName(v string) *UserBuilder {
 	return b
 }
 
-func (b *UserBuilder) Emails(v ...string) *UserBuilder {
+func (b *UserBuilder) Emails(v ...*Email) *UserBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.once.Do(b.init)

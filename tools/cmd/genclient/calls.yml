@@ -55,4 +55,53 @@ services:
       fields:
         - name: id
           required: true
+  - name: GroupService
+    calls:
+    - name: GetGroupCall
+      method: http.MethodGet
+      resource: PartialResourceRepresentationRequest
+      response_type: resource.Group
+      path: /Groups
+      makeURLTemplate: |
+        func (call {{ .ObjectName }}) makeURL() string {
+          return call.client.baseURL + "{{ .Path }}/" + call.id
+        }
+      fields:
+        - name: id
+          required: true
+    - name: CreateGroupCall
+      method: http.MethodPost
+      resource: Group
+      path: /Groups
+      jsonPayload: true
+      successStatus: http.StatusCreated
+    - name: ReplaceGroupCall
+      method: http.MethodPut
+      resource: Group
+      path: /Groups
+      makeURLTemplate: |
+        func (call {{ .ObjectName }}) makeURL() string {
+          return call.client.baseURL + "{{ .Path }}/" + call.id
+        }
+      jsonPayload: true
+      fields:
+        - name: id
+          required: true
+      #    - name: ModifyGroupCall
+      #      method: http.MethodPatch
+      #      builder: resource.GroupBuilder
+    - name: DeleteGroupCall
+      method: http.MethodDelete
+      resource: Group
+      path: /Groups
+      successStatus: http.StatusNoContent
+      makeURLTemplate: |
+        func (call {{ .ObjectName }}) makeURL() string {
+          return call.client.baseURL + "{{ .Path }}/" + call.id
+        }
+      response_type: none
+      fields:
+        - name: id
+          required: true
+
 

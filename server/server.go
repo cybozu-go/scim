@@ -1,27 +1,57 @@
 package server
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
-	"strings"
+	stdlibpath "path"
 	"sync"
 
+	"github.com/lestrrat-go/mux"
 	"github.com/lestrrat-go/scim/resource"
 )
 
 var ctKey = `Content-Type`
 var mimeSCIM = `application/scim+json`
 
-func NewServer(backend Backend) (http.Handler, error) {
+func NewServer(backend interface{}) (http.Handler, error) {
 	var b Builder
 
-	return b.
-		SearchEndpoint(SearchEndpoint(backend)).
-		UsersEndpoint(UsersEndpoint(backend)).
-		Build()
+	if v, ok := backend.(CreateGroupBackend); ok {
+		b.CreateGroup(CreateGroupEndpoint(v))
+	}
+	if v, ok := backend.(DeleteGroupBackend); ok {
+		b.DeleteGroup(DeleteGroupEndpoint(v))
+	}
+
+	if v, ok := backend.(ReplaceGroupBackend); ok {
+		b.ReplaceGroup(ReplaceGroupEndpoint(v))
+	}
+
+	if v, ok := backend.(RetrieveGroupBackend); ok {
+		b.RetrieveGroup(RetrieveGroupEndpoint(v))
+	}
+
+	if v, ok := backend.(CreateUserBackend); ok {
+		b.CreateUser(CreateUserEndpoint(v))
+	}
+
+	if v, ok := backend.(DeleteUserBackend); ok {
+		b.DeleteUser(DeleteUserEndpoint(v))
+	}
+
+	if v, ok := backend.(ReplaceUserBackend); ok {
+		b.ReplaceUser(ReplaceUserEndpoint(v))
+	}
+
+	if v, ok := backend.(RetrieveUserBackend); ok {
+		b.RetrieveUser(RetrieveUserEndpoint(v))
+	}
+
+	if v, ok := backend.(SearchBackend); ok {
+		b.Search(SearchEndpoint(v))
+	}
+	return b.Build()
 }
 
 type Middleware interface {
@@ -34,15 +64,8 @@ func (f MiddlewareFunc) Wrap(h http.Handler) http.Handler {
 	return f(h)
 }
 
-type Backend interface {
-	CreateUser(user *resource.User) (*resource.User, error)
-	DeleteUser(id string) error
-	ReplaceUser(id string, user *resource.User) error
-	RetrieveUser(string) (*resource.User, error)
-	Search(*resource.SearchRequest) (*resource.ListResponse, error)
-}
-
 type Handler struct {
+	method      string
 	path        string // .search, User, Group, etc
 	handler     http.Handler
 	middlewares []Middleware
@@ -62,15 +85,7 @@ func (b *Builder) init() {
 	b.handlers = nil
 }
 
-func (b *Builder) WithBackend(backend Backend) *Builder {
-	return b.
-		//		Handler(`/Users`, UsersEndpoint(backend)).
-		//		Handler(`/Groups`, GroupsEndpoint(backend)).
-		//		Handler(`/Self`, SelfEndpoint(backend))
-		Handler(`/.search`, SearchEndpoint(backend))
-}
-
-func (b *Builder) Handler(path string, hh http.Handler, options ...HandlerOption) *Builder {
+func (b *Builder) Handler(method, path string, hh http.Handler, options ...HandlerOption) *Builder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 
@@ -89,43 +104,10 @@ func (b *Builder) Handler(path string, hh http.Handler, options ...HandlerOption
 	}
 
 	b.handlers = append(b.handlers, &Handler{
+		method:  method,
 		path:    path,
 		handler: hh,
 	})
-	return b
-}
-
-func (b *Builder) SearchEndpoint(handler http.Handler, options ...HandlerOption) *Builder {
-	path := `.search`
-	var remaining []HandlerOption
-	//nolint:forcetypeassert
-	for _, option := range options {
-		switch option.Ident() {
-		case identPath{}:
-			path = option.Value().(string)
-		default:
-			remaining = append(remaining, option)
-		}
-	}
-
-	b.Handler(path, handler, remaining...)
-	return b
-}
-
-func (b *Builder) UsersEndpoint(handler http.Handler, options ...HandlerOption) *Builder {
-	path := `Users`
-	var remaining []HandlerOption
-	//nolint:forcetypeassert
-	for _, option := range options {
-		switch option.Ident() {
-		case identPath{}:
-			path = option.Value().(string)
-		default:
-			remaining = append(remaining, option)
-		}
-	}
-
-	b.Handler(path, handler, remaining...)
 	return b
 }
 
@@ -145,20 +127,18 @@ func (b *Builder) Build() (http.Handler, error) {
 		basePath = "/"
 	}
 
-	var mux http.ServeMux
+	var r mux.Router
 	for _, h := range handlers {
 		hh := h.handler
 		for _, m := range h.middlewares {
 			hh = m.Wrap(hh)
 		}
-		path := basePath + h.path
-		mux.Handle(path, hh)
-		// HACK: there must be a better way to do this, but I'm too hungry to think
-		if !strings.HasSuffix(path, "/") {
-			mux.Handle(path+"/", hh)
+		path := stdlibpath.Clean(basePath + h.path)
+		if err := r.Handler(h.method, path, hh); err != nil {
+			return nil, fmt.Errorf(`failed to register handler (method = %q, path =%q)`, h.method, path)
 		}
 	}
-	return &mux, nil
+	return &r, nil
 }
 
 func ServiceProviderConfig(config *resource.ServiceProviderConfig) http.Handler {
@@ -168,108 +148,47 @@ func ServiceProviderConfig(config *resource.ServiceProviderConfig) http.Handler 
 	})
 }
 
-func UsersEndpoint(b Backend) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case http.MethodGet, http.MethodPut, http.MethodDelete:
-			// We must match the path path/(id)
-			i := strings.LastIndexByte(r.URL.Path, '/')
-			if i < 0 || i == len(r.URL.Path) { // pedantic
-				// TODO: log
-				w.WriteHeader(http.StatusBadRequest)
-				return
-			}
-
-			// Everything after the last slash is the ID
-			id := r.URL.Path[i+1:]
-
-			if r.Method == http.MethodDelete {
-				if err := b.DeleteUser(id); err != nil {
-					// TODO: log
-					w.WriteHeader(http.StatusInternalServerError)
-					return
-				}
-				w.WriteHeader(http.StatusNoContent)
-				return
-			}
-
-			if r.Method == http.MethodPut {
-				var user resource.User
-				if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-					// TODO: log
-					w.WriteHeader(http.StatusBadRequest)
-					return
-				}
-
-				if err := b.ReplaceUser(id, &user); err != nil {
-					// TODO: log
-					w.WriteHeader(http.StatusInternalServerError)
-					return
-				}
-			}
-			// TODO: handle "attributes" and stuff?
-			user, err := b.RetrieveUser(id)
-			if err != nil {
-				// TODO: distinguish between error and not found error
-				// TODO: log
-				w.WriteHeader(http.StatusInternalServerError)
-				return
-			}
-
-			w.WriteHeader(http.StatusOK)
-			_ = json.NewEncoder(w).Encode(user)
-		case http.MethodPost:
-			var user resource.User
-			if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-				// TODO: log
-				w.WriteHeader(http.StatusBadRequest)
-				return
-			}
-
-			created, err := b.CreateUser(&user)
-			if err != nil {
-				// TODO: log
-				w.WriteHeader(http.StatusInternalServerError)
-				return
-			}
-
-			w.Header().Set(ctKey, mimeSCIM)
-			w.WriteHeader(http.StatusCreated)
-			_ = json.NewEncoder(w).Encode(created)
-		default:
-			w.WriteHeader(http.StatusBadRequest)
-		}
-	})
+func (b *Builder) CreateGroup(hh http.Handler) *Builder {
+	b.Handler(http.MethodPost, `/Groups`, hh)
+	return b
 }
 
-// Creates an instance of reference implementation http.Handler that
-// uses the specified Backend
-func SearchEndpoint(b Backend) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var q resource.SearchRequest
-		if err := json.NewDecoder(r.Body).Decode(&q); err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			// TODO: log
-			return
-		}
+func (b *Builder) DeleteGroup(hh http.Handler) *Builder {
+	b.Handler(http.MethodDelete, `/Groups/{id}`, hh)
+	return b
+}
 
-		lr, err := b.Search(&q)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			// TODO: log
-			return
-		}
+func (b *Builder) ReplaceGroup(hh http.Handler) *Builder {
+	b.Handler(http.MethodPut, `/Groups/{id}`, hh)
+	return b
+}
 
-		var buf bytes.Buffer
-		if err := json.NewEncoder(&buf).Encode(lr); err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			// TODO: log
-			return
-		}
+func (b *Builder) RetrieveGroup(hh http.Handler) *Builder {
+	b.Handler(http.MethodGet, `/Groups/{id}`, hh)
+	return b
+}
 
-		hdr := w.Header()
-		hdr.Set(ctKey, mimeSCIM)
-		w.WriteHeader(http.StatusOK)
-		_, _ = io.Copy(w, &buf) // not much you can do by this point
-	})
+func (b *Builder) CreateUser(hh http.Handler) *Builder {
+	b.Handler(http.MethodPost, `/Users`, hh)
+	return b
+}
+
+func (b *Builder) DeleteUser(hh http.Handler) *Builder {
+	b.Handler(http.MethodDelete, `/Users/{id}`, hh)
+	return b
+}
+
+func (b *Builder) ReplaceUser(hh http.Handler) *Builder {
+	b.Handler(http.MethodPut, `/Users/{id}`, hh)
+	return b
+}
+
+func (b *Builder) RetrieveUser(hh http.Handler) *Builder {
+	b.Handler(http.MethodGet, `/Users/{id}`, hh)
+	return b
+}
+
+func (b *Builder) Search(hh http.Handler) *Builder {
+	b.Handler(http.MethodPost, `/.search`, hh)
+	return b
 }

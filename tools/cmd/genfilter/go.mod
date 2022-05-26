@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/goccy/go-yaml v1.9.5
-	github.com/lestrrat-go/codegen v1.0.3
+	github.com/lestrrat-go/codegen v1.0.4
 )
 
 require (

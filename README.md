@@ -45,4 +45,12 @@ source: [./examples/client_user_create_example_test.go](https://github.com/lestr
 * Implement a sample server
 * Implement check in CI to diff against generated code
 
+# DESCRIPTION
 
+The goal of this library is to implement most boilerplate code that is required to write a SCIM client/server.
+
+A toy implementation for the server will be provided, but only for testing purposes. The srever component by itself
+is not, and will never be, suitable to be deployed to production. Instead you MUST provide the `http.Handler` objects
+that match your needs and/or provide the layer that connects your backend to the server.
+
+The client code follows a [Google Cloud Client style API](https://cloud.google.com/go).

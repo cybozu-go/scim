@@ -7,8 +7,8 @@ import (
 	stdlibpath "path"
 	"sync"
 
-	"github.com/lestrrat-go/mux"
 	"github.com/cybozu-go/scim/resource"
+	"github.com/lestrrat-go/mux"
 )
 
 var ctKey = `Content-Type`

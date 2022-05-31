@@ -10,7 +10,7 @@ import (
 	"net/http/httputil"
 	"net/url"
 
-	"github.com/lestrrat-go/scim/resource"
+	"github.com/cybozu-go/scim/resource"
 )
 
 type GroupService struct {

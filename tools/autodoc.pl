@@ -43,7 +43,7 @@ for my $filename (@files) {
         $output->print($content);
         $output->print("```\n");
 
-        $output->print("source: [$include_filename](https://github.com/lestrrat-go/scim/blob/$link_ref/$include_filename)\n");
+        $output->print("source: [$include_filename](https://github.com/cybozy-go/scim/blob/$link_ref/$include_filename)\n");
     
         # now we need to skip copying until the end of INCLUDE
         $skip_until_end = 1;

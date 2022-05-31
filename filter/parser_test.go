@@ -29,7 +29,7 @@ package filter_test
 import (
 	"testing"
 
-	"github.com/lestrrat-go/scim/filter"
+	"github.com/cybozu-go/scim/filter"
 	"github.com/stretchr/testify/require"
 )
 

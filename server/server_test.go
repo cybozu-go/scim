@@ -8,9 +8,9 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/lestrrat-go/scim/client"
-	"github.com/lestrrat-go/scim/resource"
-	"github.com/lestrrat-go/scim/server"
+	"github.com/cybozu-go/scim/client"
+	"github.com/cybozu-go/scim/resource"
+	"github.com/cybozu-go/scim/server"
 	"github.com/stretchr/testify/require"
 )
 

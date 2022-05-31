@@ -12,8 +12,8 @@ import (
 
 	"github.com/goccy/go-yaml"
 	"github.com/lestrrat-go/codegen"
-	"github.com/lestrrat-go/scim/resource"
-	"github.com/lestrrat-go/scim/schema"
+	"github.com/cybozu-go/scim/resource"
+	"github.com/cybozu-go/scim/schema"
 	"github.com/lestrrat-go/xstrings"
 )
 

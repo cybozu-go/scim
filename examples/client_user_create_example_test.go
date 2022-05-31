@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/lestrrat-go/scim/client"
+	"github.com/cybozu-go/scim/client"
 )
 
 func TestClient_CreateUser(t *testing.T) {

@@ -1,11 +1,11 @@
-module github.com/lestrrat-go/scim/tools/cmd/genresources
+module github.com/cybozu-go/scim/tools/cmd/genresources
 
 go 1.17
 
 require (
 	github.com/goccy/go-yaml v1.9.5
 	github.com/lestrrat-go/codegen v1.0.4
-	github.com/lestrrat-go/scim v0.0.0-20220520091855-11f56e98670d
+	github.com/cybozu-go/scim v0.0.0-20220520091855-11f56e98670d
 	github.com/lestrrat-go/xstrings v0.0.0-20210804220435-4dd8b234342b
 )
 
@@ -20,4 +20,4 @@ require (
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 )
 
-replace github.com/lestrrat-go/scim => ../../..
+replace github.com/cybozu-go/scim => ../../..

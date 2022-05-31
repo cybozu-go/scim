@@ -8,7 +8,7 @@ import (
 	"sync"
 
 	"github.com/lestrrat-go/mux"
-	"github.com/lestrrat-go/scim/resource"
+	"github.com/cybozu-go/scim/resource"
 )
 
 var ctKey = `Content-Type`

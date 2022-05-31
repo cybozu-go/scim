@@ -19,7 +19,7 @@ import (
   "fmt"
   "testing"
 
-  "github.com/lestrrat-go/scim/client"
+  "github.com/cybozu-go/scim/client"
 )
 
 func TestClient_CreateUser(t *testing.T) {
@@ -37,7 +37,7 @@ func TestClient_CreateUser(t *testing.T) {
   _ = user
 }
 ```
-source: [./examples/client_user_create_example_test.go](https://github.com/lestrrat-go/scim/blob/main/./examples/client_user_create_example_test.go)
+source: [./examples/client_user_create_example_test.go](https://github.com/cybozu-go/scim/blob/main/./examples/client_user_create_example_test.go)
 <!-- END INCLUDE -->
 
 # TODO

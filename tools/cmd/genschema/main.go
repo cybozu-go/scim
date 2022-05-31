@@ -10,7 +10,7 @@ import (
 
 	"github.com/goccy/go-yaml"
 	"github.com/lestrrat-go/codegen"
-	"github.com/lestrrat-go/scim/resource"
+	"github.com/cybozu-go/scim/resource"
 )
 
 func main() {

@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/lestrrat-go/mux"
-	"github.com/lestrrat-go/scim/resource"
+	"github.com/cybozu-go/scim/resource"
 )
 
 type CreateGroupBackend interface {

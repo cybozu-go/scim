@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/lestrrat-go/scim/resource"
+	"github.com/cybozu-go/scim/resource"
 	"github.com/stretchr/testify/require"
 )
 

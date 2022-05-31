@@ -1,4 +1,4 @@
-module github.com/lestrrat-go/scim
+module github.com/cybozu-go/scim
 
 go 1.17
 

@@ -2,7 +2,7 @@
 
 package schema
 
-import "github.com/lestrrat-go/scim/resource"
+import "github.com/cybozu-go/scim/resource"
 
 var schemas = make(map[string]*resource.Schema)
 

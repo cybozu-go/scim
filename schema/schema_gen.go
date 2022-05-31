@@ -1,6 +1,6 @@
 package schema
 
-import "github.com/lestrrat-go/scim/resource"
+import "github.com/cybozu-go/scim/resource"
 
 func init() {
 	{

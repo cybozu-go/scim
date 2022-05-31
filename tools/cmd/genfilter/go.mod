@@ -1,4 +1,4 @@
-module github.com/lestrrat-go/scim/tools/cmd/genresources
+module github.com/cybozu-go/scim/tools/cmd/genresources
 
 go 1.17
 

@@ -36,7 +36,18 @@ func (f AuthenticationSchemeValidateFunc) Validate(v *AuthenticationScheme) erro
 	return f(v)
 }
 
-var DefaultAuthenticationSchemeValidator AuthenticationSchemeValidator
+var DefaultAuthenticationSchemeValidator AuthenticationSchemeValidator = AuthenticationSchemeValidateFunc(func(v *AuthenticationScheme) error {
+	if v.description == nil {
+		return fmt.Errorf(`required field "description" is missing`)
+	}
+	if v.name == nil {
+		return fmt.Errorf(`required field "name" is missing`)
+	}
+	if v.typ == nil {
+		return fmt.Errorf(`required field "type" is missing`)
+	}
+	return nil
+})
 
 func (v *AuthenticationScheme) Description() string {
 	v.mu.RLock()

@@ -22,7 +22,6 @@ objects:
     schema: "urn:ietf:params:scim:schemas:core:2.0:User"
     fields:
       - name: userName
-        validator: requiredString
         required: true
       - name: displayName
       - name: name
@@ -79,6 +78,7 @@ objects:
       - name: honorificSuffix
   - name: EnterpriseUser
     schema: 'urn:ietf:params:scim:schemas:extension:enterprise:2.0:User'
+    skipCommonFields: true
     fields:
       - name: employeeNumber
       - name: costCenter

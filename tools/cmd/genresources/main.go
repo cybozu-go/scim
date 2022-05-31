@@ -129,7 +129,16 @@ func generateObject(object *codegen.Object) error {
 	o.L(`return f(v)`)
 	o.L(`}`)
 
-	o.LL(`var Default%[1]sValidator %[1]sValidator`, object.Name(true))
+	o.LL(`var Default%[1]sValidator %[1]sValidator = %[1]sValidateFunc(func(v *%[1]s) error {`, object.Name(true))
+	for _, field := range object.Fields() {
+		if field.IsRequired() {
+			o.L(`if v.%s == nil {`, field.Name(false))
+			o.L("return fmt.Errorf(`required field %q is missing`)", field.JSON())
+			o.L(`}`)
+		}
+	}
+	o.L(`return nil`)
+	o.L(`})`)
 
 	for _, field := range object.Fields() {
 		o.LL(`func (v *%s) %s() %s {`, object.Name(true), field.Name(true), field.Type())
@@ -361,7 +370,9 @@ func generateObject(object *codegen.Object) error {
 	o.L(`b.validator = nil`)
 	o.L(`b.object = &%s{}`, object.Name(true))
 	if schema := object.String(`schema`); schema != "" {
-		o.LL(`b.object.schemas = []string{%sSchemaURI}`, object.Name(true))
+		if !object.Bool(`skipCommonFields`) {
+			o.LL(`b.object.schemas = []string{%sSchemaURI}`, object.Name(true))
+		}
 	}
 	o.L(`}`)
 

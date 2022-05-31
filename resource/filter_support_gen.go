@@ -30,7 +30,15 @@ func (f FilterSupportValidateFunc) Validate(v *FilterSupport) error {
 	return f(v)
 }
 
-var DefaultFilterSupportValidator FilterSupportValidator
+var DefaultFilterSupportValidator FilterSupportValidator = FilterSupportValidateFunc(func(v *FilterSupport) error {
+	if v.maxResults == nil {
+		return fmt.Errorf(`required field "maxResults" is missing`)
+	}
+	if v.supported == nil {
+		return fmt.Errorf(`required field "supported" is missing`)
+	}
+	return nil
+})
 
 func (v *FilterSupport) MaxResults() int {
 	v.mu.RLock()

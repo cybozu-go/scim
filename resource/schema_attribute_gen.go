@@ -52,7 +52,9 @@ func (f SchemaAttributeValidateFunc) Validate(v *SchemaAttribute) error {
 	return f(v)
 }
 
-var DefaultSchemaAttributeValidator SchemaAttributeValidator
+var DefaultSchemaAttributeValidator SchemaAttributeValidator = SchemaAttributeValidateFunc(func(v *SchemaAttribute) error {
+	return nil
+})
 
 func (v *SchemaAttribute) CanonicalValues() []interface{} {
 	v.mu.RLock()

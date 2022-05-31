@@ -44,7 +44,12 @@ func (f GroupValidateFunc) Validate(v *Group) error {
 	return f(v)
 }
 
-var DefaultGroupValidator GroupValidator
+var DefaultGroupValidator GroupValidator = GroupValidateFunc(func(v *Group) error {
+	if v.id == nil {
+		return fmt.Errorf(`required field "id" is missing`)
+	}
+	return nil
+})
 
 func (v *Group) DisplayName() string {
 	v.mu.RLock()

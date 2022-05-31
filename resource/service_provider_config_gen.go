@@ -50,7 +50,30 @@ func (f ServiceProviderConfigValidateFunc) Validate(v *ServiceProviderConfig) er
 	return f(v)
 }
 
-var DefaultServiceProviderConfigValidator ServiceProviderConfigValidator
+var DefaultServiceProviderConfigValidator ServiceProviderConfigValidator = ServiceProviderConfigValidateFunc(func(v *ServiceProviderConfig) error {
+	if v.authenticationSchemes == nil {
+		return fmt.Errorf(`required field "authenticationSchemes" is missing`)
+	}
+	if v.bulk == nil {
+		return fmt.Errorf(`required field "bulk" is missing`)
+	}
+	if v.changePassword == nil {
+		return fmt.Errorf(`required field "changePassword" is missing`)
+	}
+	if v.etag == nil {
+		return fmt.Errorf(`required field "etag" is missing`)
+	}
+	if v.filter == nil {
+		return fmt.Errorf(`required field "filter" is missing`)
+	}
+	if v.patch == nil {
+		return fmt.Errorf(`required field "patch" is missing`)
+	}
+	if v.sort == nil {
+		return fmt.Errorf(`required field "sort" is missing`)
+	}
+	return nil
+})
 
 func (v *ServiceProviderConfig) AuthenticationSchemes() []AuthenticationScheme {
 	v.mu.RLock()
@@ -481,8 +504,6 @@ func (b *ServiceProviderConfigBuilder) init() {
 	b.err = nil
 	b.validator = nil
 	b.object = &ServiceProviderConfig{}
-
-	b.object.schemas = []string{ServiceProviderConfigSchemaURI}
 }
 
 func (b *ServiceProviderConfigBuilder) AuthenticationSchemes(v ...AuthenticationScheme) *ServiceProviderConfigBuilder {

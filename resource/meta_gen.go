@@ -37,7 +37,9 @@ func (f MetaValidateFunc) Validate(v *Meta) error {
 	return f(v)
 }
 
-var DefaultMetaValidator MetaValidator
+var DefaultMetaValidator MetaValidator = MetaValidateFunc(func(v *Meta) error {
+	return nil
+})
 
 func (v *Meta) Created() time.Time {
 	v.mu.RLock()

@@ -38,7 +38,9 @@ func (f NamesValidateFunc) Validate(v *Names) error {
 	return f(v)
 }
 
-var DefaultNamesValidator NamesValidator
+var DefaultNamesValidator NamesValidator = NamesValidateFunc(func(v *Names) error {
+	return nil
+})
 
 func (v *Names) FamilyName() string {
 	v.mu.RLock()

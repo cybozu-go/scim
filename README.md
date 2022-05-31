@@ -48,9 +48,65 @@ source: [./examples/client_user_create_example_test.go](https://github.com/cyboz
 # DESCRIPTION
 
 The goal of this library is to implement most boilerplate code that is required to write a SCIM client/server.
+This includes:
 
-A toy implementation for the server will be provided, but only for testing purposes. The srever component by itself
-is not, and will never be, suitable to be deployed to production. Instead you MUST provide the `http.Handler` objects
-that match your needs and/or provide the layer that connects your backend to the server.
+* A set of generic resources (Users, Groups) and ways to create and access them
+* A generic client to make requests to the server
+* A skeleton framework for a generic server
+
+## Resources
+
+The resources described in RFC7643 are covered. The resources are immutable opaque objects
+instead of an open Go struct.
+
+This allows us to reject any invalid or incomplete resource to be created
+because the objects cannot be initialized directly.
+
+For example, with an open struct the following would be allowed:
+
+```go
+// no required fields such as userName, but has other fields
+user := &resource.User{
+  title: "Best Employee",
+}
+```
+
+Instead, we force the user to create an object using builder.
+The following example will properly report errors when required
+fields are not available. This assures as that the when we get
+a hold of a resource, it is in fact a legal one (at least in
+terms of object structure).
+
+```go
+user, err := resource.Builder().
+  User().
+    Title("Best Employee").
+    Build()
+```
+
+TODO: More on implementation descisions
+
+## Client
 
 The client code follows a [Google Cloud Client style API](https://cloud.google.com/go).
+
+TODO: Why, etc
+
+## Server
+
+The server code in this module is a stub implementation. You will need to provide
+either the "backend" object that the stub implementation expects, or you will have to
+provide the actual `http.Handler` object with your complete implementation.
+
+The server code is not expected to be robust and reusable, because the details of
+implementation will differ significantly depending on your own SCIM architecture.
+For example, a SCIM server running on a single VPC or a fleet of containers will
+most likely have different expectations and assumptions.
+
+This implementation attempts to provide with the minimal building blocks, but
+be aware that for any serious implementations you will have to implement your
+own server anyways.
+
+A toy implementation for the server will be provided, but only for testing purposes. 
+
+TODO: more details

@@ -32,7 +32,18 @@ func (f BulkSupportValidateFunc) Validate(v *BulkSupport) error {
 	return f(v)
 }
 
-var DefaultBulkSupportValidator BulkSupportValidator
+var DefaultBulkSupportValidator BulkSupportValidator = BulkSupportValidateFunc(func(v *BulkSupport) error {
+	if v.maxOperations == nil {
+		return fmt.Errorf(`required field "maxOperations" is missing`)
+	}
+	if v.maxPayloadSize == nil {
+		return fmt.Errorf(`required field "maxPayloadSize" is missing`)
+	}
+	if v.supported == nil {
+		return fmt.Errorf(`required field "supported" is missing`)
+	}
+	return nil
+})
 
 func (v *BulkSupport) MaxOperations() int {
 	v.mu.RLock()

@@ -34,7 +34,9 @@ func (f EmailValidateFunc) Validate(v *Email) error {
 	return f(v)
 }
 
-var DefaultEmailValidator EmailValidator
+var DefaultEmailValidator EmailValidator = EmailValidateFunc(func(v *Email) error {
+	return nil
+})
 
 func (v *Email) Display() string {
 	v.mu.RLock()

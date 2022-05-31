@@ -32,7 +32,9 @@ func (f EnterpriseManagerValidateFunc) Validate(v *EnterpriseManager) error {
 	return f(v)
 }
 
-var DefaultEnterpriseManagerValidator EnterpriseManagerValidator
+var DefaultEnterpriseManagerValidator EnterpriseManagerValidator = EnterpriseManagerValidateFunc(func(v *EnterpriseManager) error {
+	return nil
+})
 
 func (v *EnterpriseManager) DisplayName() string {
 	v.mu.RLock()

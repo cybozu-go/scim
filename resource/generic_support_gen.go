@@ -28,7 +28,12 @@ func (f GenericSupportValidateFunc) Validate(v *GenericSupport) error {
 	return f(v)
 }
 
-var DefaultGenericSupportValidator GenericSupportValidator
+var DefaultGenericSupportValidator GenericSupportValidator = GenericSupportValidateFunc(func(v *GenericSupport) error {
+	if v.supported == nil {
+		return fmt.Errorf(`required field "supported" is missing`)
+	}
+	return nil
+})
 
 func (v *GenericSupport) Supported() bool {
 	v.mu.RLock()

@@ -48,7 +48,9 @@ func (f SearchRequestValidateFunc) Validate(v *SearchRequest) error {
 	return f(v)
 }
 
-var DefaultSearchRequestValidator SearchRequestValidator
+var DefaultSearchRequestValidator SearchRequestValidator = SearchRequestValidateFunc(func(v *SearchRequest) error {
+	return nil
+})
 
 func (v *SearchRequest) Attributes() []string {
 	v.mu.RLock()
@@ -462,8 +464,6 @@ func (b *SearchRequestBuilder) init() {
 	b.err = nil
 	b.validator = nil
 	b.object = &SearchRequest{}
-
-	b.object.schemas = []string{SearchRequestSchemaURI}
 }
 
 func (b *SearchRequestBuilder) Attributes(v ...string) *SearchRequestBuilder {

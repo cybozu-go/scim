@@ -42,7 +42,9 @@ func (f ListResponseValidateFunc) Validate(v *ListResponse) error {
 	return f(v)
 }
 
-var DefaultListResponseValidator ListResponseValidator
+var DefaultListResponseValidator ListResponseValidator = ListResponseValidateFunc(func(v *ListResponse) error {
+	return nil
+})
 
 func (v *ListResponse) ItemsPerPage() int {
 	v.mu.RLock()
@@ -363,8 +365,6 @@ func (b *ListResponseBuilder) init() {
 	b.err = nil
 	b.validator = nil
 	b.object = &ListResponse{}
-
-	b.object.schemas = []string{ListResponseSchemaURI}
 }
 
 func (b *ListResponseBuilder) ItemsPerPage(v int) *ListResponseBuilder {

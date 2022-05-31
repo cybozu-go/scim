@@ -30,7 +30,9 @@ func (f PartialResourceRepresentationRequestValidateFunc) Validate(v *PartialRes
 	return f(v)
 }
 
-var DefaultPartialResourceRepresentationRequestValidator PartialResourceRepresentationRequestValidator
+var DefaultPartialResourceRepresentationRequestValidator PartialResourceRepresentationRequestValidator = PartialResourceRepresentationRequestValidateFunc(func(v *PartialResourceRepresentationRequest) error {
+	return nil
+})
 
 func (v *PartialResourceRepresentationRequest) Attributes() []string {
 	v.mu.RLock()

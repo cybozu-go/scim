@@ -34,7 +34,12 @@ func (f SchemaValidateFunc) Validate(v *Schema) error {
 	return f(v)
 }
 
-var DefaultSchemaValidator SchemaValidator
+var DefaultSchemaValidator SchemaValidator = SchemaValidateFunc(func(v *Schema) error {
+	if v.id == nil {
+		return fmt.Errorf(`required field "id" is missing`)
+	}
+	return nil
+})
 
 func (v *Schema) Attributes() []*SchemaAttribute {
 	v.mu.RLock()

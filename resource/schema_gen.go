@@ -385,19 +385,6 @@ func (b *SchemaBuilder) Name(v string) *SchemaBuilder {
 	return b
 }
 
-func (b *SchemaBuilder) Extension(uri string, value interface{}) *SchemaBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	if err := b.object.Set(uri, value); err != nil {
-		b.err = err
-	}
-	return b
-}
-
 func (b *SchemaBuilder) Validator(v SchemaValidator) *SchemaBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()

@@ -366,11 +366,6 @@ func (call *DeleteGroupCall) Meta(v *resource.Meta) *DeleteGroupCall {
 	return call
 }
 
-func (call *DeleteGroupCall) Schemas(v ...string) *DeleteGroupCall {
-	call.builder.Schemas(v...)
-	return call
-}
-
 func (call *DeleteGroupCall) Trace(w io.Writer) *DeleteGroupCall {
 	call.trace = w
 	return call

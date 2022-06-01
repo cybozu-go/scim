@@ -385,19 +385,6 @@ func (b *EmailBuilder) Value(v string) *EmailBuilder {
 	return b
 }
 
-func (b *EmailBuilder) Extension(uri string, value interface{}) *EmailBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	if err := b.object.Set(uri, value); err != nil {
-		b.err = err
-	}
-	return b
-}
-
 func (b *EmailBuilder) Validator(v EmailValidator) *EmailBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()

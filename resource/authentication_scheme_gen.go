@@ -441,19 +441,6 @@ func (b *AuthenticationSchemeBuilder) Typ(v AuthenticationSchemeType) *Authentic
 	return b
 }
 
-func (b *AuthenticationSchemeBuilder) Extension(uri string, value interface{}) *AuthenticationSchemeBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	if err := b.object.Set(uri, value); err != nil {
-		b.err = err
-	}
-	return b
-}
-
 func (b *AuthenticationSchemeBuilder) Validator(v AuthenticationSchemeValidator) *AuthenticationSchemeBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()

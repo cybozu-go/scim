@@ -64,6 +64,14 @@ func _main() error {
 				object.AddField(commonField)
 			}
 		}
+		if object.String(`schema`) != "" {
+			// TODO: we needed codegen.FieldBulder
+			var fl codegen.FieldList
+			if err := json.Unmarshal([]byte(`[{"name":"schemas","type":"schemas"}]`), &fl); err != nil {
+				return fmt.Errorf(`failed to unmarshal schemas field: %w`, err)
+			}
+			object.AddField(fl[0])
+		}
 
 		object.Organize()
 		if err := generateObject(object); err != nil {
@@ -84,7 +92,7 @@ func IsPointer(f codegen.Field) bool {
 
 func IsIndirect(f codegen.Field) bool {
 	s := f.Type()
-	return strings.HasPrefix(s, `*`) || strings.HasPrefix(s, `[]`) || strings.HasSuffix(s, `List`)
+	return s == `schemas` || strings.HasPrefix(s, `*`) || strings.HasPrefix(s, `[]`) || strings.HasSuffix(s, `List`)
 }
 
 func generateObject(object *codegen.Object) error {
@@ -141,10 +149,20 @@ func generateObject(object *codegen.Object) error {
 	o.L(`})`)
 
 	for _, field := range object.Fields() {
-		o.LL(`func (v *%s) %s() %s {`, object.Name(true), field.Name(true), field.Type())
+		var rt string
+		if field.Name(false) == `schemas` {
+			rt = `[]string`
+		} else {
+			rt = field.Type()
+		}
+
+		o.LL(`func (v *%s) %s() %s {`, object.Name(true), field.Name(true), rt)
 		o.L(`v.mu.RLock()`)
 		o.L(`defer v.mu.RUnlock()`)
-		if IsIndirect(field) {
+		// schemas is a special case
+		if field.Name(false) == `schemas` {
+			o.L(`return v.%s.List()`, field.Name(false))
+		} else if IsIndirect(field) {
 			o.L(`return v.%s`, field.Name(false))
 		} else {
 			o.L(`if v.%s == nil {`, field.Name(false))
@@ -371,14 +389,17 @@ func generateObject(object *codegen.Object) error {
 	o.L(`b.object = &%s{}`, object.Name(true))
 	if schema := object.String(`schema`); schema != "" {
 		if !object.Bool(`skipCommonFields`) {
-			o.LL(`b.object.schemas = []string{%sSchemaURI}`, object.Name(true))
+			o.LL(`b.object.schemas = make(schemas)`)
+			o.L(`b.object.schemas.Add(%sSchemaURI)`, object.Name(true))
 		}
 	}
 	o.L(`}`)
 
 	for _, field := range object.Fields() {
 		// If the argument is a slice, the parameter type should be varg
-		if IsSlice(field) {
+		if field.Name(false) == `schemas` {
+			o.LL(`func (b *%[1]sBuilder) %[2]s(v ...string) *%[1]sBuilder {`, object.Name(true), field.Name(true))
+		} else if IsSlice(field) {
 			o.LL(`func (b *%[1]sBuilder) %[2]s(v ...%[3]s) *%[1]sBuilder {`, object.Name(true), field.Name(true), strings.TrimPrefix(field.Type(), `[]`))
 		} else {
 			o.LL(`func (b *%[1]sBuilder) %[2]s(v %[3]s) *%[1]sBuilder {`, object.Name(true), field.Name(true), field.Type())
@@ -389,25 +410,34 @@ func generateObject(object *codegen.Object) error {
 		o.L(`if b.err != nil {`)
 		o.L(`return b`)
 		o.L(`}`)
-		o.L(`if err := b.object.Set(%q, v); err != nil {`, field.JSON())
+		if field.Name(false) == `schemas` {
+			o.L(`for _, schema := range v {`)
+			o.L(`b.object.schemas.Add(schema)`)
+			o.L(`}`)
+		} else {
+			o.L(`if err := b.object.Set(%q, v); err != nil {`, field.JSON())
+			o.L(`b.err = err`)
+			o.L(`}`)
+		}
+		o.L(`return b`)
+		o.L(`}`)
+	}
+
+	if object.String(`schema`) != "" {
+		o.LL(`func (b *%[1]sBuilder) Extension(uri string, value interface{}) *%[1]sBuilder {`, object.Name(true))
+		o.L(`b.mu.Lock()`)
+		o.L(`defer b.mu.Unlock()`)
+		o.L(`b.once.Do(b.init)`)
+		o.L(`if b.err != nil {`)
+		o.L(`return b`)
+		o.L(`}`)
+		o.L(`b.object.schemas.Add(uri)`)
+		o.L(`if err := b.object.Set(uri, value); err != nil {`)
 		o.L(`b.err = err`)
 		o.L(`}`)
 		o.L(`return b`)
 		o.L(`}`)
 	}
-
-	o.LL(`func (b *%[1]sBuilder) Extension(uri string, value interface{}) *%[1]sBuilder {`, object.Name(true))
-	o.L(`b.mu.Lock()`)
-	o.L(`defer b.mu.Unlock()`)
-	o.L(`b.once.Do(b.init)`)
-	o.L(`if b.err != nil {`)
-	o.L(`return b`)
-	o.L(`}`)
-	o.L(`if err := b.object.Set(uri, value); err != nil {`)
-	o.L(`b.err = err`)
-	o.L(`}`)
-	o.L(`return b`)
-	o.L(`}`)
 
 	o.LL(`func (b *%[1]sBuilder) Validator(v %[1]sValidator) *%[1]sBuilder {`, object.Name(true))
 	o.L(`b.mu.Lock()`)

@@ -479,19 +479,6 @@ func (b *NamesBuilder) MiddleName(v string) *NamesBuilder {
 	return b
 }
 
-func (b *NamesBuilder) Extension(uri string, value interface{}) *NamesBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	if err := b.object.Set(uri, value); err != nil {
-		b.err = err
-	}
-	return b
-}
-
 func (b *NamesBuilder) Validator(v NamesValidator) *NamesBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()

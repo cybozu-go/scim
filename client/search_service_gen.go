@@ -55,11 +55,6 @@ func (call *SearchCall) Filter(v string) *SearchCall {
 	return call
 }
 
-func (call *SearchCall) Schemas(v ...string) *SearchCall {
-	call.builder.Schemas(v...)
-	return call
-}
-
 func (call *SearchCall) SortBy(v string) *SearchCall {
 	call.builder.SortBy(v)
 	return call

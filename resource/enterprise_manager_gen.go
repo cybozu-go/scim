@@ -338,19 +338,6 @@ func (b *EnterpriseManagerBuilder) Reference(v string) *EnterpriseManagerBuilder
 	return b
 }
 
-func (b *EnterpriseManagerBuilder) Extension(uri string, value interface{}) *EnterpriseManagerBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	if err := b.object.Set(uri, value); err != nil {
-		b.err = err
-	}
-	return b
-}
-
 func (b *EnterpriseManagerBuilder) Validator(v EnterpriseManagerValidator) *EnterpriseManagerBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()

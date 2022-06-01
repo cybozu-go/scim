@@ -5,8 +5,6 @@ common:
     json: externalId
   - name: meta
     type: '*Meta'
-  - name: schemas
-    type: '[]string'
 objects:
   - name: Meta
     skipCommonFields: true
@@ -154,8 +152,6 @@ objects:
     schema: urn:ietf:params:scim:schemas:core:2.0:ServiceProviderConfig
     skipCommonFields: true
     fields:
-      - name: schemas
-        type: '[]string'
       - name: documentationURI
         json: documentationUri
       - name: patch
@@ -188,8 +184,6 @@ objects:
       - name: exludedAttributes
         type: "[]string"
       - name: filter
-      - name: schemas
-        type: '[]string'
       - name: sortBy
       - name: sortOrder
       - name: startIndex
@@ -204,8 +198,6 @@ objects:
         type: int
       - name: itemsPerPage
         type: int
-      - name: schemas
-        type: '[]string'
       - name: startIndex
         type: int
       - name: Resources

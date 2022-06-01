@@ -2,8 +2,48 @@
 
 package resource
 
+import (
+	"encoding/json"
+	"sort"
+)
+
 func init() {
 	DefaultUserValidator = UserValidateFunc(defaultUserValidate)
+}
+
+// schemas is a container for schemas. it dedupes schema URIs,
+// and marshals to / unmarshals from []string
+type schemas map[string]struct{}
+
+func (s schemas) Add(v string) {
+	s[v] = struct{}{}
+}
+
+func (s *schemas) UnmarshalJSON(data []byte) error {
+	var list []string
+	if err := json.Unmarshal(data, &list); err != nil {
+		return err
+	}
+
+	*s = make(schemas)
+	for _, u := range list {
+		(*s)[u] = struct{}{}
+	}
+	return nil
+}
+
+func (s schemas) List() []string {
+	list := make([]string, 0, len(s))
+	for u := range s {
+		list = append(list, u)
+	}
+
+	sort.Strings(list)
+	return list
+}
+
+func (s schemas) MarshalJSON() ([]byte, error) {
+	return json.Marshal(s.List())
 }
 
 type pair struct {

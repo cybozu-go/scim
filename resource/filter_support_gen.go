@@ -297,19 +297,6 @@ func (b *FilterSupportBuilder) Supported(v bool) *FilterSupportBuilder {
 	return b
 }
 
-func (b *FilterSupportBuilder) Extension(uri string, value interface{}) *FilterSupportBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	if err := b.object.Set(uri, value); err != nil {
-		b.err = err
-	}
-	return b
-}
-
 func (b *FilterSupportBuilder) Validator(v FilterSupportValidator) *FilterSupportBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()

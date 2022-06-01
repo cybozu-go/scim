@@ -247,19 +247,6 @@ func (b *GenericSupportBuilder) Supported(v bool) *GenericSupportBuilder {
 	return b
 }
 
-func (b *GenericSupportBuilder) Extension(uri string, value interface{}) *GenericSupportBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	if err := b.object.Set(uri, value); err != nil {
-		b.err = err
-	}
-	return b
-}
-
 func (b *GenericSupportBuilder) Validator(v GenericSupportValidator) *GenericSupportBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()

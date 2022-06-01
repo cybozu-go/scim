@@ -433,19 +433,6 @@ func (b *MetaBuilder) Version(v string) *MetaBuilder {
 	return b
 }
 
-func (b *MetaBuilder) Extension(uri string, value interface{}) *MetaBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	if err := b.object.Set(uri, value); err != nil {
-		b.err = err
-	}
-	return b
-}
-
 func (b *MetaBuilder) Validator(v MetaValidator) *MetaBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()

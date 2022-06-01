@@ -285,19 +285,6 @@ func (b *PartialResourceRepresentationRequestBuilder) ExcludedAttributes(v ...st
 	return b
 }
 
-func (b *PartialResourceRepresentationRequestBuilder) Extension(uri string, value interface{}) *PartialResourceRepresentationRequestBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	if err := b.object.Set(uri, value); err != nil {
-		b.err = err
-	}
-	return b
-}
-
 func (b *PartialResourceRepresentationRequestBuilder) Validator(v PartialResourceRepresentationRequestValidator) *PartialResourceRepresentationRequestBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()

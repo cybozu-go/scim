@@ -347,19 +347,6 @@ func (b *BulkSupportBuilder) Supported(v bool) *BulkSupportBuilder {
 	return b
 }
 
-func (b *BulkSupportBuilder) Extension(uri string, value interface{}) *BulkSupportBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	if err := b.object.Set(uri, value); err != nil {
-		b.err = err
-	}
-	return b
-}
-
 func (b *BulkSupportBuilder) Validator(v BulkSupportValidator) *BulkSupportBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()

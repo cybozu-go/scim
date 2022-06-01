@@ -586,11 +586,6 @@ func (call *DeleteUserCall) Roles(v ...string) *DeleteUserCall {
 	return call
 }
 
-func (call *DeleteUserCall) Schemas(v ...string) *DeleteUserCall {
-	call.builder.Schemas(v...)
-	return call
-}
-
 func (call *DeleteUserCall) Timezone(v string) *DeleteUserCall {
 	call.builder.Timezone(v)
 	return call

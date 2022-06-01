@@ -128,6 +128,34 @@ format was chosen. There is nothing barring this module from using
 other formats if any, but the current implementation was chosen
 because it was already available.
 
+### Extensions
+
+All resources will be able to mimic adding extensions.
+
+SCIM extensions are represented as sort of a "fully qualified resource name".
+For example, an "enterprise user" extension can be embedded in the
+core User resource as follows:
+
+```json
+{
+  "id": ...,
+  "userName": ....,
+  "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User": {
+    "costCenter": ...,
+    "department": ...,
+    "division": ...,
+    "employeeNumber": ...,
+    "manager": ...,
+    "organization": ...
+  }
+}
+```
+
+To create a User resource with the enterprise user extension,
+You simply need to use the `Extension()` method. 
+
+<!-- INCLUDE(./examples/resource_extension_example_test.go) -->
+<!-- END INCLUDE -->
 
 ## Client
 
@@ -185,6 +213,11 @@ user, err := client.CreateUser( lots, and, lots, and, lots, of, fields... )
 Using this Google Cloud style convention makes it much easier to give users
 full control over all possible fields that are sent to the server, while
 reducing the complexity of the method signature.
+
+The Call object is most of the times a thin wrapper around the builders for
+the resources they are creating, and therefore implements the same API as
+their respective builders. For example, for Call objects that expect to
+create a `User` object, it gives you everything available for `resource.UserBuilder`
 
 ## Server
 

@@ -25,7 +25,7 @@ func init() {
 type ListResponse struct {
 	itemsPerPage  *int
 	resources     []interface{}
-	schemas       []string
+	schemas       schemas
 	startIndex    *int
 	totalResults  *int
 	privateParams map[string]interface{}
@@ -64,7 +64,7 @@ func (v *ListResponse) Resources() []interface{} {
 func (v *ListResponse) Schemas() []string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return v.schemas
+	return v.schemas.List()
 }
 
 func (v *ListResponse) StartIndex() int {
@@ -212,10 +212,10 @@ func (v *ListResponse) Set(name string, value interface{}) error {
 		v.resources = tmp
 		return nil
 	case listResponseSchemasJSONKey:
-		var tmp []string
-		tmp, ok := value.([]string)
+		var tmp schemas
+		tmp, ok := value.(schemas)
 		if !ok {
-			return fmt.Errorf(`expected []string for field "schemas", but got %T`, value)
+			return fmt.Errorf(`expected schemas for field "schemas", but got %T`, value)
 		}
 		v.schemas = tmp
 		return nil
@@ -294,7 +294,7 @@ LOOP:
 				}
 				v.resources = x
 			case listResponseSchemasJSONKey:
-				var x []string
+				var x schemas
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "schemas": %w`, err)
 				}
@@ -400,8 +400,8 @@ func (b *ListResponseBuilder) Schemas(v ...string) *ListResponseBuilder {
 	if b.err != nil {
 		return b
 	}
-	if err := b.object.Set("schemas", v); err != nil {
-		b.err = err
+	for _, schema := range v {
+		b.object.schemas.Add(schema)
 	}
 	return b
 }
@@ -439,6 +439,7 @@ func (b *ListResponseBuilder) Extension(uri string, value interface{}) *ListResp
 	if b.err != nil {
 		return b
 	}
+	b.object.schemas.Add(uri)
 	if err := b.object.Set(uri, value); err != nil {
 		b.err = err
 	}

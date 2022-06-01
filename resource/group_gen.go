@@ -29,7 +29,7 @@ type Group struct {
 	id            *string
 	members       []*User
 	meta          *Meta
-	schemas       []string
+	schemas       schemas
 	privateParams map[string]interface{}
 	mu            sync.RWMutex
 }
@@ -93,7 +93,7 @@ func (v *Group) Meta() *Meta {
 func (v *Group) Schemas() []string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return v.schemas
+	return v.schemas.List()
 }
 
 func (v *Group) makePairs() []pair {
@@ -255,10 +255,10 @@ func (v *Group) Set(name string, value interface{}) error {
 		v.meta = tmp
 		return nil
 	case groupSchemasJSONKey:
-		var tmp []string
-		tmp, ok := value.([]string)
+		var tmp schemas
+		tmp, ok := value.(schemas)
 		if !ok {
-			return fmt.Errorf(`expected []string for field "schemas", but got %T`, value)
+			return fmt.Errorf(`expected schemas for field "schemas", but got %T`, value)
 		}
 		v.schemas = tmp
 		return nil
@@ -340,7 +340,7 @@ LOOP:
 				}
 				v.meta = x
 			case groupSchemasJSONKey:
-				var x []string
+				var x schemas
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "schemas": %w`, err)
 				}
@@ -400,7 +400,8 @@ func (b *GroupBuilder) init() {
 	b.validator = nil
 	b.object = &Group{}
 
-	b.object.schemas = []string{GroupSchemaURI}
+	b.object.schemas = make(schemas)
+	b.object.schemas.Add(GroupSchemaURI)
 }
 
 func (b *GroupBuilder) DisplayName(v string) *GroupBuilder {
@@ -475,8 +476,8 @@ func (b *GroupBuilder) Schemas(v ...string) *GroupBuilder {
 	if b.err != nil {
 		return b
 	}
-	if err := b.object.Set("schemas", v); err != nil {
-		b.err = err
+	for _, schema := range v {
+		b.object.schemas.Add(schema)
 	}
 	return b
 }
@@ -488,6 +489,7 @@ func (b *GroupBuilder) Extension(uri string, value interface{}) *GroupBuilder {
 	if b.err != nil {
 		return b
 	}
+	b.object.schemas.Add(uri)
 	if err := b.object.Set(uri, value); err != nil {
 		b.err = err
 	}

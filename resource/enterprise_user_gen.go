@@ -15,6 +15,7 @@ const (
 	enterpriseUserEmployeeNumberJSONKey = "employeeNumber"
 	enterpriseUserManagerJSONKey        = "manager"
 	enterpriseUserOrganizationJSONKey   = "organization"
+	enterpriseUserSchemasJSONKey        = "schemas"
 )
 
 const EnterpriseUserSchemaURI = "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User"
@@ -30,6 +31,7 @@ type EnterpriseUser struct {
 	employeeNumber *string
 	manager        *EnterpriseManager
 	organization   *string
+	schemas        schemas
 	privateParams  map[string]interface{}
 	mu             sync.RWMutex
 }
@@ -99,8 +101,14 @@ func (v *EnterpriseUser) Organization() string {
 	return *(v.organization)
 }
 
+func (v *EnterpriseUser) Schemas() []string {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.schemas.List()
+}
+
 func (v *EnterpriseUser) makePairs() []pair {
-	pairs := make([]pair, 0, 6)
+	pairs := make([]pair, 0, 7)
 	if v.costCenter != nil {
 		pairs = append(pairs, pair{Key: "costCenter", Value: *(v.costCenter)})
 	}
@@ -118,6 +126,9 @@ func (v *EnterpriseUser) makePairs() []pair {
 	}
 	if v.organization != nil {
 		pairs = append(pairs, pair{Key: "organization", Value: *(v.organization)})
+	}
+	if v.schemas != nil {
+		pairs = append(pairs, pair{Key: "schemas", Value: v.schemas})
 	}
 	for k, v := range v.privateParams {
 		pairs = append(pairs, pair{Key: k, Value: v})
@@ -190,6 +201,11 @@ func (v *EnterpriseUser) Get(name string, options ...GetOption) (interface{}, bo
 			return nil, false
 		}
 		return *(v.organization), true
+	case enterpriseUserSchemasJSONKey:
+		if v.schemas == nil {
+			return nil, false
+		}
+		return v.schemas, true
 	default:
 		pp := v.privateParams
 		if pp == nil {
@@ -265,6 +281,14 @@ func (v *EnterpriseUser) Set(name string, value interface{}) error {
 		}
 		v.organization = &tmp
 		return nil
+	case enterpriseUserSchemasJSONKey:
+		var tmp schemas
+		tmp, ok := value.(schemas)
+		if !ok {
+			return fmt.Errorf(`expected schemas for field "schemas", but got %T`, value)
+		}
+		v.schemas = tmp
+		return nil
 	default:
 		pp := v.privateParams
 		if pp == nil {
@@ -283,6 +307,7 @@ func (v *EnterpriseUser) UnmarshalJSON(data []byte) error {
 	v.employeeNumber = nil
 	v.manager = nil
 	v.organization = nil
+	v.schemas = nil
 	v.privateParams = nil
 	dec := json.NewDecoder(bytes.NewReader(data))
 	{ // first token
@@ -348,6 +373,12 @@ LOOP:
 					return fmt.Errorf(`failed to decode value for key "organization": %w`, err)
 				}
 				v.organization = &x
+			case enterpriseUserSchemasJSONKey:
+				var x schemas
+				if err := dec.Decode(&x); err != nil {
+					return fmt.Errorf(`failed to decode value for key "schemas": %w`, err)
+				}
+				v.schemas = x
 			default:
 				var x interface{}
 				if rx, ok := registry.Get(tok); ok {
@@ -482,6 +513,19 @@ func (b *EnterpriseUserBuilder) Organization(v string) *EnterpriseUserBuilder {
 	return b
 }
 
+func (b *EnterpriseUserBuilder) Schemas(v ...string) *EnterpriseUserBuilder {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	b.once.Do(b.init)
+	if b.err != nil {
+		return b
+	}
+	for _, schema := range v {
+		b.object.schemas.Add(schema)
+	}
+	return b
+}
+
 func (b *EnterpriseUserBuilder) Extension(uri string, value interface{}) *EnterpriseUserBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
@@ -489,6 +533,7 @@ func (b *EnterpriseUserBuilder) Extension(uri string, value interface{}) *Enterp
 	if b.err != nil {
 		return b
 	}
+	b.object.schemas.Add(uri)
 	if err := b.object.Set(uri, value); err != nil {
 		b.err = err
 	}

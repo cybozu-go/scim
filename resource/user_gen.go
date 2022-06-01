@@ -58,7 +58,7 @@ type User struct {
 	preferredLanguage *string
 	profileURL        *string
 	roles             []string
-	schemas           []string
+	schemas           schemas
 	timezone          *string
 	title             *string
 	userName          *string
@@ -217,7 +217,7 @@ func (v *User) Roles() []string {
 func (v *User) Schemas() []string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return v.schemas
+	return v.schemas.List()
 }
 
 func (v *User) Timezone() string {
@@ -653,10 +653,10 @@ func (v *User) Set(name string, value interface{}) error {
 		v.roles = tmp
 		return nil
 	case userSchemasJSONKey:
-		var tmp []string
-		tmp, ok := value.([]string)
+		var tmp schemas
+		tmp, ok := value.(schemas)
 		if !ok {
-			return fmt.Errorf(`expected []string for field "schemas", but got %T`, value)
+			return fmt.Errorf(`expected schemas for field "schemas", but got %T`, value)
 		}
 		v.schemas = tmp
 		return nil
@@ -867,7 +867,7 @@ LOOP:
 				}
 				v.roles = x
 			case userSchemasJSONKey:
-				var x []string
+				var x schemas
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "schemas": %w`, err)
 				}
@@ -957,7 +957,8 @@ func (b *UserBuilder) init() {
 	b.validator = nil
 	b.object = &User{}
 
-	b.object.schemas = []string{UserSchemaURI}
+	b.object.schemas = make(schemas)
+	b.object.schemas.Add(UserSchemaURI)
 }
 
 func (b *UserBuilder) Active(v bool) *UserBuilder {
@@ -1188,8 +1189,8 @@ func (b *UserBuilder) Schemas(v ...string) *UserBuilder {
 	if b.err != nil {
 		return b
 	}
-	if err := b.object.Set("schemas", v); err != nil {
-		b.err = err
+	for _, schema := range v {
+		b.object.schemas.Add(schema)
 	}
 	return b
 }
@@ -1266,6 +1267,7 @@ func (b *UserBuilder) Extension(uri string, value interface{}) *UserBuilder {
 	if b.err != nil {
 		return b
 	}
+	b.object.schemas.Add(uri)
 	if err := b.object.Set(uri, value); err != nil {
 		b.err = err
 	}

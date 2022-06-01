@@ -30,7 +30,7 @@ type SearchRequest struct {
 	count             *int
 	exludedAttributes []string
 	filter            *string
-	schemas           []string
+	schemas           schemas
 	sortBy            *string
 	sortOrder         *string
 	startIndex        *int
@@ -85,7 +85,7 @@ func (v *SearchRequest) Filter() string {
 func (v *SearchRequest) Schemas() []string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return v.schemas
+	return v.schemas.List()
 }
 
 func (v *SearchRequest) SortBy() string {
@@ -282,10 +282,10 @@ func (v *SearchRequest) Set(name string, value interface{}) error {
 		v.filter = &tmp
 		return nil
 	case searchRequestSchemasJSONKey:
-		var tmp []string
-		tmp, ok := value.([]string)
+		var tmp schemas
+		tmp, ok := value.(schemas)
 		if !ok {
-			return fmt.Errorf(`expected []string for field "schemas", but got %T`, value)
+			return fmt.Errorf(`expected schemas for field "schemas", but got %T`, value)
 		}
 		v.schemas = tmp
 		return nil
@@ -387,7 +387,7 @@ LOOP:
 				}
 				v.filter = &x
 			case searchRequestSchemasJSONKey:
-				var x []string
+				var x schemas
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "schemas": %w`, err)
 				}
@@ -525,8 +525,8 @@ func (b *SearchRequestBuilder) Schemas(v ...string) *SearchRequestBuilder {
 	if b.err != nil {
 		return b
 	}
-	if err := b.object.Set("schemas", v); err != nil {
-		b.err = err
+	for _, schema := range v {
+		b.object.schemas.Add(schema)
 	}
 	return b
 }
@@ -577,6 +577,7 @@ func (b *SearchRequestBuilder) Extension(uri string, value interface{}) *SearchR
 	if b.err != nil {
 		return b
 	}
+	b.object.schemas.Add(uri)
 	if err := b.object.Set(uri, value); err != nil {
 		b.err = err
 	}

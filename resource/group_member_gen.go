@@ -14,7 +14,6 @@ const (
 	groupMemberIDJSONKey         = "id"
 	groupMemberMetaJSONKey       = "meta"
 	groupMemberRefJSONKey        = "$ref"
-	groupMemberSchemasJSONKey    = "schemas"
 	groupMemberValueJSONKey      = "value"
 )
 
@@ -24,7 +23,6 @@ type GroupMember struct {
 	id            *string
 	meta          *Meta
 	ref           *string
-	schemas       []string
 	value         *string
 	privateParams map[string]interface{}
 	mu            sync.RWMutex
@@ -89,12 +87,6 @@ func (v *GroupMember) Ref() string {
 	return *(v.ref)
 }
 
-func (v *GroupMember) Schemas() []string {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	return v.schemas
-}
-
 func (v *GroupMember) Value() string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -105,7 +97,7 @@ func (v *GroupMember) Value() string {
 }
 
 func (v *GroupMember) makePairs() []pair {
-	pairs := make([]pair, 0, 7)
+	pairs := make([]pair, 0, 6)
 	if v.display != nil {
 		pairs = append(pairs, pair{Key: "display", Value: *(v.display)})
 	}
@@ -120,9 +112,6 @@ func (v *GroupMember) makePairs() []pair {
 	}
 	if v.ref != nil {
 		pairs = append(pairs, pair{Key: "$ref", Value: *(v.ref)})
-	}
-	if v.schemas != nil {
-		pairs = append(pairs, pair{Key: "schemas", Value: v.schemas})
 	}
 	if v.value != nil {
 		pairs = append(pairs, pair{Key: "value", Value: *(v.value)})
@@ -193,11 +182,6 @@ func (v *GroupMember) Get(name string, options ...GetOption) (interface{}, bool)
 			return nil, false
 		}
 		return *(v.ref), true
-	case groupMemberSchemasJSONKey:
-		if v.schemas == nil {
-			return nil, false
-		}
-		return v.schemas, true
 	case groupMemberValueJSONKey:
 		if v.value == nil {
 			return nil, false
@@ -270,14 +254,6 @@ func (v *GroupMember) Set(name string, value interface{}) error {
 		}
 		v.ref = &tmp
 		return nil
-	case groupMemberSchemasJSONKey:
-		var tmp []string
-		tmp, ok := value.([]string)
-		if !ok {
-			return fmt.Errorf(`expected []string for field "schemas", but got %T`, value)
-		}
-		v.schemas = tmp
-		return nil
 	case groupMemberValueJSONKey:
 		var tmp string
 		tmp, ok := value.(string)
@@ -303,7 +279,6 @@ func (v *GroupMember) UnmarshalJSON(data []byte) error {
 	v.id = nil
 	v.meta = nil
 	v.ref = nil
-	v.schemas = nil
 	v.value = nil
 	v.privateParams = nil
 	dec := json.NewDecoder(bytes.NewReader(data))
@@ -364,12 +339,6 @@ LOOP:
 					return fmt.Errorf(`failed to decode value for key "$ref": %w`, err)
 				}
 				v.ref = &x
-			case groupMemberSchemasJSONKey:
-				var x []string
-				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "schemas": %w`, err)
-				}
-				v.schemas = x
 			case groupMemberValueJSONKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
@@ -497,19 +466,6 @@ func (b *GroupMemberBuilder) Ref(v string) *GroupMemberBuilder {
 	return b
 }
 
-func (b *GroupMemberBuilder) Schemas(v ...string) *GroupMemberBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	if err := b.object.Set("schemas", v); err != nil {
-		b.err = err
-	}
-	return b
-}
-
 func (b *GroupMemberBuilder) Value(v string) *GroupMemberBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
@@ -518,19 +474,6 @@ func (b *GroupMemberBuilder) Value(v string) *GroupMemberBuilder {
 		return b
 	}
 	if err := b.object.Set("value", v); err != nil {
-		b.err = err
-	}
-	return b
-}
-
-func (b *GroupMemberBuilder) Extension(uri string, value interface{}) *GroupMemberBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	if err := b.object.Set(uri, value); err != nil {
 		b.err = err
 	}
 	return b

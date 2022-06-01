@@ -796,19 +796,6 @@ func (b *SchemaAttributeBuilder) Uniqueness(v Uniqueness) *SchemaAttributeBuilde
 	return b
 }
 
-func (b *SchemaAttributeBuilder) Extension(uri string, value interface{}) *SchemaAttributeBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	if err := b.object.Set(uri, value); err != nil {
-		b.err = err
-	}
-	return b
-}
-
 func (b *SchemaAttributeBuilder) Validator(v SchemaAttributeValidator) *SchemaAttributeBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()

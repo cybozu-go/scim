@@ -17,14 +17,21 @@ package examples_test
 import (
   "context"
   "fmt"
-  "testing"
+  "net/http"
+  "net/http/httptest"
 
   "github.com/cybozu-go/scim/client"
 )
 
-func TestClient_CreateUser(t *testing.T) {
-  const baseURL = `https://scim.example.com`
-  cl := client.New(baseURL)
+func ExampleClient_CreateUser() {
+  // TODO: setup a toy SCIM server
+  srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+    w.WriteHeader(http.StatusCreated)
+    fmt.Fprintf(w, `{}`)
+  }))
+  defer srv.Close()
+
+  cl := client.New(srv.URL)
 
   user, err := cl.User().CreateUser().
     DisplayName(`Daisuke Maki`).
@@ -35,9 +42,12 @@ func TestClient_CreateUser(t *testing.T) {
   }
 
   _ = user
+
+  // OUTPUT:
+  //
 }
 ```
-source: [./examples/client_user_create_example_test.go](https://github.com/cybozu-go/scim/blob/main/./examples/client_user_create_example_test.go)
+source: [./examples/client_user_create_example_test.go](https://github.com/cybozy-go/scim/blob/main/./examples/client_user_create_example_test.go)
 <!-- END INCLUDE -->
 
 # TODO
@@ -155,6 +165,45 @@ To create a User resource with the enterprise user extension,
 You simply need to use the `Extension()` method. 
 
 <!-- INCLUDE(./examples/resource_extension_example_test.go) -->
+```go
+package examples_test
+
+import (
+  "encoding/json"
+  "fmt"
+  "os"
+
+  "github.com/cybozu-go/scim/resource"
+)
+
+func Example_ResourceExtension() {
+  var b resource.Builder
+
+  user, err := b.User().
+    ID("foo").
+    UserName("foo").
+    Extension(
+      resource.EnterpriseUserSchemaURI,
+      b.EnterpriseUser().
+        CostCenter("foo").
+        Department("foo").
+        Division("foo").
+        EmployeeNumber("foo").
+        Organization("foo").
+        MustBuild(),
+    ).
+    Build()
+  if err != nil {
+    fmt.Printf("%s", err)
+    return
+  }
+
+  json.NewEncoder(os.Stdout).Encode(user)
+  // OUTPUT:
+  // {"id":"foo","schemas":["urn:ietf:params:scim:schemas:core:2.0:User","urn:ietf:params:scim:schemas:extension:enterprise:2.0:User"],"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User":{"costCenter":"foo","department":"foo","division":"foo","employeeNumber":"foo","organization":"foo"},"userName":"foo"}
+}
+```
+source: [./examples/resource_extension_example_test.go](https://github.com/cybozy-go/scim/blob/main/./examples/resource_extension_example_test.go)
 <!-- END INCLUDE -->
 
 ## Client

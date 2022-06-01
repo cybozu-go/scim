@@ -188,19 +188,26 @@ reducing the complexity of the method signature.
 
 ## Server
 
-The server code in this module is a stub implementation. You will need to provide
-either the "backend" object that the stub implementation expects, or you will have to
-provide the actual `http.Handler` object with your complete implementation.
+The server code in this module is a stub implementation. 
 
-The server code is not expected to be robust and reusable, because the details of
-implementation will differ significantly depending on your own SCIM architecture.
-For example, a SCIM server running on a single VPC or a fleet of containers will
-most likely have different expectations and assumptions.
+The server code is not expected to be robust and reusable. You may be able to reuse
+parts of the server, especially the routing parts and the request validation part,
+but in general you should NOT expect the code in module to be able
+to handle production loads or to simply be able to plugin to your architecture.
 
-This implementation attempts to provide with the minimal building blocks, but
-be aware that for any serious implementations you will have to implement your
-own server anyways.
+This is because the details of implementation will differ significantly depending
+on your own SCIM architecture. For example, a SCIM server running on a single
+VPC or a fleet of containers will most likely have different expectations and assumptions.
+The same goes for a scenario where data is stored in a few sets of on-premise
+databases vs something that is using an API-based microservices-ish architecture.
 
-A toy implementation for the server will be provided, but only for testing purposes. 
+Instead what this module aims to provide in terms of a server is the
+basic API structure and basic behavior that a simple SCIM server is
+expected to implement, so that it can be used as a reference implementation of
+sorts.
 
-TODO: more details
+The server architecture will be as pluggable as possible, providing some
+minimal building blocks for a SCIM server, but its main focus will be on
+the ease of testing, not anything aimed for prduction use.
+
+For any serious implementations you will have to implement your own server anyways.

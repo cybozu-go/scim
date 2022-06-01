@@ -67,7 +67,7 @@ For example, with an open struct the following would be allowed:
 ```go
 // no required fields such as userName, but has other fields
 user := &resource.User{
-  title: "Best Employee",
+  Title: "Best Employee",
 }
 ```
 

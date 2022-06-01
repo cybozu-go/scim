@@ -78,19 +78,113 @@ a hold of a resource, it is in fact a legal one (at least in
 terms of object structure).
 
 ```go
-user, err := resource.Builder().
+// error should indicate that required field are missing
+user, err := resource.NewBuilder().
   User().
     Title("Best Employee").
     Build()
 ```
 
-TODO: More on implementation descisions
+The builder is sometimes seen as a convoluted way to construct
+objects, but it has one major advantage, which is that it significantly
+decreases the cognitive load for the code writer / reader to
+recognize if a field is required or optional, as well as detecting
+when an object is not properly initialized (as described in the previous
+section). This is especially true for a resource like "User",
+which has over 20 possible fields that can be populated. If this were
+an open struct, you have to read up on it and manually check which
+fields are required (and with what value must they be initialized with),
+but with a builder all you have to is to call `Build()`, and any
+mistakes you have made will be available in the error message.
+
+Each resource type has its own builder type that specifically handles
+initialization of the resource, but thes builders for individual resource
+objects are accessible from a centralized `resource.Builder` object for convenience. 
+
+You can access builders for other types by calling method names that match
+their type names (e.g. `User()`, `Group()`, `Meta()`, etc)
+
+```go
+var b resource.Builder
+
+user, err := b.User().
+  // methods to initialize resource.User
+  Build()
+
+group, err := b.Group().
+  // ditto
+  Build()
+```
+
+The bulk of the code that implements the resources are generated,
+in order to promote consistency and also to avoid any bugs caused
+by fat-fingering.
+
+The resource objects are generated using a custom YAML based DSL
+for the time being. Direct use of the SCIM schema to derive the code
+was briefly considered, but the schema lacks crucial Go-specific
+hints that are required when generating code, and thus a custom
+format was chosen. There is nothing barring this module from using
+other formats if any, but the current implementation was chosen
+because it was already available.
+
 
 ## Client
 
 The client code follows a [Google Cloud Client style API](https://cloud.google.com/go).
 
-TODO: Why, etc
+The client is first initialized with the common configuration parameters
+such as the base URL for the SCIM server, then you will need to obtain
+the "service" objects that logically group API calls.
+
+Each service object can provide "call" objects. The call objects are effectively
+request builders, which also does validation of the request -- therefore we can
+can invalid and/or incomplete requests before sending them to the client.
+
+```go
+// The client object
+scimClient := client.New(baseURL)
+
+// The service object
+service := scimClient.User()
+
+// The call object (notice `id` is required, so it must be passed to the constructor)
+call := service.GetUser(id)
+
+// Populate optional fields
+call.Attributes(...)
+
+// Make the HTTP request, and parse the response
+user, err := call.Do(ctx)
+```
+
+All of these can be chained into a single "line":
+
+```go
+user, err := client.New(baseURL).
+  User().
+    GetUser(id).
+    Attributes(...).
+    Do(ctx)
+```
+
+This architecture is slightly more complicated than, say, implementing a client
+and that can directly handle all API calls, for example:
+
+```go
+user, err := client.GetUser(id, attrs, ....)
+```
+
+But much like the builders for the resources, this quickly becomes problematic when
+you have 20+ fields that you must be able to set values to:
+
+```go
+user, err := client.CreateUser( lots, and, lots, and, lots, of, fields... )
+```
+
+Using this Google Cloud style convention makes it much easier to give users
+full control over all possible fields that are sent to the server, while
+reducing the complexity of the method signature.
 
 ## Server
 

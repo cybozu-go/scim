@@ -5,6 +5,9 @@ import "github.com/cybozu-go/scim/resource"
 func init() {
 	{
 		s := resource.NewSchemaBuilder().
+			ID("urn:ietf:params:scim:schemas:core:2.0:User").
+			Name("User").
+			Description("User Account").
 			Attributes(
 				resource.NewSchemaAttributeBuilder().
 					Name("userName").
@@ -827,6 +830,9 @@ func init() {
 
 	{
 		s := resource.NewSchemaBuilder().
+			ID("urn:ietf:params:scim:schemas:core:2.0:Group").
+			Name("Group").
+			Description("Group").
 			Attributes(
 				resource.NewSchemaAttributeBuilder().
 					Name("displayName").
@@ -899,6 +905,9 @@ func init() {
 
 	{
 		s := resource.NewSchemaBuilder().
+			ID("urn:ietf:params:scim:schemas:extension:enterprise:2.0:User").
+			Name("EnterpriseUser").
+			Description("Enterprise User").
 			Attributes(
 				resource.NewSchemaAttributeBuilder().
 					Name("employeeNumber").

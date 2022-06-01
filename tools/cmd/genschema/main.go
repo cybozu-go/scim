@@ -8,9 +8,9 @@ import (
 	"log"
 	"os"
 
+	"github.com/cybozu-go/scim/resource"
 	"github.com/goccy/go-yaml"
 	"github.com/lestrrat-go/codegen"
-	"github.com/cybozu-go/scim/resource"
 )
 
 func main() {
@@ -60,6 +60,9 @@ func _main() error {
 			o.L(`{`)
 		}
 		o.L(`s := resource.NewSchemaBuilder().`)
+		o.L(`ID(%q).`, r.ID())
+		o.L(`Name(%q).`, r.Name())
+		o.L(`Description(%q).`, r.Description())
 		o.L(`Attributes(`)
 		for _, attr := range r.Attributes() {
 			if err := generateAttr(o, attr); err != nil {

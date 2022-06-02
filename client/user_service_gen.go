@@ -172,6 +172,11 @@ func (call *CreateUserCall) IMS(v ...string) *CreateUserCall {
 	return call
 }
 
+func (call *CreateUserCall) Locale(v string) *CreateUserCall {
+	call.builder.Locale(v)
+	return call
+}
+
 func (call *CreateUserCall) Name(v *resource.Names) *CreateUserCall {
 	call.builder.Name(v)
 	return call
@@ -351,6 +356,11 @@ func (call *ReplaceUserCall) ExternalID(v string) *ReplaceUserCall {
 
 func (call *ReplaceUserCall) IMS(v ...string) *ReplaceUserCall {
 	call.builder.IMS(v...)
+	return call
+}
+
+func (call *ReplaceUserCall) Locale(v string) *ReplaceUserCall {
+	call.builder.Locale(v)
 	return call
 }
 
@@ -543,6 +553,11 @@ func (call *DeleteUserCall) ID(v string) *DeleteUserCall {
 
 func (call *DeleteUserCall) IMS(v ...string) *DeleteUserCall {
 	call.builder.IMS(v...)
+	return call
+}
+
+func (call *DeleteUserCall) Locale(v string) *DeleteUserCall {
+	call.builder.Locale(v)
 	return call
 }
 

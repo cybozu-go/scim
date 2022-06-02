@@ -147,7 +147,7 @@ func (call *CreateGroupCall) ExternalID(v string) *CreateGroupCall {
 	return call
 }
 
-func (call *CreateGroupCall) Members(v ...*resource.User) *CreateGroupCall {
+func (call *CreateGroupCall) Members(v ...*resource.GroupMember) *CreateGroupCall {
 	call.builder.Members(v...)
 	return call
 }
@@ -249,7 +249,7 @@ func (call *ReplaceGroupCall) ExternalID(v string) *ReplaceGroupCall {
 	return call
 }
 
-func (call *ReplaceGroupCall) Members(v ...*resource.User) *ReplaceGroupCall {
+func (call *ReplaceGroupCall) Members(v ...*resource.GroupMember) *ReplaceGroupCall {
 	call.builder.Members(v...)
 	return call
 }
@@ -356,7 +356,7 @@ func (call *DeleteGroupCall) ID(v string) *DeleteGroupCall {
 	return call
 }
 
-func (call *DeleteGroupCall) Members(v ...*resource.User) *DeleteGroupCall {
+func (call *DeleteGroupCall) Members(v ...*resource.GroupMember) *DeleteGroupCall {
 	call.builder.Members(v...)
 	return call
 }

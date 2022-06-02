@@ -27,7 +27,7 @@ type Group struct {
 	displayName   *string
 	externalID    *string
 	id            *string
-	members       []*User
+	members       []*GroupMember
 	meta          *Meta
 	schemas       schemas
 	privateParams map[string]interface{}
@@ -45,9 +45,6 @@ func (f GroupValidateFunc) Validate(v *Group) error {
 }
 
 var DefaultGroupValidator GroupValidator = GroupValidateFunc(func(v *Group) error {
-	if v.id == nil {
-		return fmt.Errorf(`required field "id" is missing`)
-	}
 	return nil
 })
 
@@ -78,7 +75,7 @@ func (v *Group) ID() string {
 	return *(v.id)
 }
 
-func (v *Group) Members() []*User {
+func (v *Group) Members() []*GroupMember {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.members
@@ -239,10 +236,10 @@ func (v *Group) Set(name string, value interface{}) error {
 		v.id = &tmp
 		return nil
 	case groupMembersJSONKey:
-		var tmp []*User
-		tmp, ok := value.([]*User)
+		var tmp []*GroupMember
+		tmp, ok := value.([]*GroupMember)
 		if !ok {
-			return fmt.Errorf(`expected []*User for field "members", but got %T`, value)
+			return fmt.Errorf(`expected []*GroupMember for field "members", but got %T`, value)
 		}
 		v.members = tmp
 		return nil
@@ -328,7 +325,7 @@ LOOP:
 				}
 				v.id = &x
 			case groupMembersJSONKey:
-				var x []*User
+				var x []*GroupMember
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "members": %w`, err)
 				}
@@ -443,7 +440,7 @@ func (b *GroupBuilder) ID(v string) *GroupBuilder {
 	return b
 }
 
-func (b *GroupBuilder) Members(v ...*User) *GroupBuilder {
+func (b *GroupBuilder) Members(v ...*GroupMember) *GroupBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.once.Do(b.init)

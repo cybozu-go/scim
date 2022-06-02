@@ -32,10 +32,10 @@ func (f FilterSupportValidateFunc) Validate(v *FilterSupport) error {
 
 var DefaultFilterSupportValidator FilterSupportValidator = FilterSupportValidateFunc(func(v *FilterSupport) error {
 	if v.maxResults == nil {
-		return fmt.Errorf(`required field "maxResults" is missing`)
+		return fmt.Errorf(`required field "maxResults" is missing in "FilterSupport"`)
 	}
 	if v.supported == nil {
-		return fmt.Errorf(`required field "supported" is missing`)
+		return fmt.Errorf(`required field "supported" is missing in "FilterSupport"`)
 	}
 	return nil
 })

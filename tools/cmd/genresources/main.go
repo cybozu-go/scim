@@ -141,7 +141,7 @@ func generateObject(object *codegen.Object) error {
 	for _, field := range object.Fields() {
 		if field.IsRequired() {
 			o.L(`if v.%s == nil {`, field.Name(false))
-			o.L("return fmt.Errorf(`required field %q is missing`)", field.JSON())
+			o.L("return fmt.Errorf(`required field %q is missing in %q`)", field.JSON(), object.Name(true))
 			o.L(`}`)
 		}
 	}

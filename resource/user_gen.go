@@ -18,6 +18,7 @@ const (
 	userGroupsJSONKey            = "groups"
 	userIDJSONKey                = "id"
 	userIMSJSONKey               = "ims"
+	userLocaleJSONKey            = "locale"
 	userMetaJSONKey              = "meta"
 	userNameJSONKey              = "name"
 	userNickNameJSONKey          = "nickName"
@@ -50,6 +51,7 @@ type User struct {
 	groups            []string
 	id                *string
 	ims               []string
+	locale            *string
 	meta              *Meta
 	name              *Names
 	nickName          *string
@@ -79,11 +81,8 @@ func (f UserValidateFunc) Validate(v *User) error {
 }
 
 var DefaultUserValidator UserValidator = UserValidateFunc(func(v *User) error {
-	if v.id == nil {
-		return fmt.Errorf(`required field "id" is missing`)
-	}
 	if v.userName == nil {
-		return fmt.Errorf(`required field "userName" is missing`)
+		return fmt.Errorf(`required field "userName" is missing in "User"`)
 	}
 	return nil
 })
@@ -152,6 +151,15 @@ func (v *User) IMS() []string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.ims
+}
+
+func (v *User) Locale() string {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	if v.locale == nil {
+		return ""
+	}
+	return *(v.locale)
 }
 
 func (v *User) Meta() *Meta {
@@ -263,7 +271,7 @@ func (v *User) X509Certificates() []string {
 }
 
 func (v *User) makePairs() []pair {
-	pairs := make([]pair, 0, 23)
+	pairs := make([]pair, 0, 24)
 	if v.active != nil {
 		pairs = append(pairs, pair{Key: "active", Value: *(v.active)})
 	}
@@ -290,6 +298,9 @@ func (v *User) makePairs() []pair {
 	}
 	if v.ims != nil {
 		pairs = append(pairs, pair{Key: "ims", Value: v.ims})
+	}
+	if v.locale != nil {
+		pairs = append(pairs, pair{Key: "locale", Value: *(v.locale)})
 	}
 	if v.meta != nil {
 		pairs = append(pairs, pair{Key: "meta", Value: v.meta})
@@ -419,6 +430,11 @@ func (v *User) Get(name string, options ...GetOption) (interface{}, bool) {
 			return nil, false
 		}
 		return v.ims, true
+	case userLocaleJSONKey:
+		if v.locale == nil {
+			return nil, false
+		}
+		return *(v.locale), true
 	case userMetaJSONKey:
 		if v.meta == nil {
 			return nil, false
@@ -588,6 +604,14 @@ func (v *User) Set(name string, value interface{}) error {
 		}
 		v.ims = tmp
 		return nil
+	case userLocaleJSONKey:
+		var tmp string
+		tmp, ok := value.(string)
+		if !ok {
+			return fmt.Errorf(`expected string for field "locale", but got %T`, value)
+		}
+		v.locale = &tmp
+		return nil
 	case userMetaJSONKey:
 		var tmp *Meta
 		tmp, ok := value.(*Meta)
@@ -721,6 +745,7 @@ func (v *User) UnmarshalJSON(data []byte) error {
 	v.groups = nil
 	v.id = nil
 	v.ims = nil
+	v.locale = nil
 	v.meta = nil
 	v.name = nil
 	v.nickName = nil
@@ -818,6 +843,12 @@ LOOP:
 					return fmt.Errorf(`failed to decode value for key "ims": %w`, err)
 				}
 				v.ims = x
+			case userLocaleJSONKey:
+				var x string
+				if err := dec.Decode(&x); err != nil {
+					return fmt.Errorf(`failed to decode value for key "locale": %w`, err)
+				}
+				v.locale = &x
 			case userMetaJSONKey:
 				var x *Meta
 				if err := dec.Decode(&x); err != nil {
@@ -1073,6 +1104,19 @@ func (b *UserBuilder) IMS(v ...string) *UserBuilder {
 		return b
 	}
 	if err := b.object.Set("ims", v); err != nil {
+		b.err = err
+	}
+	return b
+}
+
+func (b *UserBuilder) Locale(v string) *UserBuilder {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	b.once.Do(b.init)
+	if b.err != nil {
+		return b
+	}
+	if err := b.object.Set("locale", v); err != nil {
 		b.err = err
 	}
 	return b

@@ -52,25 +52,25 @@ func (f ServiceProviderConfigValidateFunc) Validate(v *ServiceProviderConfig) er
 
 var DefaultServiceProviderConfigValidator ServiceProviderConfigValidator = ServiceProviderConfigValidateFunc(func(v *ServiceProviderConfig) error {
 	if v.authenticationSchemes == nil {
-		return fmt.Errorf(`required field "authenticationSchemes" is missing`)
+		return fmt.Errorf(`required field "authenticationSchemes" is missing in "ServiceProviderConfig"`)
 	}
 	if v.bulk == nil {
-		return fmt.Errorf(`required field "bulk" is missing`)
+		return fmt.Errorf(`required field "bulk" is missing in "ServiceProviderConfig"`)
 	}
 	if v.changePassword == nil {
-		return fmt.Errorf(`required field "changePassword" is missing`)
+		return fmt.Errorf(`required field "changePassword" is missing in "ServiceProviderConfig"`)
 	}
 	if v.etag == nil {
-		return fmt.Errorf(`required field "etag" is missing`)
+		return fmt.Errorf(`required field "etag" is missing in "ServiceProviderConfig"`)
 	}
 	if v.filter == nil {
-		return fmt.Errorf(`required field "filter" is missing`)
+		return fmt.Errorf(`required field "filter" is missing in "ServiceProviderConfig"`)
 	}
 	if v.patch == nil {
-		return fmt.Errorf(`required field "patch" is missing`)
+		return fmt.Errorf(`required field "patch" is missing in "ServiceProviderConfig"`)
 	}
 	if v.sort == nil {
-		return fmt.Errorf(`required field "sort" is missing`)
+		return fmt.Errorf(`required field "sort" is missing in "ServiceProviderConfig"`)
 	}
 	return nil
 })

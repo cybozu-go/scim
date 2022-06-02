@@ -38,13 +38,13 @@ func (f AuthenticationSchemeValidateFunc) Validate(v *AuthenticationScheme) erro
 
 var DefaultAuthenticationSchemeValidator AuthenticationSchemeValidator = AuthenticationSchemeValidateFunc(func(v *AuthenticationScheme) error {
 	if v.description == nil {
-		return fmt.Errorf(`required field "description" is missing`)
+		return fmt.Errorf(`required field "description" is missing in "AuthenticationScheme"`)
 	}
 	if v.name == nil {
-		return fmt.Errorf(`required field "name" is missing`)
+		return fmt.Errorf(`required field "name" is missing in "AuthenticationScheme"`)
 	}
 	if v.typ == nil {
-		return fmt.Errorf(`required field "type" is missing`)
+		return fmt.Errorf(`required field "type" is missing in "AuthenticationScheme"`)
 	}
 	return nil
 })

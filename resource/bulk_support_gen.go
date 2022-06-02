@@ -34,13 +34,13 @@ func (f BulkSupportValidateFunc) Validate(v *BulkSupport) error {
 
 var DefaultBulkSupportValidator BulkSupportValidator = BulkSupportValidateFunc(func(v *BulkSupport) error {
 	if v.maxOperations == nil {
-		return fmt.Errorf(`required field "maxOperations" is missing`)
+		return fmt.Errorf(`required field "maxOperations" is missing in "BulkSupport"`)
 	}
 	if v.maxPayloadSize == nil {
-		return fmt.Errorf(`required field "maxPayloadSize" is missing`)
+		return fmt.Errorf(`required field "maxPayloadSize" is missing in "BulkSupport"`)
 	}
 	if v.supported == nil {
-		return fmt.Errorf(`required field "supported" is missing`)
+		return fmt.Errorf(`required field "supported" is missing in "BulkSupport"`)
 	}
 	return nil
 })

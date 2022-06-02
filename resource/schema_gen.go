@@ -36,7 +36,7 @@ func (f SchemaValidateFunc) Validate(v *Schema) error {
 
 var DefaultSchemaValidator SchemaValidator = SchemaValidateFunc(func(v *Schema) error {
 	if v.id == nil {
-		return fmt.Errorf(`required field "id" is missing`)
+		return fmt.Errorf(`required field "id" is missing in "Schema"`)
 	}
 	return nil
 })

@@ -1,6 +1,5 @@
 common:
   - name: id
-    required: true
   - name: externalID
     json: externalId
   - name: meta
@@ -33,6 +32,7 @@ objects:
       - name: title
       - name: userType
       - name: preferredLanguage
+      - name: locale
       - name: timezone
       - name: active
         type: bool
@@ -99,8 +99,9 @@ objects:
     fields:
       - name: displayName
       - name: members
-        type: '[]*User'
+        type: '[]*GroupMember'
   - name: GroupMember
+    skipCommonFields: true
     fields:
       - name: value
       - name: ref

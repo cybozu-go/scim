@@ -6,10 +6,8 @@ package sample
 import (
 	"context"
 	"crypto/rand"
-	"encoding/json"
 	"fmt"
 	"math/big"
-	"os"
 	"strings"
 
 	"entgo.io/ent/dialect"
@@ -20,6 +18,7 @@ import (
 	"github.com/lestrrat-go/xstrings"
 	"golang.org/x/text/secure/precis"
 
+	// default driver
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -119,7 +118,7 @@ func (b *Backend) CreateUser(in *resource.User) (*resource.User, error) {
 		createUserCall.SetTimezone(v)
 	}
 
-	var emails []*resource.Email
+	emails := make([]*resource.Email, len(in.Emails()), 0)
 	var hasPrimary bool
 	for _, v := range in.Emails() {
 		emailCreateCall := b.db.Email.Create().
@@ -236,7 +235,6 @@ func (b *Backend) CreateGroup(in *resource.Group) (*resource.Group, error) {
 	var groupMembers []uuid.UUID
 
 	for _, member := range in.Members() {
-		json.NewEncoder(os.Stdout).Encode(member)
 		asUUID, err := uuid.Parse(member.Value())
 		if err != nil {
 			return nil, fmt.Errorf(`expected "value" to contain a valid UUID: %w`, err)

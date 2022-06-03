@@ -19,7 +19,6 @@ func (Email) Fields() []ent.Field {
 		field.String(`type`).Optional(),
 		field.String(`value`),
 	}
-	return nil
 }
 
 // Edges of the Email.

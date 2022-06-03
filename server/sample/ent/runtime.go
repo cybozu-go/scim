@@ -37,15 +37,15 @@ func init() {
 	// user.DefaultActive holds the default value on creation for the active field.
 	user.DefaultActive = userDescActive.Default.(bool)
 	// userDescPassword is the schema descriptor for password field.
-	userDescPassword := userFields[3].Descriptor()
+	userDescPassword := userFields[4].Descriptor()
 	// user.PasswordValidator is a validator for the "password" field. It is called by the builders before save.
 	user.PasswordValidator = userDescPassword.Validators[0].(func(string) error)
 	// userDescUserName is the schema descriptor for userName field.
-	userDescUserName := userFields[8].Descriptor()
+	userDescUserName := userFields[9].Descriptor()
 	// user.UserNameValidator is a validator for the "userName" field. It is called by the builders before save.
 	user.UserNameValidator = userDescUserName.Validators[0].(func(string) error)
 	// userDescID is the schema descriptor for id field.
-	userDescID := userFields[2].Descriptor()
+	userDescID := userFields[3].Descriptor()
 	// user.DefaultID holds the default value on creation for the id field.
 	user.DefaultID = userDescID.Default.(func() uuid.UUID)
 }

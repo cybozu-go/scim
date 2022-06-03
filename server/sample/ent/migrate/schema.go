@@ -35,6 +35,7 @@ var (
 	GroupsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "display_name", Type: field.TypeString},
+		{Name: "external_id", Type: field.TypeString},
 		{Name: "group_children", Type: field.TypeUUID, Nullable: true},
 		{Name: "user_groups", Type: field.TypeUUID, Nullable: true},
 	}
@@ -46,13 +47,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "groups_groups_children",
-				Columns:    []*schema.Column{GroupsColumns[2]},
+				Columns:    []*schema.Column{GroupsColumns[3]},
 				RefColumns: []*schema.Column{GroupsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "groups_users_groups",
-				Columns:    []*schema.Column{GroupsColumns[3]},
+				Columns:    []*schema.Column{GroupsColumns[4]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -87,6 +88,7 @@ var (
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "active", Type: field.TypeBool, Default: false},
+		{Name: "display_name", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "external_id", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "password", Type: field.TypeString, Size: 2147483647},
 		{Name: "preferred_language", Type: field.TypeString, Nullable: true, Size: 2147483647},
@@ -104,7 +106,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "users_groups_users",
-				Columns:    []*schema.Column{UsersColumns[9]},
+				Columns:    []*schema.Column{UsersColumns[10]},
 				RefColumns: []*schema.Column{GroupsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},

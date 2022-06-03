@@ -18,6 +18,8 @@ type User struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// Active holds the value of the "active" field.
 	Active bool `json:"active,omitempty"`
+	// DisplayName holds the value of the "displayName" field.
+	DisplayName string `json:"displayName,omitempty"`
 	// ExternalID holds the value of the "externalID" field.
 	ExternalID string `json:"externalID,omitempty"`
 	// Password holds the value of the "password" field.
@@ -85,7 +87,7 @@ func (*User) scanValues(columns []string) ([]interface{}, error) {
 		switch columns[i] {
 		case user.FieldActive:
 			values[i] = new(sql.NullBool)
-		case user.FieldExternalID, user.FieldPassword, user.FieldPreferredLanguage, user.FieldLocale, user.FieldTimezone, user.FieldUserType, user.FieldUserName:
+		case user.FieldDisplayName, user.FieldExternalID, user.FieldPassword, user.FieldPreferredLanguage, user.FieldLocale, user.FieldTimezone, user.FieldUserType, user.FieldUserName:
 			values[i] = new(sql.NullString)
 		case user.FieldID:
 			values[i] = new(uuid.UUID)
@@ -117,6 +119,12 @@ func (u *User) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field active", values[i])
 			} else if value.Valid {
 				u.Active = value.Bool
+			}
+		case user.FieldDisplayName:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field displayName", values[i])
+			} else if value.Valid {
+				u.DisplayName = value.String
 			}
 		case user.FieldExternalID:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -212,6 +220,8 @@ func (u *User) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v", u.ID))
 	builder.WriteString(", active=")
 	builder.WriteString(fmt.Sprintf("%v", u.Active))
+	builder.WriteString(", displayName=")
+	builder.WriteString(u.DisplayName)
 	builder.WriteString(", externalID=")
 	builder.WriteString(u.ExternalID)
 	builder.WriteString(", password=")

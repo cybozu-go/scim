@@ -18,6 +18,8 @@ type Group struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// DisplayName holds the value of the "displayName" field.
 	DisplayName string `json:"displayName,omitempty"`
+	// ExternalID holds the value of the "externalID" field.
+	ExternalID string `json:"externalID,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the GroupQuery when eager-loading is set.
 	Edges          GroupEdges `json:"edges"`
@@ -75,7 +77,7 @@ func (*Group) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case group.FieldDisplayName:
+		case group.FieldDisplayName, group.FieldExternalID:
 			values[i] = new(sql.NullString)
 		case group.FieldID:
 			values[i] = new(uuid.UUID)
@@ -109,6 +111,12 @@ func (gr *Group) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field displayName", values[i])
 			} else if value.Valid {
 				gr.DisplayName = value.String
+			}
+		case group.FieldExternalID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field externalID", values[i])
+			} else if value.Valid {
+				gr.ExternalID = value.String
 			}
 		case group.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
@@ -169,6 +177,8 @@ func (gr *Group) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v", gr.ID))
 	builder.WriteString(", displayName=")
 	builder.WriteString(gr.DisplayName)
+	builder.WriteString(", externalID=")
+	builder.WriteString(gr.ExternalID)
 	builder.WriteByte(')')
 	return builder.String()
 }

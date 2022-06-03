@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/goccy/go-yaml"
@@ -74,8 +75,13 @@ func _main() error {
 		}
 
 		object.Organize()
+
 		if err := generateObject(object); err != nil {
 			return fmt.Errorf(`failed to generate object: %s`, err)
+		}
+
+		if err := generateEnt(object); err != nil {
+			return fmt.Errorf(`faile dto generate ent adapter: %s`, err)
 		}
 	}
 
@@ -488,6 +494,61 @@ func generateObject(object *codegen.Object) error {
 			fmt.Fprint(os.Stderr, cfe.Source())
 		}
 		return fmt.Errorf(`failed to write to %s_gen.go: %w`, xstrings.Snake(object.Name(false)), err)
+	}
+	return nil
+}
+
+func generateEnt(object *codegen.Object) error {
+	// for the time being, only generate for hardcoded objects.
+	// later, move this definition to objects.yml
+	switch object.Name(true) {
+	case `User`, `Group`:
+	default:
+		return nil
+	}
+
+	fmt.Printf("  ⌛ Generating ent adapters for %s...\n", object.Name(true))
+
+	var buf bytes.Buffer
+	o := codegen.NewOutput(&buf)
+
+	o.L(`package sample`)
+
+	o.LL(`import (`)
+	o.L(`"github.com/cybozu-go/scim/server/sample/ent"`)
+	o.L(`)`)
+
+	o.LL(`func %[1]sResourceFromEnt(in *ent.%[1]s) (*resource.%[1]s, error) {`, object.Name(true))
+	o.L(`var b resource.Builder`)
+
+	o.LL(`meta, err := b.Meta().`)
+	o.L(`ResourceType(%q).`, object.Name(true))
+	o.L(`Location(%q+in.ID.String()).` /* TODO: FIXME */, fmt.Sprintf(`https://foobar.com/scim/v2/%s/`, object.Name(true)))
+	o.L(`Build()`)
+	o.L(`if err != nil {`)
+	o.L(`return nil, fmt.Errorf("failed to build meta information for %s")`, object.Name(true))
+	o.L(`}`)
+
+	o.L(`return b.%s().`, object.Name(true))
+	for _, field := range object.Fields() {
+		switch field.Name(true) {
+		case "ID":
+			o.L(`%[1]s(in.%[1]s.String()).`, field.Name(true))
+		case "Schemas", "Meta", "Members", "Addresses", "Emails", "Entitlements", "IMS", "NickName", "Name", "Groups", "PhoneNumbers", "ProfileURL", "Title", "Roles", "X509Certificates":
+		default:
+			o.L(`%[1]s(in.%[1]s).`, field.Name(true))
+		}
+	}
+	o.L(`Meta(meta).`)
+	o.L(`Build()`)
+	o.L(`}`)
+
+	fn := filepath.Join(`..`, `server`, `sample`, xstrings.Snake(object.Name(false))+`_gen.go`)
+	if err := o.WriteFile(fn, codegen.WithFormatCode(true)); err != nil {
+		if cfe, ok := err.(codegen.CodeFormatError); ok {
+			fmt.Fprint(os.Stderr, cfe.Source())
+		}
+		return fmt.Errorf(`failed to write to %s: %w`, fn, err)
 	}
 	return nil
 }

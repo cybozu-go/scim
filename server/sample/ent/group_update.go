@@ -35,6 +35,12 @@ func (gu *GroupUpdate) SetDisplayName(s string) *GroupUpdate {
 	return gu
 }
 
+// SetExternalID sets the "externalID" field.
+func (gu *GroupUpdate) SetExternalID(s string) *GroupUpdate {
+	gu.mutation.SetExternalID(s)
+	return gu
+}
+
 // AddUserIDs adds the "users" edge to the User entity by IDs.
 func (gu *GroupUpdate) AddUserIDs(ids ...uuid.UUID) *GroupUpdate {
 	gu.mutation.AddUserIDs(ids...)
@@ -232,6 +238,13 @@ func (gu *GroupUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: group.FieldDisplayName,
 		})
 	}
+	if value, ok := gu.mutation.ExternalID(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: group.FieldExternalID,
+		})
+	}
 	if gu.mutation.UsersCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -397,6 +410,12 @@ type GroupUpdateOne struct {
 // SetDisplayName sets the "displayName" field.
 func (guo *GroupUpdateOne) SetDisplayName(s string) *GroupUpdateOne {
 	guo.mutation.SetDisplayName(s)
+	return guo
+}
+
+// SetExternalID sets the "externalID" field.
+func (guo *GroupUpdateOne) SetExternalID(s string) *GroupUpdateOne {
+	guo.mutation.SetExternalID(s)
 	return guo
 }
 
@@ -619,6 +638,13 @@ func (guo *GroupUpdateOne) sqlSave(ctx context.Context) (_node *Group, err error
 			Type:   field.TypeString,
 			Value:  value,
 			Column: group.FieldDisplayName,
+		})
+	}
+	if value, ok := guo.mutation.ExternalID(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: group.FieldExternalID,
 		})
 	}
 	if guo.mutation.UsersCleared() {

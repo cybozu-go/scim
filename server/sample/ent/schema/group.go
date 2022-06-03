@@ -17,6 +17,7 @@ func (Group) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.String("displayName").NotEmpty(),
+		field.String("externalID"),
 	}
 }
 

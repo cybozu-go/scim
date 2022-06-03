@@ -45,6 +45,26 @@ func (uu *UserUpdate) SetNillableActive(b *bool) *UserUpdate {
 	return uu
 }
 
+// SetDisplayName sets the "displayName" field.
+func (uu *UserUpdate) SetDisplayName(s string) *UserUpdate {
+	uu.mutation.SetDisplayName(s)
+	return uu
+}
+
+// SetNillableDisplayName sets the "displayName" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableDisplayName(s *string) *UserUpdate {
+	if s != nil {
+		uu.SetDisplayName(*s)
+	}
+	return uu
+}
+
+// ClearDisplayName clears the value of the "displayName" field.
+func (uu *UserUpdate) ClearDisplayName() *UserUpdate {
+	uu.mutation.ClearDisplayName()
+	return uu
+}
+
 // SetExternalID sets the "externalID" field.
 func (uu *UserUpdate) SetExternalID(s string) *UserUpdate {
 	uu.mutation.SetExternalID(s)
@@ -370,6 +390,19 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: user.FieldActive,
 		})
 	}
+	if value, ok := uu.mutation.DisplayName(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: user.FieldDisplayName,
+		})
+	}
+	if uu.mutation.DisplayNameCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: user.FieldDisplayName,
+		})
+	}
 	if value, ok := uu.mutation.ExternalID(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -641,6 +674,26 @@ func (uuo *UserUpdateOne) SetNillableActive(b *bool) *UserUpdateOne {
 	if b != nil {
 		uuo.SetActive(*b)
 	}
+	return uuo
+}
+
+// SetDisplayName sets the "displayName" field.
+func (uuo *UserUpdateOne) SetDisplayName(s string) *UserUpdateOne {
+	uuo.mutation.SetDisplayName(s)
+	return uuo
+}
+
+// SetNillableDisplayName sets the "displayName" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableDisplayName(s *string) *UserUpdateOne {
+	if s != nil {
+		uuo.SetDisplayName(*s)
+	}
+	return uuo
+}
+
+// ClearDisplayName clears the value of the "displayName" field.
+func (uuo *UserUpdateOne) ClearDisplayName() *UserUpdateOne {
+	uuo.mutation.ClearDisplayName()
 	return uuo
 }
 
@@ -991,6 +1044,19 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Type:   field.TypeBool,
 			Value:  value,
 			Column: user.FieldActive,
+		})
+	}
+	if value, ok := uuo.mutation.DisplayName(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: user.FieldDisplayName,
+		})
+	}
+	if uuo.mutation.DisplayNameCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: user.FieldDisplayName,
 		})
 	}
 	if value, ok := uuo.mutation.ExternalID(); ok {

@@ -17,6 +17,7 @@ func (User) Fields() []ent.Field {
 	// TODO: would be nice to generate this automatically
 	return []ent.Field{
 		field.Bool("active").Default(false),
+		field.Text("displayName").Optional(),
 		field.Text("externalID").Optional(),
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.Text("password").NotEmpty(),

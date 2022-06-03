@@ -37,6 +37,20 @@ func (uc *UserCreate) SetNillableActive(b *bool) *UserCreate {
 	return uc
 }
 
+// SetDisplayName sets the "displayName" field.
+func (uc *UserCreate) SetDisplayName(s string) *UserCreate {
+	uc.mutation.SetDisplayName(s)
+	return uc
+}
+
+// SetNillableDisplayName sets the "displayName" field if the given value is not nil.
+func (uc *UserCreate) SetNillableDisplayName(s *string) *UserCreate {
+	if s != nil {
+		uc.SetDisplayName(*s)
+	}
+	return uc
+}
+
 // SetExternalID sets the "externalID" field.
 func (uc *UserCreate) SetExternalID(s string) *UserCreate {
 	uc.mutation.SetExternalID(s)
@@ -323,6 +337,14 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Column: user.FieldActive,
 		})
 		_node.Active = value
+	}
+	if value, ok := uc.mutation.DisplayName(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: user.FieldDisplayName,
+		})
+		_node.DisplayName = value
 	}
 	if value, ok := uc.mutation.ExternalID(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{

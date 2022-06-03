@@ -99,6 +99,13 @@ func DisplayName(v string) predicate.Group {
 	})
 }
 
+// ExternalID applies equality check predicate on the "externalID" field. It's identical to ExternalIDEQ.
+func ExternalID(v string) predicate.Group {
+	return predicate.Group(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldExternalID), v))
+	})
+}
+
 // DisplayNameEQ applies the EQ predicate on the "displayName" field.
 func DisplayNameEQ(v string) predicate.Group {
 	return predicate.Group(func(s *sql.Selector) {
@@ -207,6 +214,117 @@ func DisplayNameEqualFold(v string) predicate.Group {
 func DisplayNameContainsFold(v string) predicate.Group {
 	return predicate.Group(func(s *sql.Selector) {
 		s.Where(sql.ContainsFold(s.C(FieldDisplayName), v))
+	})
+}
+
+// ExternalIDEQ applies the EQ predicate on the "externalID" field.
+func ExternalIDEQ(v string) predicate.Group {
+	return predicate.Group(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldExternalID), v))
+	})
+}
+
+// ExternalIDNEQ applies the NEQ predicate on the "externalID" field.
+func ExternalIDNEQ(v string) predicate.Group {
+	return predicate.Group(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldExternalID), v))
+	})
+}
+
+// ExternalIDIn applies the In predicate on the "externalID" field.
+func ExternalIDIn(vs ...string) predicate.Group {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Group(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldExternalID), v...))
+	})
+}
+
+// ExternalIDNotIn applies the NotIn predicate on the "externalID" field.
+func ExternalIDNotIn(vs ...string) predicate.Group {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Group(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldExternalID), v...))
+	})
+}
+
+// ExternalIDGT applies the GT predicate on the "externalID" field.
+func ExternalIDGT(v string) predicate.Group {
+	return predicate.Group(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldExternalID), v))
+	})
+}
+
+// ExternalIDGTE applies the GTE predicate on the "externalID" field.
+func ExternalIDGTE(v string) predicate.Group {
+	return predicate.Group(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldExternalID), v))
+	})
+}
+
+// ExternalIDLT applies the LT predicate on the "externalID" field.
+func ExternalIDLT(v string) predicate.Group {
+	return predicate.Group(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldExternalID), v))
+	})
+}
+
+// ExternalIDLTE applies the LTE predicate on the "externalID" field.
+func ExternalIDLTE(v string) predicate.Group {
+	return predicate.Group(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldExternalID), v))
+	})
+}
+
+// ExternalIDContains applies the Contains predicate on the "externalID" field.
+func ExternalIDContains(v string) predicate.Group {
+	return predicate.Group(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldExternalID), v))
+	})
+}
+
+// ExternalIDHasPrefix applies the HasPrefix predicate on the "externalID" field.
+func ExternalIDHasPrefix(v string) predicate.Group {
+	return predicate.Group(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldExternalID), v))
+	})
+}
+
+// ExternalIDHasSuffix applies the HasSuffix predicate on the "externalID" field.
+func ExternalIDHasSuffix(v string) predicate.Group {
+	return predicate.Group(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldExternalID), v))
+	})
+}
+
+// ExternalIDEqualFold applies the EqualFold predicate on the "externalID" field.
+func ExternalIDEqualFold(v string) predicate.Group {
+	return predicate.Group(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldExternalID), v))
+	})
+}
+
+// ExternalIDContainsFold applies the ContainsFold predicate on the "externalID" field.
+func ExternalIDContainsFold(v string) predicate.Group {
+	return predicate.Group(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldExternalID), v))
 	})
 }
 

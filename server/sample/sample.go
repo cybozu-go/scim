@@ -1,4 +1,4 @@
-//go:generate go generate./ent
+//go:generate go generate ./ent
 //go:generate perl autofix.pl
 
 package sample
@@ -15,7 +15,9 @@ import (
 	"entgo.io/ent/dialect"
 	"github.com/cybozu-go/scim/resource"
 	"github.com/cybozu-go/scim/server/sample/ent"
+	"github.com/cybozu-go/scim/server/sample/ent/user"
 	"github.com/google/uuid"
+	"github.com/lestrrat-go/xstrings"
 	"golang.org/x/text/secure/precis"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -201,6 +203,34 @@ func (b *Backend) CreateUser(in *resource.User) (*resource.User, error) {
 	return userBuilder.Build()
 }
 
+func (b *Backend) RetrieveUser(id string) (*resource.User, error) {
+	parsedUUID, err := uuid.Parse(id)
+	if err != nil {
+		return nil, fmt.Errorf(`failed to parse ID: %w`, err)
+	}
+
+	user, err := b.db.User.Query().
+		Where(user.IDEQ(parsedUUID)).
+		First(context.TODO())
+	if err != nil {
+		return nil, fmt.Errorf(`failed to retrieve user: %w`, err)
+	}
+
+	return UserResourceFromEnt(user)
+}
+func (b *Backend) DeleteUser(id string) error {
+	parsedUUID, err := uuid.Parse(id)
+	if err != nil {
+		return fmt.Errorf(`failed to parse ID: %w`, err)
+	}
+
+	if err := b.db.User.DeleteOneID(parsedUUID).Exec(context.TODO()); err != nil {
+		return fmt.Errorf(`failed to delete user: %w`, err)
+	}
+
+	return nil
+}
+
 func (b *Backend) CreateGroup(in *resource.Group) (*resource.Group, error) {
 	var userMembers []uuid.UUID
 	var groupMembers []uuid.UUID
@@ -249,5 +279,41 @@ func (b *Backend) CreateGroup(in *resource.Group) (*resource.Group, error) {
 				MustBuild(),
 		).
 		Build()
+}
 
+func (b *Backend) Search(in *resource.SearchRequest) (*resource.ListResponse, error) {
+	q := b.db.User.Query()
+
+	if attrs := in.Attributes(); len(attrs) > 0 {
+		// TODO: need to generate SCIM name to ent name converter?
+		snakeAttrs := make([]string, len(attrs))
+		for i, attr := range attrs {
+			snakeAttrs[i] = xstrings.Snake(attr)
+		}
+		q.Select(snakeAttrs...)
+	}
+
+	q.Where(
+		user.DisplayNameHasPrefix("smith"),
+	)
+
+	users, err := q.All(context.TODO())
+	if err != nil {
+		return nil, fmt.Errorf(`failed to execute query: %w`, err)
+	}
+
+	list := make([]interface{}, len(users))
+	for i, user := range users {
+		created, err := UserResourceFromEnt(user)
+		if err != nil {
+			return nil, fmt.Errorf(`failed to convert internal data to SCIM resource: %w`, err)
+		}
+		list[i] = created
+	}
+
+	var builder resource.Builder
+	return builder.ListResponse().
+		TotalResults(len(list)).
+		Resources(list...).
+		Build()
 }

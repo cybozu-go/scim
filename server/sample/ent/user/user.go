@@ -13,6 +13,8 @@ const (
 	FieldID = "id"
 	// FieldActive holds the string denoting the active field in the database.
 	FieldActive = "active"
+	// FieldDisplayName holds the string denoting the displayname field in the database.
+	FieldDisplayName = "display_name"
 	// FieldExternalID holds the string denoting the externalid field in the database.
 	FieldExternalID = "external_id"
 	// FieldPassword holds the string denoting the password field in the database.
@@ -62,6 +64,7 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldActive,
+	FieldDisplayName,
 	FieldExternalID,
 	FieldPassword,
 	FieldPreferredLanguage,

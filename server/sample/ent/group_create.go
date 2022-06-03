@@ -27,6 +27,12 @@ func (gc *GroupCreate) SetDisplayName(s string) *GroupCreate {
 	return gc
 }
 
+// SetExternalID sets the "externalID" field.
+func (gc *GroupCreate) SetExternalID(s string) *GroupCreate {
+	gc.mutation.SetExternalID(s)
+	return gc
+}
+
 // SetID sets the "id" field.
 func (gc *GroupCreate) SetID(u uuid.UUID) *GroupCreate {
 	gc.mutation.SetID(u)
@@ -177,6 +183,9 @@ func (gc *GroupCreate) check() error {
 			return &ValidationError{Name: "displayName", err: fmt.Errorf(`ent: validator failed for field "Group.displayName": %w`, err)}
 		}
 	}
+	if _, ok := gc.mutation.ExternalID(); !ok {
+		return &ValidationError{Name: "externalID", err: errors.New(`ent: missing required field "Group.externalID"`)}
+	}
 	return nil
 }
 
@@ -220,6 +229,14 @@ func (gc *GroupCreate) createSpec() (*Group, *sqlgraph.CreateSpec) {
 			Column: group.FieldDisplayName,
 		})
 		_node.DisplayName = value
+	}
+	if value, ok := gc.mutation.ExternalID(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: group.FieldExternalID,
+		})
+		_node.ExternalID = value
 	}
 	if nodes := gc.mutation.UsersIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

@@ -623,6 +623,7 @@ type GroupMutation struct {
 	typ             string
 	id              *uuid.UUID
 	displayName     *string
+	externalID      *string
 	clearedFields   map[string]struct{}
 	users           map[uuid.UUID]struct{}
 	removedusers    map[uuid.UUID]struct{}
@@ -775,6 +776,42 @@ func (m *GroupMutation) OldDisplayName(ctx context.Context) (v string, err error
 // ResetDisplayName resets all changes to the "displayName" field.
 func (m *GroupMutation) ResetDisplayName() {
 	m.displayName = nil
+}
+
+// SetExternalID sets the "externalID" field.
+func (m *GroupMutation) SetExternalID(s string) {
+	m.externalID = &s
+}
+
+// ExternalID returns the value of the "externalID" field in the mutation.
+func (m *GroupMutation) ExternalID() (r string, exists bool) {
+	v := m.externalID
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldExternalID returns the old "externalID" field's value of the Group entity.
+// If the Group object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GroupMutation) OldExternalID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldExternalID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldExternalID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldExternalID: %w", err)
+	}
+	return oldValue.ExternalID, nil
+}
+
+// ResetExternalID resets all changes to the "externalID" field.
+func (m *GroupMutation) ResetExternalID() {
+	m.externalID = nil
 }
 
 // AddUserIDs adds the "users" edge to the User entity by ids.
@@ -943,9 +980,12 @@ func (m *GroupMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *GroupMutation) Fields() []string {
-	fields := make([]string, 0, 1)
+	fields := make([]string, 0, 2)
 	if m.displayName != nil {
 		fields = append(fields, group.FieldDisplayName)
+	}
+	if m.externalID != nil {
+		fields = append(fields, group.FieldExternalID)
 	}
 	return fields
 }
@@ -957,6 +997,8 @@ func (m *GroupMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case group.FieldDisplayName:
 		return m.DisplayName()
+	case group.FieldExternalID:
+		return m.ExternalID()
 	}
 	return nil, false
 }
@@ -968,6 +1010,8 @@ func (m *GroupMutation) OldField(ctx context.Context, name string) (ent.Value, e
 	switch name {
 	case group.FieldDisplayName:
 		return m.OldDisplayName(ctx)
+	case group.FieldExternalID:
+		return m.OldExternalID(ctx)
 	}
 	return nil, fmt.Errorf("unknown Group field %s", name)
 }
@@ -983,6 +1027,13 @@ func (m *GroupMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetDisplayName(v)
+		return nil
+	case group.FieldExternalID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetExternalID(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Group field %s", name)
@@ -1035,6 +1086,9 @@ func (m *GroupMutation) ResetField(name string) error {
 	switch name {
 	case group.FieldDisplayName:
 		m.ResetDisplayName()
+		return nil
+	case group.FieldExternalID:
+		m.ResetExternalID()
 		return nil
 	}
 	return fmt.Errorf("unknown Group field %s", name)
@@ -1942,6 +1996,7 @@ type UserMutation struct {
 	typ               string
 	id                *uuid.UUID
 	active            *bool
+	displayName       *string
 	externalID        *string
 	password          *string
 	preferredLanguage *string
@@ -2102,6 +2157,55 @@ func (m *UserMutation) OldActive(ctx context.Context) (v bool, err error) {
 // ResetActive resets all changes to the "active" field.
 func (m *UserMutation) ResetActive() {
 	m.active = nil
+}
+
+// SetDisplayName sets the "displayName" field.
+func (m *UserMutation) SetDisplayName(s string) {
+	m.displayName = &s
+}
+
+// DisplayName returns the value of the "displayName" field in the mutation.
+func (m *UserMutation) DisplayName() (r string, exists bool) {
+	v := m.displayName
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDisplayName returns the old "displayName" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldDisplayName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDisplayName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDisplayName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDisplayName: %w", err)
+	}
+	return oldValue.DisplayName, nil
+}
+
+// ClearDisplayName clears the value of the "displayName" field.
+func (m *UserMutation) ClearDisplayName() {
+	m.displayName = nil
+	m.clearedFields[user.FieldDisplayName] = struct{}{}
+}
+
+// DisplayNameCleared returns if the "displayName" field was cleared in this mutation.
+func (m *UserMutation) DisplayNameCleared() bool {
+	_, ok := m.clearedFields[user.FieldDisplayName]
+	return ok
+}
+
+// ResetDisplayName resets all changes to the "displayName" field.
+func (m *UserMutation) ResetDisplayName() {
+	m.displayName = nil
+	delete(m.clearedFields, user.FieldDisplayName)
 }
 
 // SetExternalID sets the "externalID" field.
@@ -2602,9 +2706,12 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 8)
+	fields := make([]string, 0, 9)
 	if m.active != nil {
 		fields = append(fields, user.FieldActive)
+	}
+	if m.displayName != nil {
+		fields = append(fields, user.FieldDisplayName)
 	}
 	if m.externalID != nil {
 		fields = append(fields, user.FieldExternalID)
@@ -2637,6 +2744,8 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case user.FieldActive:
 		return m.Active()
+	case user.FieldDisplayName:
+		return m.DisplayName()
 	case user.FieldExternalID:
 		return m.ExternalID()
 	case user.FieldPassword:
@@ -2662,6 +2771,8 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 	switch name {
 	case user.FieldActive:
 		return m.OldActive(ctx)
+	case user.FieldDisplayName:
+		return m.OldDisplayName(ctx)
 	case user.FieldExternalID:
 		return m.OldExternalID(ctx)
 	case user.FieldPassword:
@@ -2691,6 +2802,13 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetActive(v)
+		return nil
+	case user.FieldDisplayName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDisplayName(v)
 		return nil
 	case user.FieldExternalID:
 		v, ok := value.(string)
@@ -2771,6 +2889,9 @@ func (m *UserMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *UserMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(user.FieldDisplayName) {
+		fields = append(fields, user.FieldDisplayName)
+	}
 	if m.FieldCleared(user.FieldExternalID) {
 		fields = append(fields, user.FieldExternalID)
 	}
@@ -2800,6 +2921,9 @@ func (m *UserMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *UserMutation) ClearField(name string) error {
 	switch name {
+	case user.FieldDisplayName:
+		m.ClearDisplayName()
+		return nil
 	case user.FieldExternalID:
 		m.ClearExternalID()
 		return nil
@@ -2825,6 +2949,9 @@ func (m *UserMutation) ResetField(name string) error {
 	switch name {
 	case user.FieldActive:
 		m.ResetActive()
+		return nil
+	case user.FieldDisplayName:
+		m.ResetDisplayName()
 		return nil
 	case user.FieldExternalID:
 		m.ResetExternalID()

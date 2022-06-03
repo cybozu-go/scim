@@ -13,6 +13,8 @@ const (
 	FieldID = "id"
 	// FieldDisplayName holds the string denoting the displayname field in the database.
 	FieldDisplayName = "display_name"
+	// FieldExternalID holds the string denoting the externalid field in the database.
+	FieldExternalID = "external_id"
 	// EdgeUsers holds the string denoting the users edge name in mutations.
 	EdgeUsers = "users"
 	// EdgeParent holds the string denoting the parent edge name in mutations.
@@ -42,6 +44,7 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldDisplayName,
+	FieldExternalID,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "groups"

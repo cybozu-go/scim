@@ -118,7 +118,7 @@ func (b *Backend) CreateUser(in *resource.User) (*resource.User, error) {
 		createUserCall.SetTimezone(v)
 	}
 
-	emails := make([]*resource.Email, len(in.Emails()), 0)
+	emails := make([]*resource.Email, 0, len(in.Emails()))
 	var hasPrimary bool
 	for _, v := range in.Emails() {
 		emailCreateCall := b.db.Email.Create().

@@ -92,7 +92,7 @@ func (m *mockBackend) Search(*resource.SearchRequest) (*resource.ListResponse, e
 }
 
 func TestServer(t *testing.T) {
-	test.RunConformanceTests("Mock backend", &mockBackend{
+	test.RunConformanceTests(t, "Mock backend", &mockBackend{
 		users: make(map[string]*resource.User),
 	})
 }

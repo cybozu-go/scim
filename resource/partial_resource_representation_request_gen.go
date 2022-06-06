@@ -34,10 +34,22 @@ var DefaultPartialResourceRepresentationRequestValidator PartialResourceRepresen
 	return nil
 })
 
+func (v *PartialResourceRepresentationRequest) HasAttributes() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.attributes != nil
+}
+
 func (v *PartialResourceRepresentationRequest) Attributes() []string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.attributes
+}
+
+func (v *PartialResourceRepresentationRequest) HasExcludedAttributes() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.excludedAttributes != nil
 }
 
 func (v *PartialResourceRepresentationRequest) ExcludedAttributes() []string {

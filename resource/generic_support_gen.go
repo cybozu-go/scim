@@ -35,6 +35,12 @@ var DefaultGenericSupportValidator GenericSupportValidator = GenericSupportValid
 	return nil
 })
 
+func (v *GenericSupport) HasSupported() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.supported != nil
+}
+
 func (v *GenericSupport) Supported() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()

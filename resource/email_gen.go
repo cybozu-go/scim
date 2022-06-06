@@ -38,6 +38,12 @@ var DefaultEmailValidator EmailValidator = EmailValidateFunc(func(v *Email) erro
 	return nil
 })
 
+func (v *Email) HasDisplay() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.display != nil
+}
+
 func (v *Email) Display() string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -45,6 +51,12 @@ func (v *Email) Display() string {
 		return ""
 	}
 	return *(v.display)
+}
+
+func (v *Email) HasPrimary() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.primary != nil
 }
 
 func (v *Email) Primary() bool {
@@ -56,6 +68,12 @@ func (v *Email) Primary() bool {
 	return *(v.primary)
 }
 
+func (v *Email) HasType() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.typ != nil
+}
+
 func (v *Email) Type() string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -63,6 +81,12 @@ func (v *Email) Type() string {
 		return ""
 	}
 	return *(v.typ)
+}
+
+func (v *Email) HasValue() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.value != nil
 }
 
 func (v *Email) Value() string {

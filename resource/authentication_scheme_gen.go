@@ -49,6 +49,12 @@ var DefaultAuthenticationSchemeValidator AuthenticationSchemeValidator = Authent
 	return nil
 })
 
+func (v *AuthenticationScheme) HasDescription() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.description != nil
+}
+
 func (v *AuthenticationScheme) Description() string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -56,6 +62,12 @@ func (v *AuthenticationScheme) Description() string {
 		return ""
 	}
 	return *(v.description)
+}
+
+func (v *AuthenticationScheme) HasDocumentationURI() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.documentationURI != nil
 }
 
 func (v *AuthenticationScheme) DocumentationURI() string {
@@ -67,6 +79,12 @@ func (v *AuthenticationScheme) DocumentationURI() string {
 	return *(v.documentationURI)
 }
 
+func (v *AuthenticationScheme) HasName() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.name != nil
+}
+
 func (v *AuthenticationScheme) Name() string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -76,6 +94,12 @@ func (v *AuthenticationScheme) Name() string {
 	return *(v.name)
 }
 
+func (v *AuthenticationScheme) HasSpecURI() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.specURI != nil
+}
+
 func (v *AuthenticationScheme) SpecURI() string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -83,6 +107,12 @@ func (v *AuthenticationScheme) SpecURI() string {
 		return ""
 	}
 	return *(v.specURI)
+}
+
+func (v *AuthenticationScheme) HasTyp() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.typ != nil
 }
 
 func (v *AuthenticationScheme) Typ() AuthenticationSchemeType {

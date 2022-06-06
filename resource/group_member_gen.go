@@ -36,6 +36,12 @@ var DefaultGroupMemberValidator GroupMemberValidator = GroupMemberValidateFunc(f
 	return nil
 })
 
+func (v *GroupMember) HasDisplay() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.display != nil
+}
+
 func (v *GroupMember) Display() string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -45,6 +51,12 @@ func (v *GroupMember) Display() string {
 	return *(v.display)
 }
 
+func (v *GroupMember) HasRef() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.ref != nil
+}
+
 func (v *GroupMember) Ref() string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -52,6 +64,12 @@ func (v *GroupMember) Ref() string {
 		return ""
 	}
 	return *(v.ref)
+}
+
+func (v *GroupMember) HasValue() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.value != nil
 }
 
 func (v *GroupMember) Value() string {

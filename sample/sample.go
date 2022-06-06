@@ -76,8 +76,50 @@ func randomString(n int) string {
 	return b.String()
 }
 
+func (b *Backend) createEmails(in *resource.User, modifyUserCall interface{}) ([]*resource.Email, error) {
+	emails := make([]*resource.Email, 0, len(in.Emails()))
+	var hasPrimary bool
+	for _, v := range in.Emails() {
+		emailCreateCall := b.db.Email.Create().
+			SetValue(v.Value())
+		if v.HasDisplay() {
+			emailCreateCall.SetDisplay(v.Display())
+		}
+		if v.HasType() {
+			emailCreateCall.SetType(v.Type())
+		}
+		if sv := v.Primary(); sv {
+			if hasPrimary {
+				return nil, fmt.Errorf(`invalid user.emails: multiple emails have been set to primary`)
+			}
+			emailCreateCall.SetPrimary(sv)
+		}
+		email, err := emailCreateCall.Save(context.TODO())
+		if err != nil {
+			return nil, fmt.Errorf(`failed to create user: failed to create email: %w`, err)
+		}
+
+		switch modifyUserCall := modifyUserCall.(type) {
+		case *ent.UserCreate:
+			modifyUserCall.AddEmails(email)
+		case *ent.UserUpdate:
+			modifyUserCall.AddEmails(email)
+		case *ent.UserUpdateOne:
+			modifyUserCall.AddEmails(email)
+		default:
+			return nil, fmt.Errorf(`invalid value passed as modifyUserCall: %T`, modifyUserCall)
+		}
+
+		// TODO: delete in case userCreate fails?
+
+		emails = append(emails, v)
+	}
+	return emails, nil
+}
+
 func (b *Backend) CreateUser(in *resource.User) (*resource.User, error) {
 	// TODO generate ETag
+	// Note: use W/"...." Etags is probably better
 
 	var builder resource.Builder
 
@@ -98,52 +140,29 @@ func (b *Backend) CreateUser(in *resource.User) (*resource.User, error) {
 		SetPassword(password)
 
 	// optional fields
-	if v := in.ExternalID(); v != "" {
-		createUserCall.SetExternalID(v)
+	if in.HasExternalID() {
+		createUserCall.SetExternalID(in.ExternalID())
 	}
 
-	if v := in.UserType(); v != "" {
-		createUserCall.SetUserType(v)
+	if in.HasUserType() {
+		createUserCall.SetUserType(in.UserType())
 	}
 
-	if v := in.PreferredLanguage(); v != "" {
-		createUserCall.SetPreferredLanguage(v)
+	if in.HasPreferredLanguage() {
+		createUserCall.SetPreferredLanguage(in.PreferredLanguage())
 	}
 
-	if v := in.Locale(); v != "" {
-		createUserCall.SetLocale(v)
+	if in.HasLocale() {
+		createUserCall.SetLocale(in.Locale())
 	}
 
-	if v := in.Timezone(); v != "" {
-		createUserCall.SetTimezone(v)
+	if in.HasTimezone() {
+		createUserCall.SetTimezone(in.Timezone())
 	}
 
-	emails := make([]*resource.Email, 0, len(in.Emails()))
-	var hasPrimary bool
-	for _, v := range in.Emails() {
-		emailCreateCall := b.db.Email.Create().
-			SetValue(v.Value())
-		if sv := v.Display(); sv != "" {
-			emailCreateCall.SetDisplay(sv)
-		}
-		if sv := v.Type(); sv != "" {
-			emailCreateCall.SetType(sv)
-		}
-		if sv := v.Primary(); sv {
-			if hasPrimary {
-				return nil, fmt.Errorf(`invalid user.emails: multiple emails have been set to primary`)
-			}
-			emailCreateCall.SetPrimary(sv)
-		}
-		email, err := emailCreateCall.Save(context.TODO())
-		if err != nil {
-			return nil, fmt.Errorf(`failed to create user: failed to create email: %w`, err)
-		}
-
-		createUserCall.AddEmails(email)
-		// TODO: delete in case userCreate fails?
-
-		emails = append(emails, v)
+	emails, err := b.createEmails(in, createUserCall)
+	if err != nil {
+		return nil, fmt.Errorf(`failed to create emails: %w`, err)
 	}
 
 	var name *resource.Names
@@ -194,7 +213,9 @@ func (b *Backend) CreateUser(in *resource.User) (*resource.User, error) {
 				MustBuild(),
 		)
 
-	userBuilder.Emails(emails...)
+	if len(emails) > 0 {
+		userBuilder.Emails(emails...)
+	}
 	if name != nil {
 		userBuilder.Name(name)
 	}
@@ -208,15 +229,82 @@ func (b *Backend) RetrieveUser(id string) (*resource.User, error) {
 		return nil, fmt.Errorf(`failed to parse ID: %w`, err)
 	}
 
-	user, err := b.db.User.Query().
+	u, err := b.db.User.Query().
 		Where(user.IDEQ(parsedUUID)).
-		First(context.TODO())
+		Only(context.TODO())
 	if err != nil {
 		return nil, fmt.Errorf(`failed to retrieve user: %w`, err)
 	}
 
-	return UserResourceFromEnt(user)
+	return UserResourceFromEnt(u)
 }
+
+func (b *Backend) ReplaceUser(id string, in *resource.User) (*resource.User, error) {
+	parsedUUID, err := uuid.Parse(id)
+	if err != nil {
+		return nil, fmt.Errorf(`failed to parse ID: %w`, err)
+	}
+
+	// TODO: is it possible to just grab the ID or check existence?
+	u, err := b.db.User.Query().
+		Where(user.IDEQ(parsedUUID)).
+		Only(context.TODO())
+	if err != nil {
+		return nil, fmt.Errorf(`failed to retrieve user: %w`, err)
+	}
+
+	replaceUserCall := u.Update().
+		ClearEmails()
+
+	// optional fields
+	if in.HasExternalID() {
+		replaceUserCall.SetExternalID(in.ExternalID())
+	}
+
+	if in.HasUserType() {
+		replaceUserCall.SetUserType(in.UserType())
+	}
+
+	if in.HasPreferredLanguage() {
+		replaceUserCall.SetPreferredLanguage(in.PreferredLanguage())
+	}
+
+	if in.HasLocale() {
+		replaceUserCall.SetLocale(in.Locale())
+	}
+
+	if in.HasTimezone() {
+		replaceUserCall.SetTimezone(in.Timezone())
+	}
+
+	var emails []*resource.Email
+	if in.HasEmails() {
+		v, err := b.createEmails(in, replaceUserCall)
+		if err != nil {
+			return nil, fmt.Errorf(`failed to create emails: %w`, err)
+		}
+		emails = v
+	}
+
+	var builder resource.Builder
+	userBuilder := builder.User().
+		ID(id).
+		ExternalID(u.ExternalID).
+		UserName(u.UserName).
+		Meta(
+			builder.Meta().
+				ResourceType(`User`).
+				Location(`https://foobar.com/scim/v2/Users/` + u.ID.String()).
+				MustBuild(),
+		)
+
+	if len(emails) > 0 {
+		userBuilder.Emails(emails...)
+	}
+
+	return userBuilder.Build()
+}
+
 func (b *Backend) DeleteUser(id string) error {
 	parsedUUID, err := uuid.Parse(id)
 	if err != nil {

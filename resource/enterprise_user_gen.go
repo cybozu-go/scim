@@ -50,6 +50,12 @@ var DefaultEnterpriseUserValidator EnterpriseUserValidator = EnterpriseUserValid
 	return nil
 })
 
+func (v *EnterpriseUser) HasCostCenter() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.costCenter != nil
+}
+
 func (v *EnterpriseUser) CostCenter() string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -57,6 +63,12 @@ func (v *EnterpriseUser) CostCenter() string {
 		return ""
 	}
 	return *(v.costCenter)
+}
+
+func (v *EnterpriseUser) HasDepartment() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.department != nil
 }
 
 func (v *EnterpriseUser) Department() string {
@@ -68,6 +80,12 @@ func (v *EnterpriseUser) Department() string {
 	return *(v.department)
 }
 
+func (v *EnterpriseUser) HasDivision() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.division != nil
+}
+
 func (v *EnterpriseUser) Division() string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -75,6 +93,12 @@ func (v *EnterpriseUser) Division() string {
 		return ""
 	}
 	return *(v.division)
+}
+
+func (v *EnterpriseUser) HasEmployeeNumber() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.employeeNumber != nil
 }
 
 func (v *EnterpriseUser) EmployeeNumber() string {
@@ -86,10 +110,22 @@ func (v *EnterpriseUser) EmployeeNumber() string {
 	return *(v.employeeNumber)
 }
 
+func (v *EnterpriseUser) HasManager() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.manager != nil
+}
+
 func (v *EnterpriseUser) Manager() *EnterpriseManager {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.manager
+}
+
+func (v *EnterpriseUser) HasOrganization() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.organization != nil
 }
 
 func (v *EnterpriseUser) Organization() string {
@@ -99,6 +135,12 @@ func (v *EnterpriseUser) Organization() string {
 		return ""
 	}
 	return *(v.organization)
+}
+
+func (v *EnterpriseUser) HasSchemas() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return true
 }
 
 func (v *EnterpriseUser) Schemas() []string {

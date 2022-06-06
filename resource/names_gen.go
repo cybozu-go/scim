@@ -42,6 +42,12 @@ var DefaultNamesValidator NamesValidator = NamesValidateFunc(func(v *Names) erro
 	return nil
 })
 
+func (v *Names) HasFamilyName() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.familyName != nil
+}
+
 func (v *Names) FamilyName() string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -49,6 +55,12 @@ func (v *Names) FamilyName() string {
 		return ""
 	}
 	return *(v.familyName)
+}
+
+func (v *Names) HasFormatted() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.formatted != nil
 }
 
 func (v *Names) Formatted() string {
@@ -60,6 +72,12 @@ func (v *Names) Formatted() string {
 	return *(v.formatted)
 }
 
+func (v *Names) HasGivenName() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.givenName != nil
+}
+
 func (v *Names) GivenName() string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -67,6 +85,12 @@ func (v *Names) GivenName() string {
 		return ""
 	}
 	return *(v.givenName)
+}
+
+func (v *Names) HasHonorificPrefix() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.honorificPrefix != nil
 }
 
 func (v *Names) HonorificPrefix() string {
@@ -78,6 +102,12 @@ func (v *Names) HonorificPrefix() string {
 	return *(v.honorificPrefix)
 }
 
+func (v *Names) HasHonorificSuffix() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.honorificSuffix != nil
+}
+
 func (v *Names) HonorificSuffix() string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -85,6 +115,12 @@ func (v *Names) HonorificSuffix() string {
 		return ""
 	}
 	return *(v.honorificSuffix)
+}
+
+func (v *Names) HasMiddleName() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.middleName != nil
 }
 
 func (v *Names) MiddleName() string {

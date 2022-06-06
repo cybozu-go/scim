@@ -36,6 +36,12 @@ var DefaultEnterpriseManagerValidator EnterpriseManagerValidator = EnterpriseMan
 	return nil
 })
 
+func (v *EnterpriseManager) HasDisplayName() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.displayName != nil
+}
+
 func (v *EnterpriseManager) DisplayName() string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -45,6 +51,12 @@ func (v *EnterpriseManager) DisplayName() string {
 	return *(v.displayName)
 }
 
+func (v *EnterpriseManager) HasID() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.id != nil
+}
+
 func (v *EnterpriseManager) ID() string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -52,6 +64,12 @@ func (v *EnterpriseManager) ID() string {
 		return ""
 	}
 	return *(v.id)
+}
+
+func (v *EnterpriseManager) HasReference() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.ref != nil
 }
 
 func (v *EnterpriseManager) Reference() string {

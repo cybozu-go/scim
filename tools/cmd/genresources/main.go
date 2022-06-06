@@ -162,6 +162,17 @@ func generateObject(object *codegen.Object) error {
 			rt = field.Type()
 		}
 
+		o.LL(`func (v *%s) Has%s() bool {`, object.Name(true), field.Name(true))
+		o.L(`v.mu.RLock()`)
+		o.L(`defer v.mu.RUnlock()`)
+		// schemas is a special case
+		if field.Name(false) == `schemas` {
+			o.L(`return true`)
+		} else {
+			o.L(`return v.%s != nil`, field.Name(false))
+		}
+		o.L(`}`)
+
 		o.LL(`func (v *%s) %s() %s {`, object.Name(true), field.Name(true), rt)
 		o.L(`v.mu.RLock()`)
 		o.L(`defer v.mu.RUnlock()`)

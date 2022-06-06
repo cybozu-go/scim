@@ -41,10 +41,22 @@ var DefaultSchemaValidator SchemaValidator = SchemaValidateFunc(func(v *Schema) 
 	return nil
 })
 
+func (v *Schema) HasAttributes() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.attributes != nil
+}
+
 func (v *Schema) Attributes() []*SchemaAttribute {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.attributes
+}
+
+func (v *Schema) HasDescription() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.description != nil
 }
 
 func (v *Schema) Description() string {
@@ -56,6 +68,12 @@ func (v *Schema) Description() string {
 	return *(v.description)
 }
 
+func (v *Schema) HasID() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.id != nil
+}
+
 func (v *Schema) ID() string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -63,6 +81,12 @@ func (v *Schema) ID() string {
 		return ""
 	}
 	return *(v.id)
+}
+
+func (v *Schema) HasName() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.name != nil
 }
 
 func (v *Schema) Name() string {

@@ -46,6 +46,12 @@ var DefaultListResponseValidator ListResponseValidator = ListResponseValidateFun
 	return nil
 })
 
+func (v *ListResponse) HasItemsPerPage() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.itemsPerPage != nil
+}
+
 func (v *ListResponse) ItemsPerPage() int {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -55,16 +61,34 @@ func (v *ListResponse) ItemsPerPage() int {
 	return *(v.itemsPerPage)
 }
 
+func (v *ListResponse) HasResources() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.resources != nil
+}
+
 func (v *ListResponse) Resources() []interface{} {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.resources
 }
 
+func (v *ListResponse) HasSchemas() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return true
+}
+
 func (v *ListResponse) Schemas() []string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.schemas.List()
+}
+
+func (v *ListResponse) HasStartIndex() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.startIndex != nil
 }
 
 func (v *ListResponse) StartIndex() int {
@@ -74,6 +98,12 @@ func (v *ListResponse) StartIndex() int {
 		return 0
 	}
 	return *(v.startIndex)
+}
+
+func (v *ListResponse) HasTotalResults() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.totalResults != nil
 }
 
 func (v *ListResponse) TotalResults() int {

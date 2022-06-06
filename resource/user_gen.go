@@ -87,6 +87,12 @@ var DefaultUserValidator UserValidator = UserValidateFunc(func(v *User) error {
 	return nil
 })
 
+func (v *User) HasActive() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.active != nil
+}
+
 func (v *User) Active() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -96,10 +102,22 @@ func (v *User) Active() bool {
 	return *(v.active)
 }
 
+func (v *User) HasAddresses() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.addresses != nil
+}
+
 func (v *User) Addresses() []string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.addresses
+}
+
+func (v *User) HasDisplayName() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.displayName != nil
 }
 
 func (v *User) DisplayName() string {
@@ -111,16 +129,34 @@ func (v *User) DisplayName() string {
 	return *(v.displayName)
 }
 
+func (v *User) HasEmails() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.emails != nil
+}
+
 func (v *User) Emails() []*Email {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.emails
 }
 
+func (v *User) HasEntitlements() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.entitlements != nil
+}
+
 func (v *User) Entitlements() []string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.entitlements
+}
+
+func (v *User) HasExternalID() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.externalID != nil
 }
 
 func (v *User) ExternalID() string {
@@ -132,10 +168,22 @@ func (v *User) ExternalID() string {
 	return *(v.externalID)
 }
 
+func (v *User) HasGroups() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.groups != nil
+}
+
 func (v *User) Groups() []string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.groups
+}
+
+func (v *User) HasID() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.id != nil
 }
 
 func (v *User) ID() string {
@@ -147,10 +195,22 @@ func (v *User) ID() string {
 	return *(v.id)
 }
 
+func (v *User) HasIMS() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.ims != nil
+}
+
 func (v *User) IMS() []string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.ims
+}
+
+func (v *User) HasLocale() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.locale != nil
 }
 
 func (v *User) Locale() string {
@@ -162,16 +222,34 @@ func (v *User) Locale() string {
 	return *(v.locale)
 }
 
+func (v *User) HasMeta() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.meta != nil
+}
+
 func (v *User) Meta() *Meta {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.meta
 }
 
+func (v *User) HasName() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.name != nil
+}
+
 func (v *User) Name() *Names {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.name
+}
+
+func (v *User) HasNickName() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.nickName != nil
 }
 
 func (v *User) NickName() string {
@@ -183,6 +261,12 @@ func (v *User) NickName() string {
 	return *(v.nickName)
 }
 
+func (v *User) HasPassword() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.password != nil
+}
+
 func (v *User) Password() string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -192,10 +276,22 @@ func (v *User) Password() string {
 	return *(v.password)
 }
 
+func (v *User) HasPhoneNumbers() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.phoneNumbers != nil
+}
+
 func (v *User) PhoneNumbers() []string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.phoneNumbers
+}
+
+func (v *User) HasPreferredLanguage() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.preferredLanguage != nil
 }
 
 func (v *User) PreferredLanguage() string {
@@ -207,6 +303,12 @@ func (v *User) PreferredLanguage() string {
 	return *(v.preferredLanguage)
 }
 
+func (v *User) HasProfileURL() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.profileURL != nil
+}
+
 func (v *User) ProfileURL() string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -216,16 +318,34 @@ func (v *User) ProfileURL() string {
 	return *(v.profileURL)
 }
 
+func (v *User) HasRoles() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.roles != nil
+}
+
 func (v *User) Roles() []string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.roles
 }
 
+func (v *User) HasSchemas() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return true
+}
+
 func (v *User) Schemas() []string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.schemas.List()
+}
+
+func (v *User) HasTimezone() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.timezone != nil
 }
 
 func (v *User) Timezone() string {
@@ -237,6 +357,12 @@ func (v *User) Timezone() string {
 	return *(v.timezone)
 }
 
+func (v *User) HasTitle() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.title != nil
+}
+
 func (v *User) Title() string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -244,6 +370,12 @@ func (v *User) Title() string {
 		return ""
 	}
 	return *(v.title)
+}
+
+func (v *User) HasUserName() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.userName != nil
 }
 
 func (v *User) UserName() string {
@@ -255,6 +387,12 @@ func (v *User) UserName() string {
 	return *(v.userName)
 }
 
+func (v *User) HasUserType() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.userType != nil
+}
+
 func (v *User) UserType() string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -262,6 +400,12 @@ func (v *User) UserType() string {
 		return ""
 	}
 	return *(v.userType)
+}
+
+func (v *User) HasX509Certificates() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.x509Certificates != nil
 }
 
 func (v *User) X509Certificates() []string {

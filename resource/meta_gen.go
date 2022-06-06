@@ -41,6 +41,12 @@ var DefaultMetaValidator MetaValidator = MetaValidateFunc(func(v *Meta) error {
 	return nil
 })
 
+func (v *Meta) HasCreated() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.created != nil
+}
+
 func (v *Meta) Created() time.Time {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -48,6 +54,12 @@ func (v *Meta) Created() time.Time {
 		return time.Time{}
 	}
 	return *(v.created)
+}
+
+func (v *Meta) HasLastModified() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.lastModified != nil
 }
 
 func (v *Meta) LastModified() time.Time {
@@ -59,6 +71,12 @@ func (v *Meta) LastModified() time.Time {
 	return *(v.lastModified)
 }
 
+func (v *Meta) HasLocation() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.location != nil
+}
+
 func (v *Meta) Location() string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -68,6 +86,12 @@ func (v *Meta) Location() string {
 	return *(v.location)
 }
 
+func (v *Meta) HasResourceType() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.resourceType != nil
+}
+
 func (v *Meta) ResourceType() string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -75,6 +99,12 @@ func (v *Meta) ResourceType() string {
 		return ""
 	}
 	return *(v.resourceType)
+}
+
+func (v *Meta) HasVersion() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.version != nil
 }
 
 func (v *Meta) Version() string {

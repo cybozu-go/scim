@@ -48,6 +48,12 @@ var DefaultGroupValidator GroupValidator = GroupValidateFunc(func(v *Group) erro
 	return nil
 })
 
+func (v *Group) HasDisplayName() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.displayName != nil
+}
+
 func (v *Group) DisplayName() string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -55,6 +61,12 @@ func (v *Group) DisplayName() string {
 		return ""
 	}
 	return *(v.displayName)
+}
+
+func (v *Group) HasExternalID() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.externalID != nil
 }
 
 func (v *Group) ExternalID() string {
@@ -66,6 +78,12 @@ func (v *Group) ExternalID() string {
 	return *(v.externalID)
 }
 
+func (v *Group) HasID() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.id != nil
+}
+
 func (v *Group) ID() string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -75,16 +93,34 @@ func (v *Group) ID() string {
 	return *(v.id)
 }
 
+func (v *Group) HasMembers() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.members != nil
+}
+
 func (v *Group) Members() []*GroupMember {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.members
 }
 
+func (v *Group) HasMeta() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.meta != nil
+}
+
 func (v *Group) Meta() *Meta {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.meta
+}
+
+func (v *Group) HasSchemas() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return true
 }
 
 func (v *Group) Schemas() []string {

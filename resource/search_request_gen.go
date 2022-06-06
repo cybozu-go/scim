@@ -52,10 +52,22 @@ var DefaultSearchRequestValidator SearchRequestValidator = SearchRequestValidate
 	return nil
 })
 
+func (v *SearchRequest) HasAttributes() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.attributes != nil
+}
+
 func (v *SearchRequest) Attributes() []string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.attributes
+}
+
+func (v *SearchRequest) HasCount() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.count != nil
 }
 
 func (v *SearchRequest) Count() int {
@@ -67,10 +79,22 @@ func (v *SearchRequest) Count() int {
 	return *(v.count)
 }
 
+func (v *SearchRequest) HasExludedAttributes() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.exludedAttributes != nil
+}
+
 func (v *SearchRequest) ExludedAttributes() []string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.exludedAttributes
+}
+
+func (v *SearchRequest) HasFilter() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.filter != nil
 }
 
 func (v *SearchRequest) Filter() string {
@@ -82,10 +106,22 @@ func (v *SearchRequest) Filter() string {
 	return *(v.filter)
 }
 
+func (v *SearchRequest) HasSchemas() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return true
+}
+
 func (v *SearchRequest) Schemas() []string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.schemas.List()
+}
+
+func (v *SearchRequest) HasSortBy() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.sortBy != nil
 }
 
 func (v *SearchRequest) SortBy() string {
@@ -97,6 +133,12 @@ func (v *SearchRequest) SortBy() string {
 	return *(v.sortBy)
 }
 
+func (v *SearchRequest) HasSortOrder() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.sortOrder != nil
+}
+
 func (v *SearchRequest) SortOrder() string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -104,6 +146,12 @@ func (v *SearchRequest) SortOrder() string {
 		return ""
 	}
 	return *(v.sortOrder)
+}
+
+func (v *SearchRequest) HasStartIndex() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.startIndex != nil
 }
 
 func (v *SearchRequest) StartIndex() int {

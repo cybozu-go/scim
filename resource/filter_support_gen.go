@@ -40,6 +40,12 @@ var DefaultFilterSupportValidator FilterSupportValidator = FilterSupportValidate
 	return nil
 })
 
+func (v *FilterSupport) HasMaxResults() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.maxResults != nil
+}
+
 func (v *FilterSupport) MaxResults() int {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -47,6 +53,12 @@ func (v *FilterSupport) MaxResults() int {
 		return 0
 	}
 	return *(v.maxResults)
+}
+
+func (v *FilterSupport) HasSupported() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.supported != nil
 }
 
 func (v *FilterSupport) Supported() bool {

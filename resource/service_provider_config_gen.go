@@ -75,10 +75,22 @@ var DefaultServiceProviderConfigValidator ServiceProviderConfigValidator = Servi
 	return nil
 })
 
+func (v *ServiceProviderConfig) HasAuthenticationSchemes() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.authenticationSchemes != nil
+}
+
 func (v *ServiceProviderConfig) AuthenticationSchemes() []AuthenticationScheme {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.authenticationSchemes
+}
+
+func (v *ServiceProviderConfig) HasBulk() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.bulk != nil
 }
 
 func (v *ServiceProviderConfig) Bulk() *BulkSupport {
@@ -87,10 +99,22 @@ func (v *ServiceProviderConfig) Bulk() *BulkSupport {
 	return v.bulk
 }
 
+func (v *ServiceProviderConfig) HasChangePassword() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.changePassword != nil
+}
+
 func (v *ServiceProviderConfig) ChangePassword() *GenericSupport {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.changePassword
+}
+
+func (v *ServiceProviderConfig) HasDocumentationURI() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.documentationURI != nil
 }
 
 func (v *ServiceProviderConfig) DocumentationURI() string {
@@ -102,10 +126,22 @@ func (v *ServiceProviderConfig) DocumentationURI() string {
 	return *(v.documentationURI)
 }
 
+func (v *ServiceProviderConfig) HasEtag() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.etag != nil
+}
+
 func (v *ServiceProviderConfig) Etag() *GenericSupport {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.etag
+}
+
+func (v *ServiceProviderConfig) HasFilter() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.filter != nil
 }
 
 func (v *ServiceProviderConfig) Filter() *FilterSupport {
@@ -114,16 +150,34 @@ func (v *ServiceProviderConfig) Filter() *FilterSupport {
 	return v.filter
 }
 
+func (v *ServiceProviderConfig) HasPatch() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.patch != nil
+}
+
 func (v *ServiceProviderConfig) Patch() *GenericSupport {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.patch
 }
 
+func (v *ServiceProviderConfig) HasSchemas() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return true
+}
+
 func (v *ServiceProviderConfig) Schemas() []string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.schemas.List()
+}
+
+func (v *ServiceProviderConfig) HasSort() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.sort != nil
 }
 
 func (v *ServiceProviderConfig) Sort() *GenericSupport {

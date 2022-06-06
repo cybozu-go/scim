@@ -45,6 +45,12 @@ var DefaultBulkSupportValidator BulkSupportValidator = BulkSupportValidateFunc(f
 	return nil
 })
 
+func (v *BulkSupport) HasMaxOperations() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.maxOperations != nil
+}
+
 func (v *BulkSupport) MaxOperations() int {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -54,6 +60,12 @@ func (v *BulkSupport) MaxOperations() int {
 	return *(v.maxOperations)
 }
 
+func (v *BulkSupport) HasMaxPayloadSize() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.maxPayloadSize != nil
+}
+
 func (v *BulkSupport) MaxPayloadSize() int {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -61,6 +73,12 @@ func (v *BulkSupport) MaxPayloadSize() int {
 		return 0
 	}
 	return *(v.maxPayloadSize)
+}
+
+func (v *BulkSupport) HasSupported() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.supported != nil
 }
 
 func (v *BulkSupport) Supported() bool {

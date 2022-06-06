@@ -56,10 +56,22 @@ var DefaultSchemaAttributeValidator SchemaAttributeValidator = SchemaAttributeVa
 	return nil
 })
 
+func (v *SchemaAttribute) HasCanonicalValues() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.canonicalValues != nil
+}
+
 func (v *SchemaAttribute) CanonicalValues() []interface{} {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.canonicalValues
+}
+
+func (v *SchemaAttribute) HasCaseExact() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.caseExact != nil
 }
 
 func (v *SchemaAttribute) CaseExact() bool {
@@ -71,6 +83,12 @@ func (v *SchemaAttribute) CaseExact() bool {
 	return *(v.caseExact)
 }
 
+func (v *SchemaAttribute) HasDescription() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.description != nil
+}
+
 func (v *SchemaAttribute) Description() string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -80,10 +98,22 @@ func (v *SchemaAttribute) Description() string {
 	return *(v.description)
 }
 
+func (v *SchemaAttribute) HasFallbackType() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.fallbackType != nil
+}
+
 func (v *SchemaAttribute) FallbackType() *SchemaAttribute {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.fallbackType
+}
+
+func (v *SchemaAttribute) HasMultiValued() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.multiValued != nil
 }
 
 func (v *SchemaAttribute) MultiValued() bool {
@@ -95,6 +125,12 @@ func (v *SchemaAttribute) MultiValued() bool {
 	return *(v.multiValued)
 }
 
+func (v *SchemaAttribute) HasMutability() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.mutability != nil
+}
+
 func (v *SchemaAttribute) Mutability() Mutability {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -102,6 +138,12 @@ func (v *SchemaAttribute) Mutability() Mutability {
 		return MutReadOnly
 	}
 	return *(v.mutability)
+}
+
+func (v *SchemaAttribute) HasName() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.name != nil
 }
 
 func (v *SchemaAttribute) Name() string {
@@ -113,10 +155,22 @@ func (v *SchemaAttribute) Name() string {
 	return *(v.name)
 }
 
+func (v *SchemaAttribute) HasReferenceTypes() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.referenceTypes != nil
+}
+
 func (v *SchemaAttribute) ReferenceTypes() []string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.referenceTypes
+}
+
+func (v *SchemaAttribute) HasRequired() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.required != nil
 }
 
 func (v *SchemaAttribute) Required() bool {
@@ -128,6 +182,12 @@ func (v *SchemaAttribute) Required() bool {
 	return *(v.required)
 }
 
+func (v *SchemaAttribute) HasReturned() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.returned != nil
+}
+
 func (v *SchemaAttribute) Returned() Returned {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -137,10 +197,22 @@ func (v *SchemaAttribute) Returned() Returned {
 	return *(v.returned)
 }
 
+func (v *SchemaAttribute) HasSubAttributes() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.subAttributes != nil
+}
+
 func (v *SchemaAttribute) SubAttributes() []*SchemaAttribute {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.subAttributes
+}
+
+func (v *SchemaAttribute) HasType() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.typ != nil
 }
 
 func (v *SchemaAttribute) Type() string {
@@ -150,6 +222,12 @@ func (v *SchemaAttribute) Type() string {
 		return ""
 	}
 	return *(v.typ)
+}
+
+func (v *SchemaAttribute) HasUniqueness() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.uniqueness != nil
 }
 
 func (v *SchemaAttribute) Uniqueness() Uniqueness {

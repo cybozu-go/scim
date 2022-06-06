@@ -3,6 +3,7 @@ package server
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 
@@ -35,7 +36,7 @@ type DeleteUserBackend interface {
 }
 
 type ReplaceUserBackend interface {
-	ReplaceUser(id string, user *resource.User) error
+	ReplaceUser(id string, user *resource.User) (*resource.User, error)
 }
 
 type RetrieveUserBackend interface {
@@ -174,13 +175,15 @@ func ReplaceUserEndpoint(b ReplaceUserBackend) http.Handler {
 			return
 		}
 
-		if err := b.ReplaceUser(id, &user); err != nil {
-			// TODO: log
+		newUser, err := b.ReplaceUser(id, &user)
+		if err != nil {
+			err = fmt.Errorf(`replace user operation failed: %w`, err)
 			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, err.Error())
 			return
 		}
 		w.WriteHeader(http.StatusOK)
-		_ = json.NewEncoder(w).Encode(&user)
+		_ = json.NewEncoder(w).Encode(newUser)
 	})
 }
 

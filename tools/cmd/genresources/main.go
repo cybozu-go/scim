@@ -400,6 +400,12 @@ func generateObject(object *codegen.Object) error {
 	o.L(`return &b`)
 	o.L(`}`)
 
+	o.LL(`func (b *%[1]sBuilder) From(in *%[1]s) *%[1]sBuilder {`, object.Name(true))
+	o.L(`b.once.Do(b.init)`)
+	o.L(`*(b.object) = *(in)`) // TODO: maybe this needs to be made smarter
+	o.L(`return b`)
+	o.L(`}`)
+
 	o.LL(`func (b *%sBuilder) init() {`, object.Name(true))
 	o.L(`b.err = nil`)
 	o.L(`b.validator = nil`)
@@ -526,7 +532,7 @@ func generateEnt(object *codegen.Object) error {
 	o.L(`package sample`)
 
 	o.LL(`import (`)
-	o.L(`"github.com/cybozu-go/scim/server/sample/ent"`)
+	o.L(`"github.com/cybozu-go/scim/sample/ent"`)
 	o.L(`)`)
 
 	o.LL(`func %[1]sResourceFromEnt(in *ent.%[1]s) (*resource.%[1]s, error) {`, object.Name(true))

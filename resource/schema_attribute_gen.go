@@ -699,6 +699,12 @@ func NewSchemaAttributeBuilder() *SchemaAttributeBuilder {
 	return &b
 }
 
+func (b *SchemaAttributeBuilder) From(in *SchemaAttribute) *SchemaAttributeBuilder {
+	b.once.Do(b.init)
+	*(b.object) = *(in)
+	return b
+}
+
 func (b *SchemaAttributeBuilder) init() {
 	b.err = nil
 	b.validator = nil

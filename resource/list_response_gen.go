@@ -391,6 +391,12 @@ func NewListResponseBuilder() *ListResponseBuilder {
 	return &b
 }
 
+func (b *ListResponseBuilder) From(in *ListResponse) *ListResponseBuilder {
+	b.once.Do(b.init)
+	*(b.object) = *(in)
+	return b
+}
+
 func (b *ListResponseBuilder) init() {
 	b.err = nil
 	b.validator = nil

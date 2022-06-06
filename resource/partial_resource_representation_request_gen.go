@@ -265,6 +265,12 @@ func NewPartialResourceRepresentationRequestBuilder() *PartialResourceRepresenta
 	return &b
 }
 
+func (b *PartialResourceRepresentationRequestBuilder) From(in *PartialResourceRepresentationRequest) *PartialResourceRepresentationRequestBuilder {
+	b.once.Do(b.init)
+	*(b.object) = *(in)
+	return b
+}
+
 func (b *PartialResourceRepresentationRequestBuilder) init() {
 	b.err = nil
 	b.validator = nil

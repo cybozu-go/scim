@@ -277,6 +277,12 @@ func NewFilterSupportBuilder() *FilterSupportBuilder {
 	return &b
 }
 
+func (b *FilterSupportBuilder) From(in *FilterSupport) *FilterSupportBuilder {
+	b.once.Do(b.init)
+	*(b.object) = *(in)
+	return b
+}
+
 func (b *FilterSupportBuilder) init() {
 	b.err = nil
 	b.validator = nil

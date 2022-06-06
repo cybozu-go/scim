@@ -554,6 +554,12 @@ func NewServiceProviderConfigBuilder() *ServiceProviderConfigBuilder {
 	return &b
 }
 
+func (b *ServiceProviderConfigBuilder) From(in *ServiceProviderConfig) *ServiceProviderConfigBuilder {
+	b.once.Do(b.init)
+	*(b.object) = *(in)
+	return b
+}
+
 func (b *ServiceProviderConfigBuilder) init() {
 	b.err = nil
 	b.validator = nil

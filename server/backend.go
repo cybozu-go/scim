@@ -179,7 +179,7 @@ func ReplaceUserEndpoint(b ReplaceUserBackend) http.Handler {
 		if err != nil {
 			err = fmt.Errorf(`replace user operation failed: %w`, err)
 			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, err.Error())
+			fmt.Fprint(w, err.Error())
 			return
 		}
 		w.WriteHeader(http.StatusOK)

@@ -320,6 +320,12 @@ func NewBulkSupportBuilder() *BulkSupportBuilder {
 	return &b
 }
 
+func (b *BulkSupportBuilder) From(in *BulkSupport) *BulkSupportBuilder {
+	b.once.Do(b.init)
+	*(b.object) = *(in)
+	return b
+}
+
 func (b *BulkSupportBuilder) init() {
 	b.err = nil
 	b.validator = nil

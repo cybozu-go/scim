@@ -61,7 +61,7 @@ func RunConformanceTests(t *testing.T, name string, backend interface{}) {
 						Do(context.TODO())
 					require.NoError(t, err, `ReplaceUser should succeed`)
 
-					require.Equal(t, "bjensen", u.ExternalID())
+					require.Equal(t, "bjensen", u.ExternalID(), `externalID should match`)
 
 					// Sanity
 					require.Equal(t, createdUser.ID(), u.ID())

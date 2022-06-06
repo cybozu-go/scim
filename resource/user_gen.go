@@ -1127,6 +1127,12 @@ func NewUserBuilder() *UserBuilder {
 	return &b
 }
 
+func (b *UserBuilder) From(in *User) *UserBuilder {
+	b.once.Do(b.init)
+	*(b.object) = *(in)
+	return b
+}
+
 func (b *UserBuilder) init() {
 	b.err = nil
 	b.validator = nil

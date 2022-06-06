@@ -234,6 +234,12 @@ func NewGenericSupportBuilder() *GenericSupportBuilder {
 	return &b
 }
 
+func (b *GenericSupportBuilder) From(in *GenericSupport) *GenericSupportBuilder {
+	b.once.Do(b.init)
+	*(b.object) = *(in)
+	return b
+}
+
 func (b *GenericSupportBuilder) init() {
 	b.err = nil
 	b.validator = nil

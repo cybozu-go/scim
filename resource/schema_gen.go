@@ -351,6 +351,12 @@ func NewSchemaBuilder() *SchemaBuilder {
 	return &b
 }
 
+func (b *SchemaBuilder) From(in *Schema) *SchemaBuilder {
+	b.once.Do(b.init)
+	*(b.object) = *(in)
+	return b
+}
+
 func (b *SchemaBuilder) init() {
 	b.err = nil
 	b.validator = nil

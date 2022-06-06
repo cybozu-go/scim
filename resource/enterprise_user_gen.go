@@ -471,6 +471,12 @@ func NewEnterpriseUserBuilder() *EnterpriseUserBuilder {
 	return &b
 }
 
+func (b *EnterpriseUserBuilder) From(in *EnterpriseUser) *EnterpriseUserBuilder {
+	b.once.Do(b.init)
+	*(b.object) = *(in)
+	return b
+}
+
 func (b *EnterpriseUserBuilder) init() {
 	b.err = nil
 	b.validator = nil

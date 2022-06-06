@@ -392,6 +392,12 @@ func NewMetaBuilder() *MetaBuilder {
 	return &b
 }
 
+func (b *MetaBuilder) From(in *Meta) *MetaBuilder {
+	b.once.Do(b.init)
+	*(b.object) = *(in)
+	return b
+}
+
 func (b *MetaBuilder) init() {
 	b.err = nil
 	b.validator = nil

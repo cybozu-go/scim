@@ -400,6 +400,12 @@ func NewAuthenticationSchemeBuilder() *AuthenticationSchemeBuilder {
 	return &b
 }
 
+func (b *AuthenticationSchemeBuilder) From(in *AuthenticationScheme) *AuthenticationSchemeBuilder {
+	b.once.Do(b.init)
+	*(b.object) = *(in)
+	return b
+}
+
 func (b *AuthenticationSchemeBuilder) init() {
 	b.err = nil
 	b.validator = nil

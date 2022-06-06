@@ -311,6 +311,12 @@ func NewEnterpriseManagerBuilder() *EnterpriseManagerBuilder {
 	return &b
 }
 
+func (b *EnterpriseManagerBuilder) From(in *EnterpriseManager) *EnterpriseManagerBuilder {
+	b.once.Do(b.init)
+	*(b.object) = *(in)
+	return b
+}
+
 func (b *EnterpriseManagerBuilder) init() {
 	b.err = nil
 	b.validator = nil

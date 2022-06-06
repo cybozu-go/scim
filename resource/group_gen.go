@@ -428,6 +428,12 @@ func NewGroupBuilder() *GroupBuilder {
 	return &b
 }
 
+func (b *GroupBuilder) From(in *Group) *GroupBuilder {
+	b.once.Do(b.init)
+	*(b.object) = *(in)
+	return b
+}
+
 func (b *GroupBuilder) init() {
 	b.err = nil
 	b.validator = nil

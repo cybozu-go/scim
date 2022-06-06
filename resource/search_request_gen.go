@@ -508,6 +508,12 @@ func NewSearchRequestBuilder() *SearchRequestBuilder {
 	return &b
 }
 
+func (b *SearchRequestBuilder) From(in *SearchRequest) *SearchRequestBuilder {
+	b.once.Do(b.init)
+	*(b.object) = *(in)
+	return b
+}
+
 func (b *SearchRequestBuilder) init() {
 	b.err = nil
 	b.validator = nil

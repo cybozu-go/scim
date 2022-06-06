@@ -25,18 +25,29 @@ func (m *mockBackend) DeleteUser(id string) error {
 	return nil
 }
 
-func (m *mockBackend) ReplaceUser(id string, in *resource.User) error {
+func (m *mockBackend) ReplaceUser(id string, in *resource.User) (*resource.User, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	// TODO: no check is beig done here
-	_, err := m.RetrieveUser(id)
+	u, err := m.retrieveUserNoLock(id)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	// HACK: attributes may need to be merged, etc
-	m.users[id] = in
-	return nil
+	var builder resource.Builder
+
+	userBuilder := builder.User().From(u)
+
+	if in.HasUserName() {
+		userBuilder.UserName(in.UserName())
+	}
+
+	if in.HasEmails() {
+		userBuilder.Emails(in.Emails()...)
+	}
+
+	// TODO: handle other fields
+	return userBuilder.Build()
 }
 
 func (m *mockBackend) CreateUser(in *resource.User) (*resource.User, error) {
@@ -60,6 +71,10 @@ func (m *mockBackend) CreateUser(in *resource.User) (*resource.User, error) {
 func (m *mockBackend) RetrieveUser(id string) (*resource.User, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
+	return m.retrieveUserNoLock(id)
+}
+
+func (m *mockBackend) retrieveUserNoLock(id string) (*resource.User, error) {
 	user, ok := m.users[id]
 	if !ok {
 		return nil, fmt.Errorf(`user not found`)

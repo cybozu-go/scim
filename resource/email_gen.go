@@ -351,6 +351,12 @@ func NewEmailBuilder() *EmailBuilder {
 	return &b
 }
 
+func (b *EmailBuilder) From(in *Email) *EmailBuilder {
+	b.once.Do(b.init)
+	*(b.object) = *(in)
+	return b
+}
+
 func (b *EmailBuilder) init() {
 	b.err = nil
 	b.validator = nil

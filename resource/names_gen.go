@@ -431,6 +431,12 @@ func NewNamesBuilder() *NamesBuilder {
 	return &b
 }
 
+func (b *NamesBuilder) From(in *Names) *NamesBuilder {
+	b.once.Do(b.init)
+	*(b.object) = *(in)
+	return b
+}
+
 func (b *NamesBuilder) init() {
 	b.err = nil
 	b.validator = nil

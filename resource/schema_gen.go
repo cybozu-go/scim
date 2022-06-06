@@ -243,6 +243,17 @@ func (v *Schema) Set(name string, value interface{}) error {
 	}
 }
 
+func (v *Schema) Clone() *Schema {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	return &Schema{
+		attributes:  v.attributes,
+		description: v.description,
+		id:          v.id,
+		name:        v.name,
+	}
+}
+
 func (v *Schema) UnmarshalJSON(data []byte) error {
 	v.attributes = nil
 	v.description = nil
@@ -353,7 +364,7 @@ func NewSchemaBuilder() *SchemaBuilder {
 
 func (b *SchemaBuilder) From(in *Schema) *SchemaBuilder {
 	b.once.Do(b.init)
-	*(b.object) = *(in)
+	b.object = in.Clone()
 	return b
 }
 

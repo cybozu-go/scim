@@ -528,6 +528,26 @@ func (v *SchemaAttribute) Set(name string, value interface{}) error {
 	}
 }
 
+func (v *SchemaAttribute) Clone() *SchemaAttribute {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	return &SchemaAttribute{
+		canonicalValues: v.canonicalValues,
+		caseExact:       v.caseExact,
+		description:     v.description,
+		fallbackType:    v.fallbackType,
+		multiValued:     v.multiValued,
+		mutability:      v.mutability,
+		name:            v.name,
+		referenceTypes:  v.referenceTypes,
+		required:        v.required,
+		returned:        v.returned,
+		subAttributes:   v.subAttributes,
+		typ:             v.typ,
+		uniqueness:      v.uniqueness,
+	}
+}
+
 func (v *SchemaAttribute) UnmarshalJSON(data []byte) error {
 	v.canonicalValues = nil
 	v.caseExact = nil
@@ -701,7 +721,7 @@ func NewSchemaAttributeBuilder() *SchemaAttributeBuilder {
 
 func (b *SchemaAttributeBuilder) From(in *SchemaAttribute) *SchemaAttributeBuilder {
 	b.once.Do(b.init)
-	*(b.object) = *(in)
+	b.object = in.Clone()
 	return b
 }
 

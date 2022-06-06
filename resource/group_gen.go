@@ -306,6 +306,19 @@ func (v *Group) Set(name string, value interface{}) error {
 	}
 }
 
+func (v *Group) Clone() *Group {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	return &Group{
+		displayName: v.displayName,
+		externalID:  v.externalID,
+		id:          v.id,
+		members:     v.members,
+		meta:        v.meta,
+		schemas:     v.schemas,
+	}
+}
+
 func (v *Group) UnmarshalJSON(data []byte) error {
 	v.displayName = nil
 	v.externalID = nil
@@ -430,7 +443,7 @@ func NewGroupBuilder() *GroupBuilder {
 
 func (b *GroupBuilder) From(in *Group) *GroupBuilder {
 	b.once.Do(b.init)
-	*(b.object) = *(in)
+	b.object = in.Clone()
 	return b
 }
 

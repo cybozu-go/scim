@@ -210,6 +210,16 @@ func (v *EnterpriseManager) Set(name string, value interface{}) error {
 	}
 }
 
+func (v *EnterpriseManager) Clone() *EnterpriseManager {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	return &EnterpriseManager{
+		displayName: v.displayName,
+		id:          v.id,
+		ref:         v.ref,
+	}
+}
+
 func (v *EnterpriseManager) UnmarshalJSON(data []byte) error {
 	v.displayName = nil
 	v.id = nil
@@ -313,7 +323,7 @@ func NewEnterpriseManagerBuilder() *EnterpriseManagerBuilder {
 
 func (b *EnterpriseManagerBuilder) From(in *EnterpriseManager) *EnterpriseManagerBuilder {
 	b.once.Do(b.init)
-	*(b.object) = *(in)
+	b.object = in.Clone()
 	return b
 }
 

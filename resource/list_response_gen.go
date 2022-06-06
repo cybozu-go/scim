@@ -276,6 +276,18 @@ func (v *ListResponse) Set(name string, value interface{}) error {
 	}
 }
 
+func (v *ListResponse) Clone() *ListResponse {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	return &ListResponse{
+		itemsPerPage: v.itemsPerPage,
+		resources:    v.resources,
+		schemas:      v.schemas,
+		startIndex:   v.startIndex,
+		totalResults: v.totalResults,
+	}
+}
+
 func (v *ListResponse) UnmarshalJSON(data []byte) error {
 	v.itemsPerPage = nil
 	v.resources = nil
@@ -393,7 +405,7 @@ func NewListResponseBuilder() *ListResponseBuilder {
 
 func (b *ListResponseBuilder) From(in *ListResponse) *ListResponseBuilder {
 	b.once.Do(b.init)
-	*(b.object) = *(in)
+	b.object = in.Clone()
 	return b
 }
 

@@ -372,6 +372,21 @@ func (v *SearchRequest) Set(name string, value interface{}) error {
 	}
 }
 
+func (v *SearchRequest) Clone() *SearchRequest {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	return &SearchRequest{
+		attributes:        v.attributes,
+		count:             v.count,
+		exludedAttributes: v.exludedAttributes,
+		filter:            v.filter,
+		schemas:           v.schemas,
+		sortBy:            v.sortBy,
+		sortOrder:         v.sortOrder,
+		startIndex:        v.startIndex,
+	}
+}
+
 func (v *SearchRequest) UnmarshalJSON(data []byte) error {
 	v.attributes = nil
 	v.count = nil
@@ -510,7 +525,7 @@ func NewSearchRequestBuilder() *SearchRequestBuilder {
 
 func (b *SearchRequestBuilder) From(in *SearchRequest) *SearchRequestBuilder {
 	b.once.Do(b.init)
-	*(b.object) = *(in)
+	b.object = in.Clone()
 	return b
 }
 

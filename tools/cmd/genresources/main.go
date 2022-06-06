@@ -302,6 +302,16 @@ func generateObject(object *codegen.Object) error {
 	o.L(`}`)
 	o.L(`}`)
 
+	o.LL(`func (v *%[1]s) Clone() *%[1]s {`, object.Name(true))
+	o.L(`v.mu.Lock()`)
+	o.L(`defer v.mu.Unlock()`)
+	o.L(`return &%s{`, object.Name(true))
+	for _, field := range object.Fields() {
+		o.L(`%[1]s: v.%[1]s,`, field.Name(false))
+	}
+	o.L(`}`)
+	o.L(`}`)
+
 	o.LL(`func (v *%s) UnmarshalJSON(data []byte) error {`, object.Name(true))
 	for _, field := range object.Fields() {
 		if IsIndirect(field) {
@@ -402,7 +412,7 @@ func generateObject(object *codegen.Object) error {
 
 	o.LL(`func (b *%[1]sBuilder) From(in *%[1]s) *%[1]sBuilder {`, object.Name(true))
 	o.L(`b.once.Do(b.init)`)
-	o.L(`*(b.object) = *(in)`) // TODO: maybe this needs to be made smarter
+	o.L(`b.object = in.Clone()`)
 	o.L(`return b`)
 	o.L(`}`)
 

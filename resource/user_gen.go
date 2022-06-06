@@ -879,6 +879,37 @@ func (v *User) Set(name string, value interface{}) error {
 	}
 }
 
+func (v *User) Clone() *User {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	return &User{
+		active:            v.active,
+		addresses:         v.addresses,
+		displayName:       v.displayName,
+		emails:            v.emails,
+		entitlements:      v.entitlements,
+		externalID:        v.externalID,
+		groups:            v.groups,
+		id:                v.id,
+		ims:               v.ims,
+		locale:            v.locale,
+		meta:              v.meta,
+		name:              v.name,
+		nickName:          v.nickName,
+		password:          v.password,
+		phoneNumbers:      v.phoneNumbers,
+		preferredLanguage: v.preferredLanguage,
+		profileURL:        v.profileURL,
+		roles:             v.roles,
+		schemas:           v.schemas,
+		timezone:          v.timezone,
+		title:             v.title,
+		userName:          v.userName,
+		userType:          v.userType,
+		x509Certificates:  v.x509Certificates,
+	}
+}
+
 func (v *User) UnmarshalJSON(data []byte) error {
 	v.active = nil
 	v.addresses = nil
@@ -1129,7 +1160,7 @@ func NewUserBuilder() *UserBuilder {
 
 func (b *UserBuilder) From(in *User) *UserBuilder {
 	b.once.Do(b.init)
-	*(b.object) = *(in)
+	b.object = in.Clone()
 	return b
 }
 

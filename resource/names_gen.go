@@ -309,6 +309,19 @@ func (v *Names) Set(name string, value interface{}) error {
 	}
 }
 
+func (v *Names) Clone() *Names {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	return &Names{
+		familyName:      v.familyName,
+		formatted:       v.formatted,
+		givenName:       v.givenName,
+		honorificPrefix: v.honorificPrefix,
+		honorificSuffix: v.honorificSuffix,
+		middleName:      v.middleName,
+	}
+}
+
 func (v *Names) UnmarshalJSON(data []byte) error {
 	v.familyName = nil
 	v.formatted = nil
@@ -433,7 +446,7 @@ func NewNamesBuilder() *NamesBuilder {
 
 func (b *NamesBuilder) From(in *Names) *NamesBuilder {
 	b.once.Do(b.init)
-	*(b.object) = *(in)
+	b.object = in.Clone()
 	return b
 }
 

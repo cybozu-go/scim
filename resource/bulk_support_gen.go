@@ -219,6 +219,16 @@ func (v *BulkSupport) Set(name string, value interface{}) error {
 	}
 }
 
+func (v *BulkSupport) Clone() *BulkSupport {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	return &BulkSupport{
+		maxOperations:  v.maxOperations,
+		maxPayloadSize: v.maxPayloadSize,
+		supported:      v.supported,
+	}
+}
+
 func (v *BulkSupport) UnmarshalJSON(data []byte) error {
 	v.maxOperations = nil
 	v.maxPayloadSize = nil
@@ -322,7 +332,7 @@ func NewBulkSupportBuilder() *BulkSupportBuilder {
 
 func (b *BulkSupportBuilder) From(in *BulkSupport) *BulkSupportBuilder {
 	b.once.Do(b.init)
-	*(b.object) = *(in)
+	b.object = in.Clone()
 	return b
 }
 

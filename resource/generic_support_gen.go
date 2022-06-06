@@ -147,6 +147,14 @@ func (v *GenericSupport) Set(name string, value interface{}) error {
 	}
 }
 
+func (v *GenericSupport) Clone() *GenericSupport {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	return &GenericSupport{
+		supported: v.supported,
+	}
+}
+
 func (v *GenericSupport) UnmarshalJSON(data []byte) error {
 	v.supported = nil
 	v.privateParams = nil
@@ -236,7 +244,7 @@ func NewGenericSupportBuilder() *GenericSupportBuilder {
 
 func (b *GenericSupportBuilder) From(in *GenericSupport) *GenericSupportBuilder {
 	b.once.Do(b.init)
-	*(b.object) = *(in)
+	b.object = in.Clone()
 	return b
 }
 

@@ -285,6 +285,18 @@ func (v *AuthenticationScheme) Set(name string, value interface{}) error {
 	}
 }
 
+func (v *AuthenticationScheme) Clone() *AuthenticationScheme {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	return &AuthenticationScheme{
+		description:      v.description,
+		documentationURI: v.documentationURI,
+		name:             v.name,
+		specURI:          v.specURI,
+		typ:              v.typ,
+	}
+}
+
 func (v *AuthenticationScheme) UnmarshalJSON(data []byte) error {
 	v.description = nil
 	v.documentationURI = nil
@@ -402,7 +414,7 @@ func NewAuthenticationSchemeBuilder() *AuthenticationSchemeBuilder {
 
 func (b *AuthenticationSchemeBuilder) From(in *AuthenticationScheme) *AuthenticationSchemeBuilder {
 	b.once.Do(b.init)
-	*(b.object) = *(in)
+	b.object = in.Clone()
 	return b
 }
 

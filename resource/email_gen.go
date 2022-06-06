@@ -243,6 +243,17 @@ func (v *Email) Set(name string, value interface{}) error {
 	}
 }
 
+func (v *Email) Clone() *Email {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	return &Email{
+		display: v.display,
+		primary: v.primary,
+		typ:     v.typ,
+		value:   v.value,
+	}
+}
+
 func (v *Email) UnmarshalJSON(data []byte) error {
 	v.display = nil
 	v.primary = nil
@@ -353,7 +364,7 @@ func NewEmailBuilder() *EmailBuilder {
 
 func (b *EmailBuilder) From(in *Email) *EmailBuilder {
 	b.once.Do(b.init)
-	*(b.object) = *(in)
+	b.object = in.Clone()
 	return b
 }
 

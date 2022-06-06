@@ -171,6 +171,15 @@ func (v *PartialResourceRepresentationRequest) Set(name string, value interface{
 	}
 }
 
+func (v *PartialResourceRepresentationRequest) Clone() *PartialResourceRepresentationRequest {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	return &PartialResourceRepresentationRequest{
+		attributes:         v.attributes,
+		excludedAttributes: v.excludedAttributes,
+	}
+}
+
 func (v *PartialResourceRepresentationRequest) UnmarshalJSON(data []byte) error {
 	v.attributes = nil
 	v.excludedAttributes = nil
@@ -267,7 +276,7 @@ func NewPartialResourceRepresentationRequestBuilder() *PartialResourceRepresenta
 
 func (b *PartialResourceRepresentationRequestBuilder) From(in *PartialResourceRepresentationRequest) *PartialResourceRepresentationRequestBuilder {
 	b.once.Do(b.init)
-	*(b.object) = *(in)
+	b.object = in.Clone()
 	return b
 }
 

@@ -342,6 +342,20 @@ func (v *EnterpriseUser) Set(name string, value interface{}) error {
 	}
 }
 
+func (v *EnterpriseUser) Clone() *EnterpriseUser {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	return &EnterpriseUser{
+		costCenter:     v.costCenter,
+		department:     v.department,
+		division:       v.division,
+		employeeNumber: v.employeeNumber,
+		manager:        v.manager,
+		organization:   v.organization,
+		schemas:        v.schemas,
+	}
+}
+
 func (v *EnterpriseUser) UnmarshalJSON(data []byte) error {
 	v.costCenter = nil
 	v.department = nil
@@ -473,7 +487,7 @@ func NewEnterpriseUserBuilder() *EnterpriseUserBuilder {
 
 func (b *EnterpriseUserBuilder) From(in *EnterpriseUser) *EnterpriseUserBuilder {
 	b.once.Do(b.init)
-	*(b.object) = *(in)
+	b.object = in.Clone()
 	return b
 }
 

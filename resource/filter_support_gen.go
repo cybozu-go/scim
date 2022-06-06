@@ -183,6 +183,15 @@ func (v *FilterSupport) Set(name string, value interface{}) error {
 	}
 }
 
+func (v *FilterSupport) Clone() *FilterSupport {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	return &FilterSupport{
+		maxResults: v.maxResults,
+		supported:  v.supported,
+	}
+}
+
 func (v *FilterSupport) UnmarshalJSON(data []byte) error {
 	v.maxResults = nil
 	v.supported = nil
@@ -279,7 +288,7 @@ func NewFilterSupportBuilder() *FilterSupportBuilder {
 
 func (b *FilterSupportBuilder) From(in *FilterSupport) *FilterSupportBuilder {
 	b.once.Do(b.init)
-	*(b.object) = *(in)
+	b.object = in.Clone()
 	return b
 }
 

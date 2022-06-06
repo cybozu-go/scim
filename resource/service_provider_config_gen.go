@@ -411,6 +411,22 @@ func (v *ServiceProviderConfig) Set(name string, value interface{}) error {
 	}
 }
 
+func (v *ServiceProviderConfig) Clone() *ServiceProviderConfig {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	return &ServiceProviderConfig{
+		authenticationSchemes: v.authenticationSchemes,
+		bulk:                  v.bulk,
+		changePassword:        v.changePassword,
+		documentationURI:      v.documentationURI,
+		etag:                  v.etag,
+		filter:                v.filter,
+		patch:                 v.patch,
+		schemas:               v.schemas,
+		sort:                  v.sort,
+	}
+}
+
 func (v *ServiceProviderConfig) UnmarshalJSON(data []byte) error {
 	v.authenticationSchemes = nil
 	v.bulk = nil
@@ -556,7 +572,7 @@ func NewServiceProviderConfigBuilder() *ServiceProviderConfigBuilder {
 
 func (b *ServiceProviderConfigBuilder) From(in *ServiceProviderConfig) *ServiceProviderConfigBuilder {
 	b.once.Do(b.init)
-	*(b.object) = *(in)
+	b.object = in.Clone()
 	return b
 }
 

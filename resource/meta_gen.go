@@ -277,6 +277,18 @@ func (v *Meta) Set(name string, value interface{}) error {
 	}
 }
 
+func (v *Meta) Clone() *Meta {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	return &Meta{
+		created:      v.created,
+		lastModified: v.lastModified,
+		location:     v.location,
+		resourceType: v.resourceType,
+		version:      v.version,
+	}
+}
+
 func (v *Meta) UnmarshalJSON(data []byte) error {
 	v.created = nil
 	v.lastModified = nil
@@ -394,7 +406,7 @@ func NewMetaBuilder() *MetaBuilder {
 
 func (b *MetaBuilder) From(in *Meta) *MetaBuilder {
 	b.once.Do(b.init)
-	*(b.object) = *(in)
+	b.object = in.Clone()
 	return b
 }
 

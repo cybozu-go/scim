@@ -45,6 +45,9 @@ func (f GroupValidateFunc) Validate(v *Group) error {
 }
 
 var DefaultGroupValidator GroupValidator = GroupValidateFunc(func(v *Group) error {
+	if v.id == nil {
+		return fmt.Errorf(`required field "id" is missing in "Group"`)
+	}
 	return nil
 })
 

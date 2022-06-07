@@ -258,6 +258,20 @@ func PrimaryNEQ(v bool) predicate.Email {
 	})
 }
 
+// PrimaryIsNil applies the IsNil predicate on the "primary" field.
+func PrimaryIsNil() predicate.Email {
+	return predicate.Email(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldPrimary)))
+	})
+}
+
+// PrimaryNotNil applies the NotNil predicate on the "primary" field.
+func PrimaryNotNil() predicate.Email {
+	return predicate.Email(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldPrimary)))
+	})
+}
+
 // TypeEQ applies the EQ predicate on the "type" field.
 func TypeEQ(v string) predicate.Email {
 	return predicate.Email(func(s *sql.Selector) {

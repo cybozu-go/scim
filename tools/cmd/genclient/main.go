@@ -10,10 +10,10 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/goccy/go-yaml"
-	"github.com/lestrrat-go/codegen"
 	"github.com/cybozu-go/scim/resource"
 	"github.com/cybozu-go/scim/schema"
+	"github.com/goccy/go-yaml"
+	"github.com/lestrrat-go/codegen"
 	"github.com/lestrrat-go/xstrings"
 )
 
@@ -355,9 +355,7 @@ func generateCall(o *codegen.Output, svc Service, call *codegen.Object, resource
 		// HACK: this needs to be fixed
 		o.L(`switch value := value.(type) {`)
 		o.L(`case []string:`)
-		o.L(`for _, x := range value {`)
-		o.L(`vals.Add(key, x)`)
-		o.L(`}`)
+		o.L(`vals.Add(key, strings.Join(value, ","))`)
 		o.L(`default:`)
 		// TODO: this is over simplified
 		o.L("vals.Add(key, fmt.Sprintf(`%%s`, value))")

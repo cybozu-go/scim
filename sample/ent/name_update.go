@@ -149,23 +149,23 @@ func (nu *NameUpdate) ClearMiddleName() *NameUpdate {
 	return nu
 }
 
-// SetUsersID sets the "users" edge to the User entity by ID.
-func (nu *NameUpdate) SetUsersID(id uuid.UUID) *NameUpdate {
-	nu.mutation.SetUsersID(id)
+// SetUserID sets the "user" edge to the User entity by ID.
+func (nu *NameUpdate) SetUserID(id uuid.UUID) *NameUpdate {
+	nu.mutation.SetUserID(id)
 	return nu
 }
 
-// SetNillableUsersID sets the "users" edge to the User entity by ID if the given value is not nil.
-func (nu *NameUpdate) SetNillableUsersID(id *uuid.UUID) *NameUpdate {
+// SetNillableUserID sets the "user" edge to the User entity by ID if the given value is not nil.
+func (nu *NameUpdate) SetNillableUserID(id *uuid.UUID) *NameUpdate {
 	if id != nil {
-		nu = nu.SetUsersID(*id)
+		nu = nu.SetUserID(*id)
 	}
 	return nu
 }
 
-// SetUsers sets the "users" edge to the User entity.
-func (nu *NameUpdate) SetUsers(u *User) *NameUpdate {
-	return nu.SetUsersID(u.ID)
+// SetUser sets the "user" edge to the User entity.
+func (nu *NameUpdate) SetUser(u *User) *NameUpdate {
+	return nu.SetUserID(u.ID)
 }
 
 // Mutation returns the NameMutation object of the builder.
@@ -173,9 +173,9 @@ func (nu *NameUpdate) Mutation() *NameMutation {
 	return nu.mutation
 }
 
-// ClearUsers clears the "users" edge to the User entity.
-func (nu *NameUpdate) ClearUsers() *NameUpdate {
-	nu.mutation.ClearUsers()
+// ClearUser clears the "user" edge to the User entity.
+func (nu *NameUpdate) ClearUser() *NameUpdate {
+	nu.mutation.ClearUser()
 	return nu
 }
 
@@ -329,12 +329,12 @@ func (nu *NameUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: name.FieldMiddleName,
 		})
 	}
-	if nu.mutation.UsersCleared() {
+	if nu.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   name.UsersTable,
-			Columns: []string{name.UsersColumn},
+			Table:   name.UserTable,
+			Columns: []string{name.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -345,12 +345,12 @@ func (nu *NameUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := nu.mutation.UsersIDs(); len(nodes) > 0 {
+	if nodes := nu.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   name.UsersTable,
-			Columns: []string{name.UsersColumn},
+			Table:   name.UserTable,
+			Columns: []string{name.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -503,23 +503,23 @@ func (nuo *NameUpdateOne) ClearMiddleName() *NameUpdateOne {
 	return nuo
 }
 
-// SetUsersID sets the "users" edge to the User entity by ID.
-func (nuo *NameUpdateOne) SetUsersID(id uuid.UUID) *NameUpdateOne {
-	nuo.mutation.SetUsersID(id)
+// SetUserID sets the "user" edge to the User entity by ID.
+func (nuo *NameUpdateOne) SetUserID(id uuid.UUID) *NameUpdateOne {
+	nuo.mutation.SetUserID(id)
 	return nuo
 }
 
-// SetNillableUsersID sets the "users" edge to the User entity by ID if the given value is not nil.
-func (nuo *NameUpdateOne) SetNillableUsersID(id *uuid.UUID) *NameUpdateOne {
+// SetNillableUserID sets the "user" edge to the User entity by ID if the given value is not nil.
+func (nuo *NameUpdateOne) SetNillableUserID(id *uuid.UUID) *NameUpdateOne {
 	if id != nil {
-		nuo = nuo.SetUsersID(*id)
+		nuo = nuo.SetUserID(*id)
 	}
 	return nuo
 }
 
-// SetUsers sets the "users" edge to the User entity.
-func (nuo *NameUpdateOne) SetUsers(u *User) *NameUpdateOne {
-	return nuo.SetUsersID(u.ID)
+// SetUser sets the "user" edge to the User entity.
+func (nuo *NameUpdateOne) SetUser(u *User) *NameUpdateOne {
+	return nuo.SetUserID(u.ID)
 }
 
 // Mutation returns the NameMutation object of the builder.
@@ -527,9 +527,9 @@ func (nuo *NameUpdateOne) Mutation() *NameMutation {
 	return nuo.mutation
 }
 
-// ClearUsers clears the "users" edge to the User entity.
-func (nuo *NameUpdateOne) ClearUsers() *NameUpdateOne {
-	nuo.mutation.ClearUsers()
+// ClearUser clears the "user" edge to the User entity.
+func (nuo *NameUpdateOne) ClearUser() *NameUpdateOne {
+	nuo.mutation.ClearUser()
 	return nuo
 }
 
@@ -707,12 +707,12 @@ func (nuo *NameUpdateOne) sqlSave(ctx context.Context) (_node *Name, err error) 
 			Column: name.FieldMiddleName,
 		})
 	}
-	if nuo.mutation.UsersCleared() {
+	if nuo.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   name.UsersTable,
-			Columns: []string{name.UsersColumn},
+			Table:   name.UserTable,
+			Columns: []string{name.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -723,12 +723,12 @@ func (nuo *NameUpdateOne) sqlSave(ctx context.Context) (_node *Name, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := nuo.mutation.UsersIDs(); len(nodes) > 0 {
+	if nodes := nuo.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   name.UsersTable,
-			Columns: []string{name.UsersColumn},
+			Table:   name.UserTable,
+			Columns: []string{name.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

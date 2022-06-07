@@ -57,8 +57,3 @@ func ValidColumn(column string) bool {
 	}
 	return false
 }
-
-var (
-	// DefaultPrimary holds the default value on creation for the "primary" field.
-	DefaultPrimary bool
-)

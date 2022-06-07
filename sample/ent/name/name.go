@@ -19,17 +19,17 @@ const (
 	FieldHonorificSuffix = "honorific_suffix"
 	// FieldMiddleName holds the string denoting the middlename field in the database.
 	FieldMiddleName = "middle_name"
-	// EdgeUsers holds the string denoting the users edge name in mutations.
-	EdgeUsers = "users"
+	// EdgeUser holds the string denoting the user edge name in mutations.
+	EdgeUser = "user"
 	// Table holds the table name of the name in the database.
 	Table = "names"
-	// UsersTable is the table that holds the users relation/edge.
-	UsersTable = "names"
-	// UsersInverseTable is the table name for the User entity.
+	// UserTable is the table that holds the user relation/edge.
+	UserTable = "names"
+	// UserInverseTable is the table name for the User entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
-	UsersInverseTable = "users"
-	// UsersColumn is the table column denoting the users relation/edge.
-	UsersColumn = "user_names"
+	UserInverseTable = "users"
+	// UserColumn is the table column denoting the user relation/edge.
+	UserColumn = "user_name"
 )
 
 // Columns holds all SQL columns for name fields.
@@ -46,7 +46,7 @@ var Columns = []string{
 // ForeignKeys holds the SQL foreign-keys that are owned by the "names"
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
-	"user_names",
+	"user_name",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).

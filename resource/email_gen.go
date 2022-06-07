@@ -35,6 +35,9 @@ func (f EmailValidateFunc) Validate(v *Email) error {
 }
 
 var DefaultEmailValidator EmailValidator = EmailValidateFunc(func(v *Email) error {
+	if v.value == nil {
+		return fmt.Errorf(`required field "value" is missing in "Email"`)
+	}
 	return nil
 })
 

@@ -63,6 +63,12 @@ func (eu *EmailUpdate) SetNillablePrimary(b *bool) *EmailUpdate {
 	return eu
 }
 
+// ClearPrimary clears the value of the "primary" field.
+func (eu *EmailUpdate) ClearPrimary() *EmailUpdate {
+	eu.mutation.ClearPrimary()
+	return eu
+}
+
 // SetType sets the "type" field.
 func (eu *EmailUpdate) SetType(s string) *EmailUpdate {
 	eu.mutation.SetType(s)
@@ -211,6 +217,12 @@ func (eu *EmailUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: email.FieldPrimary,
 		})
 	}
+	if eu.mutation.PrimaryCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
+			Column: email.FieldPrimary,
+		})
+	}
 	if value, ok := eu.mutation.GetType(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -316,6 +328,12 @@ func (euo *EmailUpdateOne) SetNillablePrimary(b *bool) *EmailUpdateOne {
 	if b != nil {
 		euo.SetPrimary(*b)
 	}
+	return euo
+}
+
+// ClearPrimary clears the value of the "primary" field.
+func (euo *EmailUpdateOne) ClearPrimary() *EmailUpdateOne {
+	euo.mutation.ClearPrimary()
 	return euo
 }
 
@@ -488,6 +506,12 @@ func (euo *EmailUpdateOne) sqlSave(ctx context.Context) (_node *Email, err error
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeBool,
 			Value:  value,
+			Column: email.FieldPrimary,
+		})
+	}
+	if euo.mutation.PrimaryCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
 			Column: email.FieldPrimary,
 		})
 	}

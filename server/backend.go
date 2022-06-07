@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 
 	"github.com/cybozu-go/scim/resource"
 	"github.com/lestrrat-go/mux"
@@ -40,7 +41,7 @@ type ReplaceUserBackend interface {
 }
 
 type RetrieveUserBackend interface {
-	RetrieveUser(string) (*resource.User, error)
+	RetrieveUser(string, ...string) (*resource.User, error)
 }
 
 type SearchBackend interface {
@@ -197,8 +198,8 @@ func RetrieveUserEndpoint(b RetrieveUserBackend) http.Handler {
 			return
 		}
 
-		// TODO: handle "attributes" and stuff?
-		user, err := b.RetrieveUser(id)
+		attrs := strings.Split(r.URL.Query().Get(`attributes`), ",")
+		user, err := b.RetrieveUser(id, attrs...)
 		if err != nil {
 			// TODO: distinguish between error and not found error
 			// TODO: log

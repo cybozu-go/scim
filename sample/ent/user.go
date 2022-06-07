@@ -52,8 +52,8 @@ type UserEdges struct {
 	Groups []*Group `json:"groups,omitempty"`
 	// Emails holds the value of the emails edge.
 	Emails []*Email `json:"emails,omitempty"`
-	// Names holds the value of the names edge.
-	Names []*Name `json:"names,omitempty"`
+	// Name holds the value of the name edge.
+	Name []*Name `json:"name,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [3]bool
@@ -77,13 +77,13 @@ func (e UserEdges) EmailsOrErr() ([]*Email, error) {
 	return nil, &NotLoadedError{edge: "emails"}
 }
 
-// NamesOrErr returns the Names value or an error if the edge
+// NameOrErr returns the Name value or an error if the edge
 // was not loaded in eager-loading.
-func (e UserEdges) NamesOrErr() ([]*Name, error) {
+func (e UserEdges) NameOrErr() ([]*Name, error) {
 	if e.loadedTypes[2] {
-		return e.Names, nil
+		return e.Name, nil
 	}
-	return nil, &NotLoadedError{edge: "names"}
+	return nil, &NotLoadedError{edge: "name"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -214,9 +214,9 @@ func (u *User) QueryEmails() *EmailQuery {
 	return (&UserClient{config: u.config}).QueryEmails(u)
 }
 
-// QueryNames queries the "names" edge of the User entity.
-func (u *User) QueryNames() *NameQuery {
-	return (&UserClient{config: u.config}).QueryNames(u)
+// QueryName queries the "name" edge of the User entity.
+func (u *User) QueryName() *NameQuery {
+	return (&UserClient{config: u.config}).QueryName(u)
 }
 
 // Update returns a builder for updating this User.

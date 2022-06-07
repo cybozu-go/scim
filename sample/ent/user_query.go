@@ -32,7 +32,7 @@ type UserQuery struct {
 	// eager-loading edges.
 	withGroups *GroupQuery
 	withEmails *EmailQuery
-	withNames  *NameQuery
+	withName   *NameQuery
 	withFKs    bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -114,8 +114,8 @@ func (uq *UserQuery) QueryEmails() *EmailQuery {
 	return query
 }
 
-// QueryNames chains the current query on the "names" edge.
-func (uq *UserQuery) QueryNames() *NameQuery {
+// QueryName chains the current query on the "name" edge.
+func (uq *UserQuery) QueryName() *NameQuery {
 	query := &NameQuery{config: uq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := uq.prepareQuery(ctx); err != nil {
@@ -128,7 +128,7 @@ func (uq *UserQuery) QueryNames() *NameQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(user.Table, user.FieldID, selector),
 			sqlgraph.To(name.Table, name.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, user.NamesTable, user.NamesColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.NameTable, user.NameColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
 		return fromU, nil
@@ -319,7 +319,7 @@ func (uq *UserQuery) Clone() *UserQuery {
 		predicates: append([]predicate.User{}, uq.predicates...),
 		withGroups: uq.withGroups.Clone(),
 		withEmails: uq.withEmails.Clone(),
-		withNames:  uq.withNames.Clone(),
+		withName:   uq.withName.Clone(),
 		// clone intermediate query.
 		sql:    uq.sql.Clone(),
 		path:   uq.path,
@@ -349,14 +349,14 @@ func (uq *UserQuery) WithEmails(opts ...func(*EmailQuery)) *UserQuery {
 	return uq
 }
 
-// WithNames tells the query-builder to eager-load the nodes that are connected to
-// the "names" edge. The optional arguments are used to configure the query builder of the edge.
-func (uq *UserQuery) WithNames(opts ...func(*NameQuery)) *UserQuery {
+// WithName tells the query-builder to eager-load the nodes that are connected to
+// the "name" edge. The optional arguments are used to configure the query builder of the edge.
+func (uq *UserQuery) WithName(opts ...func(*NameQuery)) *UserQuery {
 	query := &NameQuery{config: uq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
-	uq.withNames = query
+	uq.withName = query
 	return uq
 }
 
@@ -429,7 +429,7 @@ func (uq *UserQuery) sqlAll(ctx context.Context) ([]*User, error) {
 		loadedTypes = [3]bool{
 			uq.withGroups != nil,
 			uq.withEmails != nil,
-			uq.withNames != nil,
+			uq.withName != nil,
 		}
 	)
 	if withFKs {
@@ -513,32 +513,32 @@ func (uq *UserQuery) sqlAll(ctx context.Context) ([]*User, error) {
 		}
 	}
 
-	if query := uq.withNames; query != nil {
+	if query := uq.withName; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
 		nodeids := make(map[uuid.UUID]*User)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Names = []*Name{}
+			nodes[i].Edges.Name = []*Name{}
 		}
 		query.withFKs = true
 		query.Where(predicate.Name(func(s *sql.Selector) {
-			s.Where(sql.InValues(user.NamesColumn, fks...))
+			s.Where(sql.InValues(user.NameColumn, fks...))
 		}))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.user_names
+			fk := n.user_name
 			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "user_names" is nil for node %v`, n.ID)
+				return nil, fmt.Errorf(`foreign-key "user_name" is nil for node %v`, n.ID)
 			}
 			node, ok := nodeids[*fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "user_names" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "user_name" returned %v for node %v`, *fk, n.ID)
 			}
-			node.Edges.Names = append(node.Edges.Names, n)
+			node.Edges.Name = append(node.Edges.Name, n)
 		}
 	}
 

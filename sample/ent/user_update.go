@@ -287,14 +287,14 @@ func (uu *UserUpdate) AddEmails(e ...*Email) *UserUpdate {
 	return uu.AddEmailIDs(ids...)
 }
 
-// AddNameIDs adds the "names" edge to the Name entity by IDs.
+// AddNameIDs adds the "name" edge to the Name entity by IDs.
 func (uu *UserUpdate) AddNameIDs(ids ...int) *UserUpdate {
 	uu.mutation.AddNameIDs(ids...)
 	return uu
 }
 
-// AddNames adds the "names" edges to the Name entity.
-func (uu *UserUpdate) AddNames(n ...*Name) *UserUpdate {
+// AddName adds the "name" edges to the Name entity.
+func (uu *UserUpdate) AddName(n ...*Name) *UserUpdate {
 	ids := make([]int, len(n))
 	for i := range n {
 		ids[i] = n[i].ID
@@ -349,20 +349,20 @@ func (uu *UserUpdate) RemoveEmails(e ...*Email) *UserUpdate {
 	return uu.RemoveEmailIDs(ids...)
 }
 
-// ClearNames clears all "names" edges to the Name entity.
-func (uu *UserUpdate) ClearNames() *UserUpdate {
-	uu.mutation.ClearNames()
+// ClearName clears all "name" edges to the Name entity.
+func (uu *UserUpdate) ClearName() *UserUpdate {
+	uu.mutation.ClearName()
 	return uu
 }
 
-// RemoveNameIDs removes the "names" edge to Name entities by IDs.
+// RemoveNameIDs removes the "name" edge to Name entities by IDs.
 func (uu *UserUpdate) RemoveNameIDs(ids ...int) *UserUpdate {
 	uu.mutation.RemoveNameIDs(ids...)
 	return uu
 }
 
-// RemoveNames removes "names" edges to Name entities.
-func (uu *UserUpdate) RemoveNames(n ...*Name) *UserUpdate {
+// RemoveName removes "name" edges to Name entities.
+func (uu *UserUpdate) RemoveName(n ...*Name) *UserUpdate {
 	ids := make([]int, len(n))
 	for i := range n {
 		ids[i] = n[i].ID
@@ -721,12 +721,12 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if uu.mutation.NamesCleared() {
+	if uu.mutation.NameCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   user.NamesTable,
-			Columns: []string{user.NamesColumn},
+			Table:   user.NameTable,
+			Columns: []string{user.NameColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -737,12 +737,12 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := uu.mutation.RemovedNamesIDs(); len(nodes) > 0 && !uu.mutation.NamesCleared() {
+	if nodes := uu.mutation.RemovedNameIDs(); len(nodes) > 0 && !uu.mutation.NameCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   user.NamesTable,
-			Columns: []string{user.NamesColumn},
+			Table:   user.NameTable,
+			Columns: []string{user.NameColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -756,12 +756,12 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := uu.mutation.NamesIDs(); len(nodes) > 0 {
+	if nodes := uu.mutation.NameIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   user.NamesTable,
-			Columns: []string{user.NamesColumn},
+			Table:   user.NameTable,
+			Columns: []string{user.NameColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1050,14 +1050,14 @@ func (uuo *UserUpdateOne) AddEmails(e ...*Email) *UserUpdateOne {
 	return uuo.AddEmailIDs(ids...)
 }
 
-// AddNameIDs adds the "names" edge to the Name entity by IDs.
+// AddNameIDs adds the "name" edge to the Name entity by IDs.
 func (uuo *UserUpdateOne) AddNameIDs(ids ...int) *UserUpdateOne {
 	uuo.mutation.AddNameIDs(ids...)
 	return uuo
 }
 
-// AddNames adds the "names" edges to the Name entity.
-func (uuo *UserUpdateOne) AddNames(n ...*Name) *UserUpdateOne {
+// AddName adds the "name" edges to the Name entity.
+func (uuo *UserUpdateOne) AddName(n ...*Name) *UserUpdateOne {
 	ids := make([]int, len(n))
 	for i := range n {
 		ids[i] = n[i].ID
@@ -1112,20 +1112,20 @@ func (uuo *UserUpdateOne) RemoveEmails(e ...*Email) *UserUpdateOne {
 	return uuo.RemoveEmailIDs(ids...)
 }
 
-// ClearNames clears all "names" edges to the Name entity.
-func (uuo *UserUpdateOne) ClearNames() *UserUpdateOne {
-	uuo.mutation.ClearNames()
+// ClearName clears all "name" edges to the Name entity.
+func (uuo *UserUpdateOne) ClearName() *UserUpdateOne {
+	uuo.mutation.ClearName()
 	return uuo
 }
 
-// RemoveNameIDs removes the "names" edge to Name entities by IDs.
+// RemoveNameIDs removes the "name" edge to Name entities by IDs.
 func (uuo *UserUpdateOne) RemoveNameIDs(ids ...int) *UserUpdateOne {
 	uuo.mutation.RemoveNameIDs(ids...)
 	return uuo
 }
 
-// RemoveNames removes "names" edges to Name entities.
-func (uuo *UserUpdateOne) RemoveNames(n ...*Name) *UserUpdateOne {
+// RemoveName removes "name" edges to Name entities.
+func (uuo *UserUpdateOne) RemoveName(n ...*Name) *UserUpdateOne {
 	ids := make([]int, len(n))
 	for i := range n {
 		ids[i] = n[i].ID
@@ -1508,12 +1508,12 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if uuo.mutation.NamesCleared() {
+	if uuo.mutation.NameCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   user.NamesTable,
-			Columns: []string{user.NamesColumn},
+			Table:   user.NameTable,
+			Columns: []string{user.NameColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1524,12 +1524,12 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := uuo.mutation.RemovedNamesIDs(); len(nodes) > 0 && !uuo.mutation.NamesCleared() {
+	if nodes := uuo.mutation.RemovedNameIDs(); len(nodes) > 0 && !uuo.mutation.NameCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   user.NamesTable,
-			Columns: []string{user.NamesColumn},
+			Table:   user.NameTable,
+			Columns: []string{user.NameColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1543,12 +1543,12 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := uuo.mutation.NamesIDs(); len(nodes) > 0 {
+	if nodes := uuo.mutation.NameIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   user.NamesTable,
-			Columns: []string{user.NamesColumn},
+			Table:   user.NameTable,
+			Columns: []string{user.NameColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

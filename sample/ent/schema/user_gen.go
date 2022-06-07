@@ -11,7 +11,7 @@ func (User) Fields() []ent.Field {
 		field.Bool("active").Optional(),
 		field.String("displayName").Optional(),
 		field.String("externalID").Optional(),
-		field.UUID("id", uuid.UUID{}).Default(uuid.New).Optional(),
+		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.String("locale").Optional(),
 		field.String("nickName").Optional(),
 		field.String("password").Optional().NotEmpty(),

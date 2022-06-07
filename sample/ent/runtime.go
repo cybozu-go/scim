@@ -3,7 +3,6 @@
 package ent
 
 import (
-	"github.com/cybozu-go/scim/sample/ent/email"
 	"github.com/cybozu-go/scim/sample/ent/group"
 	"github.com/cybozu-go/scim/sample/ent/schema"
 	"github.com/cybozu-go/scim/sample/ent/user"
@@ -14,12 +13,6 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
-	emailFields := schema.Email{}.Fields()
-	_ = emailFields
-	// emailDescPrimary is the schema descriptor for primary field.
-	emailDescPrimary := emailFields[1].Descriptor()
-	// email.DefaultPrimary holds the default value on creation for the primary field.
-	email.DefaultPrimary = emailDescPrimary.Default.(bool)
 	groupFields := schema.Group{}.Fields()
 	_ = groupFields
 	// groupDescID is the schema descriptor for id field.

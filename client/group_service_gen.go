@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"strings"
 
 	"github.com/cybozu-go/scim/resource"
 )
@@ -80,9 +81,7 @@ func (call *GetGroupCall) Do(ctx context.Context) (*resource.Group, error) {
 		for key, value := range m {
 			switch value := value.(type) {
 			case []string:
-				for _, x := range value {
-					vals.Add(key, x)
-				}
+				vals.Add(key, strings.Join(value, ","))
 			default:
 				vals.Add(key, fmt.Sprintf(`%s`, value))
 			}
@@ -398,9 +397,7 @@ func (call *DeleteGroupCall) Do(ctx context.Context) error {
 		for key, value := range m {
 			switch value := value.(type) {
 			case []string:
-				for _, x := range value {
-					vals.Add(key, x)
-				}
+				vals.Add(key, strings.Join(value, ","))
 			default:
 				vals.Add(key, fmt.Sprintf(`%s`, value))
 			}

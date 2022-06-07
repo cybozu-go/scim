@@ -26,8 +26,8 @@ func (Name) Fields() []ent.Field {
 // Edges of the Name.
 func (Name) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From(`users`, User.Type).
-			Ref(`names`).
+		edge.From(`user`, User.Type).
+			Ref(`name`).
 			Unique(),
 	}
 }

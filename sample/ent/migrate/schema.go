@@ -12,7 +12,7 @@ var (
 	EmailsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "display", Type: field.TypeString, Nullable: true},
-		{Name: "primary", Type: field.TypeBool, Default: false},
+		{Name: "primary", Type: field.TypeBool, Nullable: true},
 		{Name: "type", Type: field.TypeString, Nullable: true},
 		{Name: "value", Type: field.TypeString},
 		{Name: "user_emails", Type: field.TypeUUID, Nullable: true},
@@ -68,7 +68,7 @@ var (
 		{Name: "honorific_prefix", Type: field.TypeString, Nullable: true},
 		{Name: "honorific_suffix", Type: field.TypeString, Nullable: true},
 		{Name: "middle_name", Type: field.TypeString, Nullable: true},
-		{Name: "user_names", Type: field.TypeUUID, Nullable: true},
+		{Name: "user_name", Type: field.TypeUUID, Nullable: true},
 	}
 	// NamesTable holds the schema information for the "names" table.
 	NamesTable = &schema.Table{
@@ -77,7 +77,7 @@ var (
 		PrimaryKey: []*schema.Column{NamesColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "names_users_names",
+				Symbol:     "names_users_name",
 				Columns:    []*schema.Column{NamesColumns[7]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,

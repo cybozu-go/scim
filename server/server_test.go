@@ -1,6 +1,7 @@
 package server_test
 
 import (
+	"encoding/json"
 	"fmt"
 	"math/rand"
 	"sync"
@@ -68,10 +69,34 @@ func (m *mockBackend) CreateUser(in *resource.User) (*resource.User, error) {
 	return user, nil
 }
 
-func (m *mockBackend) RetrieveUser(id string) (*resource.User, error) {
+func (m *mockBackend) RetrieveUser(id string, fields ...string) (*resource.User, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
-	return m.retrieveUserNoLock(id)
+	v, err := m.retrieveUserNoLock(id)
+	if err != nil {
+		return nil, err
+	}
+
+	// HACK
+	buf, _ := json.Marshal(v)
+	var store map[string]interface{}
+	_ = json.Unmarshal(buf, &store)
+	want := make(map[string]struct{})
+	want["id"] = struct{}{}
+	for _, f := range fields {
+		want[f] = struct{}{}
+	}
+
+	for k := range store {
+		if _, ok := want[k]; !ok {
+			delete(store, k)
+		}
+	}
+
+	buf, _ = json.Marshal(store)
+	var u resource.User
+	_ = json.Unmarshal(buf, &u)
+	return &u, nil
 }
 
 func (m *mockBackend) retrieveUserNoLock(id string) (*resource.User, error) {

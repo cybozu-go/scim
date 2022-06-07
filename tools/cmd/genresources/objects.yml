@@ -1,5 +1,6 @@
 common:
   - name: id
+    required: true
     ent_type: "uuid.UUID{}"
     ent_default: "uuid.New"
     ent_build_method: UUID
@@ -65,8 +66,10 @@ objects:
     skipCommonFields: true
     fields:
       - name: value
+        required: true
       - name: display
       - name: typ
+        ent_name: type
         exported_name: Type
         json: type
       - name: primary

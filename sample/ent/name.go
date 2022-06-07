@@ -31,31 +31,31 @@ type Name struct {
 	MiddleName string `json:"middleName,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the NameQuery when eager-loading is set.
-	Edges      NameEdges `json:"edges"`
-	user_names *uuid.UUID
+	Edges     NameEdges `json:"edges"`
+	user_name *uuid.UUID
 }
 
 // NameEdges holds the relations/edges for other nodes in the graph.
 type NameEdges struct {
-	// Users holds the value of the users edge.
-	Users *User `json:"users,omitempty"`
+	// User holds the value of the user edge.
+	User *User `json:"user,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [1]bool
 }
 
-// UsersOrErr returns the Users value or an error if the edge
+// UserOrErr returns the User value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e NameEdges) UsersOrErr() (*User, error) {
+func (e NameEdges) UserOrErr() (*User, error) {
 	if e.loadedTypes[0] {
-		if e.Users == nil {
-			// The edge users was loaded in eager-loading,
+		if e.User == nil {
+			// The edge user was loaded in eager-loading,
 			// but was not found.
 			return nil, &NotFoundError{label: user.Label}
 		}
-		return e.Users, nil
+		return e.User, nil
 	}
-	return nil, &NotLoadedError{edge: "users"}
+	return nil, &NotLoadedError{edge: "user"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -67,7 +67,7 @@ func (*Name) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = new(sql.NullInt64)
 		case name.FieldFamilyName, name.FieldFormatted, name.FieldGivenName, name.FieldHonorificPrefix, name.FieldHonorificSuffix, name.FieldMiddleName:
 			values[i] = new(sql.NullString)
-		case name.ForeignKeys[0]: // user_names
+		case name.ForeignKeys[0]: // user_name
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Name", columns[i])
@@ -128,19 +128,19 @@ func (n *Name) assignValues(columns []string, values []interface{}) error {
 			}
 		case name.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field user_names", values[i])
+				return fmt.Errorf("unexpected type %T for field user_name", values[i])
 			} else if value.Valid {
-				n.user_names = new(uuid.UUID)
-				*n.user_names = *value.S.(*uuid.UUID)
+				n.user_name = new(uuid.UUID)
+				*n.user_name = *value.S.(*uuid.UUID)
 			}
 		}
 	}
 	return nil
 }
 
-// QueryUsers queries the "users" edge of the Name entity.
-func (n *Name) QueryUsers() *UserQuery {
-	return (&NameClient{config: n.config}).QueryUsers(n)
+// QueryUser queries the "user" edge of the Name entity.
+func (n *Name) QueryUser() *UserQuery {
+	return (&NameClient{config: n.config}).QueryUser(n)
 }
 
 // Update returns a builder for updating this Name.

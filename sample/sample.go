@@ -190,7 +190,7 @@ func (b *Backend) CreateUser(in *resource.User) (*resource.User, error) {
 		if err != nil {
 			return nil, fmt.Errorf(`failed to create user: failed to create name: %w`, err)
 		}
-		createUserCall.AddNames(created)
+		createUserCall.AddName(created)
 		// TODO: delete in case userCreate fails?
 
 		name = v
@@ -223,14 +223,20 @@ func (b *Backend) CreateUser(in *resource.User) (*resource.User, error) {
 	return userBuilder.Build()
 }
 
-func (b *Backend) RetrieveUser(id string) (*resource.User, error) {
+func (b *Backend) RetrieveUser(id string, fields ...string) (*resource.User, error) {
 	parsedUUID, err := uuid.Parse(id)
 	if err != nil {
 		return nil, fmt.Errorf(`failed to parse ID: %w`, err)
 	}
 
-	u, err := b.db.User.Query().
-		Where(user.IDEQ(parsedUUID)).
+	userQuery := b.db.User.Query().
+		Where(user.IDEQ(parsedUUID))
+
+	if len(fields) > 0 {
+		userLoadEntFields(userQuery, fields)
+	}
+
+	u, err := userQuery.
 		Only(context.TODO())
 	if err != nil {
 		return nil, fmt.Errorf(`failed to retrieve user: %w`, err)

@@ -99,7 +99,6 @@ func (ec *EmailCreate) Save(ctx context.Context) (*Email, error) {
 		err  error
 		node *Email
 	)
-	ec.defaults()
 	if len(ec.hooks) == 0 {
 		if err = ec.check(); err != nil {
 			return nil, err
@@ -157,19 +156,8 @@ func (ec *EmailCreate) ExecX(ctx context.Context) {
 	}
 }
 
-// defaults sets the default values of the builder before save.
-func (ec *EmailCreate) defaults() {
-	if _, ok := ec.mutation.Primary(); !ok {
-		v := email.DefaultPrimary
-		ec.mutation.SetPrimary(v)
-	}
-}
-
 // check runs all checks and user-defined validators on the builder.
 func (ec *EmailCreate) check() error {
-	if _, ok := ec.mutation.Primary(); !ok {
-		return &ValidationError{Name: "primary", err: errors.New(`ent: missing required field "Email.primary"`)}
-	}
 	if _, ok := ec.mutation.Value(); !ok {
 		return &ValidationError{Name: "value", err: errors.New(`ent: missing required field "Email.value"`)}
 	}
@@ -269,7 +257,6 @@ func (ecb *EmailCreateBulk) Save(ctx context.Context) ([]*Email, error) {
 	for i := range ecb.builders {
 		func(i int, root context.Context) {
 			builder := ecb.builders[i]
-			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*EmailMutation)
 				if !ok {

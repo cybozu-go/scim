@@ -92,20 +92,6 @@ func IDLTE(id uuid.UUID) predicate.User {
 	})
 }
 
-// IDIsNil applies the IsNil predicate on the ID field.
-func IDIsNil(id uuid.UUID) predicate.User {
-	return predicate.User(func(s *sql.Selector) {
-		s.Where(sql.IsNull(s.C(FieldID)))
-	})
-}
-
-// IDNotNil applies the NotNil predicate on the ID field.
-func IDNotNil(id uuid.UUID) predicate.User {
-	return predicate.User(func(s *sql.Selector) {
-		s.Where(sql.NotNull(s.C(FieldID)))
-	})
-}
-
 // Active applies equality check predicate on the "active" field. It's identical to ActiveEQ.
 func Active(v bool) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
@@ -1635,25 +1621,25 @@ func HasEmailsWith(preds ...predicate.Email) predicate.User {
 	})
 }
 
-// HasNames applies the HasEdge predicate on the "names" edge.
-func HasNames() predicate.User {
+// HasName applies the HasEdge predicate on the "name" edge.
+func HasName() predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(NamesTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, NamesTable, NamesColumn),
+			sqlgraph.To(NameTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, NameTable, NameColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasNamesWith applies the HasEdge predicate on the "names" edge with a given conditions (other predicates).
-func HasNamesWith(preds ...predicate.Name) predicate.User {
+// HasNameWith applies the HasEdge predicate on the "name" edge with a given conditions (other predicates).
+func HasNameWith(preds ...predicate.Name) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(NamesInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, NamesTable, NamesColumn),
+			sqlgraph.To(NameInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, NameTable, NameColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

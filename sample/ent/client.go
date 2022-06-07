@@ -474,15 +474,15 @@ func (c *NameClient) GetX(ctx context.Context, id int) *Name {
 	return obj
 }
 
-// QueryUsers queries the users edge of a Name.
-func (c *NameClient) QueryUsers(n *Name) *UserQuery {
+// QueryUser queries the user edge of a Name.
+func (c *NameClient) QueryUser(n *Name) *UserQuery {
 	query := &UserQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := n.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(name.Table, name.FieldID, id),
 			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, name.UsersTable, name.UsersColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, name.UserTable, name.UserColumn),
 		)
 		fromV = sqlgraph.Neighbors(n.driver.Dialect(), step)
 		return fromV, nil
@@ -612,15 +612,15 @@ func (c *UserClient) QueryEmails(u *User) *EmailQuery {
 	return query
 }
 
-// QueryNames queries the names edge of a User.
-func (c *UserClient) QueryNames(u *User) *NameQuery {
+// QueryName queries the name edge of a User.
+func (c *UserClient) QueryName(u *User) *NameQuery {
 	query := &NameQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := u.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(user.Table, user.FieldID, id),
 			sqlgraph.To(name.Table, name.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, user.NamesTable, user.NamesColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.NameTable, user.NameColumn),
 		)
 		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
 		return fromV, nil

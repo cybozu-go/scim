@@ -529,7 +529,7 @@ func generateEnt(object *codegen.Object) error {
 	// for the time being, only generate for hardcoded objects.
 	// later, move this definition to objects.yml
 	switch object.Name(true) {
-	case `User`, `Group`:
+	case `User`, `Group`, `Email`:
 	default:
 		return nil
 	}
@@ -569,13 +569,17 @@ func generateSchema(object *codegen.Object) error {
 			entMethod = v
 		}
 
+		var entName = field.Name(false)
+		if v := field.String(`ent_name`); v != "" {
+			entName = v
+		}
 		var entType = field.String(`ent_type`)
 		var entDefault = field.String(`ent_default`)
 
 		if entType != "" {
-			o.L(`field.%s(%q, %s)`, entMethod, field.Name(false), entType)
+			o.L(`field.%s(%q, %s)`, entMethod, entName, entType)
 		} else {
-			o.L(`field.%s(%q)`, entMethod, field.Name(false))
+			o.L(`field.%s(%q)`, entMethod, entName)
 		}
 
 		if entDefault != "" {
@@ -614,31 +618,95 @@ func generateUtilities(object *codegen.Object) error {
 
 	o.LL(`import (`)
 	o.L(`"github.com/cybozu-go/scim/sample/ent"`)
+	o.L(`"github.com/cybozu-go/scim/sample/ent/%s"`, object.Name(false))
 	o.L(`)`)
+
+	o.LL(`func %sLoadEntFields(q *ent.%sQuery, fields []string) {`, object.Name(false), object.Name(true))
+	o.L(`selectNames := make([]string, 0, len(fields))`)
+	o.L(`for _, f := range fields {`)
+	o.L(`switch f {`)
+	for _, field := range object.Fields() {
+		if field.Name(false) == "schemas" {
+			continue
+		}
+		if field.Bool(`skipCommonFields`) {
+			switch field.Name(false) {
+			case "id", "externalID", "meta":
+				continue
+			}
+		}
+
+		o.L(`case %q:`, field.Name(false))
+		// Special case
+		var ft = field.Type()
+		if strings.HasPrefix(ft, `[]`) || strings.HasPrefix(ft, `*`) {
+			// TODO: later
+			if field.Name(false) == `emails` {
+				o.L(`q.With%s()`, field.Name(true))
+			}
+			continue
+		} else {
+			// Otherwise, accumulate in the list of names
+			o.L(`selectNames = append(selectNames, %s.Field%s)`, object.Name(false), field.Name(true))
+		}
+	}
+	o.L(`}`)
+	o.L(`}`)
+	o.L(`q.Select(selectNames...)`)
+	o.L(`}`)
 
 	o.LL(`func %[1]sResourceFromEnt(in *ent.%[1]s) (*resource.%[1]s, error) {`, object.Name(true))
 	o.L(`var b resource.Builder`)
 
-	o.LL(`meta, err := b.Meta().`)
-	o.L(`ResourceType(%q).`, object.Name(true))
-	o.L(`Location(%q+in.ID.String()).` /* TODO: FIXME */, fmt.Sprintf(`https://foobar.com/scim/v2/%s/`, object.Name(true)))
-	o.L(`Build()`)
-	o.L(`if err != nil {`)
-	o.L(`return nil, fmt.Errorf("failed to build meta information for %s")`, object.Name(true))
-	o.L(`}`)
+	o.LL(`builder := b.%s()`, object.Name(true))
 
-	o.L(`return b.%s().`, object.Name(true))
+	if !object.Bool(`skipCommonFields`) {
+		o.LL(`meta, err := b.Meta().`)
+		o.L(`ResourceType(%q).`, object.Name(true))
+		o.L(`Location(%q+in.ID.String()).` /* TODO: FIXME */, fmt.Sprintf(`https://foobar.com/scim/v2/%s/`, object.Name(true)))
+		o.L(`Build()`)
+		o.L(`if err != nil {`)
+		o.L(`return nil, fmt.Errorf("failed to build meta information for %s")`, object.Name(true))
+		o.L(`}`)
+		o.LL(`builder.`)
+		o.L(`Meta(meta)`)
+	}
+	for _, field := range object.Fields() {
+		if field.Name(false) == "schemas" {
+			continue
+		}
+		if field.Name(false) != "emails" {
+			continue
+		}
+
+		// TODO: include others
+
+		o.LL(`if el := len(in.Edges.%s); el > 0 {`, field.Name(true))
+		o.L(`emails := make([]*resource.%s, 0, el)`, strings.TrimSuffix(field.Name(true), "s"))
+		o.L(`for _, ine := range in.Edges.%s {`, field.Name(true))
+		o.L(`email, err := %sResourceFromEnt(ine)`, strings.TrimSuffix(field.Name(true), "s"))
+		o.L(`if err != nil {`)
+		o.L(`return nil, fmt.Errorf("failed to build email information for %s")`, object.Name(true))
+		o.L(`}`)
+		o.L(`emails = append(emails, email)`)
+		o.L(`}`)
+		o.L(`builder.%s(emails...)`, field.Name(true))
+		o.L(`}`)
+	}
+
 	for _, field := range object.Fields() {
 		switch field.Name(true) {
 		case "ID":
-			o.L(`%[1]s(in.%[1]s.String()).`, field.Name(true))
+			o.L(`builder.%[1]s(in.%[1]s.String())`, field.Name(true))
 		case "Schemas", "Meta", "Members", "Addresses", "Emails", "Entitlements", "IMS", "NickName", "Name", "Groups", "PhoneNumbers", "ProfileURL", "Title", "Roles", "X509Certificates":
+			// TODO: FIXME
 		default:
-			o.L(`%[1]s(in.%[1]s).`, field.Name(true))
+			o.L(`if !reflect.ValueOf(in.%s).IsZero() {`, field.Name(true))
+			o.L(`builder.%[1]s(in.%[1]s)`, field.Name(true))
+			o.L(`}`)
 		}
 	}
-	o.L(`Meta(meta).`)
-	o.L(`Build()`)
+	o.L(`return builder.Build()`)
 	o.L(`}`)
 
 	fn := filepath.Join(`..`, `sample`, xstrings.Snake(object.Name(false))+`_gen.go`)

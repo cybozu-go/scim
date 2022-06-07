@@ -104,23 +104,23 @@ func (nc *NameCreate) SetNillableMiddleName(s *string) *NameCreate {
 	return nc
 }
 
-// SetUsersID sets the "users" edge to the User entity by ID.
-func (nc *NameCreate) SetUsersID(id uuid.UUID) *NameCreate {
-	nc.mutation.SetUsersID(id)
+// SetUserID sets the "user" edge to the User entity by ID.
+func (nc *NameCreate) SetUserID(id uuid.UUID) *NameCreate {
+	nc.mutation.SetUserID(id)
 	return nc
 }
 
-// SetNillableUsersID sets the "users" edge to the User entity by ID if the given value is not nil.
-func (nc *NameCreate) SetNillableUsersID(id *uuid.UUID) *NameCreate {
+// SetNillableUserID sets the "user" edge to the User entity by ID if the given value is not nil.
+func (nc *NameCreate) SetNillableUserID(id *uuid.UUID) *NameCreate {
 	if id != nil {
-		nc = nc.SetUsersID(*id)
+		nc = nc.SetUserID(*id)
 	}
 	return nc
 }
 
-// SetUsers sets the "users" edge to the User entity.
-func (nc *NameCreate) SetUsers(u *User) *NameCreate {
-	return nc.SetUsersID(u.ID)
+// SetUser sets the "user" edge to the User entity.
+func (nc *NameCreate) SetUser(u *User) *NameCreate {
+	return nc.SetUserID(u.ID)
 }
 
 // Mutation returns the NameMutation object of the builder.
@@ -268,12 +268,12 @@ func (nc *NameCreate) createSpec() (*Name, *sqlgraph.CreateSpec) {
 		})
 		_node.MiddleName = value
 	}
-	if nodes := nc.mutation.UsersIDs(); len(nodes) > 0 {
+	if nodes := nc.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   name.UsersTable,
-			Columns: []string{name.UsersColumn},
+			Table:   name.UserTable,
+			Columns: []string{name.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -285,7 +285,7 @@ func (nc *NameCreate) createSpec() (*Name, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.user_names = &nodes[0]
+		_node.user_name = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

@@ -92,20 +92,6 @@ func IDLTE(id uuid.UUID) predicate.Group {
 	})
 }
 
-// IDIsNil applies the IsNil predicate on the ID field.
-func IDIsNil(id uuid.UUID) predicate.Group {
-	return predicate.Group(func(s *sql.Selector) {
-		s.Where(sql.IsNull(s.C(FieldID)))
-	})
-}
-
-// IDNotNil applies the NotNil predicate on the ID field.
-func IDNotNil(id uuid.UUID) predicate.Group {
-	return predicate.Group(func(s *sql.Selector) {
-		s.Where(sql.NotNull(s.C(FieldID)))
-	})
-}
-
 // DisplayName applies equality check predicate on the "displayName" field. It's identical to DisplayNameEQ.
 func DisplayName(v string) predicate.Group {
 	return predicate.Group(func(s *sql.Selector) {

@@ -27,8 +27,8 @@ type NameQuery struct {
 	fields     []string
 	predicates []predicate.Name
 	// eager-loading edges.
-	withUsers *UserQuery
-	withFKs   bool
+	withUser *UserQuery
+	withFKs  bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -65,8 +65,8 @@ func (nq *NameQuery) Order(o ...OrderFunc) *NameQuery {
 	return nq
 }
 
-// QueryUsers chains the current query on the "users" edge.
-func (nq *NameQuery) QueryUsers() *UserQuery {
+// QueryUser chains the current query on the "user" edge.
+func (nq *NameQuery) QueryUser() *UserQuery {
 	query := &UserQuery{config: nq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := nq.prepareQuery(ctx); err != nil {
@@ -79,7 +79,7 @@ func (nq *NameQuery) QueryUsers() *UserQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(name.Table, name.FieldID, selector),
 			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, name.UsersTable, name.UsersColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, name.UserTable, name.UserColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(nq.driver.Dialect(), step)
 		return fromU, nil
@@ -268,7 +268,7 @@ func (nq *NameQuery) Clone() *NameQuery {
 		offset:     nq.offset,
 		order:      append([]OrderFunc{}, nq.order...),
 		predicates: append([]predicate.Name{}, nq.predicates...),
-		withUsers:  nq.withUsers.Clone(),
+		withUser:   nq.withUser.Clone(),
 		// clone intermediate query.
 		sql:    nq.sql.Clone(),
 		path:   nq.path,
@@ -276,14 +276,14 @@ func (nq *NameQuery) Clone() *NameQuery {
 	}
 }
 
-// WithUsers tells the query-builder to eager-load the nodes that are connected to
-// the "users" edge. The optional arguments are used to configure the query builder of the edge.
-func (nq *NameQuery) WithUsers(opts ...func(*UserQuery)) *NameQuery {
+// WithUser tells the query-builder to eager-load the nodes that are connected to
+// the "user" edge. The optional arguments are used to configure the query builder of the edge.
+func (nq *NameQuery) WithUser(opts ...func(*UserQuery)) *NameQuery {
 	query := &UserQuery{config: nq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
-	nq.withUsers = query
+	nq.withUser = query
 	return nq
 }
 
@@ -354,10 +354,10 @@ func (nq *NameQuery) sqlAll(ctx context.Context) ([]*Name, error) {
 		withFKs     = nq.withFKs
 		_spec       = nq.querySpec()
 		loadedTypes = [1]bool{
-			nq.withUsers != nil,
+			nq.withUser != nil,
 		}
 	)
-	if nq.withUsers != nil {
+	if nq.withUser != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -383,14 +383,14 @@ func (nq *NameQuery) sqlAll(ctx context.Context) ([]*Name, error) {
 		return nodes, nil
 	}
 
-	if query := nq.withUsers; query != nil {
+	if query := nq.withUser; query != nil {
 		ids := make([]uuid.UUID, 0, len(nodes))
 		nodeids := make(map[uuid.UUID][]*Name)
 		for i := range nodes {
-			if nodes[i].user_names == nil {
+			if nodes[i].user_name == nil {
 				continue
 			}
-			fk := *nodes[i].user_names
+			fk := *nodes[i].user_name
 			if _, ok := nodeids[fk]; !ok {
 				ids = append(ids, fk)
 			}
@@ -404,10 +404,10 @@ func (nq *NameQuery) sqlAll(ctx context.Context) ([]*Name, error) {
 		for _, n := range neighbors {
 			nodes, ok := nodeids[n.ID]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "user_names" returned %v`, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "user_name" returned %v`, n.ID)
 			}
 			for i := range nodes {
-				nodes[i].Edges.Users = n
+				nodes[i].Edges.User = n
 			}
 		}
 	}

@@ -39,8 +39,8 @@ const (
 	EdgeGroups = "groups"
 	// EdgeEmails holds the string denoting the emails edge name in mutations.
 	EdgeEmails = "emails"
-	// EdgeNames holds the string denoting the names edge name in mutations.
-	EdgeNames = "names"
+	// EdgeName holds the string denoting the name edge name in mutations.
+	EdgeName = "name"
 	// Table holds the table name of the user in the database.
 	Table = "users"
 	// GroupsTable is the table that holds the groups relation/edge.
@@ -57,13 +57,13 @@ const (
 	EmailsInverseTable = "emails"
 	// EmailsColumn is the table column denoting the emails relation/edge.
 	EmailsColumn = "user_emails"
-	// NamesTable is the table that holds the names relation/edge.
-	NamesTable = "names"
-	// NamesInverseTable is the table name for the Name entity.
+	// NameTable is the table that holds the name relation/edge.
+	NameTable = "names"
+	// NameInverseTable is the table name for the Name entity.
 	// It exists in this package in order to avoid circular dependency with the "name" package.
-	NamesInverseTable = "names"
-	// NamesColumn is the table column denoting the names relation/edge.
-	NamesColumn = "user_names"
+	NameInverseTable = "names"
+	// NameColumn is the table column denoting the name relation/edge.
+	NameColumn = "user_name"
 )
 
 // Columns holds all SQL columns for user fields.

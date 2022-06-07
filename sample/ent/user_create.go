@@ -227,14 +227,14 @@ func (uc *UserCreate) AddEmails(e ...*Email) *UserCreate {
 	return uc.AddEmailIDs(ids...)
 }
 
-// AddNameIDs adds the "names" edge to the Name entity by IDs.
+// AddNameIDs adds the "name" edge to the Name entity by IDs.
 func (uc *UserCreate) AddNameIDs(ids ...int) *UserCreate {
 	uc.mutation.AddNameIDs(ids...)
 	return uc
 }
 
-// AddNames adds the "names" edges to the Name entity.
-func (uc *UserCreate) AddNames(n ...*Name) *UserCreate {
+// AddName adds the "name" edges to the Name entity.
+func (uc *UserCreate) AddName(n ...*Name) *UserCreate {
 	ids := make([]int, len(n))
 	for i := range n {
 		ids[i] = n[i].ID
@@ -504,12 +504,12 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := uc.mutation.NamesIDs(); len(nodes) > 0 {
+	if nodes := uc.mutation.NameIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   user.NamesTable,
-			Columns: []string{user.NamesColumn},
+			Table:   user.NameTable,
+			Columns: []string{user.NameColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

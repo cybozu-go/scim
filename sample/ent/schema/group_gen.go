@@ -10,6 +10,6 @@ func (Group) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("displayName").Optional(),
 		field.String("externalID").Optional(),
-		field.UUID("id", uuid.UUID{}).Default(uuid.New).Optional(),
+		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 	}
 }

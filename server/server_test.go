@@ -77,6 +77,10 @@ func (m *mockBackend) RetrieveUser(id string, fields ...string) (*resource.User,
 		return nil, err
 	}
 
+	if len(fields) == 0 {
+		return v, nil
+	}
+
 	// HACK
 	buf, _ := json.Marshal(v)
 	var store map[string]interface{}

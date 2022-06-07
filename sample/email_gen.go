@@ -5,28 +5,7 @@ import (
 
 	"github.com/cybozu-go/scim/resource"
 	"github.com/cybozu-go/scim/sample/ent"
-	"github.com/cybozu-go/scim/sample/ent/email"
 )
-
-func emailLoadEntFields(q *ent.EmailQuery, fields []string) {
-	if len(fields) == 0 {
-		fields = []string{"display", "primary", "typ", "value"}
-	}
-	selectNames := make([]string, 0, len(fields))
-	for _, f := range fields {
-		switch f {
-		case "display":
-			selectNames = append(selectNames, email.FieldDisplay)
-		case "primary":
-			selectNames = append(selectNames, email.FieldPrimary)
-		case "typ":
-			selectNames = append(selectNames, email.FieldType)
-		case "value":
-			selectNames = append(selectNames, email.FieldValue)
-		}
-	}
-	q.Select(selectNames...)
-}
 
 func EmailResourceFromEnt(in *ent.Email) (*resource.Email, error) {
 	var b resource.Builder

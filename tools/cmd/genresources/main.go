@@ -621,62 +621,64 @@ func generateUtilities(object *codegen.Object) error {
 	o.L(`"github.com/cybozu-go/scim/sample/ent/%s"`, object.Name(false))
 	o.L(`)`)
 
-	o.LL(`func %sLoadEntFields(q *ent.%sQuery, fields []string) {`, object.Name(false), object.Name(true))
-	o.L(`if len(fields) == 0 {`)
-	o.L(`fields = []string{`)
-	for i, field := range object.Fields() {
-		switch field.Name(false) {
-		case "schemas", "meta":
-			continue
-		}
-		if field.Bool(`skipCommonFields`) {
+	if object.String(`schema`) != "" {
+		o.LL(`func %sLoadEntFields(q *ent.%sQuery, fields []string) {`, object.Name(false), object.Name(true))
+		o.L(`if len(fields) == 0 {`)
+		o.L(`fields = []string{`)
+		for i, field := range object.Fields() {
 			switch field.Name(false) {
-			case "id", "externalID":
+			case "schemas", "meta":
 				continue
 			}
-		}
+			if field.Bool(`skipCommonFields`) {
+				switch field.Name(false) {
+				case "id", "externalID":
+					continue
+				}
+			}
 
-		if i > 0 {
-			o.R(`,`)
+			if i > 0 {
+				o.R(`,`)
+			}
+			o.R(`%q`, field.Name(false))
 		}
-		o.R(`%q`, field.Name(false))
-	}
-	o.R(`}`)
-	o.L(`}`)
+		o.R(`}`)
+		o.L(`}`)
 
-	o.L(`selectNames := make([]string, 0, len(fields))`)
-	o.L(`for _, f := range fields {`)
-	o.L(`switch f {`)
-	for _, field := range object.Fields() {
-		if field.Name(false) == "schemas" {
-			continue
-		}
-		if field.Bool(`skipCommonFields`) {
-			switch field.Name(false) {
-			case "id", "externalID", "meta":
+		o.L(`selectNames := make([]string, 0, len(fields))`)
+		o.L(`for _, f := range fields {`)
+		o.L(`switch f {`)
+		for _, field := range object.Fields() {
+			if field.Name(false) == "schemas" {
 				continue
 			}
-		}
-
-		o.L(`case %q:`, field.Name(false))
-		// Special case
-		var ft = field.Type()
-		if strings.HasPrefix(ft, `[]`) || strings.HasPrefix(ft, `*`) {
-			// TODO: later
-			switch field.Name(false) {
-			case `emails`, `name`:
-				o.L(`q.With%s()`, field.Name(true))
+			if field.Bool(`skipCommonFields`) {
+				switch field.Name(false) {
+				case "id", "externalID", "meta":
+					continue
+				}
 			}
-			continue
-		} else {
-			// Otherwise, accumulate in the list of names
-			o.L(`selectNames = append(selectNames, %s.Field%s)`, object.Name(false), field.Name(true))
+
+			o.L(`case %q:`, field.Name(false))
+			// Special case
+			var ft = field.Type()
+			if strings.HasPrefix(ft, `[]`) || strings.HasPrefix(ft, `*`) {
+				// TODO: later
+				switch field.Name(false) {
+				case `emails`, `name`:
+					o.L(`q.With%s()`, field.Name(true))
+				}
+				continue
+			} else {
+				// Otherwise, accumulate in the list of names
+				o.L(`selectNames = append(selectNames, %s.Field%s)`, object.Name(false), field.Name(true))
+			}
 		}
+		o.L(`}`)
+		o.L(`}`)
+		o.L(`q.Select(selectNames...)`)
+		o.L(`}`)
 	}
-	o.L(`}`)
-	o.L(`}`)
-	o.L(`q.Select(selectNames...)`)
-	o.L(`}`)
 
 	o.LL(`func %[1]sResourceFromEnt(in *ent.%[1]s) (*resource.%[1]s, error) {`, object.Name(true))
 	o.L(`var b resource.Builder`)

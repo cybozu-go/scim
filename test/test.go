@@ -2,7 +2,6 @@ package test
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"net/http/httptest"
 	"os"
@@ -61,12 +60,13 @@ func UsersFetch(t *testing.T, cl *client.Client) func(*testing.T) {
 			require.Nil(t, u, `GetUser return value should be nil`)
 			require.Error(t, err, `GetUser should fail`)
 		})
-		t.Run(fmt.Sprintf("Fetch user"), func(t *testing.T) {
+		t.Run("Fetch user", func(t *testing.T) {
 			createdUser, err := stockUserCreateCall(cl).
 				Trace(TraceWriter).
 				Do(context.TODO())
 			require.NoError(t, err, `CreateUser should succeed`)
 
+			//nolint:errcheck
 			defer cl.User().DeleteUser(createdUser.ID()).
 				Do(context.TODO())
 
@@ -86,7 +86,7 @@ func UsersFetch(t *testing.T, cl *client.Client) func(*testing.T) {
 				require.Equal(t, `Barbara`, n.GivenName(), `GivenName should match`)
 			}
 		})
-		t.Run(fmt.Sprintf("Fetch user with attributes"), func(t *testing.T) {
+		t.Run("Fetch user with attributes", func(t *testing.T) {
 			createdUser, err := stockUserCreateCall(cl).
 				Trace(TraceWriter).
 				Do(context.TODO())
@@ -97,6 +97,7 @@ func UsersFetch(t *testing.T, cl *client.Client) func(*testing.T) {
 				Do(context.TODO())
 			require.NoError(t, err, `GetUser should succeed`)
 
+			//nolint:errcheck
 			defer cl.User().DeleteUser(createdUser.ID()).
 				Do(context.TODO())
 
@@ -133,12 +134,12 @@ func UsersBasicCRUD(t *testing.T, cl *client.Client) func(*testing.T) {
 				Do(context.TODO())
 			require.NoError(t, err, `CreateUser should succeed`)
 
-			t.Run(fmt.Sprintf("Fetch user"), func(t *testing.T) {
+			t.Run("Fetch user", func(t *testing.T) {
 				_, err = cl.User().GetUser(createdUser.ID()).
 					Do(context.TODO())
 				require.NoError(t, err, `GetUser should succeed`)
 			})
-			t.Run(fmt.Sprintf("Replace user"), func(t *testing.T) {
+			t.Run("Replace user", func(t *testing.T) {
 				u, err := cl.User().ReplaceUser(createdUser.ID()).
 					Emails(resource.NewEmailBuilder().
 						Value("babs-new@jensen.org").
@@ -161,12 +162,12 @@ func UsersBasicCRUD(t *testing.T, cl *client.Client) func(*testing.T) {
 					require.True(t, email.Primary())
 				}
 			})
-			t.Run(fmt.Sprintf("Delete user"), func(t *testing.T) {
+			t.Run("Delete user", func(t *testing.T) {
 				err := cl.User().DeleteUser(createdUser.ID()).
 					Do(context.TODO())
 				require.NoError(t, err, `DeleteUser should succeed`)
 			})
-			t.Run(fmt.Sprintf("Fetch users (after delete)"), func(t *testing.T) {
+			t.Run("Fetch users (after delete)", func(t *testing.T) {
 				_, err := cl.User().GetUser(createdUser.ID()).
 					Do(context.TODO())
 				require.Error(t, err, `GetUser should fail`)

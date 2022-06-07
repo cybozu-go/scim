@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect"
 	"github.com/cybozu-go/scim/resource"
 	"github.com/cybozu-go/scim/sample/ent"
+	"github.com/cybozu-go/scim/sample/ent/group"
 	"github.com/cybozu-go/scim/sample/ent/user"
 	"github.com/google/uuid"
 	"github.com/lestrrat-go/xstrings"
@@ -406,4 +407,24 @@ func (b *Backend) Search(in *resource.SearchRequest) (*resource.ListResponse, er
 		TotalResults(len(list)).
 		Resources(list...).
 		Build()
+}
+
+func (b *Backend) RetrieveGroup(id string, fields ...string) (*resource.Group, error) {
+	parsedUUID, err := uuid.Parse(id)
+	if err != nil {
+		return nil, fmt.Errorf(`failed to parse ID: %w`, err)
+	}
+
+	groupQuery := b.db.Group.Query().
+		Where(group.IDEQ(parsedUUID))
+
+	groupLoadEntFields(groupQuery, fields)
+
+	u, err := groupQuery.
+		Only(context.TODO())
+	if err != nil {
+		return nil, fmt.Errorf(`failed to retrieve group: %w`, err)
+	}
+
+	return GroupResourceFromEnt(u)
 }

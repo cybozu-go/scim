@@ -16,8 +16,8 @@ type Tx struct {
 	Email *EmailClient
 	// Group is the client for interacting with the Group builders.
 	Group *GroupClient
-	// Name is the client for interacting with the Name builders.
-	Name *NameClient
+	// Names is the client for interacting with the Names builders.
+	Names *NamesClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 
@@ -157,7 +157,7 @@ func (tx *Tx) Client() *Client {
 func (tx *Tx) init() {
 	tx.Email = NewEmailClient(tx.config)
 	tx.Group = NewGroupClient(tx.config)
-	tx.Name = NewNameClient(tx.config)
+	tx.Names = NewNamesClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 }
 

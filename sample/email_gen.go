@@ -9,6 +9,9 @@ import (
 )
 
 func emailLoadEntFields(q *ent.EmailQuery, fields []string) {
+	if len(fields) == 0 {
+		fields = []string{"display", "primary", "typ", "value"}
+	}
 	selectNames := make([]string, 0, len(fields))
 	for _, f := range fields {
 		switch f {

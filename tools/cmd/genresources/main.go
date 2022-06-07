@@ -529,7 +529,7 @@ func generateEnt(object *codegen.Object) error {
 	// for the time being, only generate for hardcoded objects.
 	// later, move this definition to objects.yml
 	switch object.Name(true) {
-	case `User`, `Group`, `Email`:
+	case `User`, `Group`, `Email`, `Names`:
 	default:
 		return nil
 	}
@@ -622,6 +622,28 @@ func generateUtilities(object *codegen.Object) error {
 	o.L(`)`)
 
 	o.LL(`func %sLoadEntFields(q *ent.%sQuery, fields []string) {`, object.Name(false), object.Name(true))
+	o.L(`if len(fields) == 0 {`)
+	o.L(`fields = []string{`)
+	for i, field := range object.Fields() {
+		switch field.Name(false) {
+		case "schemas", "meta":
+			continue
+		}
+		if field.Bool(`skipCommonFields`) {
+			switch field.Name(false) {
+			case "id", "externalID":
+				continue
+			}
+		}
+
+		if i > 0 {
+			o.R(`,`)
+		}
+		o.R(`%q`, field.Name(false))
+	}
+	o.R(`}`)
+	o.L(`}`)
+
 	o.L(`selectNames := make([]string, 0, len(fields))`)
 	o.L(`for _, f := range fields {`)
 	o.L(`switch f {`)
@@ -641,7 +663,8 @@ func generateUtilities(object *codegen.Object) error {
 		var ft = field.Type()
 		if strings.HasPrefix(ft, `[]`) || strings.HasPrefix(ft, `*`) {
 			// TODO: later
-			if field.Name(false) == `emails` {
+			switch field.Name(false) {
+			case `emails`, `name`:
 				o.L(`q.With%s()`, field.Name(true))
 			}
 			continue
@@ -675,22 +698,34 @@ func generateUtilities(object *codegen.Object) error {
 		if field.Name(false) == "schemas" {
 			continue
 		}
-		if field.Name(false) != "emails" {
+
+		switch field.Name(false) {
+		case `emails`, `name`:
+		default:
 			continue
 		}
 
 		// TODO: include others
 
+		rsname := strings.TrimSuffix(field.Name(true), "s")
+		if rsname == "Name" {
+			rsname = "Names"
+		}
 		o.LL(`if el := len(in.Edges.%s); el > 0 {`, field.Name(true))
-		o.L(`emails := make([]*resource.%s, 0, el)`, strings.TrimSuffix(field.Name(true), "s"))
+		o.L(`list := make([]*resource.%s, 0, el)`, rsname)
 		o.L(`for _, ine := range in.Edges.%s {`, field.Name(true))
-		o.L(`email, err := %sResourceFromEnt(ine)`, strings.TrimSuffix(field.Name(true), "s"))
+		o.L(`r, err := %sResourceFromEnt(ine)`, rsname)
 		o.L(`if err != nil {`)
-		o.L(`return nil, fmt.Errorf("failed to build email information for %s")`, object.Name(true))
+		o.L(`return nil, fmt.Errorf("failed to build %s information for %s")`, field.Name(false), object.Name(true))
 		o.L(`}`)
-		o.L(`emails = append(emails, email)`)
+		o.L(`list = append(list, r)`)
 		o.L(`}`)
-		o.L(`builder.%s(emails...)`, field.Name(true))
+
+		if strings.HasPrefix(field.Type(), "*") {
+			o.L(`builder.%s(list[0])`, field.Name(true))
+		} else {
+			o.L(`builder.%s(list...)`, field.Name(true))
+		}
 		o.L(`}`)
 	}
 

@@ -59,8 +59,8 @@ const (
 	EmailsColumn = "user_emails"
 	// NameTable is the table that holds the name relation/edge.
 	NameTable = "names"
-	// NameInverseTable is the table name for the Name entity.
-	// It exists in this package in order to avoid circular dependency with the "name" package.
+	// NameInverseTable is the table name for the Names entity.
+	// It exists in this package in order to avoid circular dependency with the "names" package.
 	NameInverseTable = "names"
 	// NameColumn is the table column denoting the name relation/edge.
 	NameColumn = "user_name"

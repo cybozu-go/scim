@@ -8,26 +8,26 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/cybozu-go/scim/sample/ent/name"
+	"github.com/cybozu-go/scim/sample/ent/names"
 	"github.com/cybozu-go/scim/sample/ent/user"
 	"github.com/google/uuid"
 )
 
-// NameCreate is the builder for creating a Name entity.
-type NameCreate struct {
+// NamesCreate is the builder for creating a Names entity.
+type NamesCreate struct {
 	config
-	mutation *NameMutation
+	mutation *NamesMutation
 	hooks    []Hook
 }
 
 // SetFamilyName sets the "familyName" field.
-func (nc *NameCreate) SetFamilyName(s string) *NameCreate {
+func (nc *NamesCreate) SetFamilyName(s string) *NamesCreate {
 	nc.mutation.SetFamilyName(s)
 	return nc
 }
 
 // SetNillableFamilyName sets the "familyName" field if the given value is not nil.
-func (nc *NameCreate) SetNillableFamilyName(s *string) *NameCreate {
+func (nc *NamesCreate) SetNillableFamilyName(s *string) *NamesCreate {
 	if s != nil {
 		nc.SetFamilyName(*s)
 	}
@@ -35,13 +35,13 @@ func (nc *NameCreate) SetNillableFamilyName(s *string) *NameCreate {
 }
 
 // SetFormatted sets the "formatted" field.
-func (nc *NameCreate) SetFormatted(s string) *NameCreate {
+func (nc *NamesCreate) SetFormatted(s string) *NamesCreate {
 	nc.mutation.SetFormatted(s)
 	return nc
 }
 
 // SetNillableFormatted sets the "formatted" field if the given value is not nil.
-func (nc *NameCreate) SetNillableFormatted(s *string) *NameCreate {
+func (nc *NamesCreate) SetNillableFormatted(s *string) *NamesCreate {
 	if s != nil {
 		nc.SetFormatted(*s)
 	}
@@ -49,13 +49,13 @@ func (nc *NameCreate) SetNillableFormatted(s *string) *NameCreate {
 }
 
 // SetGivenName sets the "givenName" field.
-func (nc *NameCreate) SetGivenName(s string) *NameCreate {
+func (nc *NamesCreate) SetGivenName(s string) *NamesCreate {
 	nc.mutation.SetGivenName(s)
 	return nc
 }
 
 // SetNillableGivenName sets the "givenName" field if the given value is not nil.
-func (nc *NameCreate) SetNillableGivenName(s *string) *NameCreate {
+func (nc *NamesCreate) SetNillableGivenName(s *string) *NamesCreate {
 	if s != nil {
 		nc.SetGivenName(*s)
 	}
@@ -63,13 +63,13 @@ func (nc *NameCreate) SetNillableGivenName(s *string) *NameCreate {
 }
 
 // SetHonorificPrefix sets the "honorificPrefix" field.
-func (nc *NameCreate) SetHonorificPrefix(s string) *NameCreate {
+func (nc *NamesCreate) SetHonorificPrefix(s string) *NamesCreate {
 	nc.mutation.SetHonorificPrefix(s)
 	return nc
 }
 
 // SetNillableHonorificPrefix sets the "honorificPrefix" field if the given value is not nil.
-func (nc *NameCreate) SetNillableHonorificPrefix(s *string) *NameCreate {
+func (nc *NamesCreate) SetNillableHonorificPrefix(s *string) *NamesCreate {
 	if s != nil {
 		nc.SetHonorificPrefix(*s)
 	}
@@ -77,13 +77,13 @@ func (nc *NameCreate) SetNillableHonorificPrefix(s *string) *NameCreate {
 }
 
 // SetHonorificSuffix sets the "honorificSuffix" field.
-func (nc *NameCreate) SetHonorificSuffix(s string) *NameCreate {
+func (nc *NamesCreate) SetHonorificSuffix(s string) *NamesCreate {
 	nc.mutation.SetHonorificSuffix(s)
 	return nc
 }
 
 // SetNillableHonorificSuffix sets the "honorificSuffix" field if the given value is not nil.
-func (nc *NameCreate) SetNillableHonorificSuffix(s *string) *NameCreate {
+func (nc *NamesCreate) SetNillableHonorificSuffix(s *string) *NamesCreate {
 	if s != nil {
 		nc.SetHonorificSuffix(*s)
 	}
@@ -91,13 +91,13 @@ func (nc *NameCreate) SetNillableHonorificSuffix(s *string) *NameCreate {
 }
 
 // SetMiddleName sets the "middleName" field.
-func (nc *NameCreate) SetMiddleName(s string) *NameCreate {
+func (nc *NamesCreate) SetMiddleName(s string) *NamesCreate {
 	nc.mutation.SetMiddleName(s)
 	return nc
 }
 
 // SetNillableMiddleName sets the "middleName" field if the given value is not nil.
-func (nc *NameCreate) SetNillableMiddleName(s *string) *NameCreate {
+func (nc *NamesCreate) SetNillableMiddleName(s *string) *NamesCreate {
 	if s != nil {
 		nc.SetMiddleName(*s)
 	}
@@ -105,13 +105,13 @@ func (nc *NameCreate) SetNillableMiddleName(s *string) *NameCreate {
 }
 
 // SetUserID sets the "user" edge to the User entity by ID.
-func (nc *NameCreate) SetUserID(id uuid.UUID) *NameCreate {
+func (nc *NamesCreate) SetUserID(id uuid.UUID) *NamesCreate {
 	nc.mutation.SetUserID(id)
 	return nc
 }
 
 // SetNillableUserID sets the "user" edge to the User entity by ID if the given value is not nil.
-func (nc *NameCreate) SetNillableUserID(id *uuid.UUID) *NameCreate {
+func (nc *NamesCreate) SetNillableUserID(id *uuid.UUID) *NamesCreate {
 	if id != nil {
 		nc = nc.SetUserID(*id)
 	}
@@ -119,20 +119,20 @@ func (nc *NameCreate) SetNillableUserID(id *uuid.UUID) *NameCreate {
 }
 
 // SetUser sets the "user" edge to the User entity.
-func (nc *NameCreate) SetUser(u *User) *NameCreate {
+func (nc *NamesCreate) SetUser(u *User) *NamesCreate {
 	return nc.SetUserID(u.ID)
 }
 
-// Mutation returns the NameMutation object of the builder.
-func (nc *NameCreate) Mutation() *NameMutation {
+// Mutation returns the NamesMutation object of the builder.
+func (nc *NamesCreate) Mutation() *NamesMutation {
 	return nc.mutation
 }
 
-// Save creates the Name in the database.
-func (nc *NameCreate) Save(ctx context.Context) (*Name, error) {
+// Save creates the Names in the database.
+func (nc *NamesCreate) Save(ctx context.Context) (*Names, error) {
 	var (
 		err  error
-		node *Name
+		node *Names
 	)
 	if len(nc.hooks) == 0 {
 		if err = nc.check(); err != nil {
@@ -141,7 +141,7 @@ func (nc *NameCreate) Save(ctx context.Context) (*Name, error) {
 		node, err = nc.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*NameMutation)
+			mutation, ok := m.(*NamesMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
 			}
@@ -170,7 +170,7 @@ func (nc *NameCreate) Save(ctx context.Context) (*Name, error) {
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (nc *NameCreate) SaveX(ctx context.Context) *Name {
+func (nc *NamesCreate) SaveX(ctx context.Context) *Names {
 	v, err := nc.Save(ctx)
 	if err != nil {
 		panic(err)
@@ -179,24 +179,24 @@ func (nc *NameCreate) SaveX(ctx context.Context) *Name {
 }
 
 // Exec executes the query.
-func (nc *NameCreate) Exec(ctx context.Context) error {
+func (nc *NamesCreate) Exec(ctx context.Context) error {
 	_, err := nc.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (nc *NameCreate) ExecX(ctx context.Context) {
+func (nc *NamesCreate) ExecX(ctx context.Context) {
 	if err := nc.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (nc *NameCreate) check() error {
+func (nc *NamesCreate) check() error {
 	return nil
 }
 
-func (nc *NameCreate) sqlSave(ctx context.Context) (*Name, error) {
+func (nc *NamesCreate) sqlSave(ctx context.Context) (*Names, error) {
 	_node, _spec := nc.createSpec()
 	if err := sqlgraph.CreateNode(ctx, nc.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
@@ -209,14 +209,14 @@ func (nc *NameCreate) sqlSave(ctx context.Context) (*Name, error) {
 	return _node, nil
 }
 
-func (nc *NameCreate) createSpec() (*Name, *sqlgraph.CreateSpec) {
+func (nc *NamesCreate) createSpec() (*Names, *sqlgraph.CreateSpec) {
 	var (
-		_node = &Name{config: nc.config}
+		_node = &Names{config: nc.config}
 		_spec = &sqlgraph.CreateSpec{
-			Table: name.Table,
+			Table: names.Table,
 			ID: &sqlgraph.FieldSpec{
 				Type:   field.TypeInt,
-				Column: name.FieldID,
+				Column: names.FieldID,
 			},
 		}
 	)
@@ -224,7 +224,7 @@ func (nc *NameCreate) createSpec() (*Name, *sqlgraph.CreateSpec) {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: name.FieldFamilyName,
+			Column: names.FieldFamilyName,
 		})
 		_node.FamilyName = value
 	}
@@ -232,7 +232,7 @@ func (nc *NameCreate) createSpec() (*Name, *sqlgraph.CreateSpec) {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: name.FieldFormatted,
+			Column: names.FieldFormatted,
 		})
 		_node.Formatted = value
 	}
@@ -240,7 +240,7 @@ func (nc *NameCreate) createSpec() (*Name, *sqlgraph.CreateSpec) {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: name.FieldGivenName,
+			Column: names.FieldGivenName,
 		})
 		_node.GivenName = value
 	}
@@ -248,7 +248,7 @@ func (nc *NameCreate) createSpec() (*Name, *sqlgraph.CreateSpec) {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: name.FieldHonorificPrefix,
+			Column: names.FieldHonorificPrefix,
 		})
 		_node.HonorificPrefix = value
 	}
@@ -256,7 +256,7 @@ func (nc *NameCreate) createSpec() (*Name, *sqlgraph.CreateSpec) {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: name.FieldHonorificSuffix,
+			Column: names.FieldHonorificSuffix,
 		})
 		_node.HonorificSuffix = value
 	}
@@ -264,7 +264,7 @@ func (nc *NameCreate) createSpec() (*Name, *sqlgraph.CreateSpec) {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: name.FieldMiddleName,
+			Column: names.FieldMiddleName,
 		})
 		_node.MiddleName = value
 	}
@@ -272,8 +272,8 @@ func (nc *NameCreate) createSpec() (*Name, *sqlgraph.CreateSpec) {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   name.UserTable,
-			Columns: []string{name.UserColumn},
+			Table:   names.UserTable,
+			Columns: []string{names.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -291,22 +291,22 @@ func (nc *NameCreate) createSpec() (*Name, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
-// NameCreateBulk is the builder for creating many Name entities in bulk.
-type NameCreateBulk struct {
+// NamesCreateBulk is the builder for creating many Names entities in bulk.
+type NamesCreateBulk struct {
 	config
-	builders []*NameCreate
+	builders []*NamesCreate
 }
 
-// Save creates the Name entities in the database.
-func (ncb *NameCreateBulk) Save(ctx context.Context) ([]*Name, error) {
+// Save creates the Names entities in the database.
+func (ncb *NamesCreateBulk) Save(ctx context.Context) ([]*Names, error) {
 	specs := make([]*sqlgraph.CreateSpec, len(ncb.builders))
-	nodes := make([]*Name, len(ncb.builders))
+	nodes := make([]*Names, len(ncb.builders))
 	mutators := make([]Mutator, len(ncb.builders))
 	for i := range ncb.builders {
 		func(i int, root context.Context) {
 			builder := ncb.builders[i]
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-				mutation, ok := m.(*NameMutation)
+				mutation, ok := m.(*NamesMutation)
 				if !ok {
 					return nil, fmt.Errorf("unexpected mutation type %T", m)
 				}
@@ -353,7 +353,7 @@ func (ncb *NameCreateBulk) Save(ctx context.Context) ([]*Name, error) {
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (ncb *NameCreateBulk) SaveX(ctx context.Context) []*Name {
+func (ncb *NamesCreateBulk) SaveX(ctx context.Context) []*Names {
 	v, err := ncb.Save(ctx)
 	if err != nil {
 		panic(err)
@@ -362,13 +362,13 @@ func (ncb *NameCreateBulk) SaveX(ctx context.Context) []*Name {
 }
 
 // Exec executes the query.
-func (ncb *NameCreateBulk) Exec(ctx context.Context) error {
+func (ncb *NamesCreateBulk) Exec(ctx context.Context) error {
 	_, err := ncb.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ncb *NameCreateBulk) ExecX(ctx context.Context) {
+func (ncb *NamesCreateBulk) ExecX(ctx context.Context) {
 	if err := ncb.Exec(ctx); err != nil {
 		panic(err)
 	}

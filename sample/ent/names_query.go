@@ -11,21 +11,21 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/cybozu-go/scim/sample/ent/name"
+	"github.com/cybozu-go/scim/sample/ent/names"
 	"github.com/cybozu-go/scim/sample/ent/predicate"
 	"github.com/cybozu-go/scim/sample/ent/user"
 	"github.com/google/uuid"
 )
 
-// NameQuery is the builder for querying Name entities.
-type NameQuery struct {
+// NamesQuery is the builder for querying Names entities.
+type NamesQuery struct {
 	config
 	limit      *int
 	offset     *int
 	unique     *bool
 	order      []OrderFunc
 	fields     []string
-	predicates []predicate.Name
+	predicates []predicate.Names
 	// eager-loading edges.
 	withUser *UserQuery
 	withFKs  bool
@@ -34,39 +34,39 @@ type NameQuery struct {
 	path func(context.Context) (*sql.Selector, error)
 }
 
-// Where adds a new predicate for the NameQuery builder.
-func (nq *NameQuery) Where(ps ...predicate.Name) *NameQuery {
+// Where adds a new predicate for the NamesQuery builder.
+func (nq *NamesQuery) Where(ps ...predicate.Names) *NamesQuery {
 	nq.predicates = append(nq.predicates, ps...)
 	return nq
 }
 
 // Limit adds a limit step to the query.
-func (nq *NameQuery) Limit(limit int) *NameQuery {
+func (nq *NamesQuery) Limit(limit int) *NamesQuery {
 	nq.limit = &limit
 	return nq
 }
 
 // Offset adds an offset step to the query.
-func (nq *NameQuery) Offset(offset int) *NameQuery {
+func (nq *NamesQuery) Offset(offset int) *NamesQuery {
 	nq.offset = &offset
 	return nq
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (nq *NameQuery) Unique(unique bool) *NameQuery {
+func (nq *NamesQuery) Unique(unique bool) *NamesQuery {
 	nq.unique = &unique
 	return nq
 }
 
 // Order adds an order step to the query.
-func (nq *NameQuery) Order(o ...OrderFunc) *NameQuery {
+func (nq *NamesQuery) Order(o ...OrderFunc) *NamesQuery {
 	nq.order = append(nq.order, o...)
 	return nq
 }
 
 // QueryUser chains the current query on the "user" edge.
-func (nq *NameQuery) QueryUser() *UserQuery {
+func (nq *NamesQuery) QueryUser() *UserQuery {
 	query := &UserQuery{config: nq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := nq.prepareQuery(ctx); err != nil {
@@ -77,9 +77,9 @@ func (nq *NameQuery) QueryUser() *UserQuery {
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
-			sqlgraph.From(name.Table, name.FieldID, selector),
+			sqlgraph.From(names.Table, names.FieldID, selector),
 			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, name.UserTable, name.UserColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, names.UserTable, names.UserColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(nq.driver.Dialect(), step)
 		return fromU, nil
@@ -87,21 +87,21 @@ func (nq *NameQuery) QueryUser() *UserQuery {
 	return query
 }
 
-// First returns the first Name entity from the query.
-// Returns a *NotFoundError when no Name was found.
-func (nq *NameQuery) First(ctx context.Context) (*Name, error) {
+// First returns the first Names entity from the query.
+// Returns a *NotFoundError when no Names was found.
+func (nq *NamesQuery) First(ctx context.Context) (*Names, error) {
 	nodes, err := nq.Limit(1).All(ctx)
 	if err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
-		return nil, &NotFoundError{name.Label}
+		return nil, &NotFoundError{names.Label}
 	}
 	return nodes[0], nil
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (nq *NameQuery) FirstX(ctx context.Context) *Name {
+func (nq *NamesQuery) FirstX(ctx context.Context) *Names {
 	node, err := nq.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -109,22 +109,22 @@ func (nq *NameQuery) FirstX(ctx context.Context) *Name {
 	return node
 }
 
-// FirstID returns the first Name ID from the query.
-// Returns a *NotFoundError when no Name ID was found.
-func (nq *NameQuery) FirstID(ctx context.Context) (id int, err error) {
+// FirstID returns the first Names ID from the query.
+// Returns a *NotFoundError when no Names ID was found.
+func (nq *NamesQuery) FirstID(ctx context.Context) (id int, err error) {
 	var ids []int
 	if ids, err = nq.Limit(1).IDs(ctx); err != nil {
 		return
 	}
 	if len(ids) == 0 {
-		err = &NotFoundError{name.Label}
+		err = &NotFoundError{names.Label}
 		return
 	}
 	return ids[0], nil
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (nq *NameQuery) FirstIDX(ctx context.Context) int {
+func (nq *NamesQuery) FirstIDX(ctx context.Context) int {
 	id, err := nq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -132,10 +132,10 @@ func (nq *NameQuery) FirstIDX(ctx context.Context) int {
 	return id
 }
 
-// Only returns a single Name entity found by the query, ensuring it only returns one.
-// Returns a *NotSingularError when more than one Name entity is found.
-// Returns a *NotFoundError when no Name entities are found.
-func (nq *NameQuery) Only(ctx context.Context) (*Name, error) {
+// Only returns a single Names entity found by the query, ensuring it only returns one.
+// Returns a *NotSingularError when more than one Names entity is found.
+// Returns a *NotFoundError when no Names entities are found.
+func (nq *NamesQuery) Only(ctx context.Context) (*Names, error) {
 	nodes, err := nq.Limit(2).All(ctx)
 	if err != nil {
 		return nil, err
@@ -144,14 +144,14 @@ func (nq *NameQuery) Only(ctx context.Context) (*Name, error) {
 	case 1:
 		return nodes[0], nil
 	case 0:
-		return nil, &NotFoundError{name.Label}
+		return nil, &NotFoundError{names.Label}
 	default:
-		return nil, &NotSingularError{name.Label}
+		return nil, &NotSingularError{names.Label}
 	}
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (nq *NameQuery) OnlyX(ctx context.Context) *Name {
+func (nq *NamesQuery) OnlyX(ctx context.Context) *Names {
 	node, err := nq.Only(ctx)
 	if err != nil {
 		panic(err)
@@ -159,10 +159,10 @@ func (nq *NameQuery) OnlyX(ctx context.Context) *Name {
 	return node
 }
 
-// OnlyID is like Only, but returns the only Name ID in the query.
-// Returns a *NotSingularError when more than one Name ID is found.
+// OnlyID is like Only, but returns the only Names ID in the query.
+// Returns a *NotSingularError when more than one Names ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (nq *NameQuery) OnlyID(ctx context.Context) (id int, err error) {
+func (nq *NamesQuery) OnlyID(ctx context.Context) (id int, err error) {
 	var ids []int
 	if ids, err = nq.Limit(2).IDs(ctx); err != nil {
 		return
@@ -171,15 +171,15 @@ func (nq *NameQuery) OnlyID(ctx context.Context) (id int, err error) {
 	case 1:
 		id = ids[0]
 	case 0:
-		err = &NotFoundError{name.Label}
+		err = &NotFoundError{names.Label}
 	default:
-		err = &NotSingularError{name.Label}
+		err = &NotSingularError{names.Label}
 	}
 	return
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (nq *NameQuery) OnlyIDX(ctx context.Context) int {
+func (nq *NamesQuery) OnlyIDX(ctx context.Context) int {
 	id, err := nq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -187,8 +187,8 @@ func (nq *NameQuery) OnlyIDX(ctx context.Context) int {
 	return id
 }
 
-// All executes the query and returns a list of Names.
-func (nq *NameQuery) All(ctx context.Context) ([]*Name, error) {
+// All executes the query and returns a list of NamesSlice.
+func (nq *NamesQuery) All(ctx context.Context) ([]*Names, error) {
 	if err := nq.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
@@ -196,7 +196,7 @@ func (nq *NameQuery) All(ctx context.Context) ([]*Name, error) {
 }
 
 // AllX is like All, but panics if an error occurs.
-func (nq *NameQuery) AllX(ctx context.Context) []*Name {
+func (nq *NamesQuery) AllX(ctx context.Context) []*Names {
 	nodes, err := nq.All(ctx)
 	if err != nil {
 		panic(err)
@@ -204,17 +204,17 @@ func (nq *NameQuery) AllX(ctx context.Context) []*Name {
 	return nodes
 }
 
-// IDs executes the query and returns a list of Name IDs.
-func (nq *NameQuery) IDs(ctx context.Context) ([]int, error) {
+// IDs executes the query and returns a list of Names IDs.
+func (nq *NamesQuery) IDs(ctx context.Context) ([]int, error) {
 	var ids []int
-	if err := nq.Select(name.FieldID).Scan(ctx, &ids); err != nil {
+	if err := nq.Select(names.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (nq *NameQuery) IDsX(ctx context.Context) []int {
+func (nq *NamesQuery) IDsX(ctx context.Context) []int {
 	ids, err := nq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -223,7 +223,7 @@ func (nq *NameQuery) IDsX(ctx context.Context) []int {
 }
 
 // Count returns the count of the given query.
-func (nq *NameQuery) Count(ctx context.Context) (int, error) {
+func (nq *NamesQuery) Count(ctx context.Context) (int, error) {
 	if err := nq.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
@@ -231,7 +231,7 @@ func (nq *NameQuery) Count(ctx context.Context) (int, error) {
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (nq *NameQuery) CountX(ctx context.Context) int {
+func (nq *NamesQuery) CountX(ctx context.Context) int {
 	count, err := nq.Count(ctx)
 	if err != nil {
 		panic(err)
@@ -240,7 +240,7 @@ func (nq *NameQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (nq *NameQuery) Exist(ctx context.Context) (bool, error) {
+func (nq *NamesQuery) Exist(ctx context.Context) (bool, error) {
 	if err := nq.prepareQuery(ctx); err != nil {
 		return false, err
 	}
@@ -248,7 +248,7 @@ func (nq *NameQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (nq *NameQuery) ExistX(ctx context.Context) bool {
+func (nq *NamesQuery) ExistX(ctx context.Context) bool {
 	exist, err := nq.Exist(ctx)
 	if err != nil {
 		panic(err)
@@ -256,18 +256,18 @@ func (nq *NameQuery) ExistX(ctx context.Context) bool {
 	return exist
 }
 
-// Clone returns a duplicate of the NameQuery builder, including all associated steps. It can be
+// Clone returns a duplicate of the NamesQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (nq *NameQuery) Clone() *NameQuery {
+func (nq *NamesQuery) Clone() *NamesQuery {
 	if nq == nil {
 		return nil
 	}
-	return &NameQuery{
+	return &NamesQuery{
 		config:     nq.config,
 		limit:      nq.limit,
 		offset:     nq.offset,
 		order:      append([]OrderFunc{}, nq.order...),
-		predicates: append([]predicate.Name{}, nq.predicates...),
+		predicates: append([]predicate.Names{}, nq.predicates...),
 		withUser:   nq.withUser.Clone(),
 		// clone intermediate query.
 		sql:    nq.sql.Clone(),
@@ -278,7 +278,7 @@ func (nq *NameQuery) Clone() *NameQuery {
 
 // WithUser tells the query-builder to eager-load the nodes that are connected to
 // the "user" edge. The optional arguments are used to configure the query builder of the edge.
-func (nq *NameQuery) WithUser(opts ...func(*UserQuery)) *NameQuery {
+func (nq *NamesQuery) WithUser(opts ...func(*UserQuery)) *NamesQuery {
 	query := &UserQuery{config: nq.config}
 	for _, opt := range opts {
 		opt(query)
@@ -297,13 +297,13 @@ func (nq *NameQuery) WithUser(opts ...func(*UserQuery)) *NameQuery {
 //		Count int `json:"count,omitempty"`
 //	}
 //
-//	client.Name.Query().
-//		GroupBy(name.FieldFamilyName).
+//	client.Names.Query().
+//		GroupBy(names.FieldFamilyName).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 //
-func (nq *NameQuery) GroupBy(field string, fields ...string) *NameGroupBy {
-	group := &NameGroupBy{config: nq.config}
+func (nq *NamesQuery) GroupBy(field string, fields ...string) *NamesGroupBy {
+	group := &NamesGroupBy{config: nq.config}
 	group.fields = append([]string{field}, fields...)
 	group.path = func(ctx context.Context) (prev *sql.Selector, err error) {
 		if err := nq.prepareQuery(ctx); err != nil {
@@ -323,18 +323,18 @@ func (nq *NameQuery) GroupBy(field string, fields ...string) *NameGroupBy {
 //		FamilyName string `json:"familyName,omitempty"`
 //	}
 //
-//	client.Name.Query().
-//		Select(name.FieldFamilyName).
+//	client.Names.Query().
+//		Select(names.FieldFamilyName).
 //		Scan(ctx, &v)
 //
-func (nq *NameQuery) Select(fields ...string) *NameSelect {
+func (nq *NamesQuery) Select(fields ...string) *NamesSelect {
 	nq.fields = append(nq.fields, fields...)
-	return &NameSelect{NameQuery: nq}
+	return &NamesSelect{NamesQuery: nq}
 }
 
-func (nq *NameQuery) prepareQuery(ctx context.Context) error {
+func (nq *NamesQuery) prepareQuery(ctx context.Context) error {
 	for _, f := range nq.fields {
-		if !name.ValidColumn(f) {
+		if !names.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
@@ -348,9 +348,9 @@ func (nq *NameQuery) prepareQuery(ctx context.Context) error {
 	return nil
 }
 
-func (nq *NameQuery) sqlAll(ctx context.Context) ([]*Name, error) {
+func (nq *NamesQuery) sqlAll(ctx context.Context) ([]*Names, error) {
 	var (
-		nodes       = []*Name{}
+		nodes       = []*Names{}
 		withFKs     = nq.withFKs
 		_spec       = nq.querySpec()
 		loadedTypes = [1]bool{
@@ -361,10 +361,10 @@ func (nq *NameQuery) sqlAll(ctx context.Context) ([]*Name, error) {
 		withFKs = true
 	}
 	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, name.ForeignKeys...)
+		_spec.Node.Columns = append(_spec.Node.Columns, names.ForeignKeys...)
 	}
 	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
-		node := &Name{config: nq.config}
+		node := &Names{config: nq.config}
 		nodes = append(nodes, node)
 		return node.scanValues(columns)
 	}
@@ -385,7 +385,7 @@ func (nq *NameQuery) sqlAll(ctx context.Context) ([]*Name, error) {
 
 	if query := nq.withUser; query != nil {
 		ids := make([]uuid.UUID, 0, len(nodes))
-		nodeids := make(map[uuid.UUID][]*Name)
+		nodeids := make(map[uuid.UUID][]*Names)
 		for i := range nodes {
 			if nodes[i].user_name == nil {
 				continue
@@ -415,7 +415,7 @@ func (nq *NameQuery) sqlAll(ctx context.Context) ([]*Name, error) {
 	return nodes, nil
 }
 
-func (nq *NameQuery) sqlCount(ctx context.Context) (int, error) {
+func (nq *NamesQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := nq.querySpec()
 	_spec.Node.Columns = nq.fields
 	if len(nq.fields) > 0 {
@@ -424,7 +424,7 @@ func (nq *NameQuery) sqlCount(ctx context.Context) (int, error) {
 	return sqlgraph.CountNodes(ctx, nq.driver, _spec)
 }
 
-func (nq *NameQuery) sqlExist(ctx context.Context) (bool, error) {
+func (nq *NamesQuery) sqlExist(ctx context.Context) (bool, error) {
 	n, err := nq.sqlCount(ctx)
 	if err != nil {
 		return false, fmt.Errorf("ent: check existence: %w", err)
@@ -432,14 +432,14 @@ func (nq *NameQuery) sqlExist(ctx context.Context) (bool, error) {
 	return n > 0, nil
 }
 
-func (nq *NameQuery) querySpec() *sqlgraph.QuerySpec {
+func (nq *NamesQuery) querySpec() *sqlgraph.QuerySpec {
 	_spec := &sqlgraph.QuerySpec{
 		Node: &sqlgraph.NodeSpec{
-			Table:   name.Table,
-			Columns: name.Columns,
+			Table:   names.Table,
+			Columns: names.Columns,
 			ID: &sqlgraph.FieldSpec{
 				Type:   field.TypeInt,
-				Column: name.FieldID,
+				Column: names.FieldID,
 			},
 		},
 		From:   nq.sql,
@@ -450,9 +450,9 @@ func (nq *NameQuery) querySpec() *sqlgraph.QuerySpec {
 	}
 	if fields := nq.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
-		_spec.Node.Columns = append(_spec.Node.Columns, name.FieldID)
+		_spec.Node.Columns = append(_spec.Node.Columns, names.FieldID)
 		for i := range fields {
-			if fields[i] != name.FieldID {
+			if fields[i] != names.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
@@ -480,12 +480,12 @@ func (nq *NameQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (nq *NameQuery) sqlQuery(ctx context.Context) *sql.Selector {
+func (nq *NamesQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(nq.driver.Dialect())
-	t1 := builder.Table(name.Table)
+	t1 := builder.Table(names.Table)
 	columns := nq.fields
 	if len(columns) == 0 {
-		columns = name.Columns
+		columns = names.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if nq.sql != nil {
@@ -512,8 +512,8 @@ func (nq *NameQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	return selector
 }
 
-// NameGroupBy is the group-by builder for Name entities.
-type NameGroupBy struct {
+// NamesGroupBy is the group-by builder for Names entities.
+type NamesGroupBy struct {
 	config
 	fields []string
 	fns    []AggregateFunc
@@ -523,13 +523,13 @@ type NameGroupBy struct {
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (ngb *NameGroupBy) Aggregate(fns ...AggregateFunc) *NameGroupBy {
+func (ngb *NamesGroupBy) Aggregate(fns ...AggregateFunc) *NamesGroupBy {
 	ngb.fns = append(ngb.fns, fns...)
 	return ngb
 }
 
 // Scan applies the group-by query and scans the result into the given value.
-func (ngb *NameGroupBy) Scan(ctx context.Context, v interface{}) error {
+func (ngb *NamesGroupBy) Scan(ctx context.Context, v interface{}) error {
 	query, err := ngb.path(ctx)
 	if err != nil {
 		return err
@@ -539,7 +539,7 @@ func (ngb *NameGroupBy) Scan(ctx context.Context, v interface{}) error {
 }
 
 // ScanX is like Scan, but panics if an error occurs.
-func (ngb *NameGroupBy) ScanX(ctx context.Context, v interface{}) {
+func (ngb *NamesGroupBy) ScanX(ctx context.Context, v interface{}) {
 	if err := ngb.Scan(ctx, v); err != nil {
 		panic(err)
 	}
@@ -547,9 +547,9 @@ func (ngb *NameGroupBy) ScanX(ctx context.Context, v interface{}) {
 
 // Strings returns list of strings from group-by.
 // It is only allowed when executing a group-by query with one field.
-func (ngb *NameGroupBy) Strings(ctx context.Context) ([]string, error) {
+func (ngb *NamesGroupBy) Strings(ctx context.Context) ([]string, error) {
 	if len(ngb.fields) > 1 {
-		return nil, errors.New("ent: NameGroupBy.Strings is not achievable when grouping more than 1 field")
+		return nil, errors.New("ent: NamesGroupBy.Strings is not achievable when grouping more than 1 field")
 	}
 	var v []string
 	if err := ngb.Scan(ctx, &v); err != nil {
@@ -559,7 +559,7 @@ func (ngb *NameGroupBy) Strings(ctx context.Context) ([]string, error) {
 }
 
 // StringsX is like Strings, but panics if an error occurs.
-func (ngb *NameGroupBy) StringsX(ctx context.Context) []string {
+func (ngb *NamesGroupBy) StringsX(ctx context.Context) []string {
 	v, err := ngb.Strings(ctx)
 	if err != nil {
 		panic(err)
@@ -569,7 +569,7 @@ func (ngb *NameGroupBy) StringsX(ctx context.Context) []string {
 
 // String returns a single string from a group-by query.
 // It is only allowed when executing a group-by query with one field.
-func (ngb *NameGroupBy) String(ctx context.Context) (_ string, err error) {
+func (ngb *NamesGroupBy) String(ctx context.Context) (_ string, err error) {
 	var v []string
 	if v, err = ngb.Strings(ctx); err != nil {
 		return
@@ -578,15 +578,15 @@ func (ngb *NameGroupBy) String(ctx context.Context) (_ string, err error) {
 	case 1:
 		return v[0], nil
 	case 0:
-		err = &NotFoundError{name.Label}
+		err = &NotFoundError{names.Label}
 	default:
-		err = fmt.Errorf("ent: NameGroupBy.Strings returned %d results when one was expected", len(v))
+		err = fmt.Errorf("ent: NamesGroupBy.Strings returned %d results when one was expected", len(v))
 	}
 	return
 }
 
 // StringX is like String, but panics if an error occurs.
-func (ngb *NameGroupBy) StringX(ctx context.Context) string {
+func (ngb *NamesGroupBy) StringX(ctx context.Context) string {
 	v, err := ngb.String(ctx)
 	if err != nil {
 		panic(err)
@@ -596,9 +596,9 @@ func (ngb *NameGroupBy) StringX(ctx context.Context) string {
 
 // Ints returns list of ints from group-by.
 // It is only allowed when executing a group-by query with one field.
-func (ngb *NameGroupBy) Ints(ctx context.Context) ([]int, error) {
+func (ngb *NamesGroupBy) Ints(ctx context.Context) ([]int, error) {
 	if len(ngb.fields) > 1 {
-		return nil, errors.New("ent: NameGroupBy.Ints is not achievable when grouping more than 1 field")
+		return nil, errors.New("ent: NamesGroupBy.Ints is not achievable when grouping more than 1 field")
 	}
 	var v []int
 	if err := ngb.Scan(ctx, &v); err != nil {
@@ -608,7 +608,7 @@ func (ngb *NameGroupBy) Ints(ctx context.Context) ([]int, error) {
 }
 
 // IntsX is like Ints, but panics if an error occurs.
-func (ngb *NameGroupBy) IntsX(ctx context.Context) []int {
+func (ngb *NamesGroupBy) IntsX(ctx context.Context) []int {
 	v, err := ngb.Ints(ctx)
 	if err != nil {
 		panic(err)
@@ -618,7 +618,7 @@ func (ngb *NameGroupBy) IntsX(ctx context.Context) []int {
 
 // Int returns a single int from a group-by query.
 // It is only allowed when executing a group-by query with one field.
-func (ngb *NameGroupBy) Int(ctx context.Context) (_ int, err error) {
+func (ngb *NamesGroupBy) Int(ctx context.Context) (_ int, err error) {
 	var v []int
 	if v, err = ngb.Ints(ctx); err != nil {
 		return
@@ -627,15 +627,15 @@ func (ngb *NameGroupBy) Int(ctx context.Context) (_ int, err error) {
 	case 1:
 		return v[0], nil
 	case 0:
-		err = &NotFoundError{name.Label}
+		err = &NotFoundError{names.Label}
 	default:
-		err = fmt.Errorf("ent: NameGroupBy.Ints returned %d results when one was expected", len(v))
+		err = fmt.Errorf("ent: NamesGroupBy.Ints returned %d results when one was expected", len(v))
 	}
 	return
 }
 
 // IntX is like Int, but panics if an error occurs.
-func (ngb *NameGroupBy) IntX(ctx context.Context) int {
+func (ngb *NamesGroupBy) IntX(ctx context.Context) int {
 	v, err := ngb.Int(ctx)
 	if err != nil {
 		panic(err)
@@ -645,9 +645,9 @@ func (ngb *NameGroupBy) IntX(ctx context.Context) int {
 
 // Float64s returns list of float64s from group-by.
 // It is only allowed when executing a group-by query with one field.
-func (ngb *NameGroupBy) Float64s(ctx context.Context) ([]float64, error) {
+func (ngb *NamesGroupBy) Float64s(ctx context.Context) ([]float64, error) {
 	if len(ngb.fields) > 1 {
-		return nil, errors.New("ent: NameGroupBy.Float64s is not achievable when grouping more than 1 field")
+		return nil, errors.New("ent: NamesGroupBy.Float64s is not achievable when grouping more than 1 field")
 	}
 	var v []float64
 	if err := ngb.Scan(ctx, &v); err != nil {
@@ -657,7 +657,7 @@ func (ngb *NameGroupBy) Float64s(ctx context.Context) ([]float64, error) {
 }
 
 // Float64sX is like Float64s, but panics if an error occurs.
-func (ngb *NameGroupBy) Float64sX(ctx context.Context) []float64 {
+func (ngb *NamesGroupBy) Float64sX(ctx context.Context) []float64 {
 	v, err := ngb.Float64s(ctx)
 	if err != nil {
 		panic(err)
@@ -667,7 +667,7 @@ func (ngb *NameGroupBy) Float64sX(ctx context.Context) []float64 {
 
 // Float64 returns a single float64 from a group-by query.
 // It is only allowed when executing a group-by query with one field.
-func (ngb *NameGroupBy) Float64(ctx context.Context) (_ float64, err error) {
+func (ngb *NamesGroupBy) Float64(ctx context.Context) (_ float64, err error) {
 	var v []float64
 	if v, err = ngb.Float64s(ctx); err != nil {
 		return
@@ -676,15 +676,15 @@ func (ngb *NameGroupBy) Float64(ctx context.Context) (_ float64, err error) {
 	case 1:
 		return v[0], nil
 	case 0:
-		err = &NotFoundError{name.Label}
+		err = &NotFoundError{names.Label}
 	default:
-		err = fmt.Errorf("ent: NameGroupBy.Float64s returned %d results when one was expected", len(v))
+		err = fmt.Errorf("ent: NamesGroupBy.Float64s returned %d results when one was expected", len(v))
 	}
 	return
 }
 
 // Float64X is like Float64, but panics if an error occurs.
-func (ngb *NameGroupBy) Float64X(ctx context.Context) float64 {
+func (ngb *NamesGroupBy) Float64X(ctx context.Context) float64 {
 	v, err := ngb.Float64(ctx)
 	if err != nil {
 		panic(err)
@@ -694,9 +694,9 @@ func (ngb *NameGroupBy) Float64X(ctx context.Context) float64 {
 
 // Bools returns list of bools from group-by.
 // It is only allowed when executing a group-by query with one field.
-func (ngb *NameGroupBy) Bools(ctx context.Context) ([]bool, error) {
+func (ngb *NamesGroupBy) Bools(ctx context.Context) ([]bool, error) {
 	if len(ngb.fields) > 1 {
-		return nil, errors.New("ent: NameGroupBy.Bools is not achievable when grouping more than 1 field")
+		return nil, errors.New("ent: NamesGroupBy.Bools is not achievable when grouping more than 1 field")
 	}
 	var v []bool
 	if err := ngb.Scan(ctx, &v); err != nil {
@@ -706,7 +706,7 @@ func (ngb *NameGroupBy) Bools(ctx context.Context) ([]bool, error) {
 }
 
 // BoolsX is like Bools, but panics if an error occurs.
-func (ngb *NameGroupBy) BoolsX(ctx context.Context) []bool {
+func (ngb *NamesGroupBy) BoolsX(ctx context.Context) []bool {
 	v, err := ngb.Bools(ctx)
 	if err != nil {
 		panic(err)
@@ -716,7 +716,7 @@ func (ngb *NameGroupBy) BoolsX(ctx context.Context) []bool {
 
 // Bool returns a single bool from a group-by query.
 // It is only allowed when executing a group-by query with one field.
-func (ngb *NameGroupBy) Bool(ctx context.Context) (_ bool, err error) {
+func (ngb *NamesGroupBy) Bool(ctx context.Context) (_ bool, err error) {
 	var v []bool
 	if v, err = ngb.Bools(ctx); err != nil {
 		return
@@ -725,15 +725,15 @@ func (ngb *NameGroupBy) Bool(ctx context.Context) (_ bool, err error) {
 	case 1:
 		return v[0], nil
 	case 0:
-		err = &NotFoundError{name.Label}
+		err = &NotFoundError{names.Label}
 	default:
-		err = fmt.Errorf("ent: NameGroupBy.Bools returned %d results when one was expected", len(v))
+		err = fmt.Errorf("ent: NamesGroupBy.Bools returned %d results when one was expected", len(v))
 	}
 	return
 }
 
 // BoolX is like Bool, but panics if an error occurs.
-func (ngb *NameGroupBy) BoolX(ctx context.Context) bool {
+func (ngb *NamesGroupBy) BoolX(ctx context.Context) bool {
 	v, err := ngb.Bool(ctx)
 	if err != nil {
 		panic(err)
@@ -741,9 +741,9 @@ func (ngb *NameGroupBy) BoolX(ctx context.Context) bool {
 	return v
 }
 
-func (ngb *NameGroupBy) sqlScan(ctx context.Context, v interface{}) error {
+func (ngb *NamesGroupBy) sqlScan(ctx context.Context, v interface{}) error {
 	for _, f := range ngb.fields {
-		if !name.ValidColumn(f) {
+		if !names.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for group-by", f)}
 		}
 	}
@@ -760,7 +760,7 @@ func (ngb *NameGroupBy) sqlScan(ctx context.Context, v interface{}) error {
 	return sql.ScanSlice(rows, v)
 }
 
-func (ngb *NameGroupBy) sqlQuery() *sql.Selector {
+func (ngb *NamesGroupBy) sqlQuery() *sql.Selector {
 	selector := ngb.sql.Select()
 	aggregation := make([]string, 0, len(ngb.fns))
 	for _, fn := range ngb.fns {
@@ -779,33 +779,33 @@ func (ngb *NameGroupBy) sqlQuery() *sql.Selector {
 	return selector.GroupBy(selector.Columns(ngb.fields...)...)
 }
 
-// NameSelect is the builder for selecting fields of Name entities.
-type NameSelect struct {
-	*NameQuery
+// NamesSelect is the builder for selecting fields of Names entities.
+type NamesSelect struct {
+	*NamesQuery
 	// intermediate query (i.e. traversal path).
 	sql *sql.Selector
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (ns *NameSelect) Scan(ctx context.Context, v interface{}) error {
+func (ns *NamesSelect) Scan(ctx context.Context, v interface{}) error {
 	if err := ns.prepareQuery(ctx); err != nil {
 		return err
 	}
-	ns.sql = ns.NameQuery.sqlQuery(ctx)
+	ns.sql = ns.NamesQuery.sqlQuery(ctx)
 	return ns.sqlScan(ctx, v)
 }
 
 // ScanX is like Scan, but panics if an error occurs.
-func (ns *NameSelect) ScanX(ctx context.Context, v interface{}) {
+func (ns *NamesSelect) ScanX(ctx context.Context, v interface{}) {
 	if err := ns.Scan(ctx, v); err != nil {
 		panic(err)
 	}
 }
 
 // Strings returns list of strings from a selector. It is only allowed when selecting one field.
-func (ns *NameSelect) Strings(ctx context.Context) ([]string, error) {
+func (ns *NamesSelect) Strings(ctx context.Context) ([]string, error) {
 	if len(ns.fields) > 1 {
-		return nil, errors.New("ent: NameSelect.Strings is not achievable when selecting more than 1 field")
+		return nil, errors.New("ent: NamesSelect.Strings is not achievable when selecting more than 1 field")
 	}
 	var v []string
 	if err := ns.Scan(ctx, &v); err != nil {
@@ -815,7 +815,7 @@ func (ns *NameSelect) Strings(ctx context.Context) ([]string, error) {
 }
 
 // StringsX is like Strings, but panics if an error occurs.
-func (ns *NameSelect) StringsX(ctx context.Context) []string {
+func (ns *NamesSelect) StringsX(ctx context.Context) []string {
 	v, err := ns.Strings(ctx)
 	if err != nil {
 		panic(err)
@@ -824,7 +824,7 @@ func (ns *NameSelect) StringsX(ctx context.Context) []string {
 }
 
 // String returns a single string from a selector. It is only allowed when selecting one field.
-func (ns *NameSelect) String(ctx context.Context) (_ string, err error) {
+func (ns *NamesSelect) String(ctx context.Context) (_ string, err error) {
 	var v []string
 	if v, err = ns.Strings(ctx); err != nil {
 		return
@@ -833,15 +833,15 @@ func (ns *NameSelect) String(ctx context.Context) (_ string, err error) {
 	case 1:
 		return v[0], nil
 	case 0:
-		err = &NotFoundError{name.Label}
+		err = &NotFoundError{names.Label}
 	default:
-		err = fmt.Errorf("ent: NameSelect.Strings returned %d results when one was expected", len(v))
+		err = fmt.Errorf("ent: NamesSelect.Strings returned %d results when one was expected", len(v))
 	}
 	return
 }
 
 // StringX is like String, but panics if an error occurs.
-func (ns *NameSelect) StringX(ctx context.Context) string {
+func (ns *NamesSelect) StringX(ctx context.Context) string {
 	v, err := ns.String(ctx)
 	if err != nil {
 		panic(err)
@@ -850,9 +850,9 @@ func (ns *NameSelect) StringX(ctx context.Context) string {
 }
 
 // Ints returns list of ints from a selector. It is only allowed when selecting one field.
-func (ns *NameSelect) Ints(ctx context.Context) ([]int, error) {
+func (ns *NamesSelect) Ints(ctx context.Context) ([]int, error) {
 	if len(ns.fields) > 1 {
-		return nil, errors.New("ent: NameSelect.Ints is not achievable when selecting more than 1 field")
+		return nil, errors.New("ent: NamesSelect.Ints is not achievable when selecting more than 1 field")
 	}
 	var v []int
 	if err := ns.Scan(ctx, &v); err != nil {
@@ -862,7 +862,7 @@ func (ns *NameSelect) Ints(ctx context.Context) ([]int, error) {
 }
 
 // IntsX is like Ints, but panics if an error occurs.
-func (ns *NameSelect) IntsX(ctx context.Context) []int {
+func (ns *NamesSelect) IntsX(ctx context.Context) []int {
 	v, err := ns.Ints(ctx)
 	if err != nil {
 		panic(err)
@@ -871,7 +871,7 @@ func (ns *NameSelect) IntsX(ctx context.Context) []int {
 }
 
 // Int returns a single int from a selector. It is only allowed when selecting one field.
-func (ns *NameSelect) Int(ctx context.Context) (_ int, err error) {
+func (ns *NamesSelect) Int(ctx context.Context) (_ int, err error) {
 	var v []int
 	if v, err = ns.Ints(ctx); err != nil {
 		return
@@ -880,15 +880,15 @@ func (ns *NameSelect) Int(ctx context.Context) (_ int, err error) {
 	case 1:
 		return v[0], nil
 	case 0:
-		err = &NotFoundError{name.Label}
+		err = &NotFoundError{names.Label}
 	default:
-		err = fmt.Errorf("ent: NameSelect.Ints returned %d results when one was expected", len(v))
+		err = fmt.Errorf("ent: NamesSelect.Ints returned %d results when one was expected", len(v))
 	}
 	return
 }
 
 // IntX is like Int, but panics if an error occurs.
-func (ns *NameSelect) IntX(ctx context.Context) int {
+func (ns *NamesSelect) IntX(ctx context.Context) int {
 	v, err := ns.Int(ctx)
 	if err != nil {
 		panic(err)
@@ -897,9 +897,9 @@ func (ns *NameSelect) IntX(ctx context.Context) int {
 }
 
 // Float64s returns list of float64s from a selector. It is only allowed when selecting one field.
-func (ns *NameSelect) Float64s(ctx context.Context) ([]float64, error) {
+func (ns *NamesSelect) Float64s(ctx context.Context) ([]float64, error) {
 	if len(ns.fields) > 1 {
-		return nil, errors.New("ent: NameSelect.Float64s is not achievable when selecting more than 1 field")
+		return nil, errors.New("ent: NamesSelect.Float64s is not achievable when selecting more than 1 field")
 	}
 	var v []float64
 	if err := ns.Scan(ctx, &v); err != nil {
@@ -909,7 +909,7 @@ func (ns *NameSelect) Float64s(ctx context.Context) ([]float64, error) {
 }
 
 // Float64sX is like Float64s, but panics if an error occurs.
-func (ns *NameSelect) Float64sX(ctx context.Context) []float64 {
+func (ns *NamesSelect) Float64sX(ctx context.Context) []float64 {
 	v, err := ns.Float64s(ctx)
 	if err != nil {
 		panic(err)
@@ -918,7 +918,7 @@ func (ns *NameSelect) Float64sX(ctx context.Context) []float64 {
 }
 
 // Float64 returns a single float64 from a selector. It is only allowed when selecting one field.
-func (ns *NameSelect) Float64(ctx context.Context) (_ float64, err error) {
+func (ns *NamesSelect) Float64(ctx context.Context) (_ float64, err error) {
 	var v []float64
 	if v, err = ns.Float64s(ctx); err != nil {
 		return
@@ -927,15 +927,15 @@ func (ns *NameSelect) Float64(ctx context.Context) (_ float64, err error) {
 	case 1:
 		return v[0], nil
 	case 0:
-		err = &NotFoundError{name.Label}
+		err = &NotFoundError{names.Label}
 	default:
-		err = fmt.Errorf("ent: NameSelect.Float64s returned %d results when one was expected", len(v))
+		err = fmt.Errorf("ent: NamesSelect.Float64s returned %d results when one was expected", len(v))
 	}
 	return
 }
 
 // Float64X is like Float64, but panics if an error occurs.
-func (ns *NameSelect) Float64X(ctx context.Context) float64 {
+func (ns *NamesSelect) Float64X(ctx context.Context) float64 {
 	v, err := ns.Float64(ctx)
 	if err != nil {
 		panic(err)
@@ -944,9 +944,9 @@ func (ns *NameSelect) Float64X(ctx context.Context) float64 {
 }
 
 // Bools returns list of bools from a selector. It is only allowed when selecting one field.
-func (ns *NameSelect) Bools(ctx context.Context) ([]bool, error) {
+func (ns *NamesSelect) Bools(ctx context.Context) ([]bool, error) {
 	if len(ns.fields) > 1 {
-		return nil, errors.New("ent: NameSelect.Bools is not achievable when selecting more than 1 field")
+		return nil, errors.New("ent: NamesSelect.Bools is not achievable when selecting more than 1 field")
 	}
 	var v []bool
 	if err := ns.Scan(ctx, &v); err != nil {
@@ -956,7 +956,7 @@ func (ns *NameSelect) Bools(ctx context.Context) ([]bool, error) {
 }
 
 // BoolsX is like Bools, but panics if an error occurs.
-func (ns *NameSelect) BoolsX(ctx context.Context) []bool {
+func (ns *NamesSelect) BoolsX(ctx context.Context) []bool {
 	v, err := ns.Bools(ctx)
 	if err != nil {
 		panic(err)
@@ -965,7 +965,7 @@ func (ns *NameSelect) BoolsX(ctx context.Context) []bool {
 }
 
 // Bool returns a single bool from a selector. It is only allowed when selecting one field.
-func (ns *NameSelect) Bool(ctx context.Context) (_ bool, err error) {
+func (ns *NamesSelect) Bool(ctx context.Context) (_ bool, err error) {
 	var v []bool
 	if v, err = ns.Bools(ctx); err != nil {
 		return
@@ -974,15 +974,15 @@ func (ns *NameSelect) Bool(ctx context.Context) (_ bool, err error) {
 	case 1:
 		return v[0], nil
 	case 0:
-		err = &NotFoundError{name.Label}
+		err = &NotFoundError{names.Label}
 	default:
-		err = fmt.Errorf("ent: NameSelect.Bools returned %d results when one was expected", len(v))
+		err = fmt.Errorf("ent: NamesSelect.Bools returned %d results when one was expected", len(v))
 	}
 	return
 }
 
 // BoolX is like Bool, but panics if an error occurs.
-func (ns *NameSelect) BoolX(ctx context.Context) bool {
+func (ns *NamesSelect) BoolX(ctx context.Context) bool {
 	v, err := ns.Bool(ctx)
 	if err != nil {
 		panic(err)
@@ -990,7 +990,7 @@ func (ns *NameSelect) BoolX(ctx context.Context) bool {
 	return v
 }
 
-func (ns *NameSelect) sqlScan(ctx context.Context, v interface{}) error {
+func (ns *NamesSelect) sqlScan(ctx context.Context, v interface{}) error {
 	rows := &sql.Rows{}
 	query, args := ns.sql.Query()
 	if err := ns.driver.Query(ctx, query, args, rows); err != nil {

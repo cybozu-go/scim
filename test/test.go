@@ -12,13 +12,14 @@ import (
 	"github.com/cybozu-go/scim/client"
 	"github.com/cybozu-go/scim/resource"
 	"github.com/cybozu-go/scim/server"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 var TraceWriter io.Writer
 
 func init() {
-	v, err := strconv.ParseBool(`SCIM_TRACE`)
+	v, err := strconv.ParseBool(os.Getenv(`SCIM_TRACE`))
 	if err == nil {
 		if v {
 			TraceWriter = os.Stdout
@@ -36,14 +37,13 @@ func RunConformanceTests(t *testing.T, name string, backend interface{}) {
 		cl := client.New(srv.URL, client.WithClient(srv.Client()))
 
 		t.Run("search via /.search", func(t *testing.T) {
-			lr, err := cl.Search().Search().
+			_, err := cl.Search().Search().
 				Attributes(`displayName`, `userName`).
 				Filter(`displayName sw "smith"`).
 				StartIndex(1).
 				Count(10).
 				Do(context.TODO())
 			require.NoError(t, err, `cl.Search should succeed`)
-			t.Logf("%#v", lr)
 		})
 		t.Run("Users", func(t *testing.T) {
 			t.Run("Basic CRUD", UsersBasicCRUD(t, cl))
@@ -61,6 +61,31 @@ func UsersFetch(t *testing.T, cl *client.Client) func(*testing.T) {
 			require.Nil(t, u, `GetUser return value should be nil`)
 			require.Error(t, err, `GetUser should fail`)
 		})
+		t.Run(fmt.Sprintf("Fetch user"), func(t *testing.T) {
+			createdUser, err := stockUserCreateCall(cl).
+				Trace(TraceWriter).
+				Do(context.TODO())
+			require.NoError(t, err, `CreateUser should succeed`)
+
+			defer cl.User().DeleteUser(createdUser.ID()).
+				Do(context.TODO())
+
+			u, err := cl.User().GetUser(createdUser.ID()).
+				Trace(TraceWriter).
+				Do(context.TODO())
+			require.NoError(t, err, `GetUser should succeed`)
+
+			// fetched user should have non-empty userName and emails, as
+			// well as the attributes with the "returned" value of always
+			require.Equal(t, createdUser.ID(), u.ID(), `ID should match`)
+			require.Equal(t, createdUser.UserName(), u.UserName(), `UserName should match`)
+			require.Equal(t, createdUser.Emails(), u.Emails(), `Emails should match`)
+			if n := u.Name(); assert.NotNil(t, n, `Name should not be nil`) {
+				require.Equal(t, `Ms. Barbara J Jensen III`, n.Formatted(), `Formatted should match`)
+				require.Equal(t, `Jensen`, n.FamilyName(), `FamilyName should match`)
+				require.Equal(t, `Barbara`, n.GivenName(), `GivenName should match`)
+			}
+		})
 		t.Run(fmt.Sprintf("Fetch user with attributes"), func(t *testing.T) {
 			createdUser, err := stockUserCreateCall(cl).
 				Trace(TraceWriter).
@@ -71,6 +96,9 @@ func UsersFetch(t *testing.T, cl *client.Client) func(*testing.T) {
 				Trace(TraceWriter).
 				Do(context.TODO())
 			require.NoError(t, err, `GetUser should succeed`)
+
+			defer cl.User().DeleteUser(createdUser.ID()).
+				Do(context.TODO())
 
 			// fetched user should have non-empty userName and emails, as
 			// well as the attributes with the "returned" value of always

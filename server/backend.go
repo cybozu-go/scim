@@ -198,12 +198,16 @@ func RetrieveUserEndpoint(b RetrieveUserBackend) http.Handler {
 			return
 		}
 
-		attrs := strings.Split(r.URL.Query().Get(`attributes`), ",")
+		var attrs []string
+		if v := r.URL.Query().Get(`attributes`); v != "" {
+			attrs = strings.Split(v, ",")
+		}
 		user, err := b.RetrieveUser(id, attrs...)
 		if err != nil {
 			// TODO: distinguish between error and not found error
 			// TODO: log
 			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprint(w, err.Error())
 			return
 		}
 

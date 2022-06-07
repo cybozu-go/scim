@@ -15,6 +15,6 @@ func (User) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To(`groups`, Group.Type),
 		edge.To(`emails`, Email.Type),
-		edge.To(`name`, Name.Type),
+		edge.To(`name`, Names.Type),
 	}
 }

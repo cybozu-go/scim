@@ -53,7 +53,7 @@ type UserEdges struct {
 	// Emails holds the value of the emails edge.
 	Emails []*Email `json:"emails,omitempty"`
 	// Name holds the value of the name edge.
-	Name []*Name `json:"name,omitempty"`
+	Name []*Names `json:"name,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [3]bool
@@ -79,7 +79,7 @@ func (e UserEdges) EmailsOrErr() ([]*Email, error) {
 
 // NameOrErr returns the Name value or an error if the edge
 // was not loaded in eager-loading.
-func (e UserEdges) NameOrErr() ([]*Name, error) {
+func (e UserEdges) NameOrErr() ([]*Names, error) {
 	if e.loadedTypes[2] {
 		return e.Name, nil
 	}
@@ -215,7 +215,7 @@ func (u *User) QueryEmails() *EmailQuery {
 }
 
 // QueryName queries the "name" edge of the User entity.
-func (u *User) QueryName() *NameQuery {
+func (u *User) QueryName() *NamesQuery {
 	return (&UserClient{config: u.config}).QueryName(u)
 }
 

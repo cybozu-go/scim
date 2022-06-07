@@ -11,7 +11,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/cybozu-go/scim/sample/ent/email"
 	"github.com/cybozu-go/scim/sample/ent/group"
-	"github.com/cybozu-go/scim/sample/ent/name"
+	"github.com/cybozu-go/scim/sample/ent/names"
 	"github.com/cybozu-go/scim/sample/ent/user"
 	"github.com/google/uuid"
 )
@@ -227,14 +227,14 @@ func (uc *UserCreate) AddEmails(e ...*Email) *UserCreate {
 	return uc.AddEmailIDs(ids...)
 }
 
-// AddNameIDs adds the "name" edge to the Name entity by IDs.
+// AddNameIDs adds the "name" edge to the Names entity by IDs.
 func (uc *UserCreate) AddNameIDs(ids ...int) *UserCreate {
 	uc.mutation.AddNameIDs(ids...)
 	return uc
 }
 
-// AddName adds the "name" edges to the Name entity.
-func (uc *UserCreate) AddName(n ...*Name) *UserCreate {
+// AddName adds the "name" edges to the Names entity.
+func (uc *UserCreate) AddName(n ...*Names) *UserCreate {
 	ids := make([]int, len(n))
 	for i := range n {
 		ids[i] = n[i].ID
@@ -514,7 +514,7 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: name.FieldID,
+					Column: names.FieldID,
 				},
 			},
 		}

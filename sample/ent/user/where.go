@@ -1634,7 +1634,7 @@ func HasName() predicate.User {
 }
 
 // HasNameWith applies the HasEdge predicate on the "name" edge with a given conditions (other predicates).
-func HasNameWith(preds ...predicate.Name) predicate.User {
+func HasNameWith(preds ...predicate.Names) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),

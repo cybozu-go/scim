@@ -10,6 +10,9 @@ import (
 )
 
 func userLoadEntFields(q *ent.UserQuery, fields []string) {
+	if len(fields) == 0 {
+		fields = []string{"active", "addresses", "displayName", "emails", "entitlements", "externalID", "groups", "id", "ims", "locale", "name", "nickName", "password", "phoneNumbers", "preferredLanguage", "profileURL", "roles", "timezone", "title", "userName", "userType", "x509Certificates"}
+	}
 	selectNames := make([]string, 0, len(fields))
 	for _, f := range fields {
 		switch f {
@@ -31,6 +34,7 @@ func userLoadEntFields(q *ent.UserQuery, fields []string) {
 			selectNames = append(selectNames, user.FieldLocale)
 		case "meta":
 		case "name":
+			q.WithName()
 		case "nickName":
 			selectNames = append(selectNames, user.FieldNickName)
 		case "password":
@@ -72,15 +76,27 @@ func UserResourceFromEnt(in *ent.User) (*resource.User, error) {
 		Meta(meta)
 
 	if el := len(in.Edges.Emails); el > 0 {
-		emails := make([]*resource.Email, 0, el)
+		list := make([]*resource.Email, 0, el)
 		for _, ine := range in.Edges.Emails {
-			email, err := EmailResourceFromEnt(ine)
+			r, err := EmailResourceFromEnt(ine)
 			if err != nil {
-				return nil, fmt.Errorf("failed to build email information for User")
+				return nil, fmt.Errorf("failed to build emails information for User")
 			}
-			emails = append(emails, email)
+			list = append(list, r)
 		}
-		builder.Emails(emails...)
+		builder.Emails(list...)
+	}
+
+	if el := len(in.Edges.Name); el > 0 {
+		list := make([]*resource.Names, 0, el)
+		for _, ine := range in.Edges.Name {
+			r, err := NamesResourceFromEnt(ine)
+			if err != nil {
+				return nil, fmt.Errorf("failed to build name information for User")
+			}
+			list = append(list, r)
+		}
+		builder.Name(list[0])
 	}
 	if !reflect.ValueOf(in.Active).IsZero() {
 		builder.Active(in.Active)

@@ -12,7 +12,7 @@ import (
 
 	"github.com/cybozu-go/scim/sample/ent/email"
 	"github.com/cybozu-go/scim/sample/ent/group"
-	"github.com/cybozu-go/scim/sample/ent/name"
+	"github.com/cybozu-go/scim/sample/ent/names"
 	"github.com/cybozu-go/scim/sample/ent/user"
 
 	"entgo.io/ent/dialect"
@@ -29,8 +29,8 @@ type Client struct {
 	Email *EmailClient
 	// Group is the client for interacting with the Group builders.
 	Group *GroupClient
-	// Name is the client for interacting with the Name builders.
-	Name *NameClient
+	// Names is the client for interacting with the Names builders.
+	Names *NamesClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 }
@@ -48,7 +48,7 @@ func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Email = NewEmailClient(c.config)
 	c.Group = NewGroupClient(c.config)
-	c.Name = NewNameClient(c.config)
+	c.Names = NewNamesClient(c.config)
 	c.User = NewUserClient(c.config)
 }
 
@@ -85,7 +85,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		config: cfg,
 		Email:  NewEmailClient(cfg),
 		Group:  NewGroupClient(cfg),
-		Name:   NewNameClient(cfg),
+		Names:  NewNamesClient(cfg),
 		User:   NewUserClient(cfg),
 	}, nil
 }
@@ -108,7 +108,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		config: cfg,
 		Email:  NewEmailClient(cfg),
 		Group:  NewGroupClient(cfg),
-		Name:   NewNameClient(cfg),
+		Names:  NewNamesClient(cfg),
 		User:   NewUserClient(cfg),
 	}, nil
 }
@@ -141,7 +141,7 @@ func (c *Client) Close() error {
 func (c *Client) Use(hooks ...Hook) {
 	c.Email.Use(hooks...)
 	c.Group.Use(hooks...)
-	c.Name.Use(hooks...)
+	c.Names.Use(hooks...)
 	c.User.Use(hooks...)
 }
 
@@ -389,84 +389,84 @@ func (c *GroupClient) Hooks() []Hook {
 	return c.hooks.Group
 }
 
-// NameClient is a client for the Name schema.
-type NameClient struct {
+// NamesClient is a client for the Names schema.
+type NamesClient struct {
 	config
 }
 
-// NewNameClient returns a client for the Name from the given config.
-func NewNameClient(c config) *NameClient {
-	return &NameClient{config: c}
+// NewNamesClient returns a client for the Names from the given config.
+func NewNamesClient(c config) *NamesClient {
+	return &NamesClient{config: c}
 }
 
 // Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `name.Hooks(f(g(h())))`.
-func (c *NameClient) Use(hooks ...Hook) {
-	c.hooks.Name = append(c.hooks.Name, hooks...)
+// A call to `Use(f, g, h)` equals to `names.Hooks(f(g(h())))`.
+func (c *NamesClient) Use(hooks ...Hook) {
+	c.hooks.Names = append(c.hooks.Names, hooks...)
 }
 
-// Create returns a create builder for Name.
-func (c *NameClient) Create() *NameCreate {
-	mutation := newNameMutation(c.config, OpCreate)
-	return &NameCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Create returns a create builder for Names.
+func (c *NamesClient) Create() *NamesCreate {
+	mutation := newNamesMutation(c.config, OpCreate)
+	return &NamesCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// CreateBulk returns a builder for creating a bulk of Name entities.
-func (c *NameClient) CreateBulk(builders ...*NameCreate) *NameCreateBulk {
-	return &NameCreateBulk{config: c.config, builders: builders}
+// CreateBulk returns a builder for creating a bulk of Names entities.
+func (c *NamesClient) CreateBulk(builders ...*NamesCreate) *NamesCreateBulk {
+	return &NamesCreateBulk{config: c.config, builders: builders}
 }
 
-// Update returns an update builder for Name.
-func (c *NameClient) Update() *NameUpdate {
-	mutation := newNameMutation(c.config, OpUpdate)
-	return &NameUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Update returns an update builder for Names.
+func (c *NamesClient) Update() *NamesUpdate {
+	mutation := newNamesMutation(c.config, OpUpdate)
+	return &NamesUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *NameClient) UpdateOne(n *Name) *NameUpdateOne {
-	mutation := newNameMutation(c.config, OpUpdateOne, withName(n))
-	return &NameUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *NamesClient) UpdateOne(n *Names) *NamesUpdateOne {
+	mutation := newNamesMutation(c.config, OpUpdateOne, withNames(n))
+	return &NamesUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *NameClient) UpdateOneID(id int) *NameUpdateOne {
-	mutation := newNameMutation(c.config, OpUpdateOne, withNameID(id))
-	return &NameUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *NamesClient) UpdateOneID(id int) *NamesUpdateOne {
+	mutation := newNamesMutation(c.config, OpUpdateOne, withNamesID(id))
+	return &NamesUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// Delete returns a delete builder for Name.
-func (c *NameClient) Delete() *NameDelete {
-	mutation := newNameMutation(c.config, OpDelete)
-	return &NameDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Delete returns a delete builder for Names.
+func (c *NamesClient) Delete() *NamesDelete {
+	mutation := newNamesMutation(c.config, OpDelete)
+	return &NamesDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // DeleteOne returns a delete builder for the given entity.
-func (c *NameClient) DeleteOne(n *Name) *NameDeleteOne {
+func (c *NamesClient) DeleteOne(n *Names) *NamesDeleteOne {
 	return c.DeleteOneID(n.ID)
 }
 
 // DeleteOneID returns a delete builder for the given id.
-func (c *NameClient) DeleteOneID(id int) *NameDeleteOne {
-	builder := c.Delete().Where(name.ID(id))
+func (c *NamesClient) DeleteOneID(id int) *NamesDeleteOne {
+	builder := c.Delete().Where(names.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
-	return &NameDeleteOne{builder}
+	return &NamesDeleteOne{builder}
 }
 
-// Query returns a query builder for Name.
-func (c *NameClient) Query() *NameQuery {
-	return &NameQuery{
+// Query returns a query builder for Names.
+func (c *NamesClient) Query() *NamesQuery {
+	return &NamesQuery{
 		config: c.config,
 	}
 }
 
-// Get returns a Name entity by its id.
-func (c *NameClient) Get(ctx context.Context, id int) (*Name, error) {
-	return c.Query().Where(name.ID(id)).Only(ctx)
+// Get returns a Names entity by its id.
+func (c *NamesClient) Get(ctx context.Context, id int) (*Names, error) {
+	return c.Query().Where(names.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *NameClient) GetX(ctx context.Context, id int) *Name {
+func (c *NamesClient) GetX(ctx context.Context, id int) *Names {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -474,15 +474,15 @@ func (c *NameClient) GetX(ctx context.Context, id int) *Name {
 	return obj
 }
 
-// QueryUser queries the user edge of a Name.
-func (c *NameClient) QueryUser(n *Name) *UserQuery {
+// QueryUser queries the user edge of a Names.
+func (c *NamesClient) QueryUser(n *Names) *UserQuery {
 	query := &UserQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := n.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(name.Table, name.FieldID, id),
+			sqlgraph.From(names.Table, names.FieldID, id),
 			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, name.UserTable, name.UserColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, names.UserTable, names.UserColumn),
 		)
 		fromV = sqlgraph.Neighbors(n.driver.Dialect(), step)
 		return fromV, nil
@@ -491,8 +491,8 @@ func (c *NameClient) QueryUser(n *Name) *UserQuery {
 }
 
 // Hooks returns the client hooks.
-func (c *NameClient) Hooks() []Hook {
-	return c.hooks.Name
+func (c *NamesClient) Hooks() []Hook {
+	return c.hooks.Names
 }
 
 // UserClient is a client for the User schema.
@@ -613,13 +613,13 @@ func (c *UserClient) QueryEmails(u *User) *EmailQuery {
 }
 
 // QueryName queries the name edge of a User.
-func (c *UserClient) QueryName(u *User) *NameQuery {
-	query := &NameQuery{config: c.config}
+func (c *UserClient) QueryName(u *User) *NamesQuery {
+	query := &NamesQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := u.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(user.Table, user.FieldID, id),
-			sqlgraph.To(name.Table, name.FieldID),
+			sqlgraph.To(names.Table, names.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, user.NameTable, user.NameColumn),
 		)
 		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)

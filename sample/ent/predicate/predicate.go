@@ -12,8 +12,8 @@ type Email func(*sql.Selector)
 // Group is the predicate function for group builders.
 type Group func(*sql.Selector)
 
-// Name is the predicate function for name builders.
-type Name func(*sql.Selector)
+// Names is the predicate function for names builders.
+type Names func(*sql.Selector)
 
 // User is the predicate function for user builders.
 type User func(*sql.Selector)

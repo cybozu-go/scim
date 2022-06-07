@@ -10,7 +10,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/cybozu-go/scim/sample/ent/email"
 	"github.com/cybozu-go/scim/sample/ent/group"
-	"github.com/cybozu-go/scim/sample/ent/name"
+	"github.com/cybozu-go/scim/sample/ent/names"
 	"github.com/cybozu-go/scim/sample/ent/user"
 )
 
@@ -34,7 +34,7 @@ func columnChecker(table string) func(string) error {
 	checks := map[string]func(string) bool{
 		email.Table: email.ValidColumn,
 		group.Table: group.ValidColumn,
-		name.Table:  name.ValidColumn,
+		names.Table: names.ValidColumn,
 		user.Table:  user.ValidColumn,
 	}
 	check, ok := checks[table]

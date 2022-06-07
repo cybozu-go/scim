@@ -10,33 +10,33 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/cybozu-go/scim/sample/ent/name"
+	"github.com/cybozu-go/scim/sample/ent/names"
 	"github.com/cybozu-go/scim/sample/ent/predicate"
 	"github.com/cybozu-go/scim/sample/ent/user"
 	"github.com/google/uuid"
 )
 
-// NameUpdate is the builder for updating Name entities.
-type NameUpdate struct {
+// NamesUpdate is the builder for updating Names entities.
+type NamesUpdate struct {
 	config
 	hooks    []Hook
-	mutation *NameMutation
+	mutation *NamesMutation
 }
 
-// Where appends a list predicates to the NameUpdate builder.
-func (nu *NameUpdate) Where(ps ...predicate.Name) *NameUpdate {
+// Where appends a list predicates to the NamesUpdate builder.
+func (nu *NamesUpdate) Where(ps ...predicate.Names) *NamesUpdate {
 	nu.mutation.Where(ps...)
 	return nu
 }
 
 // SetFamilyName sets the "familyName" field.
-func (nu *NameUpdate) SetFamilyName(s string) *NameUpdate {
+func (nu *NamesUpdate) SetFamilyName(s string) *NamesUpdate {
 	nu.mutation.SetFamilyName(s)
 	return nu
 }
 
 // SetNillableFamilyName sets the "familyName" field if the given value is not nil.
-func (nu *NameUpdate) SetNillableFamilyName(s *string) *NameUpdate {
+func (nu *NamesUpdate) SetNillableFamilyName(s *string) *NamesUpdate {
 	if s != nil {
 		nu.SetFamilyName(*s)
 	}
@@ -44,19 +44,19 @@ func (nu *NameUpdate) SetNillableFamilyName(s *string) *NameUpdate {
 }
 
 // ClearFamilyName clears the value of the "familyName" field.
-func (nu *NameUpdate) ClearFamilyName() *NameUpdate {
+func (nu *NamesUpdate) ClearFamilyName() *NamesUpdate {
 	nu.mutation.ClearFamilyName()
 	return nu
 }
 
 // SetFormatted sets the "formatted" field.
-func (nu *NameUpdate) SetFormatted(s string) *NameUpdate {
+func (nu *NamesUpdate) SetFormatted(s string) *NamesUpdate {
 	nu.mutation.SetFormatted(s)
 	return nu
 }
 
 // SetNillableFormatted sets the "formatted" field if the given value is not nil.
-func (nu *NameUpdate) SetNillableFormatted(s *string) *NameUpdate {
+func (nu *NamesUpdate) SetNillableFormatted(s *string) *NamesUpdate {
 	if s != nil {
 		nu.SetFormatted(*s)
 	}
@@ -64,19 +64,19 @@ func (nu *NameUpdate) SetNillableFormatted(s *string) *NameUpdate {
 }
 
 // ClearFormatted clears the value of the "formatted" field.
-func (nu *NameUpdate) ClearFormatted() *NameUpdate {
+func (nu *NamesUpdate) ClearFormatted() *NamesUpdate {
 	nu.mutation.ClearFormatted()
 	return nu
 }
 
 // SetGivenName sets the "givenName" field.
-func (nu *NameUpdate) SetGivenName(s string) *NameUpdate {
+func (nu *NamesUpdate) SetGivenName(s string) *NamesUpdate {
 	nu.mutation.SetGivenName(s)
 	return nu
 }
 
 // SetNillableGivenName sets the "givenName" field if the given value is not nil.
-func (nu *NameUpdate) SetNillableGivenName(s *string) *NameUpdate {
+func (nu *NamesUpdate) SetNillableGivenName(s *string) *NamesUpdate {
 	if s != nil {
 		nu.SetGivenName(*s)
 	}
@@ -84,19 +84,19 @@ func (nu *NameUpdate) SetNillableGivenName(s *string) *NameUpdate {
 }
 
 // ClearGivenName clears the value of the "givenName" field.
-func (nu *NameUpdate) ClearGivenName() *NameUpdate {
+func (nu *NamesUpdate) ClearGivenName() *NamesUpdate {
 	nu.mutation.ClearGivenName()
 	return nu
 }
 
 // SetHonorificPrefix sets the "honorificPrefix" field.
-func (nu *NameUpdate) SetHonorificPrefix(s string) *NameUpdate {
+func (nu *NamesUpdate) SetHonorificPrefix(s string) *NamesUpdate {
 	nu.mutation.SetHonorificPrefix(s)
 	return nu
 }
 
 // SetNillableHonorificPrefix sets the "honorificPrefix" field if the given value is not nil.
-func (nu *NameUpdate) SetNillableHonorificPrefix(s *string) *NameUpdate {
+func (nu *NamesUpdate) SetNillableHonorificPrefix(s *string) *NamesUpdate {
 	if s != nil {
 		nu.SetHonorificPrefix(*s)
 	}
@@ -104,19 +104,19 @@ func (nu *NameUpdate) SetNillableHonorificPrefix(s *string) *NameUpdate {
 }
 
 // ClearHonorificPrefix clears the value of the "honorificPrefix" field.
-func (nu *NameUpdate) ClearHonorificPrefix() *NameUpdate {
+func (nu *NamesUpdate) ClearHonorificPrefix() *NamesUpdate {
 	nu.mutation.ClearHonorificPrefix()
 	return nu
 }
 
 // SetHonorificSuffix sets the "honorificSuffix" field.
-func (nu *NameUpdate) SetHonorificSuffix(s string) *NameUpdate {
+func (nu *NamesUpdate) SetHonorificSuffix(s string) *NamesUpdate {
 	nu.mutation.SetHonorificSuffix(s)
 	return nu
 }
 
 // SetNillableHonorificSuffix sets the "honorificSuffix" field if the given value is not nil.
-func (nu *NameUpdate) SetNillableHonorificSuffix(s *string) *NameUpdate {
+func (nu *NamesUpdate) SetNillableHonorificSuffix(s *string) *NamesUpdate {
 	if s != nil {
 		nu.SetHonorificSuffix(*s)
 	}
@@ -124,19 +124,19 @@ func (nu *NameUpdate) SetNillableHonorificSuffix(s *string) *NameUpdate {
 }
 
 // ClearHonorificSuffix clears the value of the "honorificSuffix" field.
-func (nu *NameUpdate) ClearHonorificSuffix() *NameUpdate {
+func (nu *NamesUpdate) ClearHonorificSuffix() *NamesUpdate {
 	nu.mutation.ClearHonorificSuffix()
 	return nu
 }
 
 // SetMiddleName sets the "middleName" field.
-func (nu *NameUpdate) SetMiddleName(s string) *NameUpdate {
+func (nu *NamesUpdate) SetMiddleName(s string) *NamesUpdate {
 	nu.mutation.SetMiddleName(s)
 	return nu
 }
 
 // SetNillableMiddleName sets the "middleName" field if the given value is not nil.
-func (nu *NameUpdate) SetNillableMiddleName(s *string) *NameUpdate {
+func (nu *NamesUpdate) SetNillableMiddleName(s *string) *NamesUpdate {
 	if s != nil {
 		nu.SetMiddleName(*s)
 	}
@@ -144,19 +144,19 @@ func (nu *NameUpdate) SetNillableMiddleName(s *string) *NameUpdate {
 }
 
 // ClearMiddleName clears the value of the "middleName" field.
-func (nu *NameUpdate) ClearMiddleName() *NameUpdate {
+func (nu *NamesUpdate) ClearMiddleName() *NamesUpdate {
 	nu.mutation.ClearMiddleName()
 	return nu
 }
 
 // SetUserID sets the "user" edge to the User entity by ID.
-func (nu *NameUpdate) SetUserID(id uuid.UUID) *NameUpdate {
+func (nu *NamesUpdate) SetUserID(id uuid.UUID) *NamesUpdate {
 	nu.mutation.SetUserID(id)
 	return nu
 }
 
 // SetNillableUserID sets the "user" edge to the User entity by ID if the given value is not nil.
-func (nu *NameUpdate) SetNillableUserID(id *uuid.UUID) *NameUpdate {
+func (nu *NamesUpdate) SetNillableUserID(id *uuid.UUID) *NamesUpdate {
 	if id != nil {
 		nu = nu.SetUserID(*id)
 	}
@@ -164,23 +164,23 @@ func (nu *NameUpdate) SetNillableUserID(id *uuid.UUID) *NameUpdate {
 }
 
 // SetUser sets the "user" edge to the User entity.
-func (nu *NameUpdate) SetUser(u *User) *NameUpdate {
+func (nu *NamesUpdate) SetUser(u *User) *NamesUpdate {
 	return nu.SetUserID(u.ID)
 }
 
-// Mutation returns the NameMutation object of the builder.
-func (nu *NameUpdate) Mutation() *NameMutation {
+// Mutation returns the NamesMutation object of the builder.
+func (nu *NamesUpdate) Mutation() *NamesMutation {
 	return nu.mutation
 }
 
 // ClearUser clears the "user" edge to the User entity.
-func (nu *NameUpdate) ClearUser() *NameUpdate {
+func (nu *NamesUpdate) ClearUser() *NamesUpdate {
 	nu.mutation.ClearUser()
 	return nu
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (nu *NameUpdate) Save(ctx context.Context) (int, error) {
+func (nu *NamesUpdate) Save(ctx context.Context) (int, error) {
 	var (
 		err      error
 		affected int
@@ -189,7 +189,7 @@ func (nu *NameUpdate) Save(ctx context.Context) (int, error) {
 		affected, err = nu.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*NameMutation)
+			mutation, ok := m.(*NamesMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
 			}
@@ -212,7 +212,7 @@ func (nu *NameUpdate) Save(ctx context.Context) (int, error) {
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (nu *NameUpdate) SaveX(ctx context.Context) int {
+func (nu *NamesUpdate) SaveX(ctx context.Context) int {
 	affected, err := nu.Save(ctx)
 	if err != nil {
 		panic(err)
@@ -221,26 +221,26 @@ func (nu *NameUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (nu *NameUpdate) Exec(ctx context.Context) error {
+func (nu *NamesUpdate) Exec(ctx context.Context) error {
 	_, err := nu.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (nu *NameUpdate) ExecX(ctx context.Context) {
+func (nu *NamesUpdate) ExecX(ctx context.Context) {
 	if err := nu.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
-func (nu *NameUpdate) sqlSave(ctx context.Context) (n int, err error) {
+func (nu *NamesUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
-			Table:   name.Table,
-			Columns: name.Columns,
+			Table:   names.Table,
+			Columns: names.Columns,
 			ID: &sqlgraph.FieldSpec{
 				Type:   field.TypeInt,
-				Column: name.FieldID,
+				Column: names.FieldID,
 			},
 		},
 	}
@@ -255,86 +255,86 @@ func (nu *NameUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: name.FieldFamilyName,
+			Column: names.FieldFamilyName,
 		})
 	}
 	if nu.mutation.FamilyNameCleared() {
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
-			Column: name.FieldFamilyName,
+			Column: names.FieldFamilyName,
 		})
 	}
 	if value, ok := nu.mutation.Formatted(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: name.FieldFormatted,
+			Column: names.FieldFormatted,
 		})
 	}
 	if nu.mutation.FormattedCleared() {
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
-			Column: name.FieldFormatted,
+			Column: names.FieldFormatted,
 		})
 	}
 	if value, ok := nu.mutation.GivenName(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: name.FieldGivenName,
+			Column: names.FieldGivenName,
 		})
 	}
 	if nu.mutation.GivenNameCleared() {
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
-			Column: name.FieldGivenName,
+			Column: names.FieldGivenName,
 		})
 	}
 	if value, ok := nu.mutation.HonorificPrefix(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: name.FieldHonorificPrefix,
+			Column: names.FieldHonorificPrefix,
 		})
 	}
 	if nu.mutation.HonorificPrefixCleared() {
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
-			Column: name.FieldHonorificPrefix,
+			Column: names.FieldHonorificPrefix,
 		})
 	}
 	if value, ok := nu.mutation.HonorificSuffix(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: name.FieldHonorificSuffix,
+			Column: names.FieldHonorificSuffix,
 		})
 	}
 	if nu.mutation.HonorificSuffixCleared() {
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
-			Column: name.FieldHonorificSuffix,
+			Column: names.FieldHonorificSuffix,
 		})
 	}
 	if value, ok := nu.mutation.MiddleName(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: name.FieldMiddleName,
+			Column: names.FieldMiddleName,
 		})
 	}
 	if nu.mutation.MiddleNameCleared() {
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
-			Column: name.FieldMiddleName,
+			Column: names.FieldMiddleName,
 		})
 	}
 	if nu.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   name.UserTable,
-			Columns: []string{name.UserColumn},
+			Table:   names.UserTable,
+			Columns: []string{names.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -349,8 +349,8 @@ func (nu *NameUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   name.UserTable,
-			Columns: []string{name.UserColumn},
+			Table:   names.UserTable,
+			Columns: []string{names.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -366,7 +366,7 @@ func (nu *NameUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, nu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
-			err = &NotFoundError{name.Label}
+			err = &NotFoundError{names.Label}
 		} else if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{err.Error(), err}
 		}
@@ -375,22 +375,22 @@ func (nu *NameUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	return n, nil
 }
 
-// NameUpdateOne is the builder for updating a single Name entity.
-type NameUpdateOne struct {
+// NamesUpdateOne is the builder for updating a single Names entity.
+type NamesUpdateOne struct {
 	config
 	fields   []string
 	hooks    []Hook
-	mutation *NameMutation
+	mutation *NamesMutation
 }
 
 // SetFamilyName sets the "familyName" field.
-func (nuo *NameUpdateOne) SetFamilyName(s string) *NameUpdateOne {
+func (nuo *NamesUpdateOne) SetFamilyName(s string) *NamesUpdateOne {
 	nuo.mutation.SetFamilyName(s)
 	return nuo
 }
 
 // SetNillableFamilyName sets the "familyName" field if the given value is not nil.
-func (nuo *NameUpdateOne) SetNillableFamilyName(s *string) *NameUpdateOne {
+func (nuo *NamesUpdateOne) SetNillableFamilyName(s *string) *NamesUpdateOne {
 	if s != nil {
 		nuo.SetFamilyName(*s)
 	}
@@ -398,19 +398,19 @@ func (nuo *NameUpdateOne) SetNillableFamilyName(s *string) *NameUpdateOne {
 }
 
 // ClearFamilyName clears the value of the "familyName" field.
-func (nuo *NameUpdateOne) ClearFamilyName() *NameUpdateOne {
+func (nuo *NamesUpdateOne) ClearFamilyName() *NamesUpdateOne {
 	nuo.mutation.ClearFamilyName()
 	return nuo
 }
 
 // SetFormatted sets the "formatted" field.
-func (nuo *NameUpdateOne) SetFormatted(s string) *NameUpdateOne {
+func (nuo *NamesUpdateOne) SetFormatted(s string) *NamesUpdateOne {
 	nuo.mutation.SetFormatted(s)
 	return nuo
 }
 
 // SetNillableFormatted sets the "formatted" field if the given value is not nil.
-func (nuo *NameUpdateOne) SetNillableFormatted(s *string) *NameUpdateOne {
+func (nuo *NamesUpdateOne) SetNillableFormatted(s *string) *NamesUpdateOne {
 	if s != nil {
 		nuo.SetFormatted(*s)
 	}
@@ -418,19 +418,19 @@ func (nuo *NameUpdateOne) SetNillableFormatted(s *string) *NameUpdateOne {
 }
 
 // ClearFormatted clears the value of the "formatted" field.
-func (nuo *NameUpdateOne) ClearFormatted() *NameUpdateOne {
+func (nuo *NamesUpdateOne) ClearFormatted() *NamesUpdateOne {
 	nuo.mutation.ClearFormatted()
 	return nuo
 }
 
 // SetGivenName sets the "givenName" field.
-func (nuo *NameUpdateOne) SetGivenName(s string) *NameUpdateOne {
+func (nuo *NamesUpdateOne) SetGivenName(s string) *NamesUpdateOne {
 	nuo.mutation.SetGivenName(s)
 	return nuo
 }
 
 // SetNillableGivenName sets the "givenName" field if the given value is not nil.
-func (nuo *NameUpdateOne) SetNillableGivenName(s *string) *NameUpdateOne {
+func (nuo *NamesUpdateOne) SetNillableGivenName(s *string) *NamesUpdateOne {
 	if s != nil {
 		nuo.SetGivenName(*s)
 	}
@@ -438,19 +438,19 @@ func (nuo *NameUpdateOne) SetNillableGivenName(s *string) *NameUpdateOne {
 }
 
 // ClearGivenName clears the value of the "givenName" field.
-func (nuo *NameUpdateOne) ClearGivenName() *NameUpdateOne {
+func (nuo *NamesUpdateOne) ClearGivenName() *NamesUpdateOne {
 	nuo.mutation.ClearGivenName()
 	return nuo
 }
 
 // SetHonorificPrefix sets the "honorificPrefix" field.
-func (nuo *NameUpdateOne) SetHonorificPrefix(s string) *NameUpdateOne {
+func (nuo *NamesUpdateOne) SetHonorificPrefix(s string) *NamesUpdateOne {
 	nuo.mutation.SetHonorificPrefix(s)
 	return nuo
 }
 
 // SetNillableHonorificPrefix sets the "honorificPrefix" field if the given value is not nil.
-func (nuo *NameUpdateOne) SetNillableHonorificPrefix(s *string) *NameUpdateOne {
+func (nuo *NamesUpdateOne) SetNillableHonorificPrefix(s *string) *NamesUpdateOne {
 	if s != nil {
 		nuo.SetHonorificPrefix(*s)
 	}
@@ -458,19 +458,19 @@ func (nuo *NameUpdateOne) SetNillableHonorificPrefix(s *string) *NameUpdateOne {
 }
 
 // ClearHonorificPrefix clears the value of the "honorificPrefix" field.
-func (nuo *NameUpdateOne) ClearHonorificPrefix() *NameUpdateOne {
+func (nuo *NamesUpdateOne) ClearHonorificPrefix() *NamesUpdateOne {
 	nuo.mutation.ClearHonorificPrefix()
 	return nuo
 }
 
 // SetHonorificSuffix sets the "honorificSuffix" field.
-func (nuo *NameUpdateOne) SetHonorificSuffix(s string) *NameUpdateOne {
+func (nuo *NamesUpdateOne) SetHonorificSuffix(s string) *NamesUpdateOne {
 	nuo.mutation.SetHonorificSuffix(s)
 	return nuo
 }
 
 // SetNillableHonorificSuffix sets the "honorificSuffix" field if the given value is not nil.
-func (nuo *NameUpdateOne) SetNillableHonorificSuffix(s *string) *NameUpdateOne {
+func (nuo *NamesUpdateOne) SetNillableHonorificSuffix(s *string) *NamesUpdateOne {
 	if s != nil {
 		nuo.SetHonorificSuffix(*s)
 	}
@@ -478,19 +478,19 @@ func (nuo *NameUpdateOne) SetNillableHonorificSuffix(s *string) *NameUpdateOne {
 }
 
 // ClearHonorificSuffix clears the value of the "honorificSuffix" field.
-func (nuo *NameUpdateOne) ClearHonorificSuffix() *NameUpdateOne {
+func (nuo *NamesUpdateOne) ClearHonorificSuffix() *NamesUpdateOne {
 	nuo.mutation.ClearHonorificSuffix()
 	return nuo
 }
 
 // SetMiddleName sets the "middleName" field.
-func (nuo *NameUpdateOne) SetMiddleName(s string) *NameUpdateOne {
+func (nuo *NamesUpdateOne) SetMiddleName(s string) *NamesUpdateOne {
 	nuo.mutation.SetMiddleName(s)
 	return nuo
 }
 
 // SetNillableMiddleName sets the "middleName" field if the given value is not nil.
-func (nuo *NameUpdateOne) SetNillableMiddleName(s *string) *NameUpdateOne {
+func (nuo *NamesUpdateOne) SetNillableMiddleName(s *string) *NamesUpdateOne {
 	if s != nil {
 		nuo.SetMiddleName(*s)
 	}
@@ -498,19 +498,19 @@ func (nuo *NameUpdateOne) SetNillableMiddleName(s *string) *NameUpdateOne {
 }
 
 // ClearMiddleName clears the value of the "middleName" field.
-func (nuo *NameUpdateOne) ClearMiddleName() *NameUpdateOne {
+func (nuo *NamesUpdateOne) ClearMiddleName() *NamesUpdateOne {
 	nuo.mutation.ClearMiddleName()
 	return nuo
 }
 
 // SetUserID sets the "user" edge to the User entity by ID.
-func (nuo *NameUpdateOne) SetUserID(id uuid.UUID) *NameUpdateOne {
+func (nuo *NamesUpdateOne) SetUserID(id uuid.UUID) *NamesUpdateOne {
 	nuo.mutation.SetUserID(id)
 	return nuo
 }
 
 // SetNillableUserID sets the "user" edge to the User entity by ID if the given value is not nil.
-func (nuo *NameUpdateOne) SetNillableUserID(id *uuid.UUID) *NameUpdateOne {
+func (nuo *NamesUpdateOne) SetNillableUserID(id *uuid.UUID) *NamesUpdateOne {
 	if id != nil {
 		nuo = nuo.SetUserID(*id)
 	}
@@ -518,39 +518,39 @@ func (nuo *NameUpdateOne) SetNillableUserID(id *uuid.UUID) *NameUpdateOne {
 }
 
 // SetUser sets the "user" edge to the User entity.
-func (nuo *NameUpdateOne) SetUser(u *User) *NameUpdateOne {
+func (nuo *NamesUpdateOne) SetUser(u *User) *NamesUpdateOne {
 	return nuo.SetUserID(u.ID)
 }
 
-// Mutation returns the NameMutation object of the builder.
-func (nuo *NameUpdateOne) Mutation() *NameMutation {
+// Mutation returns the NamesMutation object of the builder.
+func (nuo *NamesUpdateOne) Mutation() *NamesMutation {
 	return nuo.mutation
 }
 
 // ClearUser clears the "user" edge to the User entity.
-func (nuo *NameUpdateOne) ClearUser() *NameUpdateOne {
+func (nuo *NamesUpdateOne) ClearUser() *NamesUpdateOne {
 	nuo.mutation.ClearUser()
 	return nuo
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (nuo *NameUpdateOne) Select(field string, fields ...string) *NameUpdateOne {
+func (nuo *NamesUpdateOne) Select(field string, fields ...string) *NamesUpdateOne {
 	nuo.fields = append([]string{field}, fields...)
 	return nuo
 }
 
-// Save executes the query and returns the updated Name entity.
-func (nuo *NameUpdateOne) Save(ctx context.Context) (*Name, error) {
+// Save executes the query and returns the updated Names entity.
+func (nuo *NamesUpdateOne) Save(ctx context.Context) (*Names, error) {
 	var (
 		err  error
-		node *Name
+		node *Names
 	)
 	if len(nuo.hooks) == 0 {
 		node, err = nuo.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*NameMutation)
+			mutation, ok := m.(*NamesMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
 			}
@@ -573,7 +573,7 @@ func (nuo *NameUpdateOne) Save(ctx context.Context) (*Name, error) {
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (nuo *NameUpdateOne) SaveX(ctx context.Context) *Name {
+func (nuo *NamesUpdateOne) SaveX(ctx context.Context) *Names {
 	node, err := nuo.Save(ctx)
 	if err != nil {
 		panic(err)
@@ -582,42 +582,42 @@ func (nuo *NameUpdateOne) SaveX(ctx context.Context) *Name {
 }
 
 // Exec executes the query on the entity.
-func (nuo *NameUpdateOne) Exec(ctx context.Context) error {
+func (nuo *NamesUpdateOne) Exec(ctx context.Context) error {
 	_, err := nuo.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (nuo *NameUpdateOne) ExecX(ctx context.Context) {
+func (nuo *NamesUpdateOne) ExecX(ctx context.Context) {
 	if err := nuo.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
-func (nuo *NameUpdateOne) sqlSave(ctx context.Context) (_node *Name, err error) {
+func (nuo *NamesUpdateOne) sqlSave(ctx context.Context) (_node *Names, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
-			Table:   name.Table,
-			Columns: name.Columns,
+			Table:   names.Table,
+			Columns: names.Columns,
 			ID: &sqlgraph.FieldSpec{
 				Type:   field.TypeInt,
-				Column: name.FieldID,
+				Column: names.FieldID,
 			},
 		},
 	}
 	id, ok := nuo.mutation.ID()
 	if !ok {
-		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Name.id" for update`)}
+		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Names.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
 	if fields := nuo.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
-		_spec.Node.Columns = append(_spec.Node.Columns, name.FieldID)
+		_spec.Node.Columns = append(_spec.Node.Columns, names.FieldID)
 		for _, f := range fields {
-			if !name.ValidColumn(f) {
+			if !names.ValidColumn(f) {
 				return nil, &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 			}
-			if f != name.FieldID {
+			if f != names.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, f)
 			}
 		}
@@ -633,86 +633,86 @@ func (nuo *NameUpdateOne) sqlSave(ctx context.Context) (_node *Name, err error) 
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: name.FieldFamilyName,
+			Column: names.FieldFamilyName,
 		})
 	}
 	if nuo.mutation.FamilyNameCleared() {
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
-			Column: name.FieldFamilyName,
+			Column: names.FieldFamilyName,
 		})
 	}
 	if value, ok := nuo.mutation.Formatted(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: name.FieldFormatted,
+			Column: names.FieldFormatted,
 		})
 	}
 	if nuo.mutation.FormattedCleared() {
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
-			Column: name.FieldFormatted,
+			Column: names.FieldFormatted,
 		})
 	}
 	if value, ok := nuo.mutation.GivenName(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: name.FieldGivenName,
+			Column: names.FieldGivenName,
 		})
 	}
 	if nuo.mutation.GivenNameCleared() {
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
-			Column: name.FieldGivenName,
+			Column: names.FieldGivenName,
 		})
 	}
 	if value, ok := nuo.mutation.HonorificPrefix(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: name.FieldHonorificPrefix,
+			Column: names.FieldHonorificPrefix,
 		})
 	}
 	if nuo.mutation.HonorificPrefixCleared() {
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
-			Column: name.FieldHonorificPrefix,
+			Column: names.FieldHonorificPrefix,
 		})
 	}
 	if value, ok := nuo.mutation.HonorificSuffix(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: name.FieldHonorificSuffix,
+			Column: names.FieldHonorificSuffix,
 		})
 	}
 	if nuo.mutation.HonorificSuffixCleared() {
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
-			Column: name.FieldHonorificSuffix,
+			Column: names.FieldHonorificSuffix,
 		})
 	}
 	if value, ok := nuo.mutation.MiddleName(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: name.FieldMiddleName,
+			Column: names.FieldMiddleName,
 		})
 	}
 	if nuo.mutation.MiddleNameCleared() {
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
-			Column: name.FieldMiddleName,
+			Column: names.FieldMiddleName,
 		})
 	}
 	if nuo.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   name.UserTable,
-			Columns: []string{name.UserColumn},
+			Table:   names.UserTable,
+			Columns: []string{names.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -727,8 +727,8 @@ func (nuo *NameUpdateOne) sqlSave(ctx context.Context) (_node *Name, err error) 
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   name.UserTable,
-			Columns: []string{name.UserColumn},
+			Table:   names.UserTable,
+			Columns: []string{names.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -742,12 +742,12 @@ func (nuo *NameUpdateOne) sqlSave(ctx context.Context) (_node *Name, err error) 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_node = &Name{config: nuo.config}
+	_node = &Names{config: nuo.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
 	if err = sqlgraph.UpdateNode(ctx, nuo.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
-			err = &NotFoundError{name.Label}
+			err = &NotFoundError{names.Label}
 		} else if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{err.Error(), err}
 		}

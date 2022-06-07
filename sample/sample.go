@@ -167,7 +167,7 @@ func (b *Backend) CreateUser(in *resource.User) (*resource.User, error) {
 
 	var name *resource.Names
 	if v := in.Name(); v != nil {
-		nameCreateCall := b.db.Name.Create()
+		nameCreateCall := b.db.Names.Create()
 		if sv := v.FamilyName(); sv != "" {
 			nameCreateCall.SetFamilyName(sv)
 		}
@@ -232,9 +232,7 @@ func (b *Backend) RetrieveUser(id string, fields ...string) (*resource.User, err
 	userQuery := b.db.User.Query().
 		Where(user.IDEQ(parsedUUID))
 
-	if len(fields) > 0 {
-		userLoadEntFields(userQuery, fields)
-	}
+	userLoadEntFields(userQuery, fields)
 
 	u, err := userQuery.
 		Only(context.TODO())

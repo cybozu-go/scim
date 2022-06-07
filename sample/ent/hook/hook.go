@@ -35,15 +35,15 @@ func (f GroupFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error
 	return f(ctx, mv)
 }
 
-// The NameFunc type is an adapter to allow the use of ordinary
-// function as Name mutator.
-type NameFunc func(context.Context, *ent.NameMutation) (ent.Value, error)
+// The NamesFunc type is an adapter to allow the use of ordinary
+// function as Names mutator.
+type NamesFunc func(context.Context, *ent.NamesMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f NameFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	mv, ok := m.(*ent.NameMutation)
+func (f NamesFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.NamesMutation)
 	if !ok {
-		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.NameMutation", m)
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.NamesMutation", m)
 	}
 	return f(ctx, mv)
 }

@@ -10,7 +10,7 @@ import (
 
 	"github.com/cybozu-go/scim/sample/ent/email"
 	"github.com/cybozu-go/scim/sample/ent/group"
-	entname "github.com/cybozu-go/scim/sample/ent/name"
+	"github.com/cybozu-go/scim/sample/ent/names"
 	"github.com/cybozu-go/scim/sample/ent/predicate"
 	"github.com/cybozu-go/scim/sample/ent/user"
 	"github.com/google/uuid"
@@ -29,7 +29,7 @@ const (
 	// Node types.
 	TypeEmail = "Email"
 	TypeGroup = "Group"
-	TypeName  = "Name"
+	TypeNames = "Names"
 	TypeUser  = "User"
 )
 
@@ -1282,8 +1282,8 @@ func (m *GroupMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Group edge %s", name)
 }
 
-// NameMutation represents an operation that mutates the Name nodes in the graph.
-type NameMutation struct {
+// NamesMutation represents an operation that mutates the Names nodes in the graph.
+type NamesMutation struct {
 	config
 	op              Op
 	typ             string
@@ -1298,21 +1298,21 @@ type NameMutation struct {
 	user            *uuid.UUID
 	cleareduser     bool
 	done            bool
-	oldValue        func(context.Context) (*Name, error)
-	predicates      []predicate.Name
+	oldValue        func(context.Context) (*Names, error)
+	predicates      []predicate.Names
 }
 
-var _ ent.Mutation = (*NameMutation)(nil)
+var _ ent.Mutation = (*NamesMutation)(nil)
 
-// nameOption allows management of the mutation configuration using functional options.
-type nameOption func(*NameMutation)
+// namesOption allows management of the mutation configuration using functional options.
+type namesOption func(*NamesMutation)
 
-// newNameMutation creates new mutation for the Name entity.
-func newNameMutation(c config, op Op, opts ...nameOption) *NameMutation {
-	m := &NameMutation{
+// newNamesMutation creates new mutation for the Names entity.
+func newNamesMutation(c config, op Op, opts ...namesOption) *NamesMutation {
+	m := &NamesMutation{
 		config:        c,
 		op:            op,
-		typ:           TypeName,
+		typ:           TypeNames,
 		clearedFields: make(map[string]struct{}),
 	}
 	for _, opt := range opts {
@@ -1321,20 +1321,20 @@ func newNameMutation(c config, op Op, opts ...nameOption) *NameMutation {
 	return m
 }
 
-// withNameID sets the ID field of the mutation.
-func withNameID(id int) nameOption {
-	return func(m *NameMutation) {
+// withNamesID sets the ID field of the mutation.
+func withNamesID(id int) namesOption {
+	return func(m *NamesMutation) {
 		var (
 			err   error
 			once  sync.Once
-			value *Name
+			value *Names
 		)
-		m.oldValue = func(ctx context.Context) (*Name, error) {
+		m.oldValue = func(ctx context.Context) (*Names, error) {
 			once.Do(func() {
 				if m.done {
 					err = errors.New("querying old values post mutation is not allowed")
 				} else {
-					value, err = m.Client().Name.Get(ctx, id)
+					value, err = m.Client().Names.Get(ctx, id)
 				}
 			})
 			return value, err
@@ -1343,10 +1343,10 @@ func withNameID(id int) nameOption {
 	}
 }
 
-// withName sets the old Name of the mutation.
-func withName(node *Name) nameOption {
-	return func(m *NameMutation) {
-		m.oldValue = func(context.Context) (*Name, error) {
+// withNames sets the old Names of the mutation.
+func withNames(node *Names) namesOption {
+	return func(m *NamesMutation) {
+		m.oldValue = func(context.Context) (*Names, error) {
 			return node, nil
 		}
 		m.id = &node.ID
@@ -1355,7 +1355,7 @@ func withName(node *Name) nameOption {
 
 // Client returns a new `ent.Client` from the mutation. If the mutation was
 // executed in a transaction (ent.Tx), a transactional client is returned.
-func (m NameMutation) Client() *Client {
+func (m NamesMutation) Client() *Client {
 	client := &Client{config: m.config}
 	client.init()
 	return client
@@ -1363,7 +1363,7 @@ func (m NameMutation) Client() *Client {
 
 // Tx returns an `ent.Tx` for mutations that were executed in transactions;
 // it returns an error otherwise.
-func (m NameMutation) Tx() (*Tx, error) {
+func (m NamesMutation) Tx() (*Tx, error) {
 	if _, ok := m.driver.(*txDriver); !ok {
 		return nil, errors.New("ent: mutation is not running in a transaction")
 	}
@@ -1374,7 +1374,7 @@ func (m NameMutation) Tx() (*Tx, error) {
 
 // ID returns the ID value in the mutation. Note that the ID is only available
 // if it was provided to the builder or after it was returned from the database.
-func (m *NameMutation) ID() (id int, exists bool) {
+func (m *NamesMutation) ID() (id int, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -1385,7 +1385,7 @@ func (m *NameMutation) ID() (id int, exists bool) {
 // That means, if the mutation is applied within a transaction with an isolation level such
 // as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
 // or updated by the mutation.
-func (m *NameMutation) IDs(ctx context.Context) ([]int, error) {
+func (m *NamesMutation) IDs(ctx context.Context) ([]int, error) {
 	switch {
 	case m.op.Is(OpUpdateOne | OpDeleteOne):
 		id, exists := m.ID()
@@ -1394,19 +1394,19 @@ func (m *NameMutation) IDs(ctx context.Context) ([]int, error) {
 		}
 		fallthrough
 	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().Name.Query().Where(m.predicates...).IDs(ctx)
+		return m.Client().Names.Query().Where(m.predicates...).IDs(ctx)
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
 }
 
 // SetFamilyName sets the "familyName" field.
-func (m *NameMutation) SetFamilyName(s string) {
+func (m *NamesMutation) SetFamilyName(s string) {
 	m.familyName = &s
 }
 
 // FamilyName returns the value of the "familyName" field in the mutation.
-func (m *NameMutation) FamilyName() (r string, exists bool) {
+func (m *NamesMutation) FamilyName() (r string, exists bool) {
 	v := m.familyName
 	if v == nil {
 		return
@@ -1414,10 +1414,10 @@ func (m *NameMutation) FamilyName() (r string, exists bool) {
 	return *v, true
 }
 
-// OldFamilyName returns the old "familyName" field's value of the Name entity.
-// If the Name object wasn't provided to the builder, the object is fetched from the database.
+// OldFamilyName returns the old "familyName" field's value of the Names entity.
+// If the Names object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *NameMutation) OldFamilyName(ctx context.Context) (v string, err error) {
+func (m *NamesMutation) OldFamilyName(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldFamilyName is only allowed on UpdateOne operations")
 	}
@@ -1432,30 +1432,30 @@ func (m *NameMutation) OldFamilyName(ctx context.Context) (v string, err error) 
 }
 
 // ClearFamilyName clears the value of the "familyName" field.
-func (m *NameMutation) ClearFamilyName() {
+func (m *NamesMutation) ClearFamilyName() {
 	m.familyName = nil
-	m.clearedFields[entname.FieldFamilyName] = struct{}{}
+	m.clearedFields[names.FieldFamilyName] = struct{}{}
 }
 
 // FamilyNameCleared returns if the "familyName" field was cleared in this mutation.
-func (m *NameMutation) FamilyNameCleared() bool {
-	_, ok := m.clearedFields[entname.FieldFamilyName]
+func (m *NamesMutation) FamilyNameCleared() bool {
+	_, ok := m.clearedFields[names.FieldFamilyName]
 	return ok
 }
 
 // ResetFamilyName resets all changes to the "familyName" field.
-func (m *NameMutation) ResetFamilyName() {
+func (m *NamesMutation) ResetFamilyName() {
 	m.familyName = nil
-	delete(m.clearedFields, entname.FieldFamilyName)
+	delete(m.clearedFields, names.FieldFamilyName)
 }
 
 // SetFormatted sets the "formatted" field.
-func (m *NameMutation) SetFormatted(s string) {
+func (m *NamesMutation) SetFormatted(s string) {
 	m.formatted = &s
 }
 
 // Formatted returns the value of the "formatted" field in the mutation.
-func (m *NameMutation) Formatted() (r string, exists bool) {
+func (m *NamesMutation) Formatted() (r string, exists bool) {
 	v := m.formatted
 	if v == nil {
 		return
@@ -1463,10 +1463,10 @@ func (m *NameMutation) Formatted() (r string, exists bool) {
 	return *v, true
 }
 
-// OldFormatted returns the old "formatted" field's value of the Name entity.
-// If the Name object wasn't provided to the builder, the object is fetched from the database.
+// OldFormatted returns the old "formatted" field's value of the Names entity.
+// If the Names object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *NameMutation) OldFormatted(ctx context.Context) (v string, err error) {
+func (m *NamesMutation) OldFormatted(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldFormatted is only allowed on UpdateOne operations")
 	}
@@ -1481,30 +1481,30 @@ func (m *NameMutation) OldFormatted(ctx context.Context) (v string, err error) {
 }
 
 // ClearFormatted clears the value of the "formatted" field.
-func (m *NameMutation) ClearFormatted() {
+func (m *NamesMutation) ClearFormatted() {
 	m.formatted = nil
-	m.clearedFields[entname.FieldFormatted] = struct{}{}
+	m.clearedFields[names.FieldFormatted] = struct{}{}
 }
 
 // FormattedCleared returns if the "formatted" field was cleared in this mutation.
-func (m *NameMutation) FormattedCleared() bool {
-	_, ok := m.clearedFields[entname.FieldFormatted]
+func (m *NamesMutation) FormattedCleared() bool {
+	_, ok := m.clearedFields[names.FieldFormatted]
 	return ok
 }
 
 // ResetFormatted resets all changes to the "formatted" field.
-func (m *NameMutation) ResetFormatted() {
+func (m *NamesMutation) ResetFormatted() {
 	m.formatted = nil
-	delete(m.clearedFields, entname.FieldFormatted)
+	delete(m.clearedFields, names.FieldFormatted)
 }
 
 // SetGivenName sets the "givenName" field.
-func (m *NameMutation) SetGivenName(s string) {
+func (m *NamesMutation) SetGivenName(s string) {
 	m.givenName = &s
 }
 
 // GivenName returns the value of the "givenName" field in the mutation.
-func (m *NameMutation) GivenName() (r string, exists bool) {
+func (m *NamesMutation) GivenName() (r string, exists bool) {
 	v := m.givenName
 	if v == nil {
 		return
@@ -1512,10 +1512,10 @@ func (m *NameMutation) GivenName() (r string, exists bool) {
 	return *v, true
 }
 
-// OldGivenName returns the old "givenName" field's value of the Name entity.
-// If the Name object wasn't provided to the builder, the object is fetched from the database.
+// OldGivenName returns the old "givenName" field's value of the Names entity.
+// If the Names object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *NameMutation) OldGivenName(ctx context.Context) (v string, err error) {
+func (m *NamesMutation) OldGivenName(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldGivenName is only allowed on UpdateOne operations")
 	}
@@ -1530,30 +1530,30 @@ func (m *NameMutation) OldGivenName(ctx context.Context) (v string, err error) {
 }
 
 // ClearGivenName clears the value of the "givenName" field.
-func (m *NameMutation) ClearGivenName() {
+func (m *NamesMutation) ClearGivenName() {
 	m.givenName = nil
-	m.clearedFields[entname.FieldGivenName] = struct{}{}
+	m.clearedFields[names.FieldGivenName] = struct{}{}
 }
 
 // GivenNameCleared returns if the "givenName" field was cleared in this mutation.
-func (m *NameMutation) GivenNameCleared() bool {
-	_, ok := m.clearedFields[entname.FieldGivenName]
+func (m *NamesMutation) GivenNameCleared() bool {
+	_, ok := m.clearedFields[names.FieldGivenName]
 	return ok
 }
 
 // ResetGivenName resets all changes to the "givenName" field.
-func (m *NameMutation) ResetGivenName() {
+func (m *NamesMutation) ResetGivenName() {
 	m.givenName = nil
-	delete(m.clearedFields, entname.FieldGivenName)
+	delete(m.clearedFields, names.FieldGivenName)
 }
 
 // SetHonorificPrefix sets the "honorificPrefix" field.
-func (m *NameMutation) SetHonorificPrefix(s string) {
+func (m *NamesMutation) SetHonorificPrefix(s string) {
 	m.honorificPrefix = &s
 }
 
 // HonorificPrefix returns the value of the "honorificPrefix" field in the mutation.
-func (m *NameMutation) HonorificPrefix() (r string, exists bool) {
+func (m *NamesMutation) HonorificPrefix() (r string, exists bool) {
 	v := m.honorificPrefix
 	if v == nil {
 		return
@@ -1561,10 +1561,10 @@ func (m *NameMutation) HonorificPrefix() (r string, exists bool) {
 	return *v, true
 }
 
-// OldHonorificPrefix returns the old "honorificPrefix" field's value of the Name entity.
-// If the Name object wasn't provided to the builder, the object is fetched from the database.
+// OldHonorificPrefix returns the old "honorificPrefix" field's value of the Names entity.
+// If the Names object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *NameMutation) OldHonorificPrefix(ctx context.Context) (v string, err error) {
+func (m *NamesMutation) OldHonorificPrefix(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldHonorificPrefix is only allowed on UpdateOne operations")
 	}
@@ -1579,30 +1579,30 @@ func (m *NameMutation) OldHonorificPrefix(ctx context.Context) (v string, err er
 }
 
 // ClearHonorificPrefix clears the value of the "honorificPrefix" field.
-func (m *NameMutation) ClearHonorificPrefix() {
+func (m *NamesMutation) ClearHonorificPrefix() {
 	m.honorificPrefix = nil
-	m.clearedFields[entname.FieldHonorificPrefix] = struct{}{}
+	m.clearedFields[names.FieldHonorificPrefix] = struct{}{}
 }
 
 // HonorificPrefixCleared returns if the "honorificPrefix" field was cleared in this mutation.
-func (m *NameMutation) HonorificPrefixCleared() bool {
-	_, ok := m.clearedFields[entname.FieldHonorificPrefix]
+func (m *NamesMutation) HonorificPrefixCleared() bool {
+	_, ok := m.clearedFields[names.FieldHonorificPrefix]
 	return ok
 }
 
 // ResetHonorificPrefix resets all changes to the "honorificPrefix" field.
-func (m *NameMutation) ResetHonorificPrefix() {
+func (m *NamesMutation) ResetHonorificPrefix() {
 	m.honorificPrefix = nil
-	delete(m.clearedFields, entname.FieldHonorificPrefix)
+	delete(m.clearedFields, names.FieldHonorificPrefix)
 }
 
 // SetHonorificSuffix sets the "honorificSuffix" field.
-func (m *NameMutation) SetHonorificSuffix(s string) {
+func (m *NamesMutation) SetHonorificSuffix(s string) {
 	m.honorificSuffix = &s
 }
 
 // HonorificSuffix returns the value of the "honorificSuffix" field in the mutation.
-func (m *NameMutation) HonorificSuffix() (r string, exists bool) {
+func (m *NamesMutation) HonorificSuffix() (r string, exists bool) {
 	v := m.honorificSuffix
 	if v == nil {
 		return
@@ -1610,10 +1610,10 @@ func (m *NameMutation) HonorificSuffix() (r string, exists bool) {
 	return *v, true
 }
 
-// OldHonorificSuffix returns the old "honorificSuffix" field's value of the Name entity.
-// If the Name object wasn't provided to the builder, the object is fetched from the database.
+// OldHonorificSuffix returns the old "honorificSuffix" field's value of the Names entity.
+// If the Names object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *NameMutation) OldHonorificSuffix(ctx context.Context) (v string, err error) {
+func (m *NamesMutation) OldHonorificSuffix(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldHonorificSuffix is only allowed on UpdateOne operations")
 	}
@@ -1628,30 +1628,30 @@ func (m *NameMutation) OldHonorificSuffix(ctx context.Context) (v string, err er
 }
 
 // ClearHonorificSuffix clears the value of the "honorificSuffix" field.
-func (m *NameMutation) ClearHonorificSuffix() {
+func (m *NamesMutation) ClearHonorificSuffix() {
 	m.honorificSuffix = nil
-	m.clearedFields[entname.FieldHonorificSuffix] = struct{}{}
+	m.clearedFields[names.FieldHonorificSuffix] = struct{}{}
 }
 
 // HonorificSuffixCleared returns if the "honorificSuffix" field was cleared in this mutation.
-func (m *NameMutation) HonorificSuffixCleared() bool {
-	_, ok := m.clearedFields[entname.FieldHonorificSuffix]
+func (m *NamesMutation) HonorificSuffixCleared() bool {
+	_, ok := m.clearedFields[names.FieldHonorificSuffix]
 	return ok
 }
 
 // ResetHonorificSuffix resets all changes to the "honorificSuffix" field.
-func (m *NameMutation) ResetHonorificSuffix() {
+func (m *NamesMutation) ResetHonorificSuffix() {
 	m.honorificSuffix = nil
-	delete(m.clearedFields, entname.FieldHonorificSuffix)
+	delete(m.clearedFields, names.FieldHonorificSuffix)
 }
 
 // SetMiddleName sets the "middleName" field.
-func (m *NameMutation) SetMiddleName(s string) {
+func (m *NamesMutation) SetMiddleName(s string) {
 	m.middleName = &s
 }
 
 // MiddleName returns the value of the "middleName" field in the mutation.
-func (m *NameMutation) MiddleName() (r string, exists bool) {
+func (m *NamesMutation) MiddleName() (r string, exists bool) {
 	v := m.middleName
 	if v == nil {
 		return
@@ -1659,10 +1659,10 @@ func (m *NameMutation) MiddleName() (r string, exists bool) {
 	return *v, true
 }
 
-// OldMiddleName returns the old "middleName" field's value of the Name entity.
-// If the Name object wasn't provided to the builder, the object is fetched from the database.
+// OldMiddleName returns the old "middleName" field's value of the Names entity.
+// If the Names object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *NameMutation) OldMiddleName(ctx context.Context) (v string, err error) {
+func (m *NamesMutation) OldMiddleName(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldMiddleName is only allowed on UpdateOne operations")
 	}
@@ -1677,40 +1677,40 @@ func (m *NameMutation) OldMiddleName(ctx context.Context) (v string, err error) 
 }
 
 // ClearMiddleName clears the value of the "middleName" field.
-func (m *NameMutation) ClearMiddleName() {
+func (m *NamesMutation) ClearMiddleName() {
 	m.middleName = nil
-	m.clearedFields[entname.FieldMiddleName] = struct{}{}
+	m.clearedFields[names.FieldMiddleName] = struct{}{}
 }
 
 // MiddleNameCleared returns if the "middleName" field was cleared in this mutation.
-func (m *NameMutation) MiddleNameCleared() bool {
-	_, ok := m.clearedFields[entname.FieldMiddleName]
+func (m *NamesMutation) MiddleNameCleared() bool {
+	_, ok := m.clearedFields[names.FieldMiddleName]
 	return ok
 }
 
 // ResetMiddleName resets all changes to the "middleName" field.
-func (m *NameMutation) ResetMiddleName() {
+func (m *NamesMutation) ResetMiddleName() {
 	m.middleName = nil
-	delete(m.clearedFields, entname.FieldMiddleName)
+	delete(m.clearedFields, names.FieldMiddleName)
 }
 
 // SetUserID sets the "user" edge to the User entity by id.
-func (m *NameMutation) SetUserID(id uuid.UUID) {
+func (m *NamesMutation) SetUserID(id uuid.UUID) {
 	m.user = &id
 }
 
 // ClearUser clears the "user" edge to the User entity.
-func (m *NameMutation) ClearUser() {
+func (m *NamesMutation) ClearUser() {
 	m.cleareduser = true
 }
 
 // UserCleared reports if the "user" edge to the User entity was cleared.
-func (m *NameMutation) UserCleared() bool {
+func (m *NamesMutation) UserCleared() bool {
 	return m.cleareduser
 }
 
 // UserID returns the "user" edge ID in the mutation.
-func (m *NameMutation) UserID() (id uuid.UUID, exists bool) {
+func (m *NamesMutation) UserID() (id uuid.UUID, exists bool) {
 	if m.user != nil {
 		return *m.user, true
 	}
@@ -1720,7 +1720,7 @@ func (m *NameMutation) UserID() (id uuid.UUID, exists bool) {
 // UserIDs returns the "user" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // UserID instead. It exists only for internal usage by the builders.
-func (m *NameMutation) UserIDs() (ids []uuid.UUID) {
+func (m *NamesMutation) UserIDs() (ids []uuid.UUID) {
 	if id := m.user; id != nil {
 		ids = append(ids, *id)
 	}
@@ -1728,48 +1728,48 @@ func (m *NameMutation) UserIDs() (ids []uuid.UUID) {
 }
 
 // ResetUser resets all changes to the "user" edge.
-func (m *NameMutation) ResetUser() {
+func (m *NamesMutation) ResetUser() {
 	m.user = nil
 	m.cleareduser = false
 }
 
-// Where appends a list predicates to the NameMutation builder.
-func (m *NameMutation) Where(ps ...predicate.Name) {
+// Where appends a list predicates to the NamesMutation builder.
+func (m *NamesMutation) Where(ps ...predicate.Names) {
 	m.predicates = append(m.predicates, ps...)
 }
 
 // Op returns the operation name.
-func (m *NameMutation) Op() Op {
+func (m *NamesMutation) Op() Op {
 	return m.op
 }
 
-// Type returns the node type of this mutation (Name).
-func (m *NameMutation) Type() string {
+// Type returns the node type of this mutation (Names).
+func (m *NamesMutation) Type() string {
 	return m.typ
 }
 
 // Fields returns all fields that were changed during this mutation. Note that in
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
-func (m *NameMutation) Fields() []string {
+func (m *NamesMutation) Fields() []string {
 	fields := make([]string, 0, 6)
 	if m.familyName != nil {
-		fields = append(fields, entname.FieldFamilyName)
+		fields = append(fields, names.FieldFamilyName)
 	}
 	if m.formatted != nil {
-		fields = append(fields, entname.FieldFormatted)
+		fields = append(fields, names.FieldFormatted)
 	}
 	if m.givenName != nil {
-		fields = append(fields, entname.FieldGivenName)
+		fields = append(fields, names.FieldGivenName)
 	}
 	if m.honorificPrefix != nil {
-		fields = append(fields, entname.FieldHonorificPrefix)
+		fields = append(fields, names.FieldHonorificPrefix)
 	}
 	if m.honorificSuffix != nil {
-		fields = append(fields, entname.FieldHonorificSuffix)
+		fields = append(fields, names.FieldHonorificSuffix)
 	}
 	if m.middleName != nil {
-		fields = append(fields, entname.FieldMiddleName)
+		fields = append(fields, names.FieldMiddleName)
 	}
 	return fields
 }
@@ -1777,19 +1777,19 @@ func (m *NameMutation) Fields() []string {
 // Field returns the value of a field with the given name. The second boolean
 // return value indicates that this field was not set, or was not defined in the
 // schema.
-func (m *NameMutation) Field(name string) (ent.Value, bool) {
+func (m *NamesMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case entname.FieldFamilyName:
+	case names.FieldFamilyName:
 		return m.FamilyName()
-	case entname.FieldFormatted:
+	case names.FieldFormatted:
 		return m.Formatted()
-	case entname.FieldGivenName:
+	case names.FieldGivenName:
 		return m.GivenName()
-	case entname.FieldHonorificPrefix:
+	case names.FieldHonorificPrefix:
 		return m.HonorificPrefix()
-	case entname.FieldHonorificSuffix:
+	case names.FieldHonorificSuffix:
 		return m.HonorificSuffix()
-	case entname.FieldMiddleName:
+	case names.FieldMiddleName:
 		return m.MiddleName()
 	}
 	return nil, false
@@ -1798,65 +1798,65 @@ func (m *NameMutation) Field(name string) (ent.Value, bool) {
 // OldField returns the old value of the field from the database. An error is
 // returned if the mutation operation is not UpdateOne, or the query to the
 // database failed.
-func (m *NameMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+func (m *NamesMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case entname.FieldFamilyName:
+	case names.FieldFamilyName:
 		return m.OldFamilyName(ctx)
-	case entname.FieldFormatted:
+	case names.FieldFormatted:
 		return m.OldFormatted(ctx)
-	case entname.FieldGivenName:
+	case names.FieldGivenName:
 		return m.OldGivenName(ctx)
-	case entname.FieldHonorificPrefix:
+	case names.FieldHonorificPrefix:
 		return m.OldHonorificPrefix(ctx)
-	case entname.FieldHonorificSuffix:
+	case names.FieldHonorificSuffix:
 		return m.OldHonorificSuffix(ctx)
-	case entname.FieldMiddleName:
+	case names.FieldMiddleName:
 		return m.OldMiddleName(ctx)
 	}
-	return nil, fmt.Errorf("unknown Name field %s", name)
+	return nil, fmt.Errorf("unknown Names field %s", name)
 }
 
 // SetField sets the value of a field with the given name. It returns an error if
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
-func (m *NameMutation) SetField(name string, value ent.Value) error {
+func (m *NamesMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case entname.FieldFamilyName:
+	case names.FieldFamilyName:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetFamilyName(v)
 		return nil
-	case entname.FieldFormatted:
+	case names.FieldFormatted:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetFormatted(v)
 		return nil
-	case entname.FieldGivenName:
+	case names.FieldGivenName:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetGivenName(v)
 		return nil
-	case entname.FieldHonorificPrefix:
+	case names.FieldHonorificPrefix:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetHonorificPrefix(v)
 		return nil
-	case entname.FieldHonorificSuffix:
+	case names.FieldHonorificSuffix:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetHonorificSuffix(v)
 		return nil
-	case entname.FieldMiddleName:
+	case names.FieldMiddleName:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
@@ -1864,129 +1864,129 @@ func (m *NameMutation) SetField(name string, value ent.Value) error {
 		m.SetMiddleName(v)
 		return nil
 	}
-	return fmt.Errorf("unknown Name field %s", name)
+	return fmt.Errorf("unknown Names field %s", name)
 }
 
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
-func (m *NameMutation) AddedFields() []string {
+func (m *NamesMutation) AddedFields() []string {
 	return nil
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
-func (m *NameMutation) AddedField(name string) (ent.Value, bool) {
+func (m *NamesMutation) AddedField(name string) (ent.Value, bool) {
 	return nil, false
 }
 
 // AddField adds the value to the field with the given name. It returns an error if
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
-func (m *NameMutation) AddField(name string, value ent.Value) error {
+func (m *NamesMutation) AddField(name string, value ent.Value) error {
 	switch name {
 	}
-	return fmt.Errorf("unknown Name numeric field %s", name)
+	return fmt.Errorf("unknown Names numeric field %s", name)
 }
 
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
-func (m *NameMutation) ClearedFields() []string {
+func (m *NamesMutation) ClearedFields() []string {
 	var fields []string
-	if m.FieldCleared(entname.FieldFamilyName) {
-		fields = append(fields, entname.FieldFamilyName)
+	if m.FieldCleared(names.FieldFamilyName) {
+		fields = append(fields, names.FieldFamilyName)
 	}
-	if m.FieldCleared(entname.FieldFormatted) {
-		fields = append(fields, entname.FieldFormatted)
+	if m.FieldCleared(names.FieldFormatted) {
+		fields = append(fields, names.FieldFormatted)
 	}
-	if m.FieldCleared(entname.FieldGivenName) {
-		fields = append(fields, entname.FieldGivenName)
+	if m.FieldCleared(names.FieldGivenName) {
+		fields = append(fields, names.FieldGivenName)
 	}
-	if m.FieldCleared(entname.FieldHonorificPrefix) {
-		fields = append(fields, entname.FieldHonorificPrefix)
+	if m.FieldCleared(names.FieldHonorificPrefix) {
+		fields = append(fields, names.FieldHonorificPrefix)
 	}
-	if m.FieldCleared(entname.FieldHonorificSuffix) {
-		fields = append(fields, entname.FieldHonorificSuffix)
+	if m.FieldCleared(names.FieldHonorificSuffix) {
+		fields = append(fields, names.FieldHonorificSuffix)
 	}
-	if m.FieldCleared(entname.FieldMiddleName) {
-		fields = append(fields, entname.FieldMiddleName)
+	if m.FieldCleared(names.FieldMiddleName) {
+		fields = append(fields, names.FieldMiddleName)
 	}
 	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
 // cleared in this mutation.
-func (m *NameMutation) FieldCleared(name string) bool {
+func (m *NamesMutation) FieldCleared(name string) bool {
 	_, ok := m.clearedFields[name]
 	return ok
 }
 
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
-func (m *NameMutation) ClearField(name string) error {
+func (m *NamesMutation) ClearField(name string) error {
 	switch name {
-	case entname.FieldFamilyName:
+	case names.FieldFamilyName:
 		m.ClearFamilyName()
 		return nil
-	case entname.FieldFormatted:
+	case names.FieldFormatted:
 		m.ClearFormatted()
 		return nil
-	case entname.FieldGivenName:
+	case names.FieldGivenName:
 		m.ClearGivenName()
 		return nil
-	case entname.FieldHonorificPrefix:
+	case names.FieldHonorificPrefix:
 		m.ClearHonorificPrefix()
 		return nil
-	case entname.FieldHonorificSuffix:
+	case names.FieldHonorificSuffix:
 		m.ClearHonorificSuffix()
 		return nil
-	case entname.FieldMiddleName:
+	case names.FieldMiddleName:
 		m.ClearMiddleName()
 		return nil
 	}
-	return fmt.Errorf("unknown Name nullable field %s", name)
+	return fmt.Errorf("unknown Names nullable field %s", name)
 }
 
 // ResetField resets all changes in the mutation for the field with the given name.
 // It returns an error if the field is not defined in the schema.
-func (m *NameMutation) ResetField(name string) error {
+func (m *NamesMutation) ResetField(name string) error {
 	switch name {
-	case entname.FieldFamilyName:
+	case names.FieldFamilyName:
 		m.ResetFamilyName()
 		return nil
-	case entname.FieldFormatted:
+	case names.FieldFormatted:
 		m.ResetFormatted()
 		return nil
-	case entname.FieldGivenName:
+	case names.FieldGivenName:
 		m.ResetGivenName()
 		return nil
-	case entname.FieldHonorificPrefix:
+	case names.FieldHonorificPrefix:
 		m.ResetHonorificPrefix()
 		return nil
-	case entname.FieldHonorificSuffix:
+	case names.FieldHonorificSuffix:
 		m.ResetHonorificSuffix()
 		return nil
-	case entname.FieldMiddleName:
+	case names.FieldMiddleName:
 		m.ResetMiddleName()
 		return nil
 	}
-	return fmt.Errorf("unknown Name field %s", name)
+	return fmt.Errorf("unknown Names field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
-func (m *NameMutation) AddedEdges() []string {
+func (m *NamesMutation) AddedEdges() []string {
 	edges := make([]string, 0, 1)
 	if m.user != nil {
-		edges = append(edges, entname.EdgeUser)
+		edges = append(edges, names.EdgeUser)
 	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
-func (m *NameMutation) AddedIDs(name string) []ent.Value {
+func (m *NamesMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case entname.EdgeUser:
+	case names.EdgeUser:
 		if id := m.user; id != nil {
 			return []ent.Value{*id}
 		}
@@ -1995,33 +1995,33 @@ func (m *NameMutation) AddedIDs(name string) []ent.Value {
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
-func (m *NameMutation) RemovedEdges() []string {
+func (m *NamesMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 1)
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
-func (m *NameMutation) RemovedIDs(name string) []ent.Value {
+func (m *NamesMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *NameMutation) ClearedEdges() []string {
+func (m *NamesMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 1)
 	if m.cleareduser {
-		edges = append(edges, entname.EdgeUser)
+		edges = append(edges, names.EdgeUser)
 	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
-func (m *NameMutation) EdgeCleared(name string) bool {
+func (m *NamesMutation) EdgeCleared(name string) bool {
 	switch name {
-	case entname.EdgeUser:
+	case names.EdgeUser:
 		return m.cleareduser
 	}
 	return false
@@ -2029,24 +2029,24 @@ func (m *NameMutation) EdgeCleared(name string) bool {
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
-func (m *NameMutation) ClearEdge(name string) error {
+func (m *NamesMutation) ClearEdge(name string) error {
 	switch name {
-	case entname.EdgeUser:
+	case names.EdgeUser:
 		m.ClearUser()
 		return nil
 	}
-	return fmt.Errorf("unknown Name unique edge %s", name)
+	return fmt.Errorf("unknown Names unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
-func (m *NameMutation) ResetEdge(name string) error {
+func (m *NamesMutation) ResetEdge(name string) error {
 	switch name {
-	case entname.EdgeUser:
+	case names.EdgeUser:
 		m.ResetUser()
 		return nil
 	}
-	return fmt.Errorf("unknown Name edge %s", name)
+	return fmt.Errorf("unknown Names edge %s", name)
 }
 
 // UserMutation represents an operation that mutates the User nodes in the graph.
@@ -2869,7 +2869,7 @@ func (m *UserMutation) ResetEmails() {
 	m.removedemails = nil
 }
 
-// AddNameIDs adds the "name" edge to the Name entity by ids.
+// AddNameIDs adds the "name" edge to the Names entity by ids.
 func (m *UserMutation) AddNameIDs(ids ...int) {
 	if m.name == nil {
 		m.name = make(map[int]struct{})
@@ -2879,17 +2879,17 @@ func (m *UserMutation) AddNameIDs(ids ...int) {
 	}
 }
 
-// ClearName clears the "name" edge to the Name entity.
+// ClearName clears the "name" edge to the Names entity.
 func (m *UserMutation) ClearName() {
 	m.clearedname = true
 }
 
-// NameCleared reports if the "name" edge to the Name entity was cleared.
+// NameCleared reports if the "name" edge to the Names entity was cleared.
 func (m *UserMutation) NameCleared() bool {
 	return m.clearedname
 }
 
-// RemoveNameIDs removes the "name" edge to the Name entity by IDs.
+// RemoveNameIDs removes the "name" edge to the Names entity by IDs.
 func (m *UserMutation) RemoveNameIDs(ids ...int) {
 	if m.removedname == nil {
 		m.removedname = make(map[int]struct{})
@@ -2900,7 +2900,7 @@ func (m *UserMutation) RemoveNameIDs(ids ...int) {
 	}
 }
 
-// RemovedName returns the removed IDs of the "name" edge to the Name entity.
+// RemovedName returns the removed IDs of the "name" edge to the Names entity.
 func (m *UserMutation) RemovedNameIDs() (ids []int) {
 	for id := range m.removedname {
 		ids = append(ids, id)

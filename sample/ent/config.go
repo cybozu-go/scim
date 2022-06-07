@@ -26,7 +26,7 @@ type config struct {
 type hooks struct {
 	Email []ent.Hook
 	Group []ent.Hook
-	Name  []ent.Hook
+	Names []ent.Hook
 	User  []ent.Hook
 }
 

@@ -14,7 +14,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/cybozu-go/scim/sample/ent/email"
 	"github.com/cybozu-go/scim/sample/ent/group"
-	"github.com/cybozu-go/scim/sample/ent/name"
+	"github.com/cybozu-go/scim/sample/ent/names"
 	"github.com/cybozu-go/scim/sample/ent/predicate"
 	"github.com/cybozu-go/scim/sample/ent/user"
 	"github.com/google/uuid"
@@ -32,7 +32,7 @@ type UserQuery struct {
 	// eager-loading edges.
 	withGroups *GroupQuery
 	withEmails *EmailQuery
-	withName   *NameQuery
+	withName   *NamesQuery
 	withFKs    bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -115,8 +115,8 @@ func (uq *UserQuery) QueryEmails() *EmailQuery {
 }
 
 // QueryName chains the current query on the "name" edge.
-func (uq *UserQuery) QueryName() *NameQuery {
-	query := &NameQuery{config: uq.config}
+func (uq *UserQuery) QueryName() *NamesQuery {
+	query := &NamesQuery{config: uq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := uq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -127,7 +127,7 @@ func (uq *UserQuery) QueryName() *NameQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(user.Table, user.FieldID, selector),
-			sqlgraph.To(name.Table, name.FieldID),
+			sqlgraph.To(names.Table, names.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, user.NameTable, user.NameColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
@@ -351,8 +351,8 @@ func (uq *UserQuery) WithEmails(opts ...func(*EmailQuery)) *UserQuery {
 
 // WithName tells the query-builder to eager-load the nodes that are connected to
 // the "name" edge. The optional arguments are used to configure the query builder of the edge.
-func (uq *UserQuery) WithName(opts ...func(*NameQuery)) *UserQuery {
-	query := &NameQuery{config: uq.config}
+func (uq *UserQuery) WithName(opts ...func(*NamesQuery)) *UserQuery {
+	query := &NamesQuery{config: uq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -519,10 +519,10 @@ func (uq *UserQuery) sqlAll(ctx context.Context) ([]*User, error) {
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Name = []*Name{}
+			nodes[i].Edges.Name = []*Names{}
 		}
 		query.withFKs = true
-		query.Where(predicate.Name(func(s *sql.Selector) {
+		query.Where(predicate.Names(func(s *sql.Selector) {
 			s.Where(sql.InValues(user.NameColumn, fks...))
 		}))
 		neighbors, err := query.All(ctx)

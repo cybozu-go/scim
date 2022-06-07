@@ -12,7 +12,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/cybozu-go/scim/sample/ent/email"
 	"github.com/cybozu-go/scim/sample/ent/group"
-	"github.com/cybozu-go/scim/sample/ent/name"
+	"github.com/cybozu-go/scim/sample/ent/names"
 	"github.com/cybozu-go/scim/sample/ent/predicate"
 	"github.com/cybozu-go/scim/sample/ent/user"
 	"github.com/google/uuid"
@@ -287,14 +287,14 @@ func (uu *UserUpdate) AddEmails(e ...*Email) *UserUpdate {
 	return uu.AddEmailIDs(ids...)
 }
 
-// AddNameIDs adds the "name" edge to the Name entity by IDs.
+// AddNameIDs adds the "name" edge to the Names entity by IDs.
 func (uu *UserUpdate) AddNameIDs(ids ...int) *UserUpdate {
 	uu.mutation.AddNameIDs(ids...)
 	return uu
 }
 
-// AddName adds the "name" edges to the Name entity.
-func (uu *UserUpdate) AddName(n ...*Name) *UserUpdate {
+// AddName adds the "name" edges to the Names entity.
+func (uu *UserUpdate) AddName(n ...*Names) *UserUpdate {
 	ids := make([]int, len(n))
 	for i := range n {
 		ids[i] = n[i].ID
@@ -349,20 +349,20 @@ func (uu *UserUpdate) RemoveEmails(e ...*Email) *UserUpdate {
 	return uu.RemoveEmailIDs(ids...)
 }
 
-// ClearName clears all "name" edges to the Name entity.
+// ClearName clears all "name" edges to the Names entity.
 func (uu *UserUpdate) ClearName() *UserUpdate {
 	uu.mutation.ClearName()
 	return uu
 }
 
-// RemoveNameIDs removes the "name" edge to Name entities by IDs.
+// RemoveNameIDs removes the "name" edge to Names entities by IDs.
 func (uu *UserUpdate) RemoveNameIDs(ids ...int) *UserUpdate {
 	uu.mutation.RemoveNameIDs(ids...)
 	return uu
 }
 
-// RemoveName removes "name" edges to Name entities.
-func (uu *UserUpdate) RemoveName(n ...*Name) *UserUpdate {
+// RemoveName removes "name" edges to Names entities.
+func (uu *UserUpdate) RemoveName(n ...*Names) *UserUpdate {
 	ids := make([]int, len(n))
 	for i := range n {
 		ids[i] = n[i].ID
@@ -731,7 +731,7 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: name.FieldID,
+					Column: names.FieldID,
 				},
 			},
 		}
@@ -747,7 +747,7 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: name.FieldID,
+					Column: names.FieldID,
 				},
 			},
 		}
@@ -766,7 +766,7 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: name.FieldID,
+					Column: names.FieldID,
 				},
 			},
 		}
@@ -1050,14 +1050,14 @@ func (uuo *UserUpdateOne) AddEmails(e ...*Email) *UserUpdateOne {
 	return uuo.AddEmailIDs(ids...)
 }
 
-// AddNameIDs adds the "name" edge to the Name entity by IDs.
+// AddNameIDs adds the "name" edge to the Names entity by IDs.
 func (uuo *UserUpdateOne) AddNameIDs(ids ...int) *UserUpdateOne {
 	uuo.mutation.AddNameIDs(ids...)
 	return uuo
 }
 
-// AddName adds the "name" edges to the Name entity.
-func (uuo *UserUpdateOne) AddName(n ...*Name) *UserUpdateOne {
+// AddName adds the "name" edges to the Names entity.
+func (uuo *UserUpdateOne) AddName(n ...*Names) *UserUpdateOne {
 	ids := make([]int, len(n))
 	for i := range n {
 		ids[i] = n[i].ID
@@ -1112,20 +1112,20 @@ func (uuo *UserUpdateOne) RemoveEmails(e ...*Email) *UserUpdateOne {
 	return uuo.RemoveEmailIDs(ids...)
 }
 
-// ClearName clears all "name" edges to the Name entity.
+// ClearName clears all "name" edges to the Names entity.
 func (uuo *UserUpdateOne) ClearName() *UserUpdateOne {
 	uuo.mutation.ClearName()
 	return uuo
 }
 
-// RemoveNameIDs removes the "name" edge to Name entities by IDs.
+// RemoveNameIDs removes the "name" edge to Names entities by IDs.
 func (uuo *UserUpdateOne) RemoveNameIDs(ids ...int) *UserUpdateOne {
 	uuo.mutation.RemoveNameIDs(ids...)
 	return uuo
 }
 
-// RemoveName removes "name" edges to Name entities.
-func (uuo *UserUpdateOne) RemoveName(n ...*Name) *UserUpdateOne {
+// RemoveName removes "name" edges to Names entities.
+func (uuo *UserUpdateOne) RemoveName(n ...*Names) *UserUpdateOne {
 	ids := make([]int, len(n))
 	for i := range n {
 		ids[i] = n[i].ID
@@ -1518,7 +1518,7 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: name.FieldID,
+					Column: names.FieldID,
 				},
 			},
 		}
@@ -1534,7 +1534,7 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: name.FieldID,
+					Column: names.FieldID,
 				},
 			},
 		}
@@ -1553,7 +1553,7 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: name.FieldID,
+					Column: names.FieldID,
 				},
 			},
 		}

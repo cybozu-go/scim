@@ -10,6 +10,9 @@ import (
 )
 
 func groupLoadEntFields(q *ent.GroupQuery, fields []string) {
+	if len(fields) == 0 {
+		fields = []string{"displayName", "externalID", "id", "members"}
+	}
 	selectNames := make([]string, 0, len(fields))
 	for _, f := range fields {
 		switch f {

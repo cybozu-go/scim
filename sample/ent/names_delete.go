@@ -9,25 +9,25 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/cybozu-go/scim/sample/ent/name"
+	"github.com/cybozu-go/scim/sample/ent/names"
 	"github.com/cybozu-go/scim/sample/ent/predicate"
 )
 
-// NameDelete is the builder for deleting a Name entity.
-type NameDelete struct {
+// NamesDelete is the builder for deleting a Names entity.
+type NamesDelete struct {
 	config
 	hooks    []Hook
-	mutation *NameMutation
+	mutation *NamesMutation
 }
 
-// Where appends a list predicates to the NameDelete builder.
-func (nd *NameDelete) Where(ps ...predicate.Name) *NameDelete {
+// Where appends a list predicates to the NamesDelete builder.
+func (nd *NamesDelete) Where(ps ...predicate.Names) *NamesDelete {
 	nd.mutation.Where(ps...)
 	return nd
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (nd *NameDelete) Exec(ctx context.Context) (int, error) {
+func (nd *NamesDelete) Exec(ctx context.Context) (int, error) {
 	var (
 		err      error
 		affected int
@@ -36,7 +36,7 @@ func (nd *NameDelete) Exec(ctx context.Context) (int, error) {
 		affected, err = nd.sqlExec(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*NameMutation)
+			mutation, ok := m.(*NamesMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
 			}
@@ -59,7 +59,7 @@ func (nd *NameDelete) Exec(ctx context.Context) (int, error) {
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (nd *NameDelete) ExecX(ctx context.Context) int {
+func (nd *NamesDelete) ExecX(ctx context.Context) int {
 	n, err := nd.Exec(ctx)
 	if err != nil {
 		panic(err)
@@ -67,13 +67,13 @@ func (nd *NameDelete) ExecX(ctx context.Context) int {
 	return n
 }
 
-func (nd *NameDelete) sqlExec(ctx context.Context) (int, error) {
+func (nd *NamesDelete) sqlExec(ctx context.Context) (int, error) {
 	_spec := &sqlgraph.DeleteSpec{
 		Node: &sqlgraph.NodeSpec{
-			Table: name.Table,
+			Table: names.Table,
 			ID: &sqlgraph.FieldSpec{
 				Type:   field.TypeInt,
-				Column: name.FieldID,
+				Column: names.FieldID,
 			},
 		},
 	}
@@ -87,25 +87,25 @@ func (nd *NameDelete) sqlExec(ctx context.Context) (int, error) {
 	return sqlgraph.DeleteNodes(ctx, nd.driver, _spec)
 }
 
-// NameDeleteOne is the builder for deleting a single Name entity.
-type NameDeleteOne struct {
-	nd *NameDelete
+// NamesDeleteOne is the builder for deleting a single Names entity.
+type NamesDeleteOne struct {
+	nd *NamesDelete
 }
 
 // Exec executes the deletion query.
-func (ndo *NameDeleteOne) Exec(ctx context.Context) error {
+func (ndo *NamesDeleteOne) Exec(ctx context.Context) error {
 	n, err := ndo.nd.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
 	case n == 0:
-		return &NotFoundError{name.Label}
+		return &NotFoundError{names.Label}
 	default:
 		return nil
 	}
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ndo *NameDeleteOne) ExecX(ctx context.Context) {
+func (ndo *NamesDeleteOne) ExecX(ctx context.Context) {
 	ndo.nd.ExecX(ctx)
 }

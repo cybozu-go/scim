@@ -20,7 +20,7 @@ func TestUser(t *testing.T) {
 		ID("2819c223-7f76-453a-413861904646").
 		ExternalID("701984").
 		UserName("bjensen@example.com").
-		Names(
+		Name(
 			b.Names().
 				Formatted("Ms. Barbara J Jensen, III").
 				FamilyName("Jensen").
@@ -59,7 +59,7 @@ func TestUser(t *testing.T) {
 		require.Equal(t, `4130`, cc)
 	})
 	t.Run("Names", func(t *testing.T) {
-		names := u.Names()
+		names := u.Name()
 		require.Equal(t, `Ms. Barbara J Jensen, III`, names.Formatted())
 		require.Equal(t, `Jensen`, names.FamilyName())
 		require.Equal(t, `Barbara`, names.GivenName())

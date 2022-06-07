@@ -773,9 +773,22 @@ func (m *GroupMutation) OldDisplayName(ctx context.Context) (v string, err error
 	return oldValue.DisplayName, nil
 }
 
+// ClearDisplayName clears the value of the "displayName" field.
+func (m *GroupMutation) ClearDisplayName() {
+	m.displayName = nil
+	m.clearedFields[group.FieldDisplayName] = struct{}{}
+}
+
+// DisplayNameCleared returns if the "displayName" field was cleared in this mutation.
+func (m *GroupMutation) DisplayNameCleared() bool {
+	_, ok := m.clearedFields[group.FieldDisplayName]
+	return ok
+}
+
 // ResetDisplayName resets all changes to the "displayName" field.
 func (m *GroupMutation) ResetDisplayName() {
 	m.displayName = nil
+	delete(m.clearedFields, group.FieldDisplayName)
 }
 
 // SetExternalID sets the "externalID" field.
@@ -809,9 +822,22 @@ func (m *GroupMutation) OldExternalID(ctx context.Context) (v string, err error)
 	return oldValue.ExternalID, nil
 }
 
+// ClearExternalID clears the value of the "externalID" field.
+func (m *GroupMutation) ClearExternalID() {
+	m.externalID = nil
+	m.clearedFields[group.FieldExternalID] = struct{}{}
+}
+
+// ExternalIDCleared returns if the "externalID" field was cleared in this mutation.
+func (m *GroupMutation) ExternalIDCleared() bool {
+	_, ok := m.clearedFields[group.FieldExternalID]
+	return ok
+}
+
 // ResetExternalID resets all changes to the "externalID" field.
 func (m *GroupMutation) ResetExternalID() {
 	m.externalID = nil
+	delete(m.clearedFields, group.FieldExternalID)
 }
 
 // AddUserIDs adds the "users" edge to the User entity by ids.
@@ -1064,7 +1090,14 @@ func (m *GroupMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *GroupMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(group.FieldDisplayName) {
+		fields = append(fields, group.FieldDisplayName)
+	}
+	if m.FieldCleared(group.FieldExternalID) {
+		fields = append(fields, group.FieldExternalID)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -1077,6 +1110,14 @@ func (m *GroupMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *GroupMutation) ClearField(name string) error {
+	switch name {
+	case group.FieldDisplayName:
+		m.ClearDisplayName()
+		return nil
+	case group.FieldExternalID:
+		m.ClearExternalID()
+		return nil
+	}
 	return fmt.Errorf("unknown Group nullable field %s", name)
 }
 
@@ -1998,12 +2039,15 @@ type UserMutation struct {
 	active            *bool
 	displayName       *string
 	externalID        *string
+	locale            *string
+	nickName          *string
 	password          *string
 	preferredLanguage *string
-	locale            *string
+	profileURL        *string
 	timezone          *string
-	userType          *string
+	title             *string
 	userName          *string
+	userType          *string
 	clearedFields     map[string]struct{}
 	groups            map[uuid.UUID]struct{}
 	removedgroups     map[uuid.UUID]struct{}
@@ -2154,9 +2198,22 @@ func (m *UserMutation) OldActive(ctx context.Context) (v bool, err error) {
 	return oldValue.Active, nil
 }
 
+// ClearActive clears the value of the "active" field.
+func (m *UserMutation) ClearActive() {
+	m.active = nil
+	m.clearedFields[user.FieldActive] = struct{}{}
+}
+
+// ActiveCleared returns if the "active" field was cleared in this mutation.
+func (m *UserMutation) ActiveCleared() bool {
+	_, ok := m.clearedFields[user.FieldActive]
+	return ok
+}
+
 // ResetActive resets all changes to the "active" field.
 func (m *UserMutation) ResetActive() {
 	m.active = nil
+	delete(m.clearedFields, user.FieldActive)
 }
 
 // SetDisplayName sets the "displayName" field.
@@ -2257,6 +2314,104 @@ func (m *UserMutation) ResetExternalID() {
 	delete(m.clearedFields, user.FieldExternalID)
 }
 
+// SetLocale sets the "locale" field.
+func (m *UserMutation) SetLocale(s string) {
+	m.locale = &s
+}
+
+// Locale returns the value of the "locale" field in the mutation.
+func (m *UserMutation) Locale() (r string, exists bool) {
+	v := m.locale
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLocale returns the old "locale" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldLocale(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLocale is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLocale requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLocale: %w", err)
+	}
+	return oldValue.Locale, nil
+}
+
+// ClearLocale clears the value of the "locale" field.
+func (m *UserMutation) ClearLocale() {
+	m.locale = nil
+	m.clearedFields[user.FieldLocale] = struct{}{}
+}
+
+// LocaleCleared returns if the "locale" field was cleared in this mutation.
+func (m *UserMutation) LocaleCleared() bool {
+	_, ok := m.clearedFields[user.FieldLocale]
+	return ok
+}
+
+// ResetLocale resets all changes to the "locale" field.
+func (m *UserMutation) ResetLocale() {
+	m.locale = nil
+	delete(m.clearedFields, user.FieldLocale)
+}
+
+// SetNickName sets the "nickName" field.
+func (m *UserMutation) SetNickName(s string) {
+	m.nickName = &s
+}
+
+// NickName returns the value of the "nickName" field in the mutation.
+func (m *UserMutation) NickName() (r string, exists bool) {
+	v := m.nickName
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNickName returns the old "nickName" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldNickName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNickName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNickName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNickName: %w", err)
+	}
+	return oldValue.NickName, nil
+}
+
+// ClearNickName clears the value of the "nickName" field.
+func (m *UserMutation) ClearNickName() {
+	m.nickName = nil
+	m.clearedFields[user.FieldNickName] = struct{}{}
+}
+
+// NickNameCleared returns if the "nickName" field was cleared in this mutation.
+func (m *UserMutation) NickNameCleared() bool {
+	_, ok := m.clearedFields[user.FieldNickName]
+	return ok
+}
+
+// ResetNickName resets all changes to the "nickName" field.
+func (m *UserMutation) ResetNickName() {
+	m.nickName = nil
+	delete(m.clearedFields, user.FieldNickName)
+}
+
 // SetPassword sets the "password" field.
 func (m *UserMutation) SetPassword(s string) {
 	m.password = &s
@@ -2288,9 +2443,22 @@ func (m *UserMutation) OldPassword(ctx context.Context) (v string, err error) {
 	return oldValue.Password, nil
 }
 
+// ClearPassword clears the value of the "password" field.
+func (m *UserMutation) ClearPassword() {
+	m.password = nil
+	m.clearedFields[user.FieldPassword] = struct{}{}
+}
+
+// PasswordCleared returns if the "password" field was cleared in this mutation.
+func (m *UserMutation) PasswordCleared() bool {
+	_, ok := m.clearedFields[user.FieldPassword]
+	return ok
+}
+
 // ResetPassword resets all changes to the "password" field.
 func (m *UserMutation) ResetPassword() {
 	m.password = nil
+	delete(m.clearedFields, user.FieldPassword)
 }
 
 // SetPreferredLanguage sets the "preferredLanguage" field.
@@ -2342,53 +2510,53 @@ func (m *UserMutation) ResetPreferredLanguage() {
 	delete(m.clearedFields, user.FieldPreferredLanguage)
 }
 
-// SetLocale sets the "locale" field.
-func (m *UserMutation) SetLocale(s string) {
-	m.locale = &s
+// SetProfileURL sets the "profileURL" field.
+func (m *UserMutation) SetProfileURL(s string) {
+	m.profileURL = &s
 }
 
-// Locale returns the value of the "locale" field in the mutation.
-func (m *UserMutation) Locale() (r string, exists bool) {
-	v := m.locale
+// ProfileURL returns the value of the "profileURL" field in the mutation.
+func (m *UserMutation) ProfileURL() (r string, exists bool) {
+	v := m.profileURL
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldLocale returns the old "locale" field's value of the User entity.
+// OldProfileURL returns the old "profileURL" field's value of the User entity.
 // If the User object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldLocale(ctx context.Context) (v string, err error) {
+func (m *UserMutation) OldProfileURL(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldLocale is only allowed on UpdateOne operations")
+		return v, errors.New("OldProfileURL is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldLocale requires an ID field in the mutation")
+		return v, errors.New("OldProfileURL requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldLocale: %w", err)
+		return v, fmt.Errorf("querying old value for OldProfileURL: %w", err)
 	}
-	return oldValue.Locale, nil
+	return oldValue.ProfileURL, nil
 }
 
-// ClearLocale clears the value of the "locale" field.
-func (m *UserMutation) ClearLocale() {
-	m.locale = nil
-	m.clearedFields[user.FieldLocale] = struct{}{}
+// ClearProfileURL clears the value of the "profileURL" field.
+func (m *UserMutation) ClearProfileURL() {
+	m.profileURL = nil
+	m.clearedFields[user.FieldProfileURL] = struct{}{}
 }
 
-// LocaleCleared returns if the "locale" field was cleared in this mutation.
-func (m *UserMutation) LocaleCleared() bool {
-	_, ok := m.clearedFields[user.FieldLocale]
+// ProfileURLCleared returns if the "profileURL" field was cleared in this mutation.
+func (m *UserMutation) ProfileURLCleared() bool {
+	_, ok := m.clearedFields[user.FieldProfileURL]
 	return ok
 }
 
-// ResetLocale resets all changes to the "locale" field.
-func (m *UserMutation) ResetLocale() {
-	m.locale = nil
-	delete(m.clearedFields, user.FieldLocale)
+// ResetProfileURL resets all changes to the "profileURL" field.
+func (m *UserMutation) ResetProfileURL() {
+	m.profileURL = nil
+	delete(m.clearedFields, user.FieldProfileURL)
 }
 
 // SetTimezone sets the "timezone" field.
@@ -2440,6 +2608,91 @@ func (m *UserMutation) ResetTimezone() {
 	delete(m.clearedFields, user.FieldTimezone)
 }
 
+// SetTitle sets the "title" field.
+func (m *UserMutation) SetTitle(s string) {
+	m.title = &s
+}
+
+// Title returns the value of the "title" field in the mutation.
+func (m *UserMutation) Title() (r string, exists bool) {
+	v := m.title
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTitle returns the old "title" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldTitle(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTitle is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTitle requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTitle: %w", err)
+	}
+	return oldValue.Title, nil
+}
+
+// ClearTitle clears the value of the "title" field.
+func (m *UserMutation) ClearTitle() {
+	m.title = nil
+	m.clearedFields[user.FieldTitle] = struct{}{}
+}
+
+// TitleCleared returns if the "title" field was cleared in this mutation.
+func (m *UserMutation) TitleCleared() bool {
+	_, ok := m.clearedFields[user.FieldTitle]
+	return ok
+}
+
+// ResetTitle resets all changes to the "title" field.
+func (m *UserMutation) ResetTitle() {
+	m.title = nil
+	delete(m.clearedFields, user.FieldTitle)
+}
+
+// SetUserName sets the "userName" field.
+func (m *UserMutation) SetUserName(s string) {
+	m.userName = &s
+}
+
+// UserName returns the value of the "userName" field in the mutation.
+func (m *UserMutation) UserName() (r string, exists bool) {
+	v := m.userName
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUserName returns the old "userName" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldUserName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUserName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUserName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUserName: %w", err)
+	}
+	return oldValue.UserName, nil
+}
+
+// ResetUserName resets all changes to the "userName" field.
+func (m *UserMutation) ResetUserName() {
+	m.userName = nil
+}
+
 // SetUserType sets the "userType" field.
 func (m *UserMutation) SetUserType(s string) {
 	m.userType = &s
@@ -2487,42 +2740,6 @@ func (m *UserMutation) UserTypeCleared() bool {
 func (m *UserMutation) ResetUserType() {
 	m.userType = nil
 	delete(m.clearedFields, user.FieldUserType)
-}
-
-// SetUserName sets the "userName" field.
-func (m *UserMutation) SetUserName(s string) {
-	m.userName = &s
-}
-
-// UserName returns the value of the "userName" field in the mutation.
-func (m *UserMutation) UserName() (r string, exists bool) {
-	v := m.userName
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUserName returns the old "userName" field's value of the User entity.
-// If the User object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldUserName(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUserName is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUserName requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUserName: %w", err)
-	}
-	return oldValue.UserName, nil
-}
-
-// ResetUserName resets all changes to the "userName" field.
-func (m *UserMutation) ResetUserName() {
-	m.userName = nil
 }
 
 // AddGroupIDs adds the "groups" edge to the Group entity by ids.
@@ -2706,7 +2923,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 9)
+	fields := make([]string, 0, 12)
 	if m.active != nil {
 		fields = append(fields, user.FieldActive)
 	}
@@ -2716,23 +2933,32 @@ func (m *UserMutation) Fields() []string {
 	if m.externalID != nil {
 		fields = append(fields, user.FieldExternalID)
 	}
+	if m.locale != nil {
+		fields = append(fields, user.FieldLocale)
+	}
+	if m.nickName != nil {
+		fields = append(fields, user.FieldNickName)
+	}
 	if m.password != nil {
 		fields = append(fields, user.FieldPassword)
 	}
 	if m.preferredLanguage != nil {
 		fields = append(fields, user.FieldPreferredLanguage)
 	}
-	if m.locale != nil {
-		fields = append(fields, user.FieldLocale)
+	if m.profileURL != nil {
+		fields = append(fields, user.FieldProfileURL)
 	}
 	if m.timezone != nil {
 		fields = append(fields, user.FieldTimezone)
 	}
-	if m.userType != nil {
-		fields = append(fields, user.FieldUserType)
+	if m.title != nil {
+		fields = append(fields, user.FieldTitle)
 	}
 	if m.userName != nil {
 		fields = append(fields, user.FieldUserName)
+	}
+	if m.userType != nil {
+		fields = append(fields, user.FieldUserType)
 	}
 	return fields
 }
@@ -2748,18 +2974,24 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.DisplayName()
 	case user.FieldExternalID:
 		return m.ExternalID()
+	case user.FieldLocale:
+		return m.Locale()
+	case user.FieldNickName:
+		return m.NickName()
 	case user.FieldPassword:
 		return m.Password()
 	case user.FieldPreferredLanguage:
 		return m.PreferredLanguage()
-	case user.FieldLocale:
-		return m.Locale()
+	case user.FieldProfileURL:
+		return m.ProfileURL()
 	case user.FieldTimezone:
 		return m.Timezone()
-	case user.FieldUserType:
-		return m.UserType()
+	case user.FieldTitle:
+		return m.Title()
 	case user.FieldUserName:
 		return m.UserName()
+	case user.FieldUserType:
+		return m.UserType()
 	}
 	return nil, false
 }
@@ -2775,18 +3007,24 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldDisplayName(ctx)
 	case user.FieldExternalID:
 		return m.OldExternalID(ctx)
+	case user.FieldLocale:
+		return m.OldLocale(ctx)
+	case user.FieldNickName:
+		return m.OldNickName(ctx)
 	case user.FieldPassword:
 		return m.OldPassword(ctx)
 	case user.FieldPreferredLanguage:
 		return m.OldPreferredLanguage(ctx)
-	case user.FieldLocale:
-		return m.OldLocale(ctx)
+	case user.FieldProfileURL:
+		return m.OldProfileURL(ctx)
 	case user.FieldTimezone:
 		return m.OldTimezone(ctx)
-	case user.FieldUserType:
-		return m.OldUserType(ctx)
+	case user.FieldTitle:
+		return m.OldTitle(ctx)
 	case user.FieldUserName:
 		return m.OldUserName(ctx)
+	case user.FieldUserType:
+		return m.OldUserType(ctx)
 	}
 	return nil, fmt.Errorf("unknown User field %s", name)
 }
@@ -2817,6 +3055,20 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetExternalID(v)
 		return nil
+	case user.FieldLocale:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLocale(v)
+		return nil
+	case user.FieldNickName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNickName(v)
+		return nil
 	case user.FieldPassword:
 		v, ok := value.(string)
 		if !ok {
@@ -2831,12 +3083,12 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetPreferredLanguage(v)
 		return nil
-	case user.FieldLocale:
+	case user.FieldProfileURL:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetLocale(v)
+		m.SetProfileURL(v)
 		return nil
 	case user.FieldTimezone:
 		v, ok := value.(string)
@@ -2845,12 +3097,12 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetTimezone(v)
 		return nil
-	case user.FieldUserType:
+	case user.FieldTitle:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetUserType(v)
+		m.SetTitle(v)
 		return nil
 	case user.FieldUserName:
 		v, ok := value.(string)
@@ -2858,6 +3110,13 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetUserName(v)
+		return nil
+	case user.FieldUserType:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUserType(v)
 		return nil
 	}
 	return fmt.Errorf("unknown User field %s", name)
@@ -2889,20 +3148,35 @@ func (m *UserMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *UserMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(user.FieldActive) {
+		fields = append(fields, user.FieldActive)
+	}
 	if m.FieldCleared(user.FieldDisplayName) {
 		fields = append(fields, user.FieldDisplayName)
 	}
 	if m.FieldCleared(user.FieldExternalID) {
 		fields = append(fields, user.FieldExternalID)
 	}
-	if m.FieldCleared(user.FieldPreferredLanguage) {
-		fields = append(fields, user.FieldPreferredLanguage)
-	}
 	if m.FieldCleared(user.FieldLocale) {
 		fields = append(fields, user.FieldLocale)
 	}
+	if m.FieldCleared(user.FieldNickName) {
+		fields = append(fields, user.FieldNickName)
+	}
+	if m.FieldCleared(user.FieldPassword) {
+		fields = append(fields, user.FieldPassword)
+	}
+	if m.FieldCleared(user.FieldPreferredLanguage) {
+		fields = append(fields, user.FieldPreferredLanguage)
+	}
+	if m.FieldCleared(user.FieldProfileURL) {
+		fields = append(fields, user.FieldProfileURL)
+	}
 	if m.FieldCleared(user.FieldTimezone) {
 		fields = append(fields, user.FieldTimezone)
+	}
+	if m.FieldCleared(user.FieldTitle) {
+		fields = append(fields, user.FieldTitle)
 	}
 	if m.FieldCleared(user.FieldUserType) {
 		fields = append(fields, user.FieldUserType)
@@ -2921,20 +3195,35 @@ func (m *UserMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *UserMutation) ClearField(name string) error {
 	switch name {
+	case user.FieldActive:
+		m.ClearActive()
+		return nil
 	case user.FieldDisplayName:
 		m.ClearDisplayName()
 		return nil
 	case user.FieldExternalID:
 		m.ClearExternalID()
 		return nil
-	case user.FieldPreferredLanguage:
-		m.ClearPreferredLanguage()
-		return nil
 	case user.FieldLocale:
 		m.ClearLocale()
 		return nil
+	case user.FieldNickName:
+		m.ClearNickName()
+		return nil
+	case user.FieldPassword:
+		m.ClearPassword()
+		return nil
+	case user.FieldPreferredLanguage:
+		m.ClearPreferredLanguage()
+		return nil
+	case user.FieldProfileURL:
+		m.ClearProfileURL()
+		return nil
 	case user.FieldTimezone:
 		m.ClearTimezone()
+		return nil
+	case user.FieldTitle:
+		m.ClearTitle()
 		return nil
 	case user.FieldUserType:
 		m.ClearUserType()
@@ -2956,23 +3245,32 @@ func (m *UserMutation) ResetField(name string) error {
 	case user.FieldExternalID:
 		m.ResetExternalID()
 		return nil
+	case user.FieldLocale:
+		m.ResetLocale()
+		return nil
+	case user.FieldNickName:
+		m.ResetNickName()
+		return nil
 	case user.FieldPassword:
 		m.ResetPassword()
 		return nil
 	case user.FieldPreferredLanguage:
 		m.ResetPreferredLanguage()
 		return nil
-	case user.FieldLocale:
-		m.ResetLocale()
+	case user.FieldProfileURL:
+		m.ResetProfileURL()
 		return nil
 	case user.FieldTimezone:
 		m.ResetTimezone()
 		return nil
-	case user.FieldUserType:
-		m.ResetUserType()
+	case user.FieldTitle:
+		m.ResetTitle()
 		return nil
 	case user.FieldUserName:
 		m.ResetUserName()
+		return nil
+	case user.FieldUserType:
+		m.ResetUserType()
 		return nil
 	}
 	return fmt.Errorf("unknown User field %s", name)

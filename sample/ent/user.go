@@ -22,18 +22,24 @@ type User struct {
 	DisplayName string `json:"displayName,omitempty"`
 	// ExternalID holds the value of the "externalID" field.
 	ExternalID string `json:"externalID,omitempty"`
+	// Locale holds the value of the "locale" field.
+	Locale string `json:"locale,omitempty"`
+	// NickName holds the value of the "nickName" field.
+	NickName string `json:"nickName,omitempty"`
 	// Password holds the value of the "password" field.
 	Password string `json:"password,omitempty"`
 	// PreferredLanguage holds the value of the "preferredLanguage" field.
 	PreferredLanguage string `json:"preferredLanguage,omitempty"`
-	// Locale holds the value of the "locale" field.
-	Locale string `json:"locale,omitempty"`
+	// ProfileURL holds the value of the "profileURL" field.
+	ProfileURL string `json:"profileURL,omitempty"`
 	// Timezone holds the value of the "timezone" field.
 	Timezone string `json:"timezone,omitempty"`
-	// UserType holds the value of the "userType" field.
-	UserType string `json:"userType,omitempty"`
+	// Title holds the value of the "title" field.
+	Title string `json:"title,omitempty"`
 	// UserName holds the value of the "userName" field.
 	UserName string `json:"userName,omitempty"`
+	// UserType holds the value of the "userType" field.
+	UserType string `json:"userType,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserQuery when eager-loading is set.
 	Edges       UserEdges `json:"edges"`
@@ -87,7 +93,7 @@ func (*User) scanValues(columns []string) ([]interface{}, error) {
 		switch columns[i] {
 		case user.FieldActive:
 			values[i] = new(sql.NullBool)
-		case user.FieldDisplayName, user.FieldExternalID, user.FieldPassword, user.FieldPreferredLanguage, user.FieldLocale, user.FieldTimezone, user.FieldUserType, user.FieldUserName:
+		case user.FieldDisplayName, user.FieldExternalID, user.FieldLocale, user.FieldNickName, user.FieldPassword, user.FieldPreferredLanguage, user.FieldProfileURL, user.FieldTimezone, user.FieldTitle, user.FieldUserName, user.FieldUserType:
 			values[i] = new(sql.NullString)
 		case user.FieldID:
 			values[i] = new(uuid.UUID)
@@ -132,6 +138,18 @@ func (u *User) assignValues(columns []string, values []interface{}) error {
 			} else if value.Valid {
 				u.ExternalID = value.String
 			}
+		case user.FieldLocale:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field locale", values[i])
+			} else if value.Valid {
+				u.Locale = value.String
+			}
+		case user.FieldNickName:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field nickName", values[i])
+			} else if value.Valid {
+				u.NickName = value.String
+			}
 		case user.FieldPassword:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field password", values[i])
@@ -144,11 +162,11 @@ func (u *User) assignValues(columns []string, values []interface{}) error {
 			} else if value.Valid {
 				u.PreferredLanguage = value.String
 			}
-		case user.FieldLocale:
+		case user.FieldProfileURL:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field locale", values[i])
+				return fmt.Errorf("unexpected type %T for field profileURL", values[i])
 			} else if value.Valid {
-				u.Locale = value.String
+				u.ProfileURL = value.String
 			}
 		case user.FieldTimezone:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -156,17 +174,23 @@ func (u *User) assignValues(columns []string, values []interface{}) error {
 			} else if value.Valid {
 				u.Timezone = value.String
 			}
-		case user.FieldUserType:
+		case user.FieldTitle:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field userType", values[i])
+				return fmt.Errorf("unexpected type %T for field title", values[i])
 			} else if value.Valid {
-				u.UserType = value.String
+				u.Title = value.String
 			}
 		case user.FieldUserName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field userName", values[i])
 			} else if value.Valid {
 				u.UserName = value.String
+			}
+		case user.FieldUserType:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field userType", values[i])
+			} else if value.Valid {
+				u.UserType = value.String
 			}
 		case user.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
@@ -224,18 +248,24 @@ func (u *User) String() string {
 	builder.WriteString(u.DisplayName)
 	builder.WriteString(", externalID=")
 	builder.WriteString(u.ExternalID)
+	builder.WriteString(", locale=")
+	builder.WriteString(u.Locale)
+	builder.WriteString(", nickName=")
+	builder.WriteString(u.NickName)
 	builder.WriteString(", password=")
 	builder.WriteString(u.Password)
 	builder.WriteString(", preferredLanguage=")
 	builder.WriteString(u.PreferredLanguage)
-	builder.WriteString(", locale=")
-	builder.WriteString(u.Locale)
+	builder.WriteString(", profileURL=")
+	builder.WriteString(u.ProfileURL)
 	builder.WriteString(", timezone=")
 	builder.WriteString(u.Timezone)
-	builder.WriteString(", userType=")
-	builder.WriteString(u.UserType)
+	builder.WriteString(", title=")
+	builder.WriteString(u.Title)
 	builder.WriteString(", userName=")
 	builder.WriteString(u.UserName)
+	builder.WriteString(", userType=")
+	builder.WriteString(u.UserType)
 	builder.WriteByte(')')
 	return builder.String()
 }

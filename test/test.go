@@ -32,65 +32,80 @@ func RunConformanceTests(t *testing.T, name string, backend interface{}) {
 			t.Logf("%#v", lr)
 		})
 		t.Run("Users", func(t *testing.T) {
-			t.Run("Basic CRUD", func(t *testing.T) {
-				createdUser, err := cl.User().CreateUser().
-					UserName("bjensen").
-					ExternalID("bjensen").
+			t.Run("Basic CRUD", UsersBasicCRUD(t, cl))
+			t.Run("Fetch", UsersFetch(t, cl))
+		})
+	})
+}
+
+func UsersFetch(t *testing.T, cl *client.Client) func(*testing.T) {
+	return func(t *testing.T) {
+		t.Run("Fetch unknown user ID", func(t *testing.T) {
+			u, err := cl.User().GetUser("foobar").
+				Do(context.TODO())
+			require.Nil(t, u, `GetUser return value should be nil`)
+			require.Error(t, err, `GetUser should fail`)
+		})
+	}
+}
+
+func UsersBasicCRUD(t *testing.T, cl *client.Client) func(*testing.T) {
+	return func(t *testing.T) {
+		t.Run("Basic CRUD", func(t *testing.T) {
+			// Create a single User, apply Fetch, Replace, Delete
+			createdUser, err := cl.User().CreateUser().
+				UserName("bjensen").
+				ExternalID("bjensen").
+				Emails(resource.NewEmailBuilder().
+					Value("babs@jensen.org").
+					Primary(true).
+					MustBuild()).
+				Name(resource.NewNamesBuilder().
+					Formatted("Ms. Barbara J Jensen III").
+					FamilyName("Jensen").
+					GivenName("Barbara").
+					MustBuild()).
+				Do(context.TODO())
+			require.NoError(t, err, `CreateUser should succeed`)
+
+			t.Run(fmt.Sprintf("Fetch user %q", createdUser.ID()), func(t *testing.T) {
+				_, err := cl.User().GetUser(createdUser.ID()).
+					Do(context.TODO())
+				require.NoError(t, err, `GetUser should succeed`)
+			})
+			t.Run(fmt.Sprintf("Replace user %q", createdUser.ID()), func(t *testing.T) {
+				u, err := cl.User().ReplaceUser(createdUser.ID()).
 					Emails(resource.NewEmailBuilder().
-						Value("babs@jensen.org").
+						Value("babs-new@jensen.org").
 						Primary(true).
 						MustBuild()).
-					Name(resource.NewNamesBuilder().
-						Formatted("Ms. Barbara J Jensen III").
-						FamilyName("Jensen").
-						GivenName("Barbara").
-						MustBuild()).
 					Do(context.TODO())
-				require.NoError(t, err, `CreateUser should succeed`)
-				t.Run(fmt.Sprintf("Fetch user %q", createdUser.ID()), func(t *testing.T) {
-					_, err := cl.User().GetUser(createdUser.ID()).
-						Do(context.TODO())
-					require.NoError(t, err, `GetUser should succeed`)
-				})
-				t.Run(fmt.Sprintf("Replace user %q", createdUser.ID()), func(t *testing.T) {
-					u, err := cl.User().ReplaceUser(createdUser.ID()).
-						Emails(resource.NewEmailBuilder().
-							Value("babs-new@jensen.org").
-							Primary(true).
-							MustBuild()).
-						Do(context.TODO())
-					require.NoError(t, err, `ReplaceUser should succeed`)
+				require.NoError(t, err, `ReplaceUser should succeed`)
 
-					require.Equal(t, "bjensen", u.ExternalID(), `externalID should match`)
+				require.Equal(t, "bjensen", u.ExternalID(), `externalID should match`)
 
-					// Sanity
-					require.Equal(t, createdUser.ID(), u.ID())
+				// Sanity
+				require.Equal(t, createdUser.ID(), u.ID())
 
-					emails := u.Emails()
-					require.Len(t, emails, 1)
-					for _, email := range emails {
-						// hardcoded for loop testing is weird, I know.
-						// am just expecting it be expanded in the future
-						require.Equal(t, `babs-new@jensen.org`, email.Value())
-						require.True(t, email.Primary())
-					}
-				})
-				t.Run(fmt.Sprintf("Delete user %q", createdUser.ID()), func(t *testing.T) {
-					err := cl.User().DeleteUser(createdUser.ID()).
-						Do(context.TODO())
-					require.NoError(t, err, `DeleteUser should succeed`)
-				})
-				t.Run(fmt.Sprintf("Fetch users %q (after delete)", createdUser.ID()), func(t *testing.T) {
-					_, err := cl.User().GetUser(createdUser.ID()).
-						Do(context.TODO())
-					require.Error(t, err, `GetUser should fail`)
-				})
+				emails := u.Emails()
+				require.Len(t, emails, 1)
+				for _, email := range emails {
+					// hardcoded for loop testing is weird, I know.
+					// am just expecting it be expanded in the future
+					require.Equal(t, `babs-new@jensen.org`, email.Value())
+					require.True(t, email.Primary())
+				}
 			})
-			t.Run("Fetch unknown user ID", func(t *testing.T) {
-				_, err := cl.User().GetUser("foobar").
+			t.Run(fmt.Sprintf("Delete user %q", createdUser.ID()), func(t *testing.T) {
+				err := cl.User().DeleteUser(createdUser.ID()).
+					Do(context.TODO())
+				require.NoError(t, err, `DeleteUser should succeed`)
+			})
+			t.Run(fmt.Sprintf("Fetch users %q (after delete)", createdUser.ID()), func(t *testing.T) {
+				_, err := cl.User().GetUser(createdUser.ID()).
 					Do(context.TODO())
 				require.Error(t, err, `GetUser should fail`)
 			})
 		})
-	})
+	}
 }

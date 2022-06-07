@@ -45,6 +45,12 @@ func (uu *UserUpdate) SetNillableActive(b *bool) *UserUpdate {
 	return uu
 }
 
+// ClearActive clears the value of the "active" field.
+func (uu *UserUpdate) ClearActive() *UserUpdate {
+	uu.mutation.ClearActive()
+	return uu
+}
+
 // SetDisplayName sets the "displayName" field.
 func (uu *UserUpdate) SetDisplayName(s string) *UserUpdate {
 	uu.mutation.SetDisplayName(s)
@@ -85,9 +91,63 @@ func (uu *UserUpdate) ClearExternalID() *UserUpdate {
 	return uu
 }
 
+// SetLocale sets the "locale" field.
+func (uu *UserUpdate) SetLocale(s string) *UserUpdate {
+	uu.mutation.SetLocale(s)
+	return uu
+}
+
+// SetNillableLocale sets the "locale" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableLocale(s *string) *UserUpdate {
+	if s != nil {
+		uu.SetLocale(*s)
+	}
+	return uu
+}
+
+// ClearLocale clears the value of the "locale" field.
+func (uu *UserUpdate) ClearLocale() *UserUpdate {
+	uu.mutation.ClearLocale()
+	return uu
+}
+
+// SetNickName sets the "nickName" field.
+func (uu *UserUpdate) SetNickName(s string) *UserUpdate {
+	uu.mutation.SetNickName(s)
+	return uu
+}
+
+// SetNillableNickName sets the "nickName" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableNickName(s *string) *UserUpdate {
+	if s != nil {
+		uu.SetNickName(*s)
+	}
+	return uu
+}
+
+// ClearNickName clears the value of the "nickName" field.
+func (uu *UserUpdate) ClearNickName() *UserUpdate {
+	uu.mutation.ClearNickName()
+	return uu
+}
+
 // SetPassword sets the "password" field.
 func (uu *UserUpdate) SetPassword(s string) *UserUpdate {
 	uu.mutation.SetPassword(s)
+	return uu
+}
+
+// SetNillablePassword sets the "password" field if the given value is not nil.
+func (uu *UserUpdate) SetNillablePassword(s *string) *UserUpdate {
+	if s != nil {
+		uu.SetPassword(*s)
+	}
+	return uu
+}
+
+// ClearPassword clears the value of the "password" field.
+func (uu *UserUpdate) ClearPassword() *UserUpdate {
+	uu.mutation.ClearPassword()
 	return uu
 }
 
@@ -111,23 +171,23 @@ func (uu *UserUpdate) ClearPreferredLanguage() *UserUpdate {
 	return uu
 }
 
-// SetLocale sets the "locale" field.
-func (uu *UserUpdate) SetLocale(s string) *UserUpdate {
-	uu.mutation.SetLocale(s)
+// SetProfileURL sets the "profileURL" field.
+func (uu *UserUpdate) SetProfileURL(s string) *UserUpdate {
+	uu.mutation.SetProfileURL(s)
 	return uu
 }
 
-// SetNillableLocale sets the "locale" field if the given value is not nil.
-func (uu *UserUpdate) SetNillableLocale(s *string) *UserUpdate {
+// SetNillableProfileURL sets the "profileURL" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableProfileURL(s *string) *UserUpdate {
 	if s != nil {
-		uu.SetLocale(*s)
+		uu.SetProfileURL(*s)
 	}
 	return uu
 }
 
-// ClearLocale clears the value of the "locale" field.
-func (uu *UserUpdate) ClearLocale() *UserUpdate {
-	uu.mutation.ClearLocale()
+// ClearProfileURL clears the value of the "profileURL" field.
+func (uu *UserUpdate) ClearProfileURL() *UserUpdate {
+	uu.mutation.ClearProfileURL()
 	return uu
 }
 
@@ -151,6 +211,32 @@ func (uu *UserUpdate) ClearTimezone() *UserUpdate {
 	return uu
 }
 
+// SetTitle sets the "title" field.
+func (uu *UserUpdate) SetTitle(s string) *UserUpdate {
+	uu.mutation.SetTitle(s)
+	return uu
+}
+
+// SetNillableTitle sets the "title" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableTitle(s *string) *UserUpdate {
+	if s != nil {
+		uu.SetTitle(*s)
+	}
+	return uu
+}
+
+// ClearTitle clears the value of the "title" field.
+func (uu *UserUpdate) ClearTitle() *UserUpdate {
+	uu.mutation.ClearTitle()
+	return uu
+}
+
+// SetUserName sets the "userName" field.
+func (uu *UserUpdate) SetUserName(s string) *UserUpdate {
+	uu.mutation.SetUserName(s)
+	return uu
+}
+
 // SetUserType sets the "userType" field.
 func (uu *UserUpdate) SetUserType(s string) *UserUpdate {
 	uu.mutation.SetUserType(s)
@@ -168,12 +254,6 @@ func (uu *UserUpdate) SetNillableUserType(s *string) *UserUpdate {
 // ClearUserType clears the value of the "userType" field.
 func (uu *UserUpdate) ClearUserType() *UserUpdate {
 	uu.mutation.ClearUserType()
-	return uu
-}
-
-// SetUserName sets the "userName" field.
-func (uu *UserUpdate) SetUserName(s string) *UserUpdate {
-	uu.mutation.SetUserName(s)
 	return uu
 }
 
@@ -390,6 +470,12 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: user.FieldActive,
 		})
 	}
+	if uu.mutation.ActiveCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
+			Column: user.FieldActive,
+		})
+	}
 	if value, ok := uu.mutation.DisplayName(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -416,10 +502,42 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: user.FieldExternalID,
 		})
 	}
+	if value, ok := uu.mutation.Locale(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: user.FieldLocale,
+		})
+	}
+	if uu.mutation.LocaleCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: user.FieldLocale,
+		})
+	}
+	if value, ok := uu.mutation.NickName(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: user.FieldNickName,
+		})
+	}
+	if uu.mutation.NickNameCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: user.FieldNickName,
+		})
+	}
 	if value, ok := uu.mutation.Password(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
+			Column: user.FieldPassword,
+		})
+	}
+	if uu.mutation.PasswordCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
 			Column: user.FieldPassword,
 		})
 	}
@@ -436,17 +554,17 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: user.FieldPreferredLanguage,
 		})
 	}
-	if value, ok := uu.mutation.Locale(); ok {
+	if value, ok := uu.mutation.ProfileURL(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: user.FieldLocale,
+			Column: user.FieldProfileURL,
 		})
 	}
-	if uu.mutation.LocaleCleared() {
+	if uu.mutation.ProfileURLCleared() {
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
-			Column: user.FieldLocale,
+			Column: user.FieldProfileURL,
 		})
 	}
 	if value, ok := uu.mutation.Timezone(); ok {
@@ -462,6 +580,26 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: user.FieldTimezone,
 		})
 	}
+	if value, ok := uu.mutation.Title(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: user.FieldTitle,
+		})
+	}
+	if uu.mutation.TitleCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: user.FieldTitle,
+		})
+	}
+	if value, ok := uu.mutation.UserName(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: user.FieldUserName,
+		})
+	}
 	if value, ok := uu.mutation.UserType(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -473,13 +611,6 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Column: user.FieldUserType,
-		})
-	}
-	if value, ok := uu.mutation.UserName(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: user.FieldUserName,
 		})
 	}
 	if uu.mutation.GroupsCleared() {
@@ -677,6 +808,12 @@ func (uuo *UserUpdateOne) SetNillableActive(b *bool) *UserUpdateOne {
 	return uuo
 }
 
+// ClearActive clears the value of the "active" field.
+func (uuo *UserUpdateOne) ClearActive() *UserUpdateOne {
+	uuo.mutation.ClearActive()
+	return uuo
+}
+
 // SetDisplayName sets the "displayName" field.
 func (uuo *UserUpdateOne) SetDisplayName(s string) *UserUpdateOne {
 	uuo.mutation.SetDisplayName(s)
@@ -717,9 +854,63 @@ func (uuo *UserUpdateOne) ClearExternalID() *UserUpdateOne {
 	return uuo
 }
 
+// SetLocale sets the "locale" field.
+func (uuo *UserUpdateOne) SetLocale(s string) *UserUpdateOne {
+	uuo.mutation.SetLocale(s)
+	return uuo
+}
+
+// SetNillableLocale sets the "locale" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableLocale(s *string) *UserUpdateOne {
+	if s != nil {
+		uuo.SetLocale(*s)
+	}
+	return uuo
+}
+
+// ClearLocale clears the value of the "locale" field.
+func (uuo *UserUpdateOne) ClearLocale() *UserUpdateOne {
+	uuo.mutation.ClearLocale()
+	return uuo
+}
+
+// SetNickName sets the "nickName" field.
+func (uuo *UserUpdateOne) SetNickName(s string) *UserUpdateOne {
+	uuo.mutation.SetNickName(s)
+	return uuo
+}
+
+// SetNillableNickName sets the "nickName" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableNickName(s *string) *UserUpdateOne {
+	if s != nil {
+		uuo.SetNickName(*s)
+	}
+	return uuo
+}
+
+// ClearNickName clears the value of the "nickName" field.
+func (uuo *UserUpdateOne) ClearNickName() *UserUpdateOne {
+	uuo.mutation.ClearNickName()
+	return uuo
+}
+
 // SetPassword sets the "password" field.
 func (uuo *UserUpdateOne) SetPassword(s string) *UserUpdateOne {
 	uuo.mutation.SetPassword(s)
+	return uuo
+}
+
+// SetNillablePassword sets the "password" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillablePassword(s *string) *UserUpdateOne {
+	if s != nil {
+		uuo.SetPassword(*s)
+	}
+	return uuo
+}
+
+// ClearPassword clears the value of the "password" field.
+func (uuo *UserUpdateOne) ClearPassword() *UserUpdateOne {
+	uuo.mutation.ClearPassword()
 	return uuo
 }
 
@@ -743,23 +934,23 @@ func (uuo *UserUpdateOne) ClearPreferredLanguage() *UserUpdateOne {
 	return uuo
 }
 
-// SetLocale sets the "locale" field.
-func (uuo *UserUpdateOne) SetLocale(s string) *UserUpdateOne {
-	uuo.mutation.SetLocale(s)
+// SetProfileURL sets the "profileURL" field.
+func (uuo *UserUpdateOne) SetProfileURL(s string) *UserUpdateOne {
+	uuo.mutation.SetProfileURL(s)
 	return uuo
 }
 
-// SetNillableLocale sets the "locale" field if the given value is not nil.
-func (uuo *UserUpdateOne) SetNillableLocale(s *string) *UserUpdateOne {
+// SetNillableProfileURL sets the "profileURL" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableProfileURL(s *string) *UserUpdateOne {
 	if s != nil {
-		uuo.SetLocale(*s)
+		uuo.SetProfileURL(*s)
 	}
 	return uuo
 }
 
-// ClearLocale clears the value of the "locale" field.
-func (uuo *UserUpdateOne) ClearLocale() *UserUpdateOne {
-	uuo.mutation.ClearLocale()
+// ClearProfileURL clears the value of the "profileURL" field.
+func (uuo *UserUpdateOne) ClearProfileURL() *UserUpdateOne {
+	uuo.mutation.ClearProfileURL()
 	return uuo
 }
 
@@ -783,6 +974,32 @@ func (uuo *UserUpdateOne) ClearTimezone() *UserUpdateOne {
 	return uuo
 }
 
+// SetTitle sets the "title" field.
+func (uuo *UserUpdateOne) SetTitle(s string) *UserUpdateOne {
+	uuo.mutation.SetTitle(s)
+	return uuo
+}
+
+// SetNillableTitle sets the "title" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableTitle(s *string) *UserUpdateOne {
+	if s != nil {
+		uuo.SetTitle(*s)
+	}
+	return uuo
+}
+
+// ClearTitle clears the value of the "title" field.
+func (uuo *UserUpdateOne) ClearTitle() *UserUpdateOne {
+	uuo.mutation.ClearTitle()
+	return uuo
+}
+
+// SetUserName sets the "userName" field.
+func (uuo *UserUpdateOne) SetUserName(s string) *UserUpdateOne {
+	uuo.mutation.SetUserName(s)
+	return uuo
+}
+
 // SetUserType sets the "userType" field.
 func (uuo *UserUpdateOne) SetUserType(s string) *UserUpdateOne {
 	uuo.mutation.SetUserType(s)
@@ -800,12 +1017,6 @@ func (uuo *UserUpdateOne) SetNillableUserType(s *string) *UserUpdateOne {
 // ClearUserType clears the value of the "userType" field.
 func (uuo *UserUpdateOne) ClearUserType() *UserUpdateOne {
 	uuo.mutation.ClearUserType()
-	return uuo
-}
-
-// SetUserName sets the "userName" field.
-func (uuo *UserUpdateOne) SetUserName(s string) *UserUpdateOne {
-	uuo.mutation.SetUserName(s)
 	return uuo
 }
 
@@ -1046,6 +1257,12 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Column: user.FieldActive,
 		})
 	}
+	if uuo.mutation.ActiveCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
+			Column: user.FieldActive,
+		})
+	}
 	if value, ok := uuo.mutation.DisplayName(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -1072,10 +1289,42 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Column: user.FieldExternalID,
 		})
 	}
+	if value, ok := uuo.mutation.Locale(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: user.FieldLocale,
+		})
+	}
+	if uuo.mutation.LocaleCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: user.FieldLocale,
+		})
+	}
+	if value, ok := uuo.mutation.NickName(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: user.FieldNickName,
+		})
+	}
+	if uuo.mutation.NickNameCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: user.FieldNickName,
+		})
+	}
 	if value, ok := uuo.mutation.Password(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
+			Column: user.FieldPassword,
+		})
+	}
+	if uuo.mutation.PasswordCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
 			Column: user.FieldPassword,
 		})
 	}
@@ -1092,17 +1341,17 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Column: user.FieldPreferredLanguage,
 		})
 	}
-	if value, ok := uuo.mutation.Locale(); ok {
+	if value, ok := uuo.mutation.ProfileURL(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: user.FieldLocale,
+			Column: user.FieldProfileURL,
 		})
 	}
-	if uuo.mutation.LocaleCleared() {
+	if uuo.mutation.ProfileURLCleared() {
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
-			Column: user.FieldLocale,
+			Column: user.FieldProfileURL,
 		})
 	}
 	if value, ok := uuo.mutation.Timezone(); ok {
@@ -1118,6 +1367,26 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Column: user.FieldTimezone,
 		})
 	}
+	if value, ok := uuo.mutation.Title(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: user.FieldTitle,
+		})
+	}
+	if uuo.mutation.TitleCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: user.FieldTitle,
+		})
+	}
+	if value, ok := uuo.mutation.UserName(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: user.FieldUserName,
+		})
+	}
 	if value, ok := uuo.mutation.UserType(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -1129,13 +1398,6 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Column: user.FieldUserType,
-		})
-	}
-	if value, ok := uuo.mutation.UserName(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: user.FieldUserName,
 		})
 	}
 	if uuo.mutation.GroupsCleared() {

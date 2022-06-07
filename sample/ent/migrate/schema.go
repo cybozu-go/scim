@@ -34,8 +34,8 @@ var (
 	// GroupsColumns holds the columns for the "groups" table.
 	GroupsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "display_name", Type: field.TypeString},
-		{Name: "external_id", Type: field.TypeString},
+		{Name: "display_name", Type: field.TypeString, Nullable: true},
+		{Name: "external_id", Type: field.TypeString, Nullable: true},
 		{Name: "group_children", Type: field.TypeUUID, Nullable: true},
 		{Name: "user_groups", Type: field.TypeUUID, Nullable: true},
 	}
@@ -87,15 +87,18 @@ var (
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "active", Type: field.TypeBool, Default: false},
-		{Name: "display_name", Type: field.TypeString, Nullable: true, Size: 2147483647},
-		{Name: "external_id", Type: field.TypeString, Nullable: true, Size: 2147483647},
-		{Name: "password", Type: field.TypeString, Size: 2147483647},
-		{Name: "preferred_language", Type: field.TypeString, Nullable: true, Size: 2147483647},
-		{Name: "locale", Type: field.TypeString, Nullable: true, Size: 2147483647},
-		{Name: "timezone", Type: field.TypeString, Nullable: true, Size: 2147483647},
-		{Name: "user_type", Type: field.TypeString, Nullable: true, Size: 2147483647},
-		{Name: "user_name", Type: field.TypeString, Unique: true, Size: 2147483647},
+		{Name: "active", Type: field.TypeBool, Nullable: true},
+		{Name: "display_name", Type: field.TypeString, Nullable: true},
+		{Name: "external_id", Type: field.TypeString, Nullable: true},
+		{Name: "locale", Type: field.TypeString, Nullable: true},
+		{Name: "nick_name", Type: field.TypeString, Nullable: true},
+		{Name: "password", Type: field.TypeString, Nullable: true},
+		{Name: "preferred_language", Type: field.TypeString, Nullable: true},
+		{Name: "profile_url", Type: field.TypeString, Nullable: true},
+		{Name: "timezone", Type: field.TypeString, Nullable: true},
+		{Name: "title", Type: field.TypeString, Nullable: true},
+		{Name: "user_name", Type: field.TypeString, Unique: true},
+		{Name: "user_type", Type: field.TypeString, Nullable: true},
 		{Name: "group_users", Type: field.TypeUUID, Nullable: true},
 	}
 	// UsersTable holds the schema information for the "users" table.
@@ -106,7 +109,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "users_groups_users",
-				Columns:    []*schema.Column{UsersColumns[10]},
+				Columns:    []*schema.Column{UsersColumns[13]},
 				RefColumns: []*schema.Column{GroupsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},

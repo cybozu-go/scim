@@ -35,9 +35,37 @@ func (gu *GroupUpdate) SetDisplayName(s string) *GroupUpdate {
 	return gu
 }
 
+// SetNillableDisplayName sets the "displayName" field if the given value is not nil.
+func (gu *GroupUpdate) SetNillableDisplayName(s *string) *GroupUpdate {
+	if s != nil {
+		gu.SetDisplayName(*s)
+	}
+	return gu
+}
+
+// ClearDisplayName clears the value of the "displayName" field.
+func (gu *GroupUpdate) ClearDisplayName() *GroupUpdate {
+	gu.mutation.ClearDisplayName()
+	return gu
+}
+
 // SetExternalID sets the "externalID" field.
 func (gu *GroupUpdate) SetExternalID(s string) *GroupUpdate {
 	gu.mutation.SetExternalID(s)
+	return gu
+}
+
+// SetNillableExternalID sets the "externalID" field if the given value is not nil.
+func (gu *GroupUpdate) SetNillableExternalID(s *string) *GroupUpdate {
+	if s != nil {
+		gu.SetExternalID(*s)
+	}
+	return gu
+}
+
+// ClearExternalID clears the value of the "externalID" field.
+func (gu *GroupUpdate) ClearExternalID() *GroupUpdate {
+	gu.mutation.ClearExternalID()
 	return gu
 }
 
@@ -150,18 +178,12 @@ func (gu *GroupUpdate) Save(ctx context.Context) (int, error) {
 		affected int
 	)
 	if len(gu.hooks) == 0 {
-		if err = gu.check(); err != nil {
-			return 0, err
-		}
 		affected, err = gu.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*GroupMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			if err = gu.check(); err != nil {
-				return 0, err
 			}
 			gu.mutation = mutation
 			affected, err = gu.sqlSave(ctx)
@@ -203,16 +225,6 @@ func (gu *GroupUpdate) ExecX(ctx context.Context) {
 	}
 }
 
-// check runs all checks and user-defined validators on the builder.
-func (gu *GroupUpdate) check() error {
-	if v, ok := gu.mutation.DisplayName(); ok {
-		if err := group.DisplayNameValidator(v); err != nil {
-			return &ValidationError{Name: "displayName", err: fmt.Errorf(`ent: validator failed for field "Group.displayName": %w`, err)}
-		}
-	}
-	return nil
-}
-
 func (gu *GroupUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -238,10 +250,22 @@ func (gu *GroupUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: group.FieldDisplayName,
 		})
 	}
+	if gu.mutation.DisplayNameCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: group.FieldDisplayName,
+		})
+	}
 	if value, ok := gu.mutation.ExternalID(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
+			Column: group.FieldExternalID,
+		})
+	}
+	if gu.mutation.ExternalIDCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
 			Column: group.FieldExternalID,
 		})
 	}
@@ -413,9 +437,37 @@ func (guo *GroupUpdateOne) SetDisplayName(s string) *GroupUpdateOne {
 	return guo
 }
 
+// SetNillableDisplayName sets the "displayName" field if the given value is not nil.
+func (guo *GroupUpdateOne) SetNillableDisplayName(s *string) *GroupUpdateOne {
+	if s != nil {
+		guo.SetDisplayName(*s)
+	}
+	return guo
+}
+
+// ClearDisplayName clears the value of the "displayName" field.
+func (guo *GroupUpdateOne) ClearDisplayName() *GroupUpdateOne {
+	guo.mutation.ClearDisplayName()
+	return guo
+}
+
 // SetExternalID sets the "externalID" field.
 func (guo *GroupUpdateOne) SetExternalID(s string) *GroupUpdateOne {
 	guo.mutation.SetExternalID(s)
+	return guo
+}
+
+// SetNillableExternalID sets the "externalID" field if the given value is not nil.
+func (guo *GroupUpdateOne) SetNillableExternalID(s *string) *GroupUpdateOne {
+	if s != nil {
+		guo.SetExternalID(*s)
+	}
+	return guo
+}
+
+// ClearExternalID clears the value of the "externalID" field.
+func (guo *GroupUpdateOne) ClearExternalID() *GroupUpdateOne {
+	guo.mutation.ClearExternalID()
 	return guo
 }
 
@@ -535,18 +587,12 @@ func (guo *GroupUpdateOne) Save(ctx context.Context) (*Group, error) {
 		node *Group
 	)
 	if len(guo.hooks) == 0 {
-		if err = guo.check(); err != nil {
-			return nil, err
-		}
 		node, err = guo.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*GroupMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			if err = guo.check(); err != nil {
-				return nil, err
 			}
 			guo.mutation = mutation
 			node, err = guo.sqlSave(ctx)
@@ -586,16 +632,6 @@ func (guo *GroupUpdateOne) ExecX(ctx context.Context) {
 	if err := guo.Exec(ctx); err != nil {
 		panic(err)
 	}
-}
-
-// check runs all checks and user-defined validators on the builder.
-func (guo *GroupUpdateOne) check() error {
-	if v, ok := guo.mutation.DisplayName(); ok {
-		if err := group.DisplayNameValidator(v); err != nil {
-			return &ValidationError{Name: "displayName", err: fmt.Errorf(`ent: validator failed for field "Group.displayName": %w`, err)}
-		}
-	}
-	return nil
 }
 
 func (guo *GroupUpdateOne) sqlSave(ctx context.Context) (_node *Group, err error) {
@@ -640,10 +676,22 @@ func (guo *GroupUpdateOne) sqlSave(ctx context.Context) (_node *Group, err error
 			Column: group.FieldDisplayName,
 		})
 	}
+	if guo.mutation.DisplayNameCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: group.FieldDisplayName,
+		})
+	}
 	if value, ok := guo.mutation.ExternalID(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
+			Column: group.FieldExternalID,
+		})
+	}
+	if guo.mutation.ExternalIDCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
 			Column: group.FieldExternalID,
 		})
 	}

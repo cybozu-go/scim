@@ -70,8 +70,6 @@ func ValidColumn(column string) bool {
 }
 
 var (
-	// DisplayNameValidator is a validator for the "displayName" field. It is called by the builders before save.
-	DisplayNameValidator func(string) error
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )

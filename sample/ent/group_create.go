@@ -4,7 +4,6 @@ package ent
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -27,9 +26,25 @@ func (gc *GroupCreate) SetDisplayName(s string) *GroupCreate {
 	return gc
 }
 
+// SetNillableDisplayName sets the "displayName" field if the given value is not nil.
+func (gc *GroupCreate) SetNillableDisplayName(s *string) *GroupCreate {
+	if s != nil {
+		gc.SetDisplayName(*s)
+	}
+	return gc
+}
+
 // SetExternalID sets the "externalID" field.
 func (gc *GroupCreate) SetExternalID(s string) *GroupCreate {
 	gc.mutation.SetExternalID(s)
+	return gc
+}
+
+// SetNillableExternalID sets the "externalID" field if the given value is not nil.
+func (gc *GroupCreate) SetNillableExternalID(s *string) *GroupCreate {
+	if s != nil {
+		gc.SetExternalID(*s)
+	}
 	return gc
 }
 
@@ -175,17 +190,6 @@ func (gc *GroupCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (gc *GroupCreate) check() error {
-	if _, ok := gc.mutation.DisplayName(); !ok {
-		return &ValidationError{Name: "displayName", err: errors.New(`ent: missing required field "Group.displayName"`)}
-	}
-	if v, ok := gc.mutation.DisplayName(); ok {
-		if err := group.DisplayNameValidator(v); err != nil {
-			return &ValidationError{Name: "displayName", err: fmt.Errorf(`ent: validator failed for field "Group.displayName": %w`, err)}
-		}
-	}
-	if _, ok := gc.mutation.ExternalID(); !ok {
-		return &ValidationError{Name: "externalID", err: errors.New(`ent: missing required field "Group.externalID"`)}
-	}
 	return nil
 }
 

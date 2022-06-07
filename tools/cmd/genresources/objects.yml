@@ -1,5 +1,8 @@
 common:
   - name: id
+    ent_type: "uuid.UUID{}"
+    ent_default: "uuid.New"
+    ent_build_method: UUID
   - name: externalID
     json: externalId
   - name: meta
@@ -20,6 +23,8 @@ objects:
     fields:
       - name: userName
         required: true
+        ent_notempty: true
+        ent_unique: true
       - name: displayName
       - name: name
         type: '*Names'
@@ -37,6 +42,7 @@ objects:
       - name: active
         type: bool
       - name: password
+        ent_notempty: true
       - name: emails
         type: '[]*Email'
         validator: validateEmails

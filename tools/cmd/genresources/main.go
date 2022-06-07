@@ -536,6 +536,77 @@ func generateEnt(object *codegen.Object) error {
 
 	fmt.Printf("  ⌛ Generating ent adapters for %s...\n", object.Name(true))
 
+	if err := generateSchema(object); err != nil {
+		return fmt.Errorf(`failed to generate schema: %w`, err)
+	}
+
+	if err := generateUtilities(object); err != nil {
+		return fmt.Errorf(`failed to generate utilities: %w`, err)
+	}
+	return nil
+}
+
+func generateSchema(object *codegen.Object) error {
+	var buf bytes.Buffer
+	o := codegen.NewOutput(&buf)
+
+	o.L(`package schema`)
+
+	o.LL(`func (%s) Fields() []ent.Field {`, object.Name(true))
+	o.L(`return []ent.Field{`)
+	for _, field := range object.Fields() {
+		if field.Name(false) == "schemas" {
+			continue
+		}
+
+		var ft = field.Type()
+		if strings.HasPrefix(ft, `[]`) || strings.HasPrefix(ft, `*`) {
+			continue
+		}
+
+		var entMethod = xstrings.Camel(ft)
+		if v := field.String(`ent_build_method`); v != "" {
+			entMethod = v
+		}
+
+		var entType = field.String(`ent_type`)
+		var entDefault = field.String(`ent_default`)
+
+		if entType != "" {
+			o.L(`field.%s(%q, %s)`, entMethod, field.Name(false), entType)
+		} else {
+			o.L(`field.%s(%q)`, entMethod, field.Name(false))
+		}
+
+		if entDefault != "" {
+			o.R(`.Default(%s)`, entDefault)
+		}
+		if !field.IsRequired() {
+			o.R(`.Optional()`)
+		}
+
+		if field.Bool(`ent_unique`) {
+			o.R(`.Unique()`)
+		}
+		if field.Bool(`ent_notempty`) {
+			o.R(`.NotEmpty()`)
+		}
+		o.R(`,`)
+	}
+	o.L(`}`)
+	o.L(`}`)
+
+	fn := filepath.Join(`..`, `sample`, `ent`, `schema`, xstrings.Snake(object.Name(false))+`_gen.go`)
+	if err := o.WriteFile(fn, codegen.WithFormatCode(true)); err != nil {
+		if cfe, ok := err.(codegen.CodeFormatError); ok {
+			fmt.Fprint(os.Stderr, cfe.Source())
+		}
+		return fmt.Errorf(`failed to write to %s: %w`, fn, err)
+	}
+	return nil
+}
+
+func generateUtilities(object *codegen.Object) error {
 	var buf bytes.Buffer
 	o := codegen.NewOutput(&buf)
 
@@ -570,7 +641,7 @@ func generateEnt(object *codegen.Object) error {
 	o.L(`Build()`)
 	o.L(`}`)
 
-	fn := filepath.Join(`..`, `server`, `sample`, xstrings.Snake(object.Name(false))+`_gen.go`)
+	fn := filepath.Join(`..`, `sample`, xstrings.Snake(object.Name(false))+`_gen.go`)
 	if err := o.WriteFile(fn, codegen.WithFormatCode(true)); err != nil {
 		if cfe, ok := err.(codegen.CodeFormatError); ok {
 			fmt.Fprint(os.Stderr, cfe.Source())

@@ -65,9 +65,45 @@ func (uc *UserCreate) SetNillableExternalID(s *string) *UserCreate {
 	return uc
 }
 
+// SetLocale sets the "locale" field.
+func (uc *UserCreate) SetLocale(s string) *UserCreate {
+	uc.mutation.SetLocale(s)
+	return uc
+}
+
+// SetNillableLocale sets the "locale" field if the given value is not nil.
+func (uc *UserCreate) SetNillableLocale(s *string) *UserCreate {
+	if s != nil {
+		uc.SetLocale(*s)
+	}
+	return uc
+}
+
+// SetNickName sets the "nickName" field.
+func (uc *UserCreate) SetNickName(s string) *UserCreate {
+	uc.mutation.SetNickName(s)
+	return uc
+}
+
+// SetNillableNickName sets the "nickName" field if the given value is not nil.
+func (uc *UserCreate) SetNillableNickName(s *string) *UserCreate {
+	if s != nil {
+		uc.SetNickName(*s)
+	}
+	return uc
+}
+
 // SetPassword sets the "password" field.
 func (uc *UserCreate) SetPassword(s string) *UserCreate {
 	uc.mutation.SetPassword(s)
+	return uc
+}
+
+// SetNillablePassword sets the "password" field if the given value is not nil.
+func (uc *UserCreate) SetNillablePassword(s *string) *UserCreate {
+	if s != nil {
+		uc.SetPassword(*s)
+	}
 	return uc
 }
 
@@ -85,16 +121,16 @@ func (uc *UserCreate) SetNillablePreferredLanguage(s *string) *UserCreate {
 	return uc
 }
 
-// SetLocale sets the "locale" field.
-func (uc *UserCreate) SetLocale(s string) *UserCreate {
-	uc.mutation.SetLocale(s)
+// SetProfileURL sets the "profileURL" field.
+func (uc *UserCreate) SetProfileURL(s string) *UserCreate {
+	uc.mutation.SetProfileURL(s)
 	return uc
 }
 
-// SetNillableLocale sets the "locale" field if the given value is not nil.
-func (uc *UserCreate) SetNillableLocale(s *string) *UserCreate {
+// SetNillableProfileURL sets the "profileURL" field if the given value is not nil.
+func (uc *UserCreate) SetNillableProfileURL(s *string) *UserCreate {
 	if s != nil {
-		uc.SetLocale(*s)
+		uc.SetProfileURL(*s)
 	}
 	return uc
 }
@@ -113,6 +149,26 @@ func (uc *UserCreate) SetNillableTimezone(s *string) *UserCreate {
 	return uc
 }
 
+// SetTitle sets the "title" field.
+func (uc *UserCreate) SetTitle(s string) *UserCreate {
+	uc.mutation.SetTitle(s)
+	return uc
+}
+
+// SetNillableTitle sets the "title" field if the given value is not nil.
+func (uc *UserCreate) SetNillableTitle(s *string) *UserCreate {
+	if s != nil {
+		uc.SetTitle(*s)
+	}
+	return uc
+}
+
+// SetUserName sets the "userName" field.
+func (uc *UserCreate) SetUserName(s string) *UserCreate {
+	uc.mutation.SetUserName(s)
+	return uc
+}
+
 // SetUserType sets the "userType" field.
 func (uc *UserCreate) SetUserType(s string) *UserCreate {
 	uc.mutation.SetUserType(s)
@@ -124,12 +180,6 @@ func (uc *UserCreate) SetNillableUserType(s *string) *UserCreate {
 	if s != nil {
 		uc.SetUserType(*s)
 	}
-	return uc
-}
-
-// SetUserName sets the "userName" field.
-func (uc *UserCreate) SetUserName(s string) *UserCreate {
-	uc.mutation.SetUserName(s)
 	return uc
 }
 
@@ -263,10 +313,6 @@ func (uc *UserCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (uc *UserCreate) defaults() {
-	if _, ok := uc.mutation.Active(); !ok {
-		v := user.DefaultActive
-		uc.mutation.SetActive(v)
-	}
 	if _, ok := uc.mutation.ID(); !ok {
 		v := user.DefaultID()
 		uc.mutation.SetID(v)
@@ -275,12 +321,6 @@ func (uc *UserCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (uc *UserCreate) check() error {
-	if _, ok := uc.mutation.Active(); !ok {
-		return &ValidationError{Name: "active", err: errors.New(`ent: missing required field "User.active"`)}
-	}
-	if _, ok := uc.mutation.Password(); !ok {
-		return &ValidationError{Name: "password", err: errors.New(`ent: missing required field "User.password"`)}
-	}
 	if v, ok := uc.mutation.Password(); ok {
 		if err := user.PasswordValidator(v); err != nil {
 			return &ValidationError{Name: "password", err: fmt.Errorf(`ent: validator failed for field "User.password": %w`, err)}
@@ -354,6 +394,22 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		})
 		_node.ExternalID = value
 	}
+	if value, ok := uc.mutation.Locale(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: user.FieldLocale,
+		})
+		_node.Locale = value
+	}
+	if value, ok := uc.mutation.NickName(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: user.FieldNickName,
+		})
+		_node.NickName = value
+	}
 	if value, ok := uc.mutation.Password(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -370,13 +426,13 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		})
 		_node.PreferredLanguage = value
 	}
-	if value, ok := uc.mutation.Locale(); ok {
+	if value, ok := uc.mutation.ProfileURL(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: user.FieldLocale,
+			Column: user.FieldProfileURL,
 		})
-		_node.Locale = value
+		_node.ProfileURL = value
 	}
 	if value, ok := uc.mutation.Timezone(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -386,13 +442,13 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		})
 		_node.Timezone = value
 	}
-	if value, ok := uc.mutation.UserType(); ok {
+	if value, ok := uc.mutation.Title(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: user.FieldUserType,
+			Column: user.FieldTitle,
 		})
-		_node.UserType = value
+		_node.Title = value
 	}
 	if value, ok := uc.mutation.UserName(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -401,6 +457,14 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Column: user.FieldUserName,
 		})
 		_node.UserName = value
+	}
+	if value, ok := uc.mutation.UserType(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: user.FieldUserType,
+		})
+		_node.UserType = value
 	}
 	if nodes := uc.mutation.GroupsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

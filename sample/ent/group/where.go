@@ -92,6 +92,20 @@ func IDLTE(id uuid.UUID) predicate.Group {
 	})
 }
 
+// IDIsNil applies the IsNil predicate on the ID field.
+func IDIsNil(id uuid.UUID) predicate.Group {
+	return predicate.Group(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldID)))
+	})
+}
+
+// IDNotNil applies the NotNil predicate on the ID field.
+func IDNotNil(id uuid.UUID) predicate.Group {
+	return predicate.Group(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldID)))
+	})
+}
+
 // DisplayName applies equality check predicate on the "displayName" field. It's identical to DisplayNameEQ.
 func DisplayName(v string) predicate.Group {
 	return predicate.Group(func(s *sql.Selector) {
@@ -203,6 +217,20 @@ func DisplayNameHasSuffix(v string) predicate.Group {
 	})
 }
 
+// DisplayNameIsNil applies the IsNil predicate on the "displayName" field.
+func DisplayNameIsNil() predicate.Group {
+	return predicate.Group(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldDisplayName)))
+	})
+}
+
+// DisplayNameNotNil applies the NotNil predicate on the "displayName" field.
+func DisplayNameNotNil() predicate.Group {
+	return predicate.Group(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldDisplayName)))
+	})
+}
+
 // DisplayNameEqualFold applies the EqualFold predicate on the "displayName" field.
 func DisplayNameEqualFold(v string) predicate.Group {
 	return predicate.Group(func(s *sql.Selector) {
@@ -311,6 +339,20 @@ func ExternalIDHasPrefix(v string) predicate.Group {
 func ExternalIDHasSuffix(v string) predicate.Group {
 	return predicate.Group(func(s *sql.Selector) {
 		s.Where(sql.HasSuffix(s.C(FieldExternalID), v))
+	})
+}
+
+// ExternalIDIsNil applies the IsNil predicate on the "externalID" field.
+func ExternalIDIsNil() predicate.Group {
+	return predicate.Group(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldExternalID)))
+	})
+}
+
+// ExternalIDNotNil applies the NotNil predicate on the "externalID" field.
+func ExternalIDNotNil() predicate.Group {
+	return predicate.Group(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldExternalID)))
 	})
 }
 

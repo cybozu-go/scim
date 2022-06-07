@@ -17,18 +17,24 @@ const (
 	FieldDisplayName = "display_name"
 	// FieldExternalID holds the string denoting the externalid field in the database.
 	FieldExternalID = "external_id"
+	// FieldLocale holds the string denoting the locale field in the database.
+	FieldLocale = "locale"
+	// FieldNickName holds the string denoting the nickname field in the database.
+	FieldNickName = "nick_name"
 	// FieldPassword holds the string denoting the password field in the database.
 	FieldPassword = "password"
 	// FieldPreferredLanguage holds the string denoting the preferredlanguage field in the database.
 	FieldPreferredLanguage = "preferred_language"
-	// FieldLocale holds the string denoting the locale field in the database.
-	FieldLocale = "locale"
+	// FieldProfileURL holds the string denoting the profileurl field in the database.
+	FieldProfileURL = "profile_url"
 	// FieldTimezone holds the string denoting the timezone field in the database.
 	FieldTimezone = "timezone"
-	// FieldUserType holds the string denoting the usertype field in the database.
-	FieldUserType = "user_type"
+	// FieldTitle holds the string denoting the title field in the database.
+	FieldTitle = "title"
 	// FieldUserName holds the string denoting the username field in the database.
 	FieldUserName = "user_name"
+	// FieldUserType holds the string denoting the usertype field in the database.
+	FieldUserType = "user_type"
 	// EdgeGroups holds the string denoting the groups edge name in mutations.
 	EdgeGroups = "groups"
 	// EdgeEmails holds the string denoting the emails edge name in mutations.
@@ -66,12 +72,15 @@ var Columns = []string{
 	FieldActive,
 	FieldDisplayName,
 	FieldExternalID,
+	FieldLocale,
+	FieldNickName,
 	FieldPassword,
 	FieldPreferredLanguage,
-	FieldLocale,
+	FieldProfileURL,
 	FieldTimezone,
-	FieldUserType,
+	FieldTitle,
 	FieldUserName,
+	FieldUserType,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "users"
@@ -96,8 +105,6 @@ func ValidColumn(column string) bool {
 }
 
 var (
-	// DefaultActive holds the default value on creation for the "active" field.
-	DefaultActive bool
 	// PasswordValidator is a validator for the "password" field. It is called by the builders before save.
 	PasswordValidator func(string) error
 	// UserNameValidator is a validator for the "userName" field. It is called by the builders before save.

@@ -9,15 +9,15 @@ import (
 )
 
 const (
-	serviceProviderConfigAuthenticationSchemesJSONKey = "authenticationSchemes"
-	serviceProviderConfigBulkJSONKey                  = "bulk"
-	serviceProviderConfigChangePasswordJSONKey        = "changePassword"
-	serviceProviderConfigDocumentationURIJSONKey      = "documentationUri"
-	serviceProviderConfigEtagJSONKey                  = "etag"
-	serviceProviderConfigFilterJSONKey                = "filter"
-	serviceProviderConfigPatchJSONKey                 = "patch"
-	serviceProviderConfigSchemasJSONKey               = "schemas"
-	serviceProviderConfigSortJSONKey                  = "sort"
+	ServiceProviderConfigAuthenticationSchemesKey = "authenticationSchemes"
+	ServiceProviderConfigBulkKey                  = "bulk"
+	ServiceProviderConfigChangePasswordKey        = "changePassword"
+	ServiceProviderConfigDocumentationURIKey      = "documentationUri"
+	ServiceProviderConfigEtagKey                  = "etag"
+	ServiceProviderConfigFilterKey                = "filter"
+	ServiceProviderConfigPatchKey                 = "patch"
+	ServiceProviderConfigSchemasKey               = "schemas"
+	ServiceProviderConfigSortKey                  = "sort"
 )
 
 const ServiceProviderConfigSchemaURI = "urn:ietf:params:scim:schemas:core:2.0:ServiceProviderConfig"
@@ -256,47 +256,47 @@ func (v *ServiceProviderConfig) Get(name string, options ...GetOption) (interfac
 		}
 	}
 	switch name {
-	case serviceProviderConfigAuthenticationSchemesJSONKey:
+	case ServiceProviderConfigAuthenticationSchemesKey:
 		if v.authenticationSchemes == nil {
 			return nil, false
 		}
 		return v.authenticationSchemes, true
-	case serviceProviderConfigBulkJSONKey:
+	case ServiceProviderConfigBulkKey:
 		if v.bulk == nil {
 			return nil, false
 		}
 		return v.bulk, true
-	case serviceProviderConfigChangePasswordJSONKey:
+	case ServiceProviderConfigChangePasswordKey:
 		if v.changePassword == nil {
 			return nil, false
 		}
 		return v.changePassword, true
-	case serviceProviderConfigDocumentationURIJSONKey:
+	case ServiceProviderConfigDocumentationURIKey:
 		if v.documentationURI == nil {
 			return nil, false
 		}
 		return *(v.documentationURI), true
-	case serviceProviderConfigEtagJSONKey:
+	case ServiceProviderConfigEtagKey:
 		if v.etag == nil {
 			return nil, false
 		}
 		return v.etag, true
-	case serviceProviderConfigFilterJSONKey:
+	case ServiceProviderConfigFilterKey:
 		if v.filter == nil {
 			return nil, false
 		}
 		return v.filter, true
-	case serviceProviderConfigPatchJSONKey:
+	case ServiceProviderConfigPatchKey:
 		if v.patch == nil {
 			return nil, false
 		}
 		return v.patch, true
-	case serviceProviderConfigSchemasJSONKey:
+	case ServiceProviderConfigSchemasKey:
 		if v.schemas == nil {
 			return nil, false
 		}
 		return v.schemas, true
-	case serviceProviderConfigSortJSONKey:
+	case ServiceProviderConfigSortKey:
 		if v.sort == nil {
 			return nil, false
 		}
@@ -328,7 +328,7 @@ func (v *ServiceProviderConfig) Set(name string, value interface{}) error {
 	v.mu.Lock()
 	defer v.mu.Unlock()
 	switch name {
-	case serviceProviderConfigAuthenticationSchemesJSONKey:
+	case ServiceProviderConfigAuthenticationSchemesKey:
 		var tmp []AuthenticationScheme
 		tmp, ok := value.([]AuthenticationScheme)
 		if !ok {
@@ -336,7 +336,7 @@ func (v *ServiceProviderConfig) Set(name string, value interface{}) error {
 		}
 		v.authenticationSchemes = tmp
 		return nil
-	case serviceProviderConfigBulkJSONKey:
+	case ServiceProviderConfigBulkKey:
 		var tmp *BulkSupport
 		tmp, ok := value.(*BulkSupport)
 		if !ok {
@@ -344,7 +344,7 @@ func (v *ServiceProviderConfig) Set(name string, value interface{}) error {
 		}
 		v.bulk = tmp
 		return nil
-	case serviceProviderConfigChangePasswordJSONKey:
+	case ServiceProviderConfigChangePasswordKey:
 		var tmp *GenericSupport
 		tmp, ok := value.(*GenericSupport)
 		if !ok {
@@ -352,7 +352,7 @@ func (v *ServiceProviderConfig) Set(name string, value interface{}) error {
 		}
 		v.changePassword = tmp
 		return nil
-	case serviceProviderConfigDocumentationURIJSONKey:
+	case ServiceProviderConfigDocumentationURIKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -360,7 +360,7 @@ func (v *ServiceProviderConfig) Set(name string, value interface{}) error {
 		}
 		v.documentationURI = &tmp
 		return nil
-	case serviceProviderConfigEtagJSONKey:
+	case ServiceProviderConfigEtagKey:
 		var tmp *GenericSupport
 		tmp, ok := value.(*GenericSupport)
 		if !ok {
@@ -368,7 +368,7 @@ func (v *ServiceProviderConfig) Set(name string, value interface{}) error {
 		}
 		v.etag = tmp
 		return nil
-	case serviceProviderConfigFilterJSONKey:
+	case ServiceProviderConfigFilterKey:
 		var tmp *FilterSupport
 		tmp, ok := value.(*FilterSupport)
 		if !ok {
@@ -376,7 +376,7 @@ func (v *ServiceProviderConfig) Set(name string, value interface{}) error {
 		}
 		v.filter = tmp
 		return nil
-	case serviceProviderConfigPatchJSONKey:
+	case ServiceProviderConfigPatchKey:
 		var tmp *GenericSupport
 		tmp, ok := value.(*GenericSupport)
 		if !ok {
@@ -384,7 +384,7 @@ func (v *ServiceProviderConfig) Set(name string, value interface{}) error {
 		}
 		v.patch = tmp
 		return nil
-	case serviceProviderConfigSchemasJSONKey:
+	case ServiceProviderConfigSchemasKey:
 		var tmp schemas
 		tmp, ok := value.(schemas)
 		if !ok {
@@ -392,7 +392,7 @@ func (v *ServiceProviderConfig) Set(name string, value interface{}) error {
 		}
 		v.schemas = tmp
 		return nil
-	case serviceProviderConfigSortJSONKey:
+	case ServiceProviderConfigSortKey:
 		var tmp *GenericSupport
 		tmp, ok := value.(*GenericSupport)
 		if !ok {
@@ -466,55 +466,55 @@ LOOP:
 			}
 		case string:
 			switch tok {
-			case serviceProviderConfigAuthenticationSchemesJSONKey:
+			case ServiceProviderConfigAuthenticationSchemesKey:
 				var x []AuthenticationScheme
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "authenticationSchemes": %w`, err)
 				}
 				v.authenticationSchemes = x
-			case serviceProviderConfigBulkJSONKey:
+			case ServiceProviderConfigBulkKey:
 				var x *BulkSupport
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "bulk": %w`, err)
 				}
 				v.bulk = x
-			case serviceProviderConfigChangePasswordJSONKey:
+			case ServiceProviderConfigChangePasswordKey:
 				var x *GenericSupport
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "changePassword": %w`, err)
 				}
 				v.changePassword = x
-			case serviceProviderConfigDocumentationURIJSONKey:
+			case ServiceProviderConfigDocumentationURIKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "documentationUri": %w`, err)
 				}
 				v.documentationURI = &x
-			case serviceProviderConfigEtagJSONKey:
+			case ServiceProviderConfigEtagKey:
 				var x *GenericSupport
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "etag": %w`, err)
 				}
 				v.etag = x
-			case serviceProviderConfigFilterJSONKey:
+			case ServiceProviderConfigFilterKey:
 				var x *FilterSupport
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "filter": %w`, err)
 				}
 				v.filter = x
-			case serviceProviderConfigPatchJSONKey:
+			case ServiceProviderConfigPatchKey:
 				var x *GenericSupport
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "patch": %w`, err)
 				}
 				v.patch = x
-			case serviceProviderConfigSchemasJSONKey:
+			case ServiceProviderConfigSchemasKey:
 				var x schemas
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "schemas": %w`, err)
 				}
 				v.schemas = x
-			case serviceProviderConfigSortJSONKey:
+			case ServiceProviderConfigSortKey:
 				var x *GenericSupport
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "sort": %w`, err)

@@ -9,11 +9,11 @@ import (
 )
 
 const (
-	authenticationSchemeDescriptionJSONKey      = "description"
-	authenticationSchemeDocumentationURIJSONKey = "documentationUri"
-	authenticationSchemeNameJSONKey             = "name"
-	authenticationSchemeSpecURIJSONKey          = "specUri"
-	authenticationSchemeTypJSONKey              = "type"
+	AuthenticationSchemeDescriptionKey      = "description"
+	AuthenticationSchemeDocumentationURIKey = "documentationUri"
+	AuthenticationSchemeNameKey             = "name"
+	AuthenticationSchemeSpecURIKey          = "specUri"
+	AuthenticationSchemeTypKey              = "type"
 )
 
 type AuthenticationScheme struct {
@@ -182,27 +182,27 @@ func (v *AuthenticationScheme) Get(name string, options ...GetOption) (interface
 		}
 	}
 	switch name {
-	case authenticationSchemeDescriptionJSONKey:
+	case AuthenticationSchemeDescriptionKey:
 		if v.description == nil {
 			return nil, false
 		}
 		return *(v.description), true
-	case authenticationSchemeDocumentationURIJSONKey:
+	case AuthenticationSchemeDocumentationURIKey:
 		if v.documentationURI == nil {
 			return nil, false
 		}
 		return *(v.documentationURI), true
-	case authenticationSchemeNameJSONKey:
+	case AuthenticationSchemeNameKey:
 		if v.name == nil {
 			return nil, false
 		}
 		return *(v.name), true
-	case authenticationSchemeSpecURIJSONKey:
+	case AuthenticationSchemeSpecURIKey:
 		if v.specURI == nil {
 			return nil, false
 		}
 		return *(v.specURI), true
-	case authenticationSchemeTypJSONKey:
+	case AuthenticationSchemeTypKey:
 		if v.typ == nil {
 			return nil, false
 		}
@@ -234,7 +234,7 @@ func (v *AuthenticationScheme) Set(name string, value interface{}) error {
 	v.mu.Lock()
 	defer v.mu.Unlock()
 	switch name {
-	case authenticationSchemeDescriptionJSONKey:
+	case AuthenticationSchemeDescriptionKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -242,7 +242,7 @@ func (v *AuthenticationScheme) Set(name string, value interface{}) error {
 		}
 		v.description = &tmp
 		return nil
-	case authenticationSchemeDocumentationURIJSONKey:
+	case AuthenticationSchemeDocumentationURIKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -250,7 +250,7 @@ func (v *AuthenticationScheme) Set(name string, value interface{}) error {
 		}
 		v.documentationURI = &tmp
 		return nil
-	case authenticationSchemeNameJSONKey:
+	case AuthenticationSchemeNameKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -258,7 +258,7 @@ func (v *AuthenticationScheme) Set(name string, value interface{}) error {
 		}
 		v.name = &tmp
 		return nil
-	case authenticationSchemeSpecURIJSONKey:
+	case AuthenticationSchemeSpecURIKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -266,7 +266,7 @@ func (v *AuthenticationScheme) Set(name string, value interface{}) error {
 		}
 		v.specURI = &tmp
 		return nil
-	case authenticationSchemeTypJSONKey:
+	case AuthenticationSchemeTypKey:
 		var tmp AuthenticationSchemeType
 		tmp, ok := value.(AuthenticationSchemeType)
 		if !ok {
@@ -332,31 +332,31 @@ LOOP:
 			}
 		case string:
 			switch tok {
-			case authenticationSchemeDescriptionJSONKey:
+			case AuthenticationSchemeDescriptionKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "description": %w`, err)
 				}
 				v.description = &x
-			case authenticationSchemeDocumentationURIJSONKey:
+			case AuthenticationSchemeDocumentationURIKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "documentationUri": %w`, err)
 				}
 				v.documentationURI = &x
-			case authenticationSchemeNameJSONKey:
+			case AuthenticationSchemeNameKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "name": %w`, err)
 				}
 				v.name = &x
-			case authenticationSchemeSpecURIJSONKey:
+			case AuthenticationSchemeSpecURIKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "specUri": %w`, err)
 				}
 				v.specURI = &x
-			case authenticationSchemeTypJSONKey:
+			case AuthenticationSchemeTypKey:
 				var x AuthenticationSchemeType
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "type": %w`, err)

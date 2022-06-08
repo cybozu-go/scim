@@ -9,11 +9,11 @@ import (
 )
 
 const (
-	listResponseItemsPerPageJSONKey = "itemsPerPage"
-	listResponseResourcesJSONKey    = "resources"
-	listResponseSchemasJSONKey      = "schemas"
-	listResponseStartIndexJSONKey   = "startIndex"
-	listResponseTotalResultsJSONKey = "totalResults"
+	ListResponseItemsPerPageKey = "itemsPerPage"
+	ListResponseResourcesKey    = "resources"
+	ListResponseSchemasKey      = "schemas"
+	ListResponseStartIndexKey   = "startIndex"
+	ListResponseTotalResultsKey = "totalResults"
 )
 
 const ListResponseSchemaURI = "urn:ietf:params:scim:api:messages:2.0:ListResponse"
@@ -173,27 +173,27 @@ func (v *ListResponse) Get(name string, options ...GetOption) (interface{}, bool
 		}
 	}
 	switch name {
-	case listResponseItemsPerPageJSONKey:
+	case ListResponseItemsPerPageKey:
 		if v.itemsPerPage == nil {
 			return nil, false
 		}
 		return *(v.itemsPerPage), true
-	case listResponseResourcesJSONKey:
+	case ListResponseResourcesKey:
 		if v.resources == nil {
 			return nil, false
 		}
 		return v.resources, true
-	case listResponseSchemasJSONKey:
+	case ListResponseSchemasKey:
 		if v.schemas == nil {
 			return nil, false
 		}
 		return v.schemas, true
-	case listResponseStartIndexJSONKey:
+	case ListResponseStartIndexKey:
 		if v.startIndex == nil {
 			return nil, false
 		}
 		return *(v.startIndex), true
-	case listResponseTotalResultsJSONKey:
+	case ListResponseTotalResultsKey:
 		if v.totalResults == nil {
 			return nil, false
 		}
@@ -225,7 +225,7 @@ func (v *ListResponse) Set(name string, value interface{}) error {
 	v.mu.Lock()
 	defer v.mu.Unlock()
 	switch name {
-	case listResponseItemsPerPageJSONKey:
+	case ListResponseItemsPerPageKey:
 		var tmp int
 		tmp, ok := value.(int)
 		if !ok {
@@ -233,7 +233,7 @@ func (v *ListResponse) Set(name string, value interface{}) error {
 		}
 		v.itemsPerPage = &tmp
 		return nil
-	case listResponseResourcesJSONKey:
+	case ListResponseResourcesKey:
 		var tmp []interface{}
 		tmp, ok := value.([]interface{})
 		if !ok {
@@ -241,7 +241,7 @@ func (v *ListResponse) Set(name string, value interface{}) error {
 		}
 		v.resources = tmp
 		return nil
-	case listResponseSchemasJSONKey:
+	case ListResponseSchemasKey:
 		var tmp schemas
 		tmp, ok := value.(schemas)
 		if !ok {
@@ -249,7 +249,7 @@ func (v *ListResponse) Set(name string, value interface{}) error {
 		}
 		v.schemas = tmp
 		return nil
-	case listResponseStartIndexJSONKey:
+	case ListResponseStartIndexKey:
 		var tmp int
 		tmp, ok := value.(int)
 		if !ok {
@@ -257,7 +257,7 @@ func (v *ListResponse) Set(name string, value interface{}) error {
 		}
 		v.startIndex = &tmp
 		return nil
-	case listResponseTotalResultsJSONKey:
+	case ListResponseTotalResultsKey:
 		var tmp int
 		tmp, ok := value.(int)
 		if !ok {
@@ -323,31 +323,31 @@ LOOP:
 			}
 		case string:
 			switch tok {
-			case listResponseItemsPerPageJSONKey:
+			case ListResponseItemsPerPageKey:
 				var x int
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "itemsPerPage": %w`, err)
 				}
 				v.itemsPerPage = &x
-			case listResponseResourcesJSONKey:
+			case ListResponseResourcesKey:
 				var x []interface{}
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "resources": %w`, err)
 				}
 				v.resources = x
-			case listResponseSchemasJSONKey:
+			case ListResponseSchemasKey:
 				var x schemas
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "schemas": %w`, err)
 				}
 				v.schemas = x
-			case listResponseStartIndexJSONKey:
+			case ListResponseStartIndexKey:
 				var x int
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "startIndex": %w`, err)
 				}
 				v.startIndex = &x
-			case listResponseTotalResultsJSONKey:
+			case ListResponseTotalResultsKey:
 				var x int
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "totalResults": %w`, err)

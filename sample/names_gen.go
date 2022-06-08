@@ -5,6 +5,8 @@ import (
 
 	"github.com/cybozu-go/scim/resource"
 	"github.com/cybozu-go/scim/sample/ent"
+	"github.com/cybozu-go/scim/sample/ent/names"
+	"github.com/cybozu-go/scim/sample/ent/predicate"
 )
 
 func NamesResourceFromEnt(in *ent.Names) (*resource.Names, error) {
@@ -30,4 +32,42 @@ func NamesResourceFromEnt(in *ent.Names) (*resource.Names, error) {
 		builder.MiddleName(in.MiddleName)
 	}
 	return builder.Build()
+}
+
+func NamesEntFileFromSCIM(s string) string {
+	switch s {
+	case resource.NamesFamilyNameKey:
+		return names.FieldFamilyName
+	case resource.NamesFormattedKey:
+		return names.FieldFormatted
+	case resource.NamesGivenNameKey:
+		return names.FieldGivenName
+	case resource.NamesHonorificPrefixKey:
+		return names.FieldHonorificPrefix
+	case resource.NamesHonorificSuffixKey:
+		return names.FieldHonorificSuffix
+	case resource.NamesMiddleNameKey:
+		return names.FieldMiddleName
+	default:
+		return s
+	}
+}
+
+func namesPresencePredicate(scimField string) predicate.Names {
+	switch scimField {
+	case resource.NamesFamilyNameKey:
+		return names.And(names.FamilyNameNotNil(), names.FamilyNameNEQ(""))
+	case resource.NamesFormattedKey:
+		return names.And(names.FormattedNotNil(), names.FormattedNEQ(""))
+	case resource.NamesGivenNameKey:
+		return names.And(names.GivenNameNotNil(), names.GivenNameNEQ(""))
+	case resource.NamesHonorificPrefixKey:
+		return names.And(names.HonorificPrefixNotNil(), names.HonorificPrefixNEQ(""))
+	case resource.NamesHonorificSuffixKey:
+		return names.And(names.HonorificSuffixNotNil(), names.HonorificSuffixNEQ(""))
+	case resource.NamesMiddleNameKey:
+		return names.And(names.MiddleNameNotNil(), names.MiddleNameNEQ(""))
+	default:
+		return nil
+	}
 }

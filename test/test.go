@@ -2,6 +2,7 @@ package test
 
 import (
 	"context"
+	"encoding/json"
 	"io"
 	"net/http/httptest"
 	"os"
@@ -15,7 +16,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var TraceWriter io.Writer
+var TraceWriter = io.Discard
 
 func init() {
 	v, err := strconv.ParseBool(os.Getenv(`SCIM_TRACE`))
@@ -36,13 +37,21 @@ func RunConformanceTests(t *testing.T, name string, backend interface{}) {
 		cl := client.New(srv.URL, client.WithClient(srv.Client()))
 
 		t.Run("search via /.search", func(t *testing.T) {
-			_, err := cl.Search().Search().
+			createdUser := createStockUser(t, cl)
+			//nolint:errcheck
+			defer cl.User().DeleteUser(createdUser.ID()).
+				Do(context.TODO())
+
+			res, err := cl.Search().Search().
+				Trace(TraceWriter).
 				Attributes(`displayName`, `userName`).
-				Filter(`displayName sw "smith"`).
+				// Filter(`displayName sw "smith"`).
+				Filter(`displayName pr`).
 				StartIndex(1).
 				Count(10).
 				Do(context.TODO())
 			require.NoError(t, err, `cl.Search should succeed`)
+			require.Equal(t, 1, res.TotalResults(), `total results should be 1`)
 		})
 		t.Run("Users", func(t *testing.T) {
 			t.Run("Basic CRUD", UsersBasicCRUD(t, cl))
@@ -87,10 +96,7 @@ func UsersFetch(t *testing.T, cl *client.Client) func(*testing.T) {
 			}
 		})
 		t.Run("Fetch user with attributes", func(t *testing.T) {
-			createdUser, err := stockUserCreateCall(cl).
-				Trace(TraceWriter).
-				Do(context.TODO())
-			require.NoError(t, err, `CreateUser should succeed`)
+			createdUser := createStockUser(t, cl)
 			u, err := cl.User().GetUser(createdUser.ID()).
 				Attributes("userName", "emails").
 				Trace(TraceWriter).
@@ -111,10 +117,34 @@ func UsersFetch(t *testing.T, cl *client.Client) func(*testing.T) {
 	}
 }
 
+func createStockUser(t *testing.T, cl *client.Client) *resource.User {
+	var created *resource.User
+	t.Run("Create stock user object", func(t *testing.T) {
+		u, err := stockUserCreateCall(cl).
+			Trace(TraceWriter).
+			Do(context.TODO())
+		require.NoError(t, err, `CreateUser should succeed`)
+
+		// Make sure that it's really there
+		fetched, err := cl.User().GetUser(u.ID()).
+			Trace(TraceWriter).
+			Do(context.TODO())
+		require.NoError(t, err, `GetUser should succeed`)
+
+		_ = json.NewEncoder(TraceWriter).Encode(fetched)
+		created = u
+	})
+
+	if created == nil {
+		t.Fatal()
+	}
+	return created
+}
 func stockUserCreateCall(cl *client.Client) *client.CreateUserCall {
 	return cl.User().CreateUser().
 		UserName("bjensen").
 		ExternalID("bjensen").
+		DisplayName("Barbara Jensen").
 		Emails(resource.NewEmailBuilder().
 			Value("babs@jensen.org").
 			Primary(true).

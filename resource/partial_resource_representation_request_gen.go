@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	partialResourceRepresentationRequestAttributesJSONKey         = "attributes"
-	partialResourceRepresentationRequestExcludedAttributesJSONKey = "excludedAttributes"
+	PartialResourceRepresentationRequestAttributesKey         = "attributes"
+	PartialResourceRepresentationRequestExcludedAttributesKey = "excludedAttributes"
 )
 
 type PartialResourceRepresentationRequest struct {
@@ -107,12 +107,12 @@ func (v *PartialResourceRepresentationRequest) Get(name string, options ...GetOp
 		}
 	}
 	switch name {
-	case partialResourceRepresentationRequestAttributesJSONKey:
+	case PartialResourceRepresentationRequestAttributesKey:
 		if v.attributes == nil {
 			return nil, false
 		}
 		return v.attributes, true
-	case partialResourceRepresentationRequestExcludedAttributesJSONKey:
+	case PartialResourceRepresentationRequestExcludedAttributesKey:
 		if v.excludedAttributes == nil {
 			return nil, false
 		}
@@ -144,7 +144,7 @@ func (v *PartialResourceRepresentationRequest) Set(name string, value interface{
 	v.mu.Lock()
 	defer v.mu.Unlock()
 	switch name {
-	case partialResourceRepresentationRequestAttributesJSONKey:
+	case PartialResourceRepresentationRequestAttributesKey:
 		var tmp []string
 		tmp, ok := value.([]string)
 		if !ok {
@@ -152,7 +152,7 @@ func (v *PartialResourceRepresentationRequest) Set(name string, value interface{
 		}
 		v.attributes = tmp
 		return nil
-	case partialResourceRepresentationRequestExcludedAttributesJSONKey:
+	case PartialResourceRepresentationRequestExcludedAttributesKey:
 		var tmp []string
 		tmp, ok := value.([]string)
 		if !ok {
@@ -212,13 +212,13 @@ LOOP:
 			}
 		case string:
 			switch tok {
-			case partialResourceRepresentationRequestAttributesJSONKey:
+			case PartialResourceRepresentationRequestAttributesKey:
 				var x []string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "attributes": %w`, err)
 				}
 				v.attributes = x
-			case partialResourceRepresentationRequestExcludedAttributesJSONKey:
+			case PartialResourceRepresentationRequestExcludedAttributesKey:
 				var x []string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "excludedAttributes": %w`, err)

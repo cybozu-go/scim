@@ -9,30 +9,30 @@ import (
 )
 
 const (
-	userActiveJSONKey            = "active"
-	userAddressesJSONKey         = "addresses"
-	userDisplayNameJSONKey       = "displayName"
-	userEmailsJSONKey            = "emails"
-	userEntitlementsJSONKey      = "entitlements"
-	userExternalIDJSONKey        = "externalId"
-	userGroupsJSONKey            = "groups"
-	userIDJSONKey                = "id"
-	userIMSJSONKey               = "ims"
-	userLocaleJSONKey            = "locale"
-	userMetaJSONKey              = "meta"
-	userNameJSONKey              = "name"
-	userNickNameJSONKey          = "nickName"
-	userPasswordJSONKey          = "password"
-	userPhoneNumbersJSONKey      = "phoneNumbers"
-	userPreferredLanguageJSONKey = "preferredLanguage"
-	userProfileURLJSONKey        = "profileUrl"
-	userRolesJSONKey             = "roles"
-	userSchemasJSONKey           = "schemas"
-	userTimezoneJSONKey          = "timezone"
-	userTitleJSONKey             = "title"
-	userUserNameJSONKey          = "userName"
-	userUserTypeJSONKey          = "userType"
-	userX509CertificatesJSONKey  = "x509Certificates"
+	UserActiveKey            = "active"
+	UserAddressesKey         = "addresses"
+	UserDisplayNameKey       = "displayName"
+	UserEmailsKey            = "emails"
+	UserEntitlementsKey      = "entitlements"
+	UserExternalIDKey        = "externalId"
+	UserGroupsKey            = "groups"
+	UserIDKey                = "id"
+	UserIMSKey               = "ims"
+	UserLocaleKey            = "locale"
+	UserMetaKey              = "meta"
+	UserNameKey              = "name"
+	UserNickNameKey          = "nickName"
+	UserPasswordKey          = "password"
+	UserPhoneNumbersKey      = "phoneNumbers"
+	UserPreferredLanguageKey = "preferredLanguage"
+	UserProfileURLKey        = "profileUrl"
+	UserRolesKey             = "roles"
+	UserSchemasKey           = "schemas"
+	UserTimezoneKey          = "timezone"
+	UserTitleKey             = "title"
+	UserUserNameKey          = "userName"
+	UserUserTypeKey          = "userType"
+	UserX509CertificatesKey  = "x509Certificates"
 )
 
 const UserSchemaURI = "urn:ietf:params:scim:schemas:core:2.0:User"
@@ -532,122 +532,122 @@ func (v *User) Get(name string, options ...GetOption) (interface{}, bool) {
 		}
 	}
 	switch name {
-	case userActiveJSONKey:
+	case UserActiveKey:
 		if v.active == nil {
 			return nil, false
 		}
 		return *(v.active), true
-	case userAddressesJSONKey:
+	case UserAddressesKey:
 		if v.addresses == nil {
 			return nil, false
 		}
 		return v.addresses, true
-	case userDisplayNameJSONKey:
+	case UserDisplayNameKey:
 		if v.displayName == nil {
 			return nil, false
 		}
 		return *(v.displayName), true
-	case userEmailsJSONKey:
+	case UserEmailsKey:
 		if v.emails == nil {
 			return nil, false
 		}
 		return v.emails, true
-	case userEntitlementsJSONKey:
+	case UserEntitlementsKey:
 		if v.entitlements == nil {
 			return nil, false
 		}
 		return v.entitlements, true
-	case userExternalIDJSONKey:
+	case UserExternalIDKey:
 		if v.externalID == nil {
 			return nil, false
 		}
 		return *(v.externalID), true
-	case userGroupsJSONKey:
+	case UserGroupsKey:
 		if v.groups == nil {
 			return nil, false
 		}
 		return v.groups, true
-	case userIDJSONKey:
+	case UserIDKey:
 		if v.id == nil {
 			return nil, false
 		}
 		return *(v.id), true
-	case userIMSJSONKey:
+	case UserIMSKey:
 		if v.ims == nil {
 			return nil, false
 		}
 		return v.ims, true
-	case userLocaleJSONKey:
+	case UserLocaleKey:
 		if v.locale == nil {
 			return nil, false
 		}
 		return *(v.locale), true
-	case userMetaJSONKey:
+	case UserMetaKey:
 		if v.meta == nil {
 			return nil, false
 		}
 		return v.meta, true
-	case userNameJSONKey:
+	case UserNameKey:
 		if v.name == nil {
 			return nil, false
 		}
 		return v.name, true
-	case userNickNameJSONKey:
+	case UserNickNameKey:
 		if v.nickName == nil {
 			return nil, false
 		}
 		return *(v.nickName), true
-	case userPasswordJSONKey:
+	case UserPasswordKey:
 		if v.password == nil {
 			return nil, false
 		}
 		return *(v.password), true
-	case userPhoneNumbersJSONKey:
+	case UserPhoneNumbersKey:
 		if v.phoneNumbers == nil {
 			return nil, false
 		}
 		return v.phoneNumbers, true
-	case userPreferredLanguageJSONKey:
+	case UserPreferredLanguageKey:
 		if v.preferredLanguage == nil {
 			return nil, false
 		}
 		return *(v.preferredLanguage), true
-	case userProfileURLJSONKey:
+	case UserProfileURLKey:
 		if v.profileURL == nil {
 			return nil, false
 		}
 		return *(v.profileURL), true
-	case userRolesJSONKey:
+	case UserRolesKey:
 		if v.roles == nil {
 			return nil, false
 		}
 		return v.roles, true
-	case userSchemasJSONKey:
+	case UserSchemasKey:
 		if v.schemas == nil {
 			return nil, false
 		}
 		return v.schemas, true
-	case userTimezoneJSONKey:
+	case UserTimezoneKey:
 		if v.timezone == nil {
 			return nil, false
 		}
 		return *(v.timezone), true
-	case userTitleJSONKey:
+	case UserTitleKey:
 		if v.title == nil {
 			return nil, false
 		}
 		return *(v.title), true
-	case userUserNameJSONKey:
+	case UserUserNameKey:
 		if v.userName == nil {
 			return nil, false
 		}
 		return *(v.userName), true
-	case userUserTypeJSONKey:
+	case UserUserTypeKey:
 		if v.userType == nil {
 			return nil, false
 		}
 		return *(v.userType), true
-	case userX509CertificatesJSONKey:
+	case UserX509CertificatesKey:
 		if v.x509Certificates == nil {
 			return nil, false
 		}
@@ -679,7 +679,7 @@ func (v *User) Set(name string, value interface{}) error {
 	v.mu.Lock()
 	defer v.mu.Unlock()
 	switch name {
-	case userActiveJSONKey:
+	case UserActiveKey:
 		var tmp bool
 		tmp, ok := value.(bool)
 		if !ok {
@@ -687,7 +687,7 @@ func (v *User) Set(name string, value interface{}) error {
 		}
 		v.active = &tmp
 		return nil
-	case userAddressesJSONKey:
+	case UserAddressesKey:
 		var tmp []string
 		tmp, ok := value.([]string)
 		if !ok {
@@ -695,7 +695,7 @@ func (v *User) Set(name string, value interface{}) error {
 		}
 		v.addresses = tmp
 		return nil
-	case userDisplayNameJSONKey:
+	case UserDisplayNameKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -703,7 +703,7 @@ func (v *User) Set(name string, value interface{}) error {
 		}
 		v.displayName = &tmp
 		return nil
-	case userEmailsJSONKey:
+	case UserEmailsKey:
 		var tmp []*Email
 		tmp, ok := value.([]*Email)
 		if !ok {
@@ -711,7 +711,7 @@ func (v *User) Set(name string, value interface{}) error {
 		}
 		v.emails = tmp
 		return nil
-	case userEntitlementsJSONKey:
+	case UserEntitlementsKey:
 		var tmp []string
 		tmp, ok := value.([]string)
 		if !ok {
@@ -719,7 +719,7 @@ func (v *User) Set(name string, value interface{}) error {
 		}
 		v.entitlements = tmp
 		return nil
-	case userExternalIDJSONKey:
+	case UserExternalIDKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -727,7 +727,7 @@ func (v *User) Set(name string, value interface{}) error {
 		}
 		v.externalID = &tmp
 		return nil
-	case userGroupsJSONKey:
+	case UserGroupsKey:
 		var tmp []string
 		tmp, ok := value.([]string)
 		if !ok {
@@ -735,7 +735,7 @@ func (v *User) Set(name string, value interface{}) error {
 		}
 		v.groups = tmp
 		return nil
-	case userIDJSONKey:
+	case UserIDKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -743,7 +743,7 @@ func (v *User) Set(name string, value interface{}) error {
 		}
 		v.id = &tmp
 		return nil
-	case userIMSJSONKey:
+	case UserIMSKey:
 		var tmp []string
 		tmp, ok := value.([]string)
 		if !ok {
@@ -751,7 +751,7 @@ func (v *User) Set(name string, value interface{}) error {
 		}
 		v.ims = tmp
 		return nil
-	case userLocaleJSONKey:
+	case UserLocaleKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -759,7 +759,7 @@ func (v *User) Set(name string, value interface{}) error {
 		}
 		v.locale = &tmp
 		return nil
-	case userMetaJSONKey:
+	case UserMetaKey:
 		var tmp *Meta
 		tmp, ok := value.(*Meta)
 		if !ok {
@@ -767,7 +767,7 @@ func (v *User) Set(name string, value interface{}) error {
 		}
 		v.meta = tmp
 		return nil
-	case userNameJSONKey:
+	case UserNameKey:
 		var tmp *Names
 		tmp, ok := value.(*Names)
 		if !ok {
@@ -775,7 +775,7 @@ func (v *User) Set(name string, value interface{}) error {
 		}
 		v.name = tmp
 		return nil
-	case userNickNameJSONKey:
+	case UserNickNameKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -783,7 +783,7 @@ func (v *User) Set(name string, value interface{}) error {
 		}
 		v.nickName = &tmp
 		return nil
-	case userPasswordJSONKey:
+	case UserPasswordKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -791,7 +791,7 @@ func (v *User) Set(name string, value interface{}) error {
 		}
 		v.password = &tmp
 		return nil
-	case userPhoneNumbersJSONKey:
+	case UserPhoneNumbersKey:
 		var tmp []string
 		tmp, ok := value.([]string)
 		if !ok {
@@ -799,7 +799,7 @@ func (v *User) Set(name string, value interface{}) error {
 		}
 		v.phoneNumbers = tmp
 		return nil
-	case userPreferredLanguageJSONKey:
+	case UserPreferredLanguageKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -807,7 +807,7 @@ func (v *User) Set(name string, value interface{}) error {
 		}
 		v.preferredLanguage = &tmp
 		return nil
-	case userProfileURLJSONKey:
+	case UserProfileURLKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -815,7 +815,7 @@ func (v *User) Set(name string, value interface{}) error {
 		}
 		v.profileURL = &tmp
 		return nil
-	case userRolesJSONKey:
+	case UserRolesKey:
 		var tmp []string
 		tmp, ok := value.([]string)
 		if !ok {
@@ -823,7 +823,7 @@ func (v *User) Set(name string, value interface{}) error {
 		}
 		v.roles = tmp
 		return nil
-	case userSchemasJSONKey:
+	case UserSchemasKey:
 		var tmp schemas
 		tmp, ok := value.(schemas)
 		if !ok {
@@ -831,7 +831,7 @@ func (v *User) Set(name string, value interface{}) error {
 		}
 		v.schemas = tmp
 		return nil
-	case userTimezoneJSONKey:
+	case UserTimezoneKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -839,7 +839,7 @@ func (v *User) Set(name string, value interface{}) error {
 		}
 		v.timezone = &tmp
 		return nil
-	case userTitleJSONKey:
+	case UserTitleKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -847,7 +847,7 @@ func (v *User) Set(name string, value interface{}) error {
 		}
 		v.title = &tmp
 		return nil
-	case userUserNameJSONKey:
+	case UserUserNameKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -855,7 +855,7 @@ func (v *User) Set(name string, value interface{}) error {
 		}
 		v.userName = &tmp
 		return nil
-	case userUserTypeJSONKey:
+	case UserUserTypeKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -863,7 +863,7 @@ func (v *User) Set(name string, value interface{}) error {
 		}
 		v.userType = &tmp
 		return nil
-	case userX509CertificatesJSONKey:
+	case UserX509CertificatesKey:
 		var tmp []string
 		tmp, ok := value.([]string)
 		if !ok {
@@ -967,145 +967,145 @@ LOOP:
 			}
 		case string:
 			switch tok {
-			case userActiveJSONKey:
+			case UserActiveKey:
 				var x bool
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "active": %w`, err)
 				}
 				v.active = &x
-			case userAddressesJSONKey:
+			case UserAddressesKey:
 				var x []string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "addresses": %w`, err)
 				}
 				v.addresses = x
-			case userDisplayNameJSONKey:
+			case UserDisplayNameKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "displayName": %w`, err)
 				}
 				v.displayName = &x
-			case userEmailsJSONKey:
+			case UserEmailsKey:
 				var x []*Email
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "emails": %w`, err)
 				}
 				v.emails = x
-			case userEntitlementsJSONKey:
+			case UserEntitlementsKey:
 				var x []string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "entitlements": %w`, err)
 				}
 				v.entitlements = x
-			case userExternalIDJSONKey:
+			case UserExternalIDKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "externalId": %w`, err)
 				}
 				v.externalID = &x
-			case userGroupsJSONKey:
+			case UserGroupsKey:
 				var x []string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "groups": %w`, err)
 				}
 				v.groups = x
-			case userIDJSONKey:
+			case UserIDKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "id": %w`, err)
 				}
 				v.id = &x
-			case userIMSJSONKey:
+			case UserIMSKey:
 				var x []string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "ims": %w`, err)
 				}
 				v.ims = x
-			case userLocaleJSONKey:
+			case UserLocaleKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "locale": %w`, err)
 				}
 				v.locale = &x
-			case userMetaJSONKey:
+			case UserMetaKey:
 				var x *Meta
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "meta": %w`, err)
 				}
 				v.meta = x
-			case userNameJSONKey:
+			case UserNameKey:
 				var x *Names
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "name": %w`, err)
 				}
 				v.name = x
-			case userNickNameJSONKey:
+			case UserNickNameKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "nickName": %w`, err)
 				}
 				v.nickName = &x
-			case userPasswordJSONKey:
+			case UserPasswordKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "password": %w`, err)
 				}
 				v.password = &x
-			case userPhoneNumbersJSONKey:
+			case UserPhoneNumbersKey:
 				var x []string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "phoneNumbers": %w`, err)
 				}
 				v.phoneNumbers = x
-			case userPreferredLanguageJSONKey:
+			case UserPreferredLanguageKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "preferredLanguage": %w`, err)
 				}
 				v.preferredLanguage = &x
-			case userProfileURLJSONKey:
+			case UserProfileURLKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "profileUrl": %w`, err)
 				}
 				v.profileURL = &x
-			case userRolesJSONKey:
+			case UserRolesKey:
 				var x []string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "roles": %w`, err)
 				}
 				v.roles = x
-			case userSchemasJSONKey:
+			case UserSchemasKey:
 				var x schemas
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "schemas": %w`, err)
 				}
 				v.schemas = x
-			case userTimezoneJSONKey:
+			case UserTimezoneKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "timezone": %w`, err)
 				}
 				v.timezone = &x
-			case userTitleJSONKey:
+			case UserTitleKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "title": %w`, err)
 				}
 				v.title = &x
-			case userUserNameJSONKey:
+			case UserUserNameKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "userName": %w`, err)
 				}
 				v.userName = &x
-			case userUserTypeJSONKey:
+			case UserUserTypeKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "userType": %w`, err)
 				}
 				v.userType = &x
-			case userX509CertificatesJSONKey:
+			case UserX509CertificatesKey:
 				var x []string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "x509Certificates": %w`, err)

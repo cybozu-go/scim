@@ -9,9 +9,9 @@ import (
 )
 
 const (
-	bulkSupportMaxOperationsJSONKey  = "maxOperations"
-	bulkSupportMaxPayloadSizeJSONKey = "maxPayloadSize"
-	bulkSupportSupportedJSONKey      = "supported"
+	BulkSupportMaxOperationsKey  = "maxOperations"
+	BulkSupportMaxPayloadSizeKey = "maxPayloadSize"
+	BulkSupportSupportedKey      = "supported"
 )
 
 type BulkSupport struct {
@@ -142,17 +142,17 @@ func (v *BulkSupport) Get(name string, options ...GetOption) (interface{}, bool)
 		}
 	}
 	switch name {
-	case bulkSupportMaxOperationsJSONKey:
+	case BulkSupportMaxOperationsKey:
 		if v.maxOperations == nil {
 			return nil, false
 		}
 		return *(v.maxOperations), true
-	case bulkSupportMaxPayloadSizeJSONKey:
+	case BulkSupportMaxPayloadSizeKey:
 		if v.maxPayloadSize == nil {
 			return nil, false
 		}
 		return *(v.maxPayloadSize), true
-	case bulkSupportSupportedJSONKey:
+	case BulkSupportSupportedKey:
 		if v.supported == nil {
 			return nil, false
 		}
@@ -184,7 +184,7 @@ func (v *BulkSupport) Set(name string, value interface{}) error {
 	v.mu.Lock()
 	defer v.mu.Unlock()
 	switch name {
-	case bulkSupportMaxOperationsJSONKey:
+	case BulkSupportMaxOperationsKey:
 		var tmp int
 		tmp, ok := value.(int)
 		if !ok {
@@ -192,7 +192,7 @@ func (v *BulkSupport) Set(name string, value interface{}) error {
 		}
 		v.maxOperations = &tmp
 		return nil
-	case bulkSupportMaxPayloadSizeJSONKey:
+	case BulkSupportMaxPayloadSizeKey:
 		var tmp int
 		tmp, ok := value.(int)
 		if !ok {
@@ -200,7 +200,7 @@ func (v *BulkSupport) Set(name string, value interface{}) error {
 		}
 		v.maxPayloadSize = &tmp
 		return nil
-	case bulkSupportSupportedJSONKey:
+	case BulkSupportSupportedKey:
 		var tmp bool
 		tmp, ok := value.(bool)
 		if !ok {
@@ -262,19 +262,19 @@ LOOP:
 			}
 		case string:
 			switch tok {
-			case bulkSupportMaxOperationsJSONKey:
+			case BulkSupportMaxOperationsKey:
 				var x int
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "maxOperations": %w`, err)
 				}
 				v.maxOperations = &x
-			case bulkSupportMaxPayloadSizeJSONKey:
+			case BulkSupportMaxPayloadSizeKey:
 				var x int
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "maxPayloadSize": %w`, err)
 				}
 				v.maxPayloadSize = &x
-			case bulkSupportSupportedJSONKey:
+			case BulkSupportSupportedKey:
 				var x bool
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "supported": %w`, err)

@@ -9,19 +9,19 @@ import (
 )
 
 const (
-	schemaAttributeCanonicalValuesJSONKey = "canonicalValues"
-	schemaAttributeCaseExactJSONKey       = "caseExact"
-	schemaAttributeDescriptionJSONKey     = "description"
-	schemaAttributeFallbackTypeJSONKey    = "fallbackType"
-	schemaAttributeMultiValuedJSONKey     = "multiValued"
-	schemaAttributeMutabilityJSONKey      = "mutability"
-	schemaAttributeNameJSONKey            = "name"
-	schemaAttributeReferenceTypesJSONKey  = "referenceTypes"
-	schemaAttributeRequiredJSONKey        = "required"
-	schemaAttributeReturnedJSONKey        = "returned"
-	schemaAttributeSubAttributesJSONKey   = "subAttributes"
-	schemaAttributeTypeJSONKey            = "type"
-	schemaAttributeUniquenessJSONKey      = "uniqueness"
+	SchemaAttributeCanonicalValuesKey = "canonicalValues"
+	SchemaAttributeCaseExactKey       = "caseExact"
+	SchemaAttributeDescriptionKey     = "description"
+	SchemaAttributeFallbackTypeKey    = "fallbackType"
+	SchemaAttributeMultiValuedKey     = "multiValued"
+	SchemaAttributeMutabilityKey      = "mutability"
+	SchemaAttributeNameKey            = "name"
+	SchemaAttributeReferenceTypesKey  = "referenceTypes"
+	SchemaAttributeRequiredKey        = "required"
+	SchemaAttributeReturnedKey        = "returned"
+	SchemaAttributeSubAttributesKey   = "subAttributes"
+	SchemaAttributeTypeKey            = "type"
+	SchemaAttributeUniquenessKey      = "uniqueness"
 )
 
 type SchemaAttribute struct {
@@ -321,67 +321,67 @@ func (v *SchemaAttribute) Get(name string, options ...GetOption) (interface{}, b
 		}
 	}
 	switch name {
-	case schemaAttributeCanonicalValuesJSONKey:
+	case SchemaAttributeCanonicalValuesKey:
 		if v.canonicalValues == nil {
 			return nil, false
 		}
 		return v.canonicalValues, true
-	case schemaAttributeCaseExactJSONKey:
+	case SchemaAttributeCaseExactKey:
 		if v.caseExact == nil {
 			return nil, false
 		}
 		return *(v.caseExact), true
-	case schemaAttributeDescriptionJSONKey:
+	case SchemaAttributeDescriptionKey:
 		if v.description == nil {
 			return nil, false
 		}
 		return *(v.description), true
-	case schemaAttributeFallbackTypeJSONKey:
+	case SchemaAttributeFallbackTypeKey:
 		if v.fallbackType == nil {
 			return nil, false
 		}
 		return v.fallbackType, true
-	case schemaAttributeMultiValuedJSONKey:
+	case SchemaAttributeMultiValuedKey:
 		if v.multiValued == nil {
 			return nil, false
 		}
 		return *(v.multiValued), true
-	case schemaAttributeMutabilityJSONKey:
+	case SchemaAttributeMutabilityKey:
 		if v.mutability == nil {
 			return nil, false
 		}
 		return *(v.mutability), true
-	case schemaAttributeNameJSONKey:
+	case SchemaAttributeNameKey:
 		if v.name == nil {
 			return nil, false
 		}
 		return *(v.name), true
-	case schemaAttributeReferenceTypesJSONKey:
+	case SchemaAttributeReferenceTypesKey:
 		if v.referenceTypes == nil {
 			return nil, false
 		}
 		return v.referenceTypes, true
-	case schemaAttributeRequiredJSONKey:
+	case SchemaAttributeRequiredKey:
 		if v.required == nil {
 			return nil, false
 		}
 		return *(v.required), true
-	case schemaAttributeReturnedJSONKey:
+	case SchemaAttributeReturnedKey:
 		if v.returned == nil {
 			return nil, false
 		}
 		return *(v.returned), true
-	case schemaAttributeSubAttributesJSONKey:
+	case SchemaAttributeSubAttributesKey:
 		if v.subAttributes == nil {
 			return nil, false
 		}
 		return v.subAttributes, true
-	case schemaAttributeTypeJSONKey:
+	case SchemaAttributeTypeKey:
 		if v.typ == nil {
 			return nil, false
 		}
 		return *(v.typ), true
-	case schemaAttributeUniquenessJSONKey:
+	case SchemaAttributeUniquenessKey:
 		if v.uniqueness == nil {
 			return nil, false
 		}
@@ -413,7 +413,7 @@ func (v *SchemaAttribute) Set(name string, value interface{}) error {
 	v.mu.Lock()
 	defer v.mu.Unlock()
 	switch name {
-	case schemaAttributeCanonicalValuesJSONKey:
+	case SchemaAttributeCanonicalValuesKey:
 		var tmp []interface{}
 		tmp, ok := value.([]interface{})
 		if !ok {
@@ -421,7 +421,7 @@ func (v *SchemaAttribute) Set(name string, value interface{}) error {
 		}
 		v.canonicalValues = tmp
 		return nil
-	case schemaAttributeCaseExactJSONKey:
+	case SchemaAttributeCaseExactKey:
 		var tmp bool
 		tmp, ok := value.(bool)
 		if !ok {
@@ -429,7 +429,7 @@ func (v *SchemaAttribute) Set(name string, value interface{}) error {
 		}
 		v.caseExact = &tmp
 		return nil
-	case schemaAttributeDescriptionJSONKey:
+	case SchemaAttributeDescriptionKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -437,7 +437,7 @@ func (v *SchemaAttribute) Set(name string, value interface{}) error {
 		}
 		v.description = &tmp
 		return nil
-	case schemaAttributeFallbackTypeJSONKey:
+	case SchemaAttributeFallbackTypeKey:
 		var tmp *SchemaAttribute
 		tmp, ok := value.(*SchemaAttribute)
 		if !ok {
@@ -445,7 +445,7 @@ func (v *SchemaAttribute) Set(name string, value interface{}) error {
 		}
 		v.fallbackType = tmp
 		return nil
-	case schemaAttributeMultiValuedJSONKey:
+	case SchemaAttributeMultiValuedKey:
 		var tmp bool
 		tmp, ok := value.(bool)
 		if !ok {
@@ -453,7 +453,7 @@ func (v *SchemaAttribute) Set(name string, value interface{}) error {
 		}
 		v.multiValued = &tmp
 		return nil
-	case schemaAttributeMutabilityJSONKey:
+	case SchemaAttributeMutabilityKey:
 		var tmp Mutability
 		tmp, ok := value.(Mutability)
 		if !ok {
@@ -461,7 +461,7 @@ func (v *SchemaAttribute) Set(name string, value interface{}) error {
 		}
 		v.mutability = &tmp
 		return nil
-	case schemaAttributeNameJSONKey:
+	case SchemaAttributeNameKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -469,7 +469,7 @@ func (v *SchemaAttribute) Set(name string, value interface{}) error {
 		}
 		v.name = &tmp
 		return nil
-	case schemaAttributeReferenceTypesJSONKey:
+	case SchemaAttributeReferenceTypesKey:
 		var tmp []string
 		tmp, ok := value.([]string)
 		if !ok {
@@ -477,7 +477,7 @@ func (v *SchemaAttribute) Set(name string, value interface{}) error {
 		}
 		v.referenceTypes = tmp
 		return nil
-	case schemaAttributeRequiredJSONKey:
+	case SchemaAttributeRequiredKey:
 		var tmp bool
 		tmp, ok := value.(bool)
 		if !ok {
@@ -485,7 +485,7 @@ func (v *SchemaAttribute) Set(name string, value interface{}) error {
 		}
 		v.required = &tmp
 		return nil
-	case schemaAttributeReturnedJSONKey:
+	case SchemaAttributeReturnedKey:
 		var tmp Returned
 		tmp, ok := value.(Returned)
 		if !ok {
@@ -493,7 +493,7 @@ func (v *SchemaAttribute) Set(name string, value interface{}) error {
 		}
 		v.returned = &tmp
 		return nil
-	case schemaAttributeSubAttributesJSONKey:
+	case SchemaAttributeSubAttributesKey:
 		var tmp []*SchemaAttribute
 		tmp, ok := value.([]*SchemaAttribute)
 		if !ok {
@@ -501,7 +501,7 @@ func (v *SchemaAttribute) Set(name string, value interface{}) error {
 		}
 		v.subAttributes = tmp
 		return nil
-	case schemaAttributeTypeJSONKey:
+	case SchemaAttributeTypeKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -509,7 +509,7 @@ func (v *SchemaAttribute) Set(name string, value interface{}) error {
 		}
 		v.typ = &tmp
 		return nil
-	case schemaAttributeUniquenessJSONKey:
+	case SchemaAttributeUniquenessKey:
 		var tmp Uniqueness
 		tmp, ok := value.(Uniqueness)
 		if !ok {
@@ -591,79 +591,79 @@ LOOP:
 			}
 		case string:
 			switch tok {
-			case schemaAttributeCanonicalValuesJSONKey:
+			case SchemaAttributeCanonicalValuesKey:
 				var x []interface{}
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "canonicalValues": %w`, err)
 				}
 				v.canonicalValues = x
-			case schemaAttributeCaseExactJSONKey:
+			case SchemaAttributeCaseExactKey:
 				var x bool
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "caseExact": %w`, err)
 				}
 				v.caseExact = &x
-			case schemaAttributeDescriptionJSONKey:
+			case SchemaAttributeDescriptionKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "description": %w`, err)
 				}
 				v.description = &x
-			case schemaAttributeFallbackTypeJSONKey:
+			case SchemaAttributeFallbackTypeKey:
 				var x *SchemaAttribute
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "fallbackType": %w`, err)
 				}
 				v.fallbackType = x
-			case schemaAttributeMultiValuedJSONKey:
+			case SchemaAttributeMultiValuedKey:
 				var x bool
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "multiValued": %w`, err)
 				}
 				v.multiValued = &x
-			case schemaAttributeMutabilityJSONKey:
+			case SchemaAttributeMutabilityKey:
 				var x Mutability
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "mutability": %w`, err)
 				}
 				v.mutability = &x
-			case schemaAttributeNameJSONKey:
+			case SchemaAttributeNameKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "name": %w`, err)
 				}
 				v.name = &x
-			case schemaAttributeReferenceTypesJSONKey:
+			case SchemaAttributeReferenceTypesKey:
 				var x []string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "referenceTypes": %w`, err)
 				}
 				v.referenceTypes = x
-			case schemaAttributeRequiredJSONKey:
+			case SchemaAttributeRequiredKey:
 				var x bool
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "required": %w`, err)
 				}
 				v.required = &x
-			case schemaAttributeReturnedJSONKey:
+			case SchemaAttributeReturnedKey:
 				var x Returned
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "returned": %w`, err)
 				}
 				v.returned = &x
-			case schemaAttributeSubAttributesJSONKey:
+			case SchemaAttributeSubAttributesKey:
 				var x []*SchemaAttribute
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "subAttributes": %w`, err)
 				}
 				v.subAttributes = x
-			case schemaAttributeTypeJSONKey:
+			case SchemaAttributeTypeKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "type": %w`, err)
 				}
 				v.typ = &x
-			case schemaAttributeUniquenessJSONKey:
+			case SchemaAttributeUniquenessKey:
 				var x Uniqueness
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "uniqueness": %w`, err)

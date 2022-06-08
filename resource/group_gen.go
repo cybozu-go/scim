@@ -9,12 +9,12 @@ import (
 )
 
 const (
-	groupDisplayNameJSONKey = "displayName"
-	groupExternalIDJSONKey  = "externalId"
-	groupIDJSONKey          = "id"
-	groupMembersJSONKey     = "members"
-	groupMetaJSONKey        = "meta"
-	groupSchemasJSONKey     = "schemas"
+	GroupDisplayNameKey = "displayName"
+	GroupExternalIDKey  = "externalId"
+	GroupIDKey          = "id"
+	GroupMembersKey     = "members"
+	GroupMetaKey        = "meta"
+	GroupSchemasKey     = "schemas"
 )
 
 const GroupSchemaURI = "urn:ietf:params:scim:schemas:core:2.0:Group"
@@ -193,32 +193,32 @@ func (v *Group) Get(name string, options ...GetOption) (interface{}, bool) {
 		}
 	}
 	switch name {
-	case groupDisplayNameJSONKey:
+	case GroupDisplayNameKey:
 		if v.displayName == nil {
 			return nil, false
 		}
 		return *(v.displayName), true
-	case groupExternalIDJSONKey:
+	case GroupExternalIDKey:
 		if v.externalID == nil {
 			return nil, false
 		}
 		return *(v.externalID), true
-	case groupIDJSONKey:
+	case GroupIDKey:
 		if v.id == nil {
 			return nil, false
 		}
 		return *(v.id), true
-	case groupMembersJSONKey:
+	case GroupMembersKey:
 		if v.members == nil {
 			return nil, false
 		}
 		return v.members, true
-	case groupMetaJSONKey:
+	case GroupMetaKey:
 		if v.meta == nil {
 			return nil, false
 		}
 		return v.meta, true
-	case groupSchemasJSONKey:
+	case GroupSchemasKey:
 		if v.schemas == nil {
 			return nil, false
 		}
@@ -250,7 +250,7 @@ func (v *Group) Set(name string, value interface{}) error {
 	v.mu.Lock()
 	defer v.mu.Unlock()
 	switch name {
-	case groupDisplayNameJSONKey:
+	case GroupDisplayNameKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -258,7 +258,7 @@ func (v *Group) Set(name string, value interface{}) error {
 		}
 		v.displayName = &tmp
 		return nil
-	case groupExternalIDJSONKey:
+	case GroupExternalIDKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -266,7 +266,7 @@ func (v *Group) Set(name string, value interface{}) error {
 		}
 		v.externalID = &tmp
 		return nil
-	case groupIDJSONKey:
+	case GroupIDKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -274,7 +274,7 @@ func (v *Group) Set(name string, value interface{}) error {
 		}
 		v.id = &tmp
 		return nil
-	case groupMembersJSONKey:
+	case GroupMembersKey:
 		var tmp []*GroupMember
 		tmp, ok := value.([]*GroupMember)
 		if !ok {
@@ -282,7 +282,7 @@ func (v *Group) Set(name string, value interface{}) error {
 		}
 		v.members = tmp
 		return nil
-	case groupMetaJSONKey:
+	case GroupMetaKey:
 		var tmp *Meta
 		tmp, ok := value.(*Meta)
 		if !ok {
@@ -290,7 +290,7 @@ func (v *Group) Set(name string, value interface{}) error {
 		}
 		v.meta = tmp
 		return nil
-	case groupSchemasJSONKey:
+	case GroupSchemasKey:
 		var tmp schemas
 		tmp, ok := value.(schemas)
 		if !ok {
@@ -358,37 +358,37 @@ LOOP:
 			}
 		case string:
 			switch tok {
-			case groupDisplayNameJSONKey:
+			case GroupDisplayNameKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "displayName": %w`, err)
 				}
 				v.displayName = &x
-			case groupExternalIDJSONKey:
+			case GroupExternalIDKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "externalId": %w`, err)
 				}
 				v.externalID = &x
-			case groupIDJSONKey:
+			case GroupIDKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "id": %w`, err)
 				}
 				v.id = &x
-			case groupMembersJSONKey:
+			case GroupMembersKey:
 				var x []*GroupMember
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "members": %w`, err)
 				}
 				v.members = x
-			case groupMetaJSONKey:
+			case GroupMetaKey:
 				var x *Meta
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "meta": %w`, err)
 				}
 				v.meta = x
-			case groupSchemasJSONKey:
+			case GroupSchemasKey:
 				var x schemas
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "schemas": %w`, err)

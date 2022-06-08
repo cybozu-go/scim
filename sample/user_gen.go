@@ -6,6 +6,7 @@ import (
 
 	"github.com/cybozu-go/scim/resource"
 	"github.com/cybozu-go/scim/sample/ent"
+	"github.com/cybozu-go/scim/sample/ent/predicate"
 	"github.com/cybozu-go/scim/sample/ent/user"
 )
 
@@ -111,9 +112,6 @@ func UserResourceFromEnt(in *ent.User) (*resource.User, error) {
 	if !reflect.ValueOf(in.Locale).IsZero() {
 		builder.Locale(in.Locale)
 	}
-	if !reflect.ValueOf(in.Password).IsZero() {
-		builder.Password(in.Password)
-	}
 	if !reflect.ValueOf(in.PreferredLanguage).IsZero() {
 		builder.PreferredLanguage(in.PreferredLanguage)
 	}
@@ -127,4 +125,64 @@ func UserResourceFromEnt(in *ent.User) (*resource.User, error) {
 		builder.UserType(in.UserType)
 	}
 	return builder.Build()
+}
+
+func UserEntFileFromSCIM(s string) string {
+	switch s {
+	case resource.UserActiveKey:
+		return user.FieldActive
+	case resource.UserDisplayNameKey:
+		return user.FieldDisplayName
+	case resource.UserExternalIDKey:
+		return user.FieldExternalID
+	case resource.UserIDKey:
+		return user.FieldID
+	case resource.UserLocaleKey:
+		return user.FieldLocale
+	case resource.UserNickNameKey:
+		return user.FieldNickName
+	case resource.UserPasswordKey:
+		return user.FieldPassword
+	case resource.UserPreferredLanguageKey:
+		return user.FieldPreferredLanguage
+	case resource.UserProfileURLKey:
+		return user.FieldProfileURL
+	case resource.UserTimezoneKey:
+		return user.FieldTimezone
+	case resource.UserTitleKey:
+		return user.FieldTitle
+	case resource.UserUserNameKey:
+		return user.FieldUserName
+	case resource.UserUserTypeKey:
+		return user.FieldUserType
+	default:
+		return s
+	}
+}
+
+func userPresencePredicate(scimField string) predicate.User {
+	switch scimField {
+	case resource.UserDisplayNameKey:
+		return user.And(user.DisplayNameNotNil(), user.DisplayNameNEQ(""))
+	case resource.UserExternalIDKey:
+		return user.And(user.ExternalIDNotNil(), user.ExternalIDNEQ(""))
+	case resource.UserLocaleKey:
+		return user.And(user.LocaleNotNil(), user.LocaleNEQ(""))
+	case resource.UserNickNameKey:
+		return user.And(user.NickNameNotNil(), user.NickNameNEQ(""))
+	case resource.UserPasswordKey:
+		return user.And(user.PasswordNotNil(), user.PasswordNEQ(""))
+	case resource.UserPreferredLanguageKey:
+		return user.And(user.PreferredLanguageNotNil(), user.PreferredLanguageNEQ(""))
+	case resource.UserProfileURLKey:
+		return user.And(user.ProfileURLNotNil(), user.ProfileURLNEQ(""))
+	case resource.UserTimezoneKey:
+		return user.And(user.TimezoneNotNil(), user.TimezoneNEQ(""))
+	case resource.UserTitleKey:
+		return user.And(user.TitleNotNil(), user.TitleNEQ(""))
+	case resource.UserUserTypeKey:
+		return user.And(user.UserTypeNotNil(), user.UserTypeNEQ(""))
+	default:
+		return nil
+	}
 }

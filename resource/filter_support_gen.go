@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	filterSupportMaxResultsJSONKey = "maxResults"
-	filterSupportSupportedJSONKey  = "supported"
+	FilterSupportMaxResultsKey = "maxResults"
+	FilterSupportSupportedKey  = "supported"
 )
 
 type FilterSupport struct {
@@ -119,12 +119,12 @@ func (v *FilterSupport) Get(name string, options ...GetOption) (interface{}, boo
 		}
 	}
 	switch name {
-	case filterSupportMaxResultsJSONKey:
+	case FilterSupportMaxResultsKey:
 		if v.maxResults == nil {
 			return nil, false
 		}
 		return *(v.maxResults), true
-	case filterSupportSupportedJSONKey:
+	case FilterSupportSupportedKey:
 		if v.supported == nil {
 			return nil, false
 		}
@@ -156,7 +156,7 @@ func (v *FilterSupport) Set(name string, value interface{}) error {
 	v.mu.Lock()
 	defer v.mu.Unlock()
 	switch name {
-	case filterSupportMaxResultsJSONKey:
+	case FilterSupportMaxResultsKey:
 		var tmp int
 		tmp, ok := value.(int)
 		if !ok {
@@ -164,7 +164,7 @@ func (v *FilterSupport) Set(name string, value interface{}) error {
 		}
 		v.maxResults = &tmp
 		return nil
-	case filterSupportSupportedJSONKey:
+	case FilterSupportSupportedKey:
 		var tmp bool
 		tmp, ok := value.(bool)
 		if !ok {
@@ -224,13 +224,13 @@ LOOP:
 			}
 		case string:
 			switch tok {
-			case filterSupportMaxResultsJSONKey:
+			case FilterSupportMaxResultsKey:
 				var x int
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "maxResults": %w`, err)
 				}
 				v.maxResults = &x
-			case filterSupportSupportedJSONKey:
+			case FilterSupportSupportedKey:
 				var x bool
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "supported": %w`, err)

@@ -9,9 +9,9 @@ import (
 )
 
 const (
-	groupMemberDisplayJSONKey = "display"
-	groupMemberRefJSONKey     = "$ref"
-	groupMemberValueJSONKey   = "value"
+	GroupMemberDisplayKey = "display"
+	GroupMemberRefKey     = "$ref"
+	GroupMemberValueKey   = "value"
 )
 
 type GroupMember struct {
@@ -133,17 +133,17 @@ func (v *GroupMember) Get(name string, options ...GetOption) (interface{}, bool)
 		}
 	}
 	switch name {
-	case groupMemberDisplayJSONKey:
+	case GroupMemberDisplayKey:
 		if v.display == nil {
 			return nil, false
 		}
 		return *(v.display), true
-	case groupMemberRefJSONKey:
+	case GroupMemberRefKey:
 		if v.ref == nil {
 			return nil, false
 		}
 		return *(v.ref), true
-	case groupMemberValueJSONKey:
+	case GroupMemberValueKey:
 		if v.value == nil {
 			return nil, false
 		}
@@ -175,7 +175,7 @@ func (v *GroupMember) Set(name string, value interface{}) error {
 	v.mu.Lock()
 	defer v.mu.Unlock()
 	switch name {
-	case groupMemberDisplayJSONKey:
+	case GroupMemberDisplayKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -183,7 +183,7 @@ func (v *GroupMember) Set(name string, value interface{}) error {
 		}
 		v.display = &tmp
 		return nil
-	case groupMemberRefJSONKey:
+	case GroupMemberRefKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -191,7 +191,7 @@ func (v *GroupMember) Set(name string, value interface{}) error {
 		}
 		v.ref = &tmp
 		return nil
-	case groupMemberValueJSONKey:
+	case GroupMemberValueKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -253,19 +253,19 @@ LOOP:
 			}
 		case string:
 			switch tok {
-			case groupMemberDisplayJSONKey:
+			case GroupMemberDisplayKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "display": %w`, err)
 				}
 				v.display = &x
-			case groupMemberRefJSONKey:
+			case GroupMemberRefKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "$ref": %w`, err)
 				}
 				v.ref = &x
-			case groupMemberValueJSONKey:
+			case GroupMemberValueKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "value": %w`, err)

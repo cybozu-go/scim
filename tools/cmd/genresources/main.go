@@ -111,7 +111,7 @@ func generateObject(object *codegen.Object) error {
 
 	o.LL(`const (`)
 	for _, f := range object.Fields() {
-		o.L(`%s%sJSONKey = %q`, object.Name(false), f.Name(true), f.JSON())
+		o.L(`%s%sKey = %q`, object.Name(true), f.Name(true), f.JSON())
 	}
 	o.L(`)`)
 
@@ -242,7 +242,7 @@ func generateObject(object *codegen.Object) error {
 
 	o.L(`switch name {`)
 	for _, field := range object.Fields() {
-		o.L(`case %s%sJSONKey:`, object.Name(false), field.Name(true))
+		o.L(`case %s%sKey:`, object.Name(true), field.Name(true))
 		o.L(`if v.%s == nil {`, field.Name(false))
 		o.L(`return nil, false`)
 		o.L(`}`)
@@ -278,7 +278,7 @@ func generateObject(object *codegen.Object) error {
 	o.L(`defer v.mu.Unlock()`)
 	o.L(`switch name {`)
 	for _, field := range object.Fields() {
-		o.L(`case %s%sJSONKey:`, object.Name(false), field.Name(true))
+		o.L(`case %s%sKey:`, object.Name(true), field.Name(true))
 		o.L(`var tmp %s`, field.Type())
 		o.L(`tmp, ok := value.(%s)`, field.Type())
 		o.L(`if !ok {`)
@@ -349,7 +349,7 @@ func generateObject(object *codegen.Object) error {
 	o.L(`case string:`)
 	o.L(`switch tok {`)
 	for _, field := range object.Fields() {
-		o.L(`case %s%sJSONKey:`, object.Name(false), field.Name(true))
+		o.L(`case %s%sKey:`, object.Name(true), field.Name(true))
 		o.L(`var x %s`, field.Type())
 		o.L(`if err := dec.Decode(&x); err != nil {`)
 		o.L("return fmt.Errorf(`failed to decode value for key %q: %%w`, err)", field.JSON())
@@ -617,6 +617,7 @@ func generateUtilities(object *codegen.Object) error {
 	o.L(`package sample`)
 
 	o.LL(`import (`)
+	o.L(`"github.com/cybozu-go/scim/resource"`)
 	o.L(`"github.com/cybozu-go/scim/sample/ent"`)
 	o.L(`"github.com/cybozu-go/scim/sample/ent/%s"`, object.Name(false))
 	o.L(`)`)
@@ -733,6 +734,9 @@ func generateUtilities(object *codegen.Object) error {
 
 	for _, field := range object.Fields() {
 		switch field.Name(true) {
+		// FIXME: do't hard codethis
+		case "Password":
+			continue
 		case "ID":
 			o.L(`builder.%[1]s(in.%[1]s.String())`, field.Name(true))
 		case "Schemas", "Meta", "Members", "Addresses", "Emails", "Entitlements", "IMS", "NickName", "Name", "Groups", "PhoneNumbers", "ProfileURL", "Title", "Roles", "X509Certificates":
@@ -744,6 +748,47 @@ func generateUtilities(object *codegen.Object) error {
 		}
 	}
 	o.L(`return builder.Build()`)
+	o.L(`}`)
+
+	o.LL(`func %sEntFileFromSCIM(s string) string {`, object.Name(true))
+	o.L(`switch s {`)
+	for _, field := range object.Fields() {
+		if strings.HasPrefix(field.Type(), `[]`) || strings.HasPrefix(field.Type(), `*`) {
+			continue
+		}
+		switch field.Name(false) {
+		case `schemas`:
+			continue
+		default:
+		}
+		o.L(`case resource.%s%sKey:`, object.Name(true), field.Name(true))
+		o.L(`return %s.Field%s`, object.Name(false), field.Name(true))
+	}
+	o.L(`default:`)
+	o.L(`return s`)
+	o.L(`}`)
+	o.L(`}`)
+
+	o.LL(`func %sPresencePredicate(scimField string) predicate.%s {`, object.Name(false), object.Name(true))
+	o.L(`switch scimField {`)
+	for _, field := range object.Fields() {
+		switch field.Name(false) {
+		case `schemas`:
+			continue
+		default:
+		}
+		if field.Type() != "string" {
+			continue
+		}
+		if field.IsRequired() {
+			continue
+		}
+		o.L(`case resource.%s%sKey:`, object.Name(true), field.Name(true))
+		o.L(`return %[1]s.And(%[1]s.%[2]sNotNil(), %[1]s.%[2]sNEQ(""))`, object.Name(false), field.Name(true))
+	}
+	o.L(`default:`)
+	o.L(`return nil`)
+	o.L(`}`)
 	o.L(`}`)
 
 	fn := filepath.Join(`..`, `sample`, xstrings.Snake(object.Name(false))+`_gen.go`)

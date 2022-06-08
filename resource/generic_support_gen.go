@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	genericSupportSupportedJSONKey = "supported"
+	GenericSupportSupportedKey = "supported"
 )
 
 type GenericSupport struct {
@@ -96,7 +96,7 @@ func (v *GenericSupport) Get(name string, options ...GetOption) (interface{}, bo
 		}
 	}
 	switch name {
-	case genericSupportSupportedJSONKey:
+	case GenericSupportSupportedKey:
 		if v.supported == nil {
 			return nil, false
 		}
@@ -128,7 +128,7 @@ func (v *GenericSupport) Set(name string, value interface{}) error {
 	v.mu.Lock()
 	defer v.mu.Unlock()
 	switch name {
-	case genericSupportSupportedJSONKey:
+	case GenericSupportSupportedKey:
 		var tmp bool
 		tmp, ok := value.(bool)
 		if !ok {
@@ -186,7 +186,7 @@ LOOP:
 			}
 		case string:
 			switch tok {
-			case genericSupportSupportedJSONKey:
+			case GenericSupportSupportedKey:
 				var x bool
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "supported": %w`, err)

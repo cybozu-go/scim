@@ -9,13 +9,13 @@ import (
 )
 
 const (
-	enterpriseUserCostCenterJSONKey     = "costCenter"
-	enterpriseUserDepartmentJSONKey     = "department"
-	enterpriseUserDivisionJSONKey       = "division"
-	enterpriseUserEmployeeNumberJSONKey = "employeeNumber"
-	enterpriseUserManagerJSONKey        = "manager"
-	enterpriseUserOrganizationJSONKey   = "organization"
-	enterpriseUserSchemasJSONKey        = "schemas"
+	EnterpriseUserCostCenterKey     = "costCenter"
+	EnterpriseUserDepartmentKey     = "department"
+	EnterpriseUserDivisionKey       = "division"
+	EnterpriseUserEmployeeNumberKey = "employeeNumber"
+	EnterpriseUserManagerKey        = "manager"
+	EnterpriseUserOrganizationKey   = "organization"
+	EnterpriseUserSchemasKey        = "schemas"
 )
 
 const EnterpriseUserSchemaURI = "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User"
@@ -213,37 +213,37 @@ func (v *EnterpriseUser) Get(name string, options ...GetOption) (interface{}, bo
 		}
 	}
 	switch name {
-	case enterpriseUserCostCenterJSONKey:
+	case EnterpriseUserCostCenterKey:
 		if v.costCenter == nil {
 			return nil, false
 		}
 		return *(v.costCenter), true
-	case enterpriseUserDepartmentJSONKey:
+	case EnterpriseUserDepartmentKey:
 		if v.department == nil {
 			return nil, false
 		}
 		return *(v.department), true
-	case enterpriseUserDivisionJSONKey:
+	case EnterpriseUserDivisionKey:
 		if v.division == nil {
 			return nil, false
 		}
 		return *(v.division), true
-	case enterpriseUserEmployeeNumberJSONKey:
+	case EnterpriseUserEmployeeNumberKey:
 		if v.employeeNumber == nil {
 			return nil, false
 		}
 		return *(v.employeeNumber), true
-	case enterpriseUserManagerJSONKey:
+	case EnterpriseUserManagerKey:
 		if v.manager == nil {
 			return nil, false
 		}
 		return v.manager, true
-	case enterpriseUserOrganizationJSONKey:
+	case EnterpriseUserOrganizationKey:
 		if v.organization == nil {
 			return nil, false
 		}
 		return *(v.organization), true
-	case enterpriseUserSchemasJSONKey:
+	case EnterpriseUserSchemasKey:
 		if v.schemas == nil {
 			return nil, false
 		}
@@ -275,7 +275,7 @@ func (v *EnterpriseUser) Set(name string, value interface{}) error {
 	v.mu.Lock()
 	defer v.mu.Unlock()
 	switch name {
-	case enterpriseUserCostCenterJSONKey:
+	case EnterpriseUserCostCenterKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -283,7 +283,7 @@ func (v *EnterpriseUser) Set(name string, value interface{}) error {
 		}
 		v.costCenter = &tmp
 		return nil
-	case enterpriseUserDepartmentJSONKey:
+	case EnterpriseUserDepartmentKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -291,7 +291,7 @@ func (v *EnterpriseUser) Set(name string, value interface{}) error {
 		}
 		v.department = &tmp
 		return nil
-	case enterpriseUserDivisionJSONKey:
+	case EnterpriseUserDivisionKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -299,7 +299,7 @@ func (v *EnterpriseUser) Set(name string, value interface{}) error {
 		}
 		v.division = &tmp
 		return nil
-	case enterpriseUserEmployeeNumberJSONKey:
+	case EnterpriseUserEmployeeNumberKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -307,7 +307,7 @@ func (v *EnterpriseUser) Set(name string, value interface{}) error {
 		}
 		v.employeeNumber = &tmp
 		return nil
-	case enterpriseUserManagerJSONKey:
+	case EnterpriseUserManagerKey:
 		var tmp *EnterpriseManager
 		tmp, ok := value.(*EnterpriseManager)
 		if !ok {
@@ -315,7 +315,7 @@ func (v *EnterpriseUser) Set(name string, value interface{}) error {
 		}
 		v.manager = tmp
 		return nil
-	case enterpriseUserOrganizationJSONKey:
+	case EnterpriseUserOrganizationKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -323,7 +323,7 @@ func (v *EnterpriseUser) Set(name string, value interface{}) error {
 		}
 		v.organization = &tmp
 		return nil
-	case enterpriseUserSchemasJSONKey:
+	case EnterpriseUserSchemasKey:
 		var tmp schemas
 		tmp, ok := value.(schemas)
 		if !ok {
@@ -393,43 +393,43 @@ LOOP:
 			}
 		case string:
 			switch tok {
-			case enterpriseUserCostCenterJSONKey:
+			case EnterpriseUserCostCenterKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "costCenter": %w`, err)
 				}
 				v.costCenter = &x
-			case enterpriseUserDepartmentJSONKey:
+			case EnterpriseUserDepartmentKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "department": %w`, err)
 				}
 				v.department = &x
-			case enterpriseUserDivisionJSONKey:
+			case EnterpriseUserDivisionKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "division": %w`, err)
 				}
 				v.division = &x
-			case enterpriseUserEmployeeNumberJSONKey:
+			case EnterpriseUserEmployeeNumberKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "employeeNumber": %w`, err)
 				}
 				v.employeeNumber = &x
-			case enterpriseUserManagerJSONKey:
+			case EnterpriseUserManagerKey:
 				var x *EnterpriseManager
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "manager": %w`, err)
 				}
 				v.manager = x
-			case enterpriseUserOrganizationJSONKey:
+			case EnterpriseUserOrganizationKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "organization": %w`, err)
 				}
 				v.organization = &x
-			case enterpriseUserSchemasJSONKey:
+			case EnterpriseUserSchemasKey:
 				var x schemas
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "schemas": %w`, err)

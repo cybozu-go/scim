@@ -253,6 +253,7 @@ func SearchEndpoint(b SearchBackend) http.Handler {
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			// TODO: log
+			fmt.Fprint(w, err.Error())
 			return
 		}
 

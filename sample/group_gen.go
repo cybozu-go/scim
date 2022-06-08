@@ -7,6 +7,7 @@ import (
 	"github.com/cybozu-go/scim/resource"
 	"github.com/cybozu-go/scim/sample/ent"
 	"github.com/cybozu-go/scim/sample/ent/group"
+	"github.com/cybozu-go/scim/sample/ent/predicate"
 )
 
 func groupLoadEntFields(q *ent.GroupQuery, fields []string) {
@@ -52,4 +53,28 @@ func GroupResourceFromEnt(in *ent.Group) (*resource.Group, error) {
 	}
 	builder.ID(in.ID.String())
 	return builder.Build()
+}
+
+func GroupEntFileFromSCIM(s string) string {
+	switch s {
+	case resource.GroupDisplayNameKey:
+		return group.FieldDisplayName
+	case resource.GroupExternalIDKey:
+		return group.FieldExternalID
+	case resource.GroupIDKey:
+		return group.FieldID
+	default:
+		return s
+	}
+}
+
+func groupPresencePredicate(scimField string) predicate.Group {
+	switch scimField {
+	case resource.GroupDisplayNameKey:
+		return group.And(group.DisplayNameNotNil(), group.DisplayNameNEQ(""))
+	case resource.GroupExternalIDKey:
+		return group.And(group.ExternalIDNotNil(), group.ExternalIDNEQ(""))
+	default:
+		return nil
+	}
 }

@@ -9,9 +9,9 @@ import (
 )
 
 const (
-	enterpriseManagerDisplayNameJSONKey = "displayName"
-	enterpriseManagerIDJSONKey          = "id"
-	enterpriseManagerReferenceJSONKey   = "$ref"
+	EnterpriseManagerDisplayNameKey = "displayName"
+	EnterpriseManagerIDKey          = "id"
+	EnterpriseManagerReferenceKey   = "$ref"
 )
 
 type EnterpriseManager struct {
@@ -133,17 +133,17 @@ func (v *EnterpriseManager) Get(name string, options ...GetOption) (interface{},
 		}
 	}
 	switch name {
-	case enterpriseManagerDisplayNameJSONKey:
+	case EnterpriseManagerDisplayNameKey:
 		if v.displayName == nil {
 			return nil, false
 		}
 		return *(v.displayName), true
-	case enterpriseManagerIDJSONKey:
+	case EnterpriseManagerIDKey:
 		if v.id == nil {
 			return nil, false
 		}
 		return *(v.id), true
-	case enterpriseManagerReferenceJSONKey:
+	case EnterpriseManagerReferenceKey:
 		if v.ref == nil {
 			return nil, false
 		}
@@ -175,7 +175,7 @@ func (v *EnterpriseManager) Set(name string, value interface{}) error {
 	v.mu.Lock()
 	defer v.mu.Unlock()
 	switch name {
-	case enterpriseManagerDisplayNameJSONKey:
+	case EnterpriseManagerDisplayNameKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -183,7 +183,7 @@ func (v *EnterpriseManager) Set(name string, value interface{}) error {
 		}
 		v.displayName = &tmp
 		return nil
-	case enterpriseManagerIDJSONKey:
+	case EnterpriseManagerIDKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -191,7 +191,7 @@ func (v *EnterpriseManager) Set(name string, value interface{}) error {
 		}
 		v.id = &tmp
 		return nil
-	case enterpriseManagerReferenceJSONKey:
+	case EnterpriseManagerReferenceKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -253,19 +253,19 @@ LOOP:
 			}
 		case string:
 			switch tok {
-			case enterpriseManagerDisplayNameJSONKey:
+			case EnterpriseManagerDisplayNameKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "displayName": %w`, err)
 				}
 				v.displayName = &x
-			case enterpriseManagerIDJSONKey:
+			case EnterpriseManagerIDKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "id": %w`, err)
 				}
 				v.id = &x
-			case enterpriseManagerReferenceJSONKey:
+			case EnterpriseManagerReferenceKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "$ref": %w`, err)

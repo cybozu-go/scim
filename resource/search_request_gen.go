@@ -9,14 +9,14 @@ import (
 )
 
 const (
-	searchRequestAttributesJSONKey        = "attributes"
-	searchRequestCountJSONKey             = "count"
-	searchRequestExludedAttributesJSONKey = "exludedAttributes"
-	searchRequestFilterJSONKey            = "filter"
-	searchRequestSchemasJSONKey           = "schemas"
-	searchRequestSortByJSONKey            = "sortBy"
-	searchRequestSortOrderJSONKey         = "sortOrder"
-	searchRequestStartIndexJSONKey        = "startIndex"
+	SearchRequestAttributesKey        = "attributes"
+	SearchRequestCountKey             = "count"
+	SearchRequestExludedAttributesKey = "exludedAttributes"
+	SearchRequestFilterKey            = "filter"
+	SearchRequestSchemasKey           = "schemas"
+	SearchRequestSortByKey            = "sortBy"
+	SearchRequestSortOrderKey         = "sortOrder"
+	SearchRequestStartIndexKey        = "startIndex"
 )
 
 const SearchRequestSchemaURI = "urn:ietf:params:scim:api:messages:2.0:SearchRequest"
@@ -230,42 +230,42 @@ func (v *SearchRequest) Get(name string, options ...GetOption) (interface{}, boo
 		}
 	}
 	switch name {
-	case searchRequestAttributesJSONKey:
+	case SearchRequestAttributesKey:
 		if v.attributes == nil {
 			return nil, false
 		}
 		return v.attributes, true
-	case searchRequestCountJSONKey:
+	case SearchRequestCountKey:
 		if v.count == nil {
 			return nil, false
 		}
 		return *(v.count), true
-	case searchRequestExludedAttributesJSONKey:
+	case SearchRequestExludedAttributesKey:
 		if v.exludedAttributes == nil {
 			return nil, false
 		}
 		return v.exludedAttributes, true
-	case searchRequestFilterJSONKey:
+	case SearchRequestFilterKey:
 		if v.filter == nil {
 			return nil, false
 		}
 		return *(v.filter), true
-	case searchRequestSchemasJSONKey:
+	case SearchRequestSchemasKey:
 		if v.schemas == nil {
 			return nil, false
 		}
 		return v.schemas, true
-	case searchRequestSortByJSONKey:
+	case SearchRequestSortByKey:
 		if v.sortBy == nil {
 			return nil, false
 		}
 		return *(v.sortBy), true
-	case searchRequestSortOrderJSONKey:
+	case SearchRequestSortOrderKey:
 		if v.sortOrder == nil {
 			return nil, false
 		}
 		return *(v.sortOrder), true
-	case searchRequestStartIndexJSONKey:
+	case SearchRequestStartIndexKey:
 		if v.startIndex == nil {
 			return nil, false
 		}
@@ -297,7 +297,7 @@ func (v *SearchRequest) Set(name string, value interface{}) error {
 	v.mu.Lock()
 	defer v.mu.Unlock()
 	switch name {
-	case searchRequestAttributesJSONKey:
+	case SearchRequestAttributesKey:
 		var tmp []string
 		tmp, ok := value.([]string)
 		if !ok {
@@ -305,7 +305,7 @@ func (v *SearchRequest) Set(name string, value interface{}) error {
 		}
 		v.attributes = tmp
 		return nil
-	case searchRequestCountJSONKey:
+	case SearchRequestCountKey:
 		var tmp int
 		tmp, ok := value.(int)
 		if !ok {
@@ -313,7 +313,7 @@ func (v *SearchRequest) Set(name string, value interface{}) error {
 		}
 		v.count = &tmp
 		return nil
-	case searchRequestExludedAttributesJSONKey:
+	case SearchRequestExludedAttributesKey:
 		var tmp []string
 		tmp, ok := value.([]string)
 		if !ok {
@@ -321,7 +321,7 @@ func (v *SearchRequest) Set(name string, value interface{}) error {
 		}
 		v.exludedAttributes = tmp
 		return nil
-	case searchRequestFilterJSONKey:
+	case SearchRequestFilterKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -329,7 +329,7 @@ func (v *SearchRequest) Set(name string, value interface{}) error {
 		}
 		v.filter = &tmp
 		return nil
-	case searchRequestSchemasJSONKey:
+	case SearchRequestSchemasKey:
 		var tmp schemas
 		tmp, ok := value.(schemas)
 		if !ok {
@@ -337,7 +337,7 @@ func (v *SearchRequest) Set(name string, value interface{}) error {
 		}
 		v.schemas = tmp
 		return nil
-	case searchRequestSortByJSONKey:
+	case SearchRequestSortByKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -345,7 +345,7 @@ func (v *SearchRequest) Set(name string, value interface{}) error {
 		}
 		v.sortBy = &tmp
 		return nil
-	case searchRequestSortOrderJSONKey:
+	case SearchRequestSortOrderKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -353,7 +353,7 @@ func (v *SearchRequest) Set(name string, value interface{}) error {
 		}
 		v.sortOrder = &tmp
 		return nil
-	case searchRequestStartIndexJSONKey:
+	case SearchRequestStartIndexKey:
 		var tmp int
 		tmp, ok := value.(int)
 		if !ok {
@@ -425,49 +425,49 @@ LOOP:
 			}
 		case string:
 			switch tok {
-			case searchRequestAttributesJSONKey:
+			case SearchRequestAttributesKey:
 				var x []string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "attributes": %w`, err)
 				}
 				v.attributes = x
-			case searchRequestCountJSONKey:
+			case SearchRequestCountKey:
 				var x int
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "count": %w`, err)
 				}
 				v.count = &x
-			case searchRequestExludedAttributesJSONKey:
+			case SearchRequestExludedAttributesKey:
 				var x []string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "exludedAttributes": %w`, err)
 				}
 				v.exludedAttributes = x
-			case searchRequestFilterJSONKey:
+			case SearchRequestFilterKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "filter": %w`, err)
 				}
 				v.filter = &x
-			case searchRequestSchemasJSONKey:
+			case SearchRequestSchemasKey:
 				var x schemas
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "schemas": %w`, err)
 				}
 				v.schemas = x
-			case searchRequestSortByJSONKey:
+			case SearchRequestSortByKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "sortBy": %w`, err)
 				}
 				v.sortBy = &x
-			case searchRequestSortOrderJSONKey:
+			case SearchRequestSortOrderKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "sortOrder": %w`, err)
 				}
 				v.sortOrder = &x
-			case searchRequestStartIndexJSONKey:
+			case SearchRequestStartIndexKey:
 				var x int
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "startIndex": %w`, err)

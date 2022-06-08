@@ -9,10 +9,10 @@ import (
 )
 
 const (
-	schemaAttributesJSONKey  = "attributes"
-	schemaDescriptionJSONKey = "description"
-	schemaIDJSONKey          = "id"
-	schemaNameJSONKey        = "name"
+	SchemaAttributesKey  = "attributes"
+	SchemaDescriptionKey = "description"
+	SchemaIDKey          = "id"
+	SchemaNameKey        = "name"
 )
 
 type Schema struct {
@@ -153,22 +153,22 @@ func (v *Schema) Get(name string, options ...GetOption) (interface{}, bool) {
 		}
 	}
 	switch name {
-	case schemaAttributesJSONKey:
+	case SchemaAttributesKey:
 		if v.attributes == nil {
 			return nil, false
 		}
 		return v.attributes, true
-	case schemaDescriptionJSONKey:
+	case SchemaDescriptionKey:
 		if v.description == nil {
 			return nil, false
 		}
 		return *(v.description), true
-	case schemaIDJSONKey:
+	case SchemaIDKey:
 		if v.id == nil {
 			return nil, false
 		}
 		return *(v.id), true
-	case schemaNameJSONKey:
+	case SchemaNameKey:
 		if v.name == nil {
 			return nil, false
 		}
@@ -200,7 +200,7 @@ func (v *Schema) Set(name string, value interface{}) error {
 	v.mu.Lock()
 	defer v.mu.Unlock()
 	switch name {
-	case schemaAttributesJSONKey:
+	case SchemaAttributesKey:
 		var tmp []*SchemaAttribute
 		tmp, ok := value.([]*SchemaAttribute)
 		if !ok {
@@ -208,7 +208,7 @@ func (v *Schema) Set(name string, value interface{}) error {
 		}
 		v.attributes = tmp
 		return nil
-	case schemaDescriptionJSONKey:
+	case SchemaDescriptionKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -216,7 +216,7 @@ func (v *Schema) Set(name string, value interface{}) error {
 		}
 		v.description = &tmp
 		return nil
-	case schemaIDJSONKey:
+	case SchemaIDKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -224,7 +224,7 @@ func (v *Schema) Set(name string, value interface{}) error {
 		}
 		v.id = &tmp
 		return nil
-	case schemaNameJSONKey:
+	case SchemaNameKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -288,25 +288,25 @@ LOOP:
 			}
 		case string:
 			switch tok {
-			case schemaAttributesJSONKey:
+			case SchemaAttributesKey:
 				var x []*SchemaAttribute
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "attributes": %w`, err)
 				}
 				v.attributes = x
-			case schemaDescriptionJSONKey:
+			case SchemaDescriptionKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "description": %w`, err)
 				}
 				v.description = &x
-			case schemaIDJSONKey:
+			case SchemaIDKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "id": %w`, err)
 				}
 				v.id = &x
-			case schemaNameJSONKey:
+			case SchemaNameKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "name": %w`, err)

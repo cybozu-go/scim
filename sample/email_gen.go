@@ -3,6 +3,7 @@ package sample
 import (
 	"reflect"
 
+	"entgo.io/ent/dialect/sql"
 	"github.com/cybozu-go/scim/resource"
 	"github.com/cybozu-go/scim/sample/ent"
 	"github.com/cybozu-go/scim/sample/ent/email"
@@ -28,7 +29,7 @@ func EmailResourceFromEnt(in *ent.Email) (*resource.Email, error) {
 	return builder.Build()
 }
 
-func EmailEntFileFromSCIM(s string) string {
+func EmailEntFieldFromSCIM(s string) string {
 	switch s {
 	case resource.EmailDisplayKey:
 		return email.FieldDisplay
@@ -40,6 +41,28 @@ func EmailEntFileFromSCIM(s string) string {
 		return email.FieldValue
 	default:
 		return s
+	}
+}
+
+func emailStartsWithPredicate(scimField string, val string) predicate.Email {
+	switch scimField {
+	case resource.EmailDisplayKey:
+		entFieldName := EmailEntFieldFromSCIM(scimField)
+		return predicate.Email(func(s *sql.Selector) {
+			s.Where(sql.HasPrefix(s.C(entFieldName), val))
+		})
+	case resource.EmailTypeKey:
+		entFieldName := EmailEntFieldFromSCIM(scimField)
+		return predicate.Email(func(s *sql.Selector) {
+			s.Where(sql.HasPrefix(s.C(entFieldName), val))
+		})
+	case resource.EmailValueKey:
+		entFieldName := EmailEntFieldFromSCIM(scimField)
+		return predicate.Email(func(s *sql.Selector) {
+			s.Where(sql.HasPrefix(s.C(entFieldName), val))
+		})
+	default:
+		return nil
 	}
 }
 

@@ -43,6 +43,7 @@ func RunConformanceTests(t *testing.T, name string, backend interface{}) {
 		})
 		t.Run("Groups", func(t *testing.T) {
 			t.Run("Basic CRUD", GroupsBasicCRUD(t, cl))
+			t.Run("Search", GroupsSearch(t, cl))
 		})
 	})
 }
@@ -143,8 +144,7 @@ func UsersSearch(t *testing.T, cl *client.Client) func(t *testing.T) {
 			res, err := cl.User().Search().
 				Trace(TraceWriter).
 				Attributes(`displayName`, `userName`).
-				// Filter(`displayName sw "smith"`).
-				Filter(`displayName pr`).
+				Filter(`displayName sw "Barbara"`).
 				StartIndex(1).
 				Count(10).
 				Do(context.TODO())
@@ -370,6 +370,42 @@ func GroupsBasicCRUD(t *testing.T, cl *client.Client) func(*testing.T) {
 					Do(context.TODO())
 				require.Error(t, err, `GetGroup should fail`)
 			})
+		})
+	}
+}
+
+func GroupsSearch(t *testing.T, cl *client.Client) func(t *testing.T) {
+	return func(t *testing.T) {
+		t.Run("search via /Groups/.search", func(t *testing.T) {
+			g1, err := cl.Group().CreateGroup().
+				DisplayName("search-test1").
+				Do(context.TODO())
+			require.NoError(t, err, `CreateGroup should succeed`)
+
+			g2, err := cl.Group().CreateGroup().
+				DisplayName("search-test2").
+				Do(context.TODO())
+			require.NoError(t, err, `CreateGroup should succeed`)
+
+			_ = g1
+			_ = g2
+
+			//nolint:errcheck
+			defer cl.Group().DeleteGroup(g1.ID()).
+				Do(context.TODO())
+			//nolint:errcheck
+			defer cl.Group().DeleteGroup(g2.ID()).
+				Do(context.TODO())
+
+			res, err := cl.Group().Search().
+				Trace(TraceWriter).
+				Attributes(`displayName`).
+				Filter(`displayName sw "search-test"`).
+				StartIndex(1).
+				Count(10).
+				Do(context.TODO())
+			require.NoError(t, err, `cl.Search should succeed`)
+			require.Equal(t, 2, res.TotalResults(), `total results should be 2`)
 		})
 	}
 }

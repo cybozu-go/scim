@@ -53,6 +53,10 @@ type SearchUserBackend interface {
 	SearchUser(*resource.SearchRequest) (*resource.ListResponse, error)
 }
 
+type SearchGroupBackend interface {
+	SearchGroup(*resource.SearchRequest) (*resource.ListResponse, error)
+}
+
 func DeleteGroupEndpoint(b DeleteGroupBackend) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
@@ -280,8 +284,6 @@ func SearchEndpoint(b SearchBackend) http.Handler {
 	})
 }
 
-// Creates an instance of reference implementation http.Handler that
-// uses the specified Backend
 func SearchUserEndpoint(b SearchUserBackend) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var q resource.SearchRequest
@@ -292,6 +294,37 @@ func SearchUserEndpoint(b SearchUserBackend) http.Handler {
 		}
 
 		lr, err := b.SearchUser(&q)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			// TODO: log
+			fmt.Fprint(w, err.Error())
+			return
+		}
+
+		var buf bytes.Buffer
+		if err := json.NewEncoder(&buf).Encode(lr); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			// TODO: log
+			return
+		}
+
+		hdr := w.Header()
+		hdr.Set(ctKey, mimeSCIM)
+		w.WriteHeader(http.StatusOK)
+		_, _ = io.Copy(w, &buf) // not much you can do by this point
+	})
+}
+
+func SearchGroupEndpoint(b SearchGroupBackend) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var q resource.SearchRequest
+		if err := json.NewDecoder(r.Body).Decode(&q); err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			// TODO: log
+			return
+		}
+
+		lr, err := b.SearchGroup(&q)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			// TODO: log

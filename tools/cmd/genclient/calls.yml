@@ -124,5 +124,12 @@ services:
       fields:
         - name: id
           required: true
+    - name: SearchGroupCall
+      method_name: Search
+      method: http.MethodPost
+      resource: SearchRequest
+      response_type: resource.ListResponse
+      path: /Groups/.search
+      jsonPayload: true
 
 

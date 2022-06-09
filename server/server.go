@@ -48,6 +48,10 @@ func NewServer(backend interface{}) (http.Handler, error) {
 		b.RetrieveUser(RetrieveUserEndpoint(v))
 	}
 
+	if v, ok := backend.(SearchGroupBackend); ok {
+		b.SearchGroup(SearchGroupEndpoint(v))
+	}
+
 	if v, ok := backend.(SearchUserBackend); ok {
 		b.SearchUser(SearchUserEndpoint(v))
 	}
@@ -189,6 +193,11 @@ func (b *Builder) ReplaceUser(hh http.Handler) *Builder {
 
 func (b *Builder) RetrieveUser(hh http.Handler) *Builder {
 	b.Handler(http.MethodGet, `/Users/{id}`, hh)
+	return b
+}
+
+func (b *Builder) SearchGroup(hh http.Handler) *Builder {
+	b.Handler(http.MethodPost, `/Groups/.search`, hh)
 	return b
 }
 

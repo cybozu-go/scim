@@ -3,6 +3,7 @@ package sample
 import (
 	"reflect"
 
+	"entgo.io/ent/dialect/sql"
 	"github.com/cybozu-go/scim/resource"
 	"github.com/cybozu-go/scim/sample/ent"
 	"github.com/cybozu-go/scim/sample/ent/names"
@@ -34,7 +35,7 @@ func NamesResourceFromEnt(in *ent.Names) (*resource.Names, error) {
 	return builder.Build()
 }
 
-func NamesEntFileFromSCIM(s string) string {
+func NamesEntFieldFromSCIM(s string) string {
 	switch s {
 	case resource.NamesFamilyNameKey:
 		return names.FieldFamilyName
@@ -50,6 +51,43 @@ func NamesEntFileFromSCIM(s string) string {
 		return names.FieldMiddleName
 	default:
 		return s
+	}
+}
+
+func namesStartsWithPredicate(scimField string, val string) predicate.Names {
+	switch scimField {
+	case resource.NamesFamilyNameKey:
+		entFieldName := NamesEntFieldFromSCIM(scimField)
+		return predicate.Names(func(s *sql.Selector) {
+			s.Where(sql.HasPrefix(s.C(entFieldName), val))
+		})
+	case resource.NamesFormattedKey:
+		entFieldName := NamesEntFieldFromSCIM(scimField)
+		return predicate.Names(func(s *sql.Selector) {
+			s.Where(sql.HasPrefix(s.C(entFieldName), val))
+		})
+	case resource.NamesGivenNameKey:
+		entFieldName := NamesEntFieldFromSCIM(scimField)
+		return predicate.Names(func(s *sql.Selector) {
+			s.Where(sql.HasPrefix(s.C(entFieldName), val))
+		})
+	case resource.NamesHonorificPrefixKey:
+		entFieldName := NamesEntFieldFromSCIM(scimField)
+		return predicate.Names(func(s *sql.Selector) {
+			s.Where(sql.HasPrefix(s.C(entFieldName), val))
+		})
+	case resource.NamesHonorificSuffixKey:
+		entFieldName := NamesEntFieldFromSCIM(scimField)
+		return predicate.Names(func(s *sql.Selector) {
+			s.Where(sql.HasPrefix(s.C(entFieldName), val))
+		})
+	case resource.NamesMiddleNameKey:
+		entFieldName := NamesEntFieldFromSCIM(scimField)
+		return predicate.Names(func(s *sql.Selector) {
+			s.Where(sql.HasPrefix(s.C(entFieldName), val))
+		})
+	default:
+		return nil
 	}
 }
 

@@ -2,8 +2,10 @@ package sample
 
 import (
 	"fmt"
+	"log"
 	"reflect"
 
+	"entgo.io/ent/dialect/sql"
 	"github.com/cybozu-go/scim/resource"
 	"github.com/cybozu-go/scim/sample/ent"
 	"github.com/cybozu-go/scim/sample/ent/group"
@@ -62,7 +64,7 @@ func GroupResourceFromEnt(in *ent.Group) (*resource.Group, error) {
 	return builder.Build()
 }
 
-func GroupEntFileFromSCIM(s string) string {
+func GroupEntFieldFromSCIM(s string) string {
 	switch s {
 	case resource.GroupDisplayNameKey:
 		return group.FieldDisplayName
@@ -72,6 +74,29 @@ func GroupEntFileFromSCIM(s string) string {
 		return group.FieldID
 	default:
 		return s
+	}
+}
+
+func groupStartsWithPredicate(scimField string, val string) predicate.Group {
+	switch scimField {
+	case resource.GroupDisplayNameKey:
+		entFieldName := GroupEntFieldFromSCIM(scimField)
+		log.Printf("ent field name = %q, val = %q", entFieldName, val)
+		return predicate.Group(func(s *sql.Selector) {
+			s.Where(sql.HasPrefix(s.C(entFieldName), val))
+		})
+	case resource.GroupExternalIDKey:
+		entFieldName := GroupEntFieldFromSCIM(scimField)
+		return predicate.Group(func(s *sql.Selector) {
+			s.Where(sql.HasPrefix(s.C(entFieldName), val))
+		})
+	case resource.GroupIDKey:
+		entFieldName := GroupEntFieldFromSCIM(scimField)
+		return predicate.Group(func(s *sql.Selector) {
+			s.Where(sql.HasPrefix(s.C(entFieldName), val))
+		})
+	default:
+		return nil
 	}
 }
 

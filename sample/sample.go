@@ -18,6 +18,7 @@ import (
 	"github.com/cybozu-go/scim/sample/ent/predicate"
 	"github.com/cybozu-go/scim/sample/ent/user"
 	"github.com/google/uuid"
+	"github.com/lestrrat-go/rungroup"
 	"golang.org/x/text/secure/precis"
 
 	// default driver
@@ -28,6 +29,8 @@ import (
 var _ = emailPresencePredicate
 var _ = groupPresencePredicate
 var _ = namesPresencePredicate
+var _ = emailStartsWithPredicate
+var _ = namesStartsWithPredicate
 
 type Backend struct {
 	db *ent.Client
@@ -472,7 +475,7 @@ func (v *filterVisitor) visitPresenceExpr(expr filter.PresenceExpr) error {
 	}
 
 	switch expr.Operator() {
-	case "pr":
+	case filter.PresenceOp:
 		if v.users != nil {
 			if pred := userPresencePredicate(sattr); pred != nil {
 				v.users = append(v.users, pred)
@@ -484,12 +487,46 @@ func (v *filterVisitor) visitPresenceExpr(expr filter.PresenceExpr) error {
 	}
 }
 
+func (v *filterVisitor) visitRegexExpr(expr filter.RegexExpr) error {
+	lhe, err := exprAttr(expr.LHE())
+	slhe, ok := lhe.(string)
+	if err != nil || !ok {
+		return fmt.Errorf(`left hand side of RegexExpr is not valid`)
+	}
+
+	rhe, err := exprAttr(expr.Value())
+	if err != nil {
+		return fmt.Errorf(`right hand side of RegexExpr is not valid: %w`, err)
+	}
+	// convert rhe to string so it can be passed to regexp.QuoteMeta
+	srhe := fmt.Sprintf(`%v`, rhe)
+
+	switch expr.Operator() {
+	case filter.ContainsOp:
+		return fmt.Errorf("unimplemented")
+	case filter.StartsWithOp:
+		if v.users != nil {
+			if pred := userStartsWithPredicate(slhe, srhe); pred != nil {
+				v.users = append(v.users, pred)
+			}
+		}
+		if v.groups != nil {
+			if pred := groupStartsWithPredicate(slhe, srhe); pred != nil {
+				v.groups = append(v.groups, pred)
+			}
+		}
+		return nil
+	case filter.EndsWithOp:
+		return fmt.Errorf("unimplemented")
+	default:
+		return fmt.Errorf(`unhandled regexp operator %q`, expr.Operator())
+	}
+}
+
 func (v *filterVisitor) visitCompareExpr(expr filter.Expr) error {
 	return fmt.Errorf(`unimplemented`)
 }
-func (v *filterVisitor) visitRegexExpr(expr filter.Expr) error {
-	return fmt.Errorf(`unimplemented`)
-}
+
 func (v *filterVisitor) visitLogExpr(expr filter.Expr) error {
 	return fmt.Errorf(`unimplemented`)
 }
@@ -521,52 +558,48 @@ func (b *Backend) search(in *resource.SearchRequest, searchUser, searchGroup boo
 
 	var list []interface{}
 
+	var g rungroup.Group
 	if searchUser {
-		users, err := b.db.User.Query().Where(userWhere...).
-			All(context.TODO())
-		if err != nil {
-			return nil, fmt.Errorf(`failed to execute query: %w`, err)
-		}
-
-		for _, user := range users {
-			r, err := UserResourceFromEnt(user)
+		_ = g.Add(rungroup.ActorFunc(func(ctx context.Context) error {
+			users, err := b.db.User.Query().Where(userWhere...).
+				All(ctx)
 			if err != nil {
-				return nil, fmt.Errorf(`failed to convert internal data to SCIM resource: %w`, err)
+				return fmt.Errorf(`failed to execute query: %w`, err)
 			}
-			list = append(list, r)
-		}
+
+			for _, user := range users {
+				r, err := UserResourceFromEnt(user)
+				if err != nil {
+					return fmt.Errorf(`failed to convert internal data to SCIM resource: %w`, err)
+				}
+				list = append(list, r)
+			}
+			return nil
+		}))
 	}
 
-	_ = groupWhere
-
-	/*
-			if attrs := in.Attributes(); len(attrs) > 0 {
-				// TODO: need to generate SCIM name to ent name converter?
-				snakeAttrs := make([]string, len(attrs))
-				for i, attr := range attrs {
-					snakeAttrs[i] = xstrings.Snake(attr)
-				}
-				q.Select(snakeAttrs...)
-			}
-
-			q.Where(
-				user.DisplayNameHasPrefix("smith"),
-			)
-
-		users, err := q.All(context.TODO())
-		if err != nil {
-			return nil, fmt.Errorf(`failed to execute query: %w`, err)
-		}
-
-		list := make([]interface{}, len(users))
-		for i, user := range users {
-			created, err := UserResourceFromEnt(user)
+	if searchGroup {
+		_ = g.Add(rungroup.ActorFunc(func(ctx context.Context) error {
+			groups, err := b.db.Group.Query().Where(groupWhere...).
+				All(ctx)
 			if err != nil {
-				return nil, fmt.Errorf(`failed to convert internal data to SCIM resource: %w`, err)
+				return fmt.Errorf(`failed to execute query: %w`, err)
 			}
-			list[i] = created
-		}
-	*/
+
+			for _, group := range groups {
+				r, err := GroupResourceFromEnt(group)
+				if err != nil {
+					return fmt.Errorf(`failed to convert internal data to SCIM resource: %w`, err)
+				}
+				list = append(list, r)
+			}
+			return nil
+		}))
+	}
+
+	if err := <-g.Run(context.TODO()); err != nil {
+		return nil, err
+	}
 
 	var builder resource.Builder
 	return builder.ListResponse().
@@ -591,7 +624,7 @@ func (b *Backend) RetrieveGroup(id string, fields ...string) (*resource.Group, e
 	g, err := groupQuery.
 		Only(context.TODO())
 	if err != nil {
-		return nil, fmt.Errorf(`failed to retrieve group: %w`, err)
+		return nil, fmt.Errorf(`failed to retrieve group %s: %w`, id, err)
 	}
 
 	return GroupResourceFromEnt(g)
@@ -608,7 +641,7 @@ func (b *Backend) ReplaceGroup(id string, in *resource.Group) (*resource.Group, 
 		Where(group.IDEQ(parsedUUID)).
 		Only(context.TODO())
 	if err != nil {
-		return nil, fmt.Errorf(`failed to retrieve group: %w`, err)
+		return nil, fmt.Errorf(`failed to retrieve group for replace: %w`, err)
 	}
 
 	replaceGroupCall := g.Update().

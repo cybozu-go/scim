@@ -239,11 +239,11 @@ func (sv *sqlVisitor) visitRegexExpr(v RegexExpr) error {
 	var expr exp.Expression
 	col := sv.mapper.Column(slhe)
 	switch v.Operator() {
-	case "co":
+	case ContainsOp:
 		expr = col.RegexpLike(regexp.QuoteMeta(srhe))
-	case "sw":
+	case StartsWithOp:
 		expr = col.RegexpLike("^" + regexp.QuoteMeta(srhe))
-	case "ew":
+	case EndsWithOp:
 		expr = col.RegexpLike(regexp.QuoteMeta(srhe) + "$")
 	default:
 		return fmt.Errorf(`unhandled regexp operator %q`, v.Operator())

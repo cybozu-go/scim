@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
+	"entgo.io/ent/dialect/sql"
 	"github.com/cybozu-go/scim/resource"
 	"github.com/cybozu-go/scim/sample/ent"
 	"github.com/cybozu-go/scim/sample/ent/predicate"
@@ -131,7 +132,7 @@ func UserResourceFromEnt(in *ent.User) (*resource.User, error) {
 	return builder.Build()
 }
 
-func UserEntFileFromSCIM(s string) string {
+func UserEntFieldFromSCIM(s string) string {
 	switch s {
 	case resource.UserActiveKey:
 		return user.FieldActive
@@ -161,6 +162,73 @@ func UserEntFileFromSCIM(s string) string {
 		return user.FieldUserType
 	default:
 		return s
+	}
+}
+
+func userStartsWithPredicate(scimField string, val string) predicate.User {
+	switch scimField {
+	case resource.UserDisplayNameKey:
+		entFieldName := UserEntFieldFromSCIM(scimField)
+		return predicate.User(func(s *sql.Selector) {
+			s.Where(sql.HasPrefix(s.C(entFieldName), val))
+		})
+	case resource.UserExternalIDKey:
+		entFieldName := UserEntFieldFromSCIM(scimField)
+		return predicate.User(func(s *sql.Selector) {
+			s.Where(sql.HasPrefix(s.C(entFieldName), val))
+		})
+	case resource.UserIDKey:
+		entFieldName := UserEntFieldFromSCIM(scimField)
+		return predicate.User(func(s *sql.Selector) {
+			s.Where(sql.HasPrefix(s.C(entFieldName), val))
+		})
+	case resource.UserLocaleKey:
+		entFieldName := UserEntFieldFromSCIM(scimField)
+		return predicate.User(func(s *sql.Selector) {
+			s.Where(sql.HasPrefix(s.C(entFieldName), val))
+		})
+	case resource.UserNickNameKey:
+		entFieldName := UserEntFieldFromSCIM(scimField)
+		return predicate.User(func(s *sql.Selector) {
+			s.Where(sql.HasPrefix(s.C(entFieldName), val))
+		})
+	case resource.UserPasswordKey:
+		entFieldName := UserEntFieldFromSCIM(scimField)
+		return predicate.User(func(s *sql.Selector) {
+			s.Where(sql.HasPrefix(s.C(entFieldName), val))
+		})
+	case resource.UserPreferredLanguageKey:
+		entFieldName := UserEntFieldFromSCIM(scimField)
+		return predicate.User(func(s *sql.Selector) {
+			s.Where(sql.HasPrefix(s.C(entFieldName), val))
+		})
+	case resource.UserProfileURLKey:
+		entFieldName := UserEntFieldFromSCIM(scimField)
+		return predicate.User(func(s *sql.Selector) {
+			s.Where(sql.HasPrefix(s.C(entFieldName), val))
+		})
+	case resource.UserTimezoneKey:
+		entFieldName := UserEntFieldFromSCIM(scimField)
+		return predicate.User(func(s *sql.Selector) {
+			s.Where(sql.HasPrefix(s.C(entFieldName), val))
+		})
+	case resource.UserTitleKey:
+		entFieldName := UserEntFieldFromSCIM(scimField)
+		return predicate.User(func(s *sql.Selector) {
+			s.Where(sql.HasPrefix(s.C(entFieldName), val))
+		})
+	case resource.UserUserNameKey:
+		entFieldName := UserEntFieldFromSCIM(scimField)
+		return predicate.User(func(s *sql.Selector) {
+			s.Where(sql.HasPrefix(s.C(entFieldName), val))
+		})
+	case resource.UserUserTypeKey:
+		entFieldName := UserEntFieldFromSCIM(scimField)
+		return predicate.User(func(s *sql.Selector) {
+			s.Where(sql.HasPrefix(s.C(entFieldName), val))
+		})
+	default:
+		return nil
 	}
 }
 

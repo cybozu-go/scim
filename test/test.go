@@ -96,13 +96,7 @@ func UsersFetch(t *testing.T, cl *client.Client) func(*testing.T) {
 			// well as the attributes with the "returned" value of always
 			require.Equal(t, createdUser.ID(), u.ID(), `ID should match`)
 			require.Equal(t, createdUser.UserName(), u.UserName(), `UserName should match`)
-
-			if !assert.Equal(t, createdUser.Emails(), u.Emails(), `Emails should match`) {
-				enc := json.NewEncoder(os.Stdout)
-				enc.SetIndent("", "  ")
-				enc.Encode(createdUser.Emails())
-				enc.Encode(u.Emails())
-			}
+			require.Equal(t, createdUser.Emails(), u.Emails(), `Emails should match`)
 
 			if n := u.Name(); assert.NotNil(t, n, `Name should not be nil`) {
 				require.Equal(t, `Ms. Barbara J Jensen III`, n.Formatted(), `Formatted should match`)

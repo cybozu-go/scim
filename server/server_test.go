@@ -240,6 +240,10 @@ func (m *mockBackend) SearchUser(*resource.SearchRequest) (*resource.ListRespons
 	return m.search(nil, true, false)
 }
 
+func (m *mockBackend) SearchGroup(*resource.SearchRequest) (*resource.ListResponse, error) {
+	return m.search(nil, false, true)
+}
+
 func (m *mockBackend) search(_ *resource.SearchRequest, searchUser, searchGroup bool) (*resource.ListResponse, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
@@ -257,9 +261,16 @@ func (m *mockBackend) search(_ *resource.SearchRequest, searchUser, searchGroup 
 	}
 
 	if searchGroup {
+		// TODO: This is totally wrong as far as the conformance tests go
+		// and WILL fail once we write proper tests
 		resources = append(resources, b.Group().
 			ID("c8596b90-7539-4f20968d1908").
 			DisplayName("Smith Family").
+			MustBuild(),
+		)
+		resources = append(resources, b.Group().
+			ID("c8596b90-7539-5f30461a1b08").
+			DisplayName("Johson Family").
 			MustBuild(),
 		)
 	}

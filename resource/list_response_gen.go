@@ -521,10 +521,8 @@ func (b *ListResponseBuilder) Build() (*ListResponse, error) {
 	if validator == nil {
 		validator = DefaultListResponseValidator
 	}
-	if validator != nil {
-		if err := validator.Validate(object); err != nil {
-			return nil, err
-		}
+	if err := validator.Validate(object); err != nil {
+		return nil, err
 	}
 	return object, nil
 }

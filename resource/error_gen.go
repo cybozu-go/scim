@@ -9,88 +9,88 @@ import (
 )
 
 const (
-	GroupMemberDisplayKey = "display"
-	GroupMemberRefKey     = "$ref"
-	GroupMemberValueKey   = "value"
+	ErrorDetailKey   = "detail"
+	ErrorScimTypeKey = "scimType"
+	ErrorStatusKey   = "status"
 )
 
-type GroupMember struct {
-	display       *string
-	ref           *string
-	value         *string
+type Error struct {
+	detail        *string
+	scimType      *ErrorType
+	status        *int
 	privateParams map[string]interface{}
 	mu            sync.RWMutex
 }
 
-type GroupMemberValidator interface {
-	Validate(*GroupMember) error
+type ErrorValidator interface {
+	Validate(*Error) error
 }
 
-type GroupMemberValidateFunc func(v *GroupMember) error
+type ErrorValidateFunc func(v *Error) error
 
-func (f GroupMemberValidateFunc) Validate(v *GroupMember) error {
+func (f ErrorValidateFunc) Validate(v *Error) error {
 	return f(v)
 }
 
-var DefaultGroupMemberValidator GroupMemberValidator = GroupMemberValidateFunc(func(v *GroupMember) error {
+var DefaultErrorValidator ErrorValidator = ErrorValidateFunc(func(v *Error) error {
 	return nil
 })
 
-func (v *GroupMember) HasDisplay() bool {
+func (v *Error) HasDetail() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return v.display != nil
+	return v.detail != nil
 }
 
-func (v *GroupMember) Display() string {
+func (v *Error) Detail() string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	if v.display == nil {
+	if v.detail == nil {
 		return ""
 	}
-	return *(v.display)
+	return *(v.detail)
 }
 
-func (v *GroupMember) HasRef() bool {
+func (v *Error) HasScimType() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return v.ref != nil
+	return v.scimType != nil
 }
 
-func (v *GroupMember) Ref() string {
+func (v *Error) ScimType() ErrorType {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	if v.ref == nil {
-		return ""
+	if v.scimType == nil {
+		return ErrUnknown
 	}
-	return *(v.ref)
+	return *(v.scimType)
 }
 
-func (v *GroupMember) HasValue() bool {
+func (v *Error) HasStatus() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return v.value != nil
+	return v.status != nil
 }
 
-func (v *GroupMember) Value() string {
+func (v *Error) Status() int {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	if v.value == nil {
-		return ""
+	if v.status == nil {
+		return 0
 	}
-	return *(v.value)
+	return *(v.status)
 }
 
-func (v *GroupMember) makePairs() []pair {
+func (v *Error) makePairs() []pair {
 	pairs := make([]pair, 0, 3)
-	if v.display != nil {
-		pairs = append(pairs, pair{Key: "display", Value: *(v.display)})
+	if v.detail != nil {
+		pairs = append(pairs, pair{Key: "detail", Value: *(v.detail)})
 	}
-	if v.ref != nil {
-		pairs = append(pairs, pair{Key: "$ref", Value: *(v.ref)})
+	if v.scimType != nil {
+		pairs = append(pairs, pair{Key: "scimType", Value: *(v.scimType)})
 	}
-	if v.value != nil {
-		pairs = append(pairs, pair{Key: "value", Value: *(v.value)})
+	if v.status != nil {
+		pairs = append(pairs, pair{Key: "status", Value: *(v.status)})
 	}
 	for k, v := range v.privateParams {
 		pairs = append(pairs, pair{Key: k, Value: v})
@@ -101,7 +101,7 @@ func (v *GroupMember) makePairs() []pair {
 	return pairs
 }
 
-func (v *GroupMember) MarshalJSON() ([]byte, error) {
+func (v *Error) MarshalJSON() ([]byte, error) {
 	pairs := v.makePairs()
 
 	var buf bytes.Buffer
@@ -120,7 +120,7 @@ func (v *GroupMember) MarshalJSON() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func (v *GroupMember) Get(name string, options ...GetOption) (interface{}, bool) {
+func (v *Error) Get(name string, options ...GetOption) (interface{}, bool) {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 
@@ -133,21 +133,21 @@ func (v *GroupMember) Get(name string, options ...GetOption) (interface{}, bool)
 		}
 	}
 	switch name {
-	case GroupMemberDisplayKey:
-		if v.display == nil {
+	case ErrorDetailKey:
+		if v.detail == nil {
 			return nil, false
 		}
-		return *(v.display), true
-	case GroupMemberRefKey:
-		if v.ref == nil {
+		return *(v.detail), true
+	case ErrorScimTypeKey:
+		if v.scimType == nil {
 			return nil, false
 		}
-		return *(v.ref), true
-	case GroupMemberValueKey:
-		if v.value == nil {
+		return *(v.scimType), true
+	case ErrorStatusKey:
+		if v.status == nil {
 			return nil, false
 		}
-		return *(v.value), true
+		return *(v.status), true
 	default:
 		pp := v.privateParams
 		if pp == nil {
@@ -171,33 +171,33 @@ func (v *GroupMember) Get(name string, options ...GetOption) (interface{}, bool)
 	}
 }
 
-func (v *GroupMember) Set(name string, value interface{}) error {
+func (v *Error) Set(name string, value interface{}) error {
 	v.mu.Lock()
 	defer v.mu.Unlock()
 	switch name {
-	case GroupMemberDisplayKey:
+	case ErrorDetailKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
-			return fmt.Errorf(`expected string for field "display", but got %T`, value)
+			return fmt.Errorf(`expected string for field "detail", but got %T`, value)
 		}
-		v.display = &tmp
+		v.detail = &tmp
 		return nil
-	case GroupMemberRefKey:
-		var tmp string
-		tmp, ok := value.(string)
+	case ErrorScimTypeKey:
+		var tmp ErrorType
+		tmp, ok := value.(ErrorType)
 		if !ok {
-			return fmt.Errorf(`expected string for field "$ref", but got %T`, value)
+			return fmt.Errorf(`expected ErrorType for field "scimType", but got %T`, value)
 		}
-		v.ref = &tmp
+		v.scimType = &tmp
 		return nil
-	case GroupMemberValueKey:
-		var tmp string
-		tmp, ok := value.(string)
+	case ErrorStatusKey:
+		var tmp int
+		tmp, ok := value.(int)
 		if !ok {
-			return fmt.Errorf(`expected string for field "value", but got %T`, value)
+			return fmt.Errorf(`expected int for field "status", but got %T`, value)
 		}
-		v.value = &tmp
+		v.status = &tmp
 		return nil
 	default:
 		pp := v.privateParams
@@ -210,20 +210,20 @@ func (v *GroupMember) Set(name string, value interface{}) error {
 	}
 }
 
-func (v *GroupMember) Clone() *GroupMember {
+func (v *Error) Clone() *Error {
 	v.mu.Lock()
 	defer v.mu.Unlock()
-	return &GroupMember{
-		display: v.display,
-		ref:     v.ref,
-		value:   v.value,
+	return &Error{
+		detail:   v.detail,
+		scimType: v.scimType,
+		status:   v.status,
 	}
 }
 
-func (v *GroupMember) UnmarshalJSON(data []byte) error {
-	v.display = nil
-	v.ref = nil
-	v.value = nil
+func (v *Error) UnmarshalJSON(data []byte) error {
+	v.detail = nil
+	v.scimType = nil
+	v.status = nil
 	v.privateParams = nil
 	dec := json.NewDecoder(bytes.NewReader(data))
 	{ // first token
@@ -253,24 +253,24 @@ LOOP:
 			}
 		case string:
 			switch tok {
-			case GroupMemberDisplayKey:
+			case ErrorDetailKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "display": %w`, err)
+					return fmt.Errorf(`failed to decode value for key "detail": %w`, err)
 				}
-				v.display = &x
-			case GroupMemberRefKey:
-				var x string
+				v.detail = &x
+			case ErrorScimTypeKey:
+				var x ErrorType
 				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "$ref": %w`, err)
+					return fmt.Errorf(`failed to decode value for key "scimType": %w`, err)
 				}
-				v.ref = &x
-			case GroupMemberValueKey:
-				var x string
+				v.scimType = &x
+			case ErrorStatusKey:
+				var x int
 				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "value": %w`, err)
+					return fmt.Errorf(`failed to decode value for key "status": %w`, err)
 				}
-				v.value = &x
+				v.status = &x
 			default:
 				var x interface{}
 				if rx, ok := registry.Get(tok); ok {
@@ -296,83 +296,83 @@ LOOP:
 	return nil
 }
 
-func (v *GroupMember) AsMap(dst map[string]interface{}) error {
+func (v *Error) AsMap(dst map[string]interface{}) error {
 	for _, pair := range v.makePairs() {
 		dst[pair.Key] = pair.Value
 	}
 	return nil
 }
 
-type GroupMemberBuilder struct {
+type ErrorBuilder struct {
 	once      sync.Once
 	mu        sync.Mutex
 	err       error
-	validator GroupMemberValidator
-	object    *GroupMember
+	validator ErrorValidator
+	object    *Error
 }
 
-func (b *Builder) GroupMember() *GroupMemberBuilder {
-	return NewGroupMemberBuilder()
+func (b *Builder) Error() *ErrorBuilder {
+	return NewErrorBuilder()
 }
 
-func NewGroupMemberBuilder() *GroupMemberBuilder {
-	var b GroupMemberBuilder
+func NewErrorBuilder() *ErrorBuilder {
+	var b ErrorBuilder
 	b.init()
 	return &b
 }
 
-func (b *GroupMemberBuilder) From(in *GroupMember) *GroupMemberBuilder {
+func (b *ErrorBuilder) From(in *Error) *ErrorBuilder {
 	b.once.Do(b.init)
 	b.object = in.Clone()
 	return b
 }
 
-func (b *GroupMemberBuilder) init() {
+func (b *ErrorBuilder) init() {
 	b.err = nil
 	b.validator = nil
-	b.object = &GroupMember{}
+	b.object = &Error{}
 }
 
-func (b *GroupMemberBuilder) Display(v string) *GroupMemberBuilder {
+func (b *ErrorBuilder) Detail(v string) *ErrorBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.once.Do(b.init)
 	if b.err != nil {
 		return b
 	}
-	if err := b.object.Set("display", v); err != nil {
+	if err := b.object.Set("detail", v); err != nil {
 		b.err = err
 	}
 	return b
 }
 
-func (b *GroupMemberBuilder) Ref(v string) *GroupMemberBuilder {
+func (b *ErrorBuilder) ScimType(v ErrorType) *ErrorBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.once.Do(b.init)
 	if b.err != nil {
 		return b
 	}
-	if err := b.object.Set("$ref", v); err != nil {
+	if err := b.object.Set("scimType", v); err != nil {
 		b.err = err
 	}
 	return b
 }
 
-func (b *GroupMemberBuilder) Value(v string) *GroupMemberBuilder {
+func (b *ErrorBuilder) Status(v int) *ErrorBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.once.Do(b.init)
 	if b.err != nil {
 		return b
 	}
-	if err := b.object.Set("value", v); err != nil {
+	if err := b.object.Set("status", v); err != nil {
 		b.err = err
 	}
 	return b
 }
 
-func (b *GroupMemberBuilder) Validator(v GroupMemberValidator) *GroupMemberBuilder {
+func (b *ErrorBuilder) Validator(v ErrorValidator) *ErrorBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.once.Do(b.init)
@@ -383,7 +383,7 @@ func (b *GroupMemberBuilder) Validator(v GroupMemberValidator) *GroupMemberBuild
 	return b
 }
 
-func (b *GroupMemberBuilder) Build() (*GroupMember, error) {
+func (b *ErrorBuilder) Build() (*Error, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	object := b.object
@@ -394,10 +394,10 @@ func (b *GroupMemberBuilder) Build() (*GroupMember, error) {
 		return nil, err
 	}
 	if object == nil {
-		return nil, fmt.Errorf("resource.GroupMemberBuilder: object was not initialized")
+		return nil, fmt.Errorf("resource.ErrorBuilder: object was not initialized")
 	}
 	if validator == nil {
-		validator = DefaultGroupMemberValidator
+		validator = DefaultErrorValidator
 	}
 	if err := validator.Validate(object); err != nil {
 		return nil, err
@@ -405,7 +405,7 @@ func (b *GroupMemberBuilder) Build() (*GroupMember, error) {
 	return object, nil
 }
 
-func (b *GroupMemberBuilder) MustBuild() *GroupMember {
+func (b *ErrorBuilder) MustBuild() *Error {
 	object, err := b.Build()
 	if err != nil {
 		panic(err)

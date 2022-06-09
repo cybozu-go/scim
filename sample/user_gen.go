@@ -60,6 +60,10 @@ func userLoadEntFields(q *ent.UserQuery, fields []string) {
 	q.Select(selectNames...)
 }
 
+func userLocation(id string) string {
+	return "https://foobar.com/scim/v2/Users/" + id
+}
+
 func UserResourceFromEnt(in *ent.User) (*resource.User, error) {
 	var b resource.Builder
 
@@ -67,7 +71,7 @@ func UserResourceFromEnt(in *ent.User) (*resource.User, error) {
 
 	meta, err := b.Meta().
 		ResourceType("User").
-		Location("https://foobar.com/scim/v2/User/" + in.ID.String()).
+		Location(userLocation(in.ID.String())).
 		Build()
 	if err != nil {
 		return nil, fmt.Errorf("failed to build meta information for User")

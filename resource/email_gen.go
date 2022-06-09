@@ -456,10 +456,8 @@ func (b *EmailBuilder) Build() (*Email, error) {
 	if validator == nil {
 		validator = DefaultEmailValidator
 	}
-	if validator != nil {
-		if err := validator.Validate(object); err != nil {
-			return nil, err
-		}
+	if err := validator.Validate(object); err != nil {
+		return nil, err
 	}
 	return object, nil
 }

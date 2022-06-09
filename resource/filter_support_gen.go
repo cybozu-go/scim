@@ -351,10 +351,8 @@ func (b *FilterSupportBuilder) Build() (*FilterSupport, error) {
 	if validator == nil {
 		validator = DefaultFilterSupportValidator
 	}
-	if validator != nil {
-		if err := validator.Validate(object); err != nil {
-			return nil, err
-		}
+	if err := validator.Validate(object); err != nil {
+		return nil, err
 	}
 	return object, nil
 }

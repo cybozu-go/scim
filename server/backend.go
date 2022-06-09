@@ -14,7 +14,7 @@ import (
 )
 
 type CreateGroupBackend interface {
-	CreateGroup(user *resource.Group) (*resource.Group, error)
+	CreateGroup(*resource.Group) (*resource.Group, error)
 }
 
 type DeleteGroupBackend interface {
@@ -22,15 +22,15 @@ type DeleteGroupBackend interface {
 }
 
 type ReplaceGroupBackend interface {
-	ReplaceGroup(id string, user *resource.Group) error
+	ReplaceGroup(string, *resource.Group) (*resource.Group, error)
 }
 
 type RetrieveGroupBackend interface {
-	RetrieveGroup(string) (*resource.Group, error)
+	RetrieveGroup(string, ...string) (*resource.Group, error)
 }
 
 type CreateUserBackend interface {
-	CreateUser(user *resource.User) (*resource.User, error)
+	CreateUser(*resource.User) (*resource.User, error)
 }
 
 type DeleteUserBackend interface {
@@ -89,13 +89,14 @@ func ReplaceGroupEndpoint(b ReplaceGroupBackend) http.Handler {
 			return
 		}
 
-		if err := b.ReplaceGroup(id, &group); err != nil {
+		replaced, err := b.ReplaceGroup(id, &group)
+		if err != nil {
 			// TODO: log
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 		w.WriteHeader(http.StatusOK)
-		_ = json.NewEncoder(w).Encode(&group)
+		_ = json.NewEncoder(w).Encode(replaced)
 	})
 }
 
@@ -110,16 +111,17 @@ func RetrieveGroupEndpoint(b RetrieveGroupBackend) http.Handler {
 		}
 
 		// TODO: handle "attributes" and stuff?
-		user, err := b.RetrieveGroup(id)
+		group, err := b.RetrieveGroup(id)
 		if err != nil {
 			// TODO: distinguish between error and not found error
 			// TODO: log
+			log.Printf("%s", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 
 		w.WriteHeader(http.StatusOK)
-		_ = json.NewEncoder(w).Encode(user)
+		_ = json.NewEncoder(w).Encode(group)
 	})
 }
 
@@ -135,6 +137,7 @@ func CreateGroupEndpoint(b CreateGroupBackend) http.Handler {
 		created, err := b.CreateGroup(&group)
 		if err != nil {
 			// TODO: log
+			log.Printf("%s", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}

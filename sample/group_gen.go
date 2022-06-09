@@ -30,6 +30,10 @@ func groupLoadEntFields(q *ent.GroupQuery, fields []string) {
 	q.Select(selectNames...)
 }
 
+func groupLocation(id string) string {
+	return "https://foobar.com/scim/v2/Groups/" + id
+}
+
 func GroupResourceFromEnt(in *ent.Group) (*resource.Group, error) {
 	var b resource.Builder
 
@@ -37,7 +41,7 @@ func GroupResourceFromEnt(in *ent.Group) (*resource.Group, error) {
 
 	meta, err := b.Meta().
 		ResourceType("Group").
-		Location("https://foobar.com/scim/v2/Group/" + in.ID.String()).
+		Location(groupLocation(in.ID.String())).
 		Build()
 	if err != nil {
 		return nil, fmt.Errorf("failed to build meta information for Group")
@@ -52,6 +56,9 @@ func GroupResourceFromEnt(in *ent.Group) (*resource.Group, error) {
 		builder.ExternalID(in.ExternalID)
 	}
 	builder.ID(in.ID.String())
+	if err := groupResourceFromEntHelper(in, builder); err != nil {
+		return nil, err
+	}
 	return builder.Build()
 }
 

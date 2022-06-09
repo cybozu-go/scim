@@ -629,10 +629,8 @@ func (b *EnterpriseUserBuilder) Build() (*EnterpriseUser, error) {
 	if validator == nil {
 		validator = DefaultEnterpriseUserValidator
 	}
-	if validator != nil {
-		if err := validator.Validate(object); err != nil {
-			return nil, err
-		}
+	if err := validator.Validate(object); err != nil {
+		return nil, err
 	}
 	return object, nil
 }

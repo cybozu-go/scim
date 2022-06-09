@@ -294,10 +294,8 @@ func (b *GenericSupportBuilder) Build() (*GenericSupport, error) {
 	if validator == nil {
 		validator = DefaultGenericSupportValidator
 	}
-	if validator != nil {
-		if err := validator.Validate(object); err != nil {
-			return nil, err
-		}
+	if err := validator.Validate(object); err != nil {
+		return nil, err
 	}
 	return object, nil
 }

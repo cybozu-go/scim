@@ -339,10 +339,8 @@ func (b *PartialResourceRepresentationRequestBuilder) Build() (*PartialResourceR
 	if validator == nil {
 		validator = DefaultPartialResourceRepresentationRequestValidator
 	}
-	if validator != nil {
-		if err := validator.Validate(object); err != nil {
-			return nil, err
-		}
+	if err := validator.Validate(object); err != nil {
+		return nil, err
 	}
 	return object, nil
 }

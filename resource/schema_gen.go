@@ -453,10 +453,8 @@ func (b *SchemaBuilder) Build() (*Schema, error) {
 	if validator == nil {
 		validator = DefaultSchemaValidator
 	}
-	if validator != nil {
-		if err := validator.Validate(object); err != nil {
-			return nil, err
-		}
+	if err := validator.Validate(object); err != nil {
+		return nil, err
 	}
 	return object, nil
 }

@@ -41,7 +41,93 @@ func RunConformanceTests(t *testing.T, name string, backend interface{}) {
 			t.Run("Fetch", UsersFetch(t, cl))
 			t.Run("Search", UsersSearch(t, cl))
 		})
+		t.Run("Groups", func(t *testing.T) {
+			t.Run("Basic CRUD", GroupsBasicCRUD(t, cl))
+		})
 	})
+}
+
+func stockUserCreateCall(cl *client.Client) *client.CreateUserCall {
+	return cl.User().CreateUser().
+		UserName("bjensen").
+		ExternalID("bjensen").
+		DisplayName("Barbara Jensen").
+		Emails(resource.NewEmailBuilder().
+			Value("babs@jensen.org").
+			Primary(true).
+			MustBuild()).
+		Name(resource.NewNamesBuilder().
+			Formatted("Ms. Barbara J Jensen III").
+			FamilyName("Jensen").
+			GivenName("Barbara").
+			MustBuild())
+}
+
+func stockGroupCreateCall(cl *client.Client) *client.CreateGroupCall {
+	u1, err := cl.User().CreateUser().
+		Trace(TraceWriter).
+		UserName("jsmith").
+		ExternalID("jsmith").
+		DisplayName("John Smith").
+		Title("Manager").
+		Do(context.TODO())
+	if err != nil {
+		panic(err)
+	}
+	u2, err := cl.User().CreateUser().
+		Trace(TraceWriter).
+		UserName("acooper").
+		ExternalID("acooper").
+		DisplayName("Alice Cooper").
+		Title("Manager").
+		Do(context.TODO())
+	if err != nil {
+		panic(err)
+	}
+	u3, err := cl.User().CreateUser().
+		Trace(TraceWriter).
+		UserName("wjohnson").
+		ExternalID("wjohnson").
+		DisplayName("William Johnson").
+		Title("Lead Engineer").
+		Do(context.TODO())
+	if err != nil {
+		panic(err)
+	}
+	members := []*resource.GroupMember{
+		resource.NewGroupMemberBuilder().
+			Value(u3.ID()).
+			Ref(u3.Meta().Location()).
+			MustBuild(),
+	}
+	g1, err := cl.Group().CreateGroup().
+		Trace(TraceWriter).
+		DisplayName("Product").
+		Members(members...).
+		Do(context.TODO())
+	if err != nil {
+		panic(err)
+	}
+
+	members = []*resource.GroupMember{
+		resource.NewGroupMemberBuilder().
+			Value(u1.ID()).
+			Ref(u1.Meta().Location()).
+			MustBuild(),
+		resource.NewGroupMemberBuilder().
+			Value(u2.ID()).
+			Ref(u2.Meta().Location()).
+			MustBuild(),
+		resource.NewGroupMemberBuilder().
+			Value(g1.ID()).
+			Ref(g1.Meta().Location()).
+			MustBuild(),
+	}
+
+	return cl.Group().CreateGroup().
+		Trace(TraceWriter).
+		DisplayName("Engineering").
+		Members(members...)
 }
 
 func UsersSearch(t *testing.T, cl *client.Client) func(t *testing.T) {
@@ -150,93 +236,139 @@ func createStockUser(t *testing.T, cl *client.Client) *resource.User {
 	return created
 }
 
-func stockUserCreateCall(cl *client.Client) *client.CreateUserCall {
-	return cl.User().CreateUser().
-		UserName("bjensen").
-		ExternalID("bjensen").
-		DisplayName("Barbara Jensen").
-		Emails(resource.NewEmailBuilder().
-			Value("babs@jensen.org").
-			Primary(true).
-			MustBuild()).
-		Name(resource.NewNamesBuilder().
-			Formatted("Ms. Barbara J Jensen III").
-			FamilyName("Jensen").
-			GivenName("Barbara").
-			MustBuild())
-}
-
 func UsersBasicCRUD(t *testing.T, cl *client.Client) func(*testing.T) {
 	return func(t *testing.T) {
-		t.Run("Basic CRUD", func(t *testing.T) {
-			// Create a single User, apply Fetch, Replace, Delete
-			createdUser, err := stockUserCreateCall(cl).
+		// Create a single User, apply Fetch, Replace, Delete
+		createdUser, err := stockUserCreateCall(cl).
+			Do(context.TODO())
+		require.NoError(t, err, `CreateUser should succeed`)
+		require.Empty(t, createdUser.Password(), `user should not return password`)
+
+		t.Run("Fetch user", func(t *testing.T) {
+			_, err = cl.User().GetUser(createdUser.ID()).
 				Do(context.TODO())
-			require.NoError(t, err, `CreateUser should succeed`)
-			require.Empty(t, createdUser.Password(), `user should not return password`)
+			require.NoError(t, err, `GetUser should succeed`)
+		})
+		t.Run("Replace user", func(t *testing.T) {
+			u, err := cl.User().ReplaceUser(createdUser.ID()).
+				Emails(resource.NewEmailBuilder().
+					Value("babs-new@jensen.org").
+					Primary(true).
+					MustBuild()).
+				Do(context.TODO())
+			require.NoError(t, err, `ReplaceUser should succeed`)
 
-			t.Run("Fetch user", func(t *testing.T) {
-				_, err = cl.User().GetUser(createdUser.ID()).
-					Do(context.TODO())
-				require.NoError(t, err, `GetUser should succeed`)
-			})
-			t.Run("Replace user", func(t *testing.T) {
-				u, err := cl.User().ReplaceUser(createdUser.ID()).
-					Emails(resource.NewEmailBuilder().
-						Value("babs-new@jensen.org").
-						Primary(true).
-						MustBuild()).
-					Do(context.TODO())
-				require.NoError(t, err, `ReplaceUser should succeed`)
+			// we need to validate the result from PUT and GET
+			fetched, err := cl.User().GetUser(createdUser.ID()).
+				Do(context.TODO())
+			require.NoError(t, err, `GetUser should succeed`)
 
-				// we need to validate the result from PUT and GET
-				fetched, err := cl.User().GetUser(createdUser.ID()).
-					Do(context.TODO())
-				require.NoError(t, err, `GetUser should succeed`)
+			testcases := []struct {
+				Name string
+				User *resource.User
+			}{
+				{
+					Name: "Result from issuing replace",
+					User: u,
+				},
+				{
+					Name: "Result from fetch after replace",
+					User: fetched,
+				},
+			}
 
-				testcases := []struct {
-					Name string
-					User *resource.User
-				}{
-					{
-						Name: "Result from issuing replace",
-						User: u,
-					},
-					{
-						Name: "Result from fetch after replace",
-						User: fetched,
-					},
-				}
+			for _, tc := range testcases {
+				tc := tc
+				t.Run(tc.Name, func(t *testing.T) {
+					u := tc.User
+					require.Equal(t, "bjensen", u.ExternalID(), `externalID should match`)
 
-				for _, tc := range testcases {
-					tc := tc
-					t.Run(tc.Name, func(t *testing.T) {
-						u := tc.User
-						require.Equal(t, "bjensen", u.ExternalID(), `externalID should match`)
+					// Sanity
+					require.Equal(t, createdUser.ID(), u.ID())
 
-						// Sanity
-						require.Equal(t, createdUser.ID(), u.ID())
-
-						emails := u.Emails()
-						require.Len(t, emails, 1)
-						for _, email := range emails {
-							// hardcoded for loop testing is weird, I know.
-							// am just expecting it be expanded in the future
-							require.Equal(t, `babs-new@jensen.org`, email.Value())
-							require.True(t, email.Primary())
-						}
-					})
-				}
-			})
-			t.Run("Delete user", func(t *testing.T) {
-				err := cl.User().DeleteUser(createdUser.ID()).
-					Do(context.TODO())
-				require.NoError(t, err, `DeleteUser should succeed`)
-				t.Run("Fetch users (after delete)", func(t *testing.T) {
-					_, err := cl.User().GetUser(createdUser.ID()).
-						Do(context.TODO())
-					require.Error(t, err, `GetUser should fail`)
+					emails := u.Emails()
+					require.Len(t, emails, 1)
+					for _, email := range emails {
+						// hardcoded for loop testing is weird, I know.
+						// am just expecting it be expanded in the future
+						require.Equal(t, `babs-new@jensen.org`, email.Value())
+						require.True(t, email.Primary())
+					}
 				})
+			}
+		})
+		t.Run("Delete user", func(t *testing.T) {
+			err := cl.User().DeleteUser(createdUser.ID()).
+				Do(context.TODO())
+			require.NoError(t, err, `DeleteUser should succeed`)
+			t.Run("Fetch users (after delete)", func(t *testing.T) {
+				_, err := cl.User().GetUser(createdUser.ID()).
+					Do(context.TODO())
+				require.Error(t, err, `GetUser should fail`)
+			})
+		})
+	}
+}
+
+func GroupsBasicCRUD(t *testing.T, cl *client.Client) func(*testing.T) {
+	return func(t *testing.T) {
+		// Create a single Group, apply Fetch, Replace, Delete
+		createdGroup, err := stockGroupCreateCall(cl).
+			Do(context.TODO())
+		require.NoError(t, err, `CreateGroup should succeed`)
+		_ = createdGroup
+
+		t.Run("Fetch group", func(t *testing.T) {
+			group, err := cl.Group().GetGroup(createdGroup.ID()).
+				Do(context.TODO())
+			require.NoError(t, err, `GetGroup should succeed`)
+			require.Len(t, group.Members(), len(createdGroup.Members()), `there should be %d members`, len(createdGroup.Members()))
+		})
+		t.Run("Replace group", func(t *testing.T) {
+			u, err := cl.Group().ReplaceGroup(createdGroup.ID()).
+				DisplayName(createdGroup.DisplayName()).
+				Members((createdGroup.Members())[1:]...).
+				Do(context.TODO())
+			require.NoError(t, err, `ReplaceGroup should succeed`)
+
+			// we need to validate the result from PUT and GET
+			fetched, err := cl.Group().GetGroup(createdGroup.ID()).
+				Do(context.TODO())
+			require.NoError(t, err, `GetGroup should succeed`)
+
+			testcases := []struct {
+				Name  string
+				Group *resource.Group
+			}{
+				{
+					Name:  "Result from issuing replace",
+					Group: u,
+				},
+				{
+					Name:  "Result from fetch after replace",
+					Group: fetched,
+				},
+			}
+
+			for _, tc := range testcases {
+				tc := tc
+				t.Run(tc.Name, func(t *testing.T) {
+					g := tc.Group
+
+					// Sanity
+					require.Equal(t, createdGroup.ID(), g.ID())
+					require.Len(t, g.Members(), len(createdGroup.Members())-1)
+				})
+			}
+		})
+		t.Run("Delete group", func(t *testing.T) {
+			err := cl.Group().DeleteGroup(createdGroup.ID()).
+				Do(context.TODO())
+			require.NoError(t, err, `DeleteGroup should succeed`)
+			t.Run("Fetch group (after delete)", func(t *testing.T) {
+				_, err := cl.Group().GetGroup(createdGroup.ID()).
+					Do(context.TODO())
+				require.Error(t, err, `GetGroup should fail`)
 			})
 		})
 	}

@@ -408,10 +408,8 @@ func (b *BulkSupportBuilder) Build() (*BulkSupport, error) {
 	if validator == nil {
 		validator = DefaultBulkSupportValidator
 	}
-	if validator != nil {
-		if err := validator.Validate(object); err != nil {
-			return nil, err
-		}
+	if err := validator.Validate(object); err != nil {
+		return nil, err
 	}
 	return object, nil
 }

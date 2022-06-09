@@ -333,22 +333,32 @@ func (b *Backend) DeleteUser(id string) error {
 	return nil
 }
 
-func (b *Backend) CreateGroup(in *resource.Group) (*resource.Group, error) {
+func (b *Backend) memberIDs(members []*resource.GroupMember) ([]uuid.UUID, []uuid.UUID, error) {
 	var userMembers []uuid.UUID
 	var groupMembers []uuid.UUID
 
-	for _, member := range in.Members() {
+	for _, member := range members {
 		asUUID, err := uuid.Parse(member.Value())
 		if err != nil {
-			return nil, fmt.Errorf(`expected "value" to contain a valid UUID: %w`, err)
+			return nil, nil, fmt.Errorf(`expected "value" to contain a valid UUID: %w`, err)
 		}
-		if strings.Contains(member.Ref(), `/v2/Users`) {
+
+		if strings.Contains(member.Ref(), `/Users/`) {
 			userMembers = append(userMembers, asUUID)
-		} else if strings.Contains(member.Ref(), `/v2/Groups`) {
+		} else if strings.Contains(member.Ref(), `/Groups/`) {
 			groupMembers = append(groupMembers, asUUID)
 		} else {
-			return nil, fmt.Errorf(`$ref is required in group "members" attribute when creating Groups`)
+			return nil, nil, fmt.Errorf(`$ref is required in group "members" attribute when creating Groups`)
 		}
+	}
+
+	return userMembers, groupMembers, nil
+}
+
+func (b *Backend) CreateGroup(in *resource.Group) (*resource.Group, error) {
+	userMembers, groupMembers, err := b.memberIDs(in.Members())
+	if err != nil {
+		return nil, err
 	}
 
 	createGroupCall := b.db.Group.Create().
@@ -572,15 +582,75 @@ func (b *Backend) RetrieveGroup(id string, fields ...string) (*resource.Group, e
 	}
 
 	groupQuery := b.db.Group.Query().
+		WithUsers().
+		WithChildren().
 		Where(group.IDEQ(parsedUUID))
 
 	groupLoadEntFields(groupQuery, fields)
 
-	u, err := groupQuery.
+	g, err := groupQuery.
 		Only(context.TODO())
 	if err != nil {
 		return nil, fmt.Errorf(`failed to retrieve group: %w`, err)
 	}
 
-	return GroupResourceFromEnt(u)
+	return GroupResourceFromEnt(g)
+}
+
+func (b *Backend) ReplaceGroup(id string, in *resource.Group) (*resource.Group, error) {
+	parsedUUID, err := uuid.Parse(id)
+	if err != nil {
+		return nil, fmt.Errorf(`failed to parse ID: %w`, err)
+	}
+
+	// TODO: is it possible to just grab the ID or check existence?
+	g, err := b.db.Group.Query().
+		Where(group.IDEQ(parsedUUID)).
+		Only(context.TODO())
+	if err != nil {
+		return nil, fmt.Errorf(`failed to retrieve group: %w`, err)
+	}
+
+	replaceGroupCall := g.Update().
+		ClearUsers().
+		ClearChildren()
+
+	// optional fields
+	if in.HasDisplayName() {
+		replaceGroupCall.SetDisplayName(in.DisplayName())
+	}
+
+	userMembers, groupMembers, err := b.memberIDs(in.Members())
+	if err != nil {
+		return nil, err
+	}
+
+	if len(userMembers) > 0 {
+		replaceGroupCall.AddUserIDs(userMembers...)
+	}
+
+	if len(groupMembers) > 0 {
+		replaceGroupCall.AddChildIDs(groupMembers...)
+	}
+
+	if _, err := replaceGroupCall.Save(context.TODO()); err != nil {
+		return nil, fmt.Errorf(`failed to update group: %w`, err)
+	}
+
+	// Okay, I'm sure we can get the edges (users+children -> members)
+	// somehow without re-fetching the data, but we're going to punt this
+	return b.RetrieveGroup(id)
+}
+
+func (b *Backend) DeleteGroup(id string) error {
+	parsedUUID, err := uuid.Parse(id)
+	if err != nil {
+		return fmt.Errorf(`failed to parse ID: %w`, err)
+	}
+
+	if err := b.db.Group.DeleteOneID(parsedUUID).Exec(context.TODO()); err != nil {
+		return fmt.Errorf(`failed to delete group: %w`, err)
+	}
+
+	return nil
 }

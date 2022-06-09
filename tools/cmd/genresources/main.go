@@ -146,7 +146,7 @@ func generateObject(object *codegen.Object) error {
 
 	o.LL(`var Default%[1]sValidator %[1]sValidator = %[1]sValidateFunc(func(v *%[1]s) error {`, object.Name(true))
 	for _, field := range object.Fields() {
-		if field.IsRequired() {
+		if field.IsRequired() && !field.Bool(`generated`) {
 			o.L(`if v.%s == nil {`, field.Name(false))
 			o.L("return fmt.Errorf(`required field %q is missing in %q`)", field.JSON(), object.Name(true))
 			o.L(`}`)
@@ -500,12 +500,8 @@ func generateObject(object *codegen.Object) error {
 	o.L(`if validator == nil {`)
 	o.L(`validator = Default%sValidator`, object.Name(true))
 	o.L(`}`)
-	// There's a rare circumstance in which somebody knowingly or unknowningly
-	// set the validator to nil
-	o.L(`if validator != nil {`)
 	o.L(`if err := validator.Validate(object); err != nil {`)
 	o.L(`return nil, err`)
-	o.L(`}`)
 	o.L(`}`)
 	o.L(`return object, nil`)
 	o.L(`}`)
@@ -685,6 +681,13 @@ func generateUtilities(object *codegen.Object) error {
 		o.L(`}`)
 	}
 
+	// TODO: prefix is hard coded, need to fix
+	if !object.Bool(`skipCommonFields`) {
+		o.LL(`func %sLocation(id string) string {`, object.Name(false))
+		o.L(`return %q+id` /* TODO: FIXME */, fmt.Sprintf(`https://foobar.com/scim/v2/%ss/`, object.Name(true)))
+		o.L(`}`)
+	}
+
 	o.LL(`func %[1]sResourceFromEnt(in *ent.%[1]s) (*resource.%[1]s, error) {`, object.Name(true))
 	o.L(`var b resource.Builder`)
 
@@ -693,7 +696,7 @@ func generateUtilities(object *codegen.Object) error {
 	if !object.Bool(`skipCommonFields`) {
 		o.LL(`meta, err := b.Meta().`)
 		o.L(`ResourceType(%q).`, object.Name(true))
-		o.L(`Location(%q+in.ID.String()).` /* TODO: FIXME */, fmt.Sprintf(`https://foobar.com/scim/v2/%s/`, object.Name(true)))
+		o.L(`Location(%sLocation(in.ID.String())).`, object.Name(false))
 		o.L(`Build()`)
 		o.L(`if err != nil {`)
 		o.L(`return nil, fmt.Errorf("failed to build meta information for %s")`, object.Name(true))
@@ -712,8 +715,12 @@ func generateUtilities(object *codegen.Object) error {
 			continue
 		}
 
-		// TODO: include others
-
+		// This section is just really really confusing because not all
+		// stored data map 1-to-1 to the SCIM resource (for example,
+		// Group.members can't be expressed 1-to-1 in a straight forward
+		// manner).
+		// I think it's better if we give people an escape hatch, so we're
+		// going to inject a call to a helper of your choice at the end.
 		rsname := strings.TrimSuffix(field.Name(true), "s")
 		if rsname == "Name" {
 			rsname = "Names"
@@ -750,6 +757,11 @@ func generateUtilities(object *codegen.Object) error {
 			o.L(`builder.%[1]s(in.%[1]s)`, field.Name(true))
 			o.L(`}`)
 		}
+	}
+	if h := object.String(`ent_conversion_helper`); h != "" {
+		o.L(`if err := %s(in, builder); err != nil {`, h)
+		o.L(`return nil, err`)
+		o.L(`}`)
 	}
 	o.L(`return builder.Build()`)
 	o.L(`}`)

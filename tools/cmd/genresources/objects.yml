@@ -1,6 +1,7 @@
 common:
   - name: id
     required: true
+    generated: true
     ent_type: "uuid.UUID{}"
     ent_default: "uuid.New"
     ent_build_method: UUID
@@ -106,6 +107,7 @@ objects:
         readOnly: true
   - name: Group
     schema: urn:ietf:params:scim:schemas:core:2.0:Group
+    ent_conversion_helper: groupResourceFromEntHelper
     fields:
       - name: displayName
       - name: members

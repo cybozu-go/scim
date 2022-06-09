@@ -680,10 +680,8 @@ func (b *SearchRequestBuilder) Build() (*SearchRequest, error) {
 	if validator == nil {
 		validator = DefaultSearchRequestValidator
 	}
-	if validator != nil {
-		if err := validator.Validate(object); err != nil {
-			return nil, err
-		}
+	if err := validator.Validate(object); err != nil {
+		return nil, err
 	}
 	return object, nil
 }

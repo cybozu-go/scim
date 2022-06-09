@@ -561,10 +561,8 @@ func (b *NamesBuilder) Build() (*Names, error) {
 	if validator == nil {
 		validator = DefaultNamesValidator
 	}
-	if validator != nil {
-		if err := validator.Validate(object); err != nil {
-			return nil, err
-		}
+	if err := validator.Validate(object); err != nil {
+		return nil, err
 	}
 	return object, nil
 }

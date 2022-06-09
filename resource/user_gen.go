@@ -81,9 +81,6 @@ func (f UserValidateFunc) Validate(v *User) error {
 }
 
 var DefaultUserValidator UserValidator = UserValidateFunc(func(v *User) error {
-	if v.id == nil {
-		return fmt.Errorf(`required field "id" is missing in "User"`)
-	}
 	if v.userName == nil {
 		return fmt.Errorf(`required field "userName" is missing in "User"`)
 	}
@@ -1529,10 +1526,8 @@ func (b *UserBuilder) Build() (*User, error) {
 	if validator == nil {
 		validator = DefaultUserValidator
 	}
-	if validator != nil {
-		if err := validator.Validate(object); err != nil {
-			return nil, err
-		}
+	if err := validator.Validate(object); err != nil {
+		return nil, err
 	}
 	return object, nil
 }

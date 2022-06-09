@@ -62,6 +62,13 @@ services:
       fields:
         - name: id
           required: true
+    - name: SearchUserCall
+      method_name: Search
+      method: http.MethodPost
+      resource: SearchRequest
+      response_type: resource.ListResponse
+      path: /Users/.search
+      jsonPayload: true
   - name: GroupService
     calls:
     - name: GetGroupCall

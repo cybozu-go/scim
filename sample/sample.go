@@ -83,12 +83,13 @@ func randomString(n int) string {
 	return b.String()
 }
 
-func (b *Backend) createEmails(in *resource.User, modifyUserCall interface{}) ([]*resource.Email, error) {
-	emails := make([]*resource.Email, 0, len(in.Emails()))
+func (b *Backend) createEmails(in *resource.User) ([]*ent.Email, error) {
+	emails := make([]*ent.Email, len(in.Emails()))
 	var hasPrimary bool
-	for _, v := range in.Emails() {
-		emailCreateCall := b.db.Email.Create().
-			SetValue(v.Value())
+	for i, v := range in.Emails() {
+		emailCreateCall := b.db.Email.Create()
+		emailCreateCall.SetValue(v.Value())
+
 		if v.HasDisplay() {
 			emailCreateCall.SetDisplay(v.Display())
 		}
@@ -99,36 +100,52 @@ func (b *Backend) createEmails(in *resource.User, modifyUserCall interface{}) ([
 			if hasPrimary {
 				return nil, fmt.Errorf(`invalid user.emails: multiple emails have been set to primary`)
 			}
-			emailCreateCall.SetPrimary(sv)
+			emailCreateCall.SetPrimary(true)
+			hasPrimary = true
 		}
+
 		email, err := emailCreateCall.Save(context.TODO())
 		if err != nil {
-			return nil, fmt.Errorf(`failed to create user: failed to create email: %w`, err)
+			return nil, fmt.Errorf(`failed to save email %d: %w`, i, err)
 		}
 
-		switch modifyUserCall := modifyUserCall.(type) {
-		case *ent.UserCreate:
-			modifyUserCall.AddEmails(email)
-		case *ent.UserUpdate:
-			modifyUserCall.AddEmails(email)
-		case *ent.UserUpdateOne:
-			modifyUserCall.AddEmails(email)
-		default:
-			return nil, fmt.Errorf(`invalid value passed as modifyUserCall: %T`, modifyUserCall)
-		}
-
-		// TODO: delete in case userCreate fails?
-
-		emails = append(emails, v)
+		emails[i] = email
 	}
 	return emails, nil
+}
+
+func (b *Backend) createName(v *resource.Names) (*ent.Names, error) {
+	nameCreateCall := b.db.Names.Create()
+	if v.HasFamilyName() {
+		nameCreateCall.SetFamilyName(v.FamilyName())
+	}
+	if v.HasFormatted() {
+		nameCreateCall.SetFormatted(v.Formatted())
+	}
+	if v.HasGivenName() {
+		nameCreateCall.SetGivenName(v.GivenName())
+	}
+	if v.HasHonorificPrefix() {
+		nameCreateCall.SetHonorificPrefix(v.HonorificPrefix())
+	}
+	if v.HasHonorificSuffix() {
+		nameCreateCall.SetHonorificSuffix(v.HonorificSuffix())
+	}
+	if v.HasMiddleName() {
+		nameCreateCall.SetMiddleName(v.MiddleName())
+	}
+
+	name, err := nameCreateCall.Save(context.TODO())
+	if err != nil {
+		return nil, fmt.Errorf(`failed to save name: %w`, err)
+	}
+
+	return name, nil
 }
 
 func (b *Backend) CreateUser(in *resource.User) (*resource.User, error) {
 	// TODO generate ETag
 	// Note: use W/"...." Etags is probably better
-
-	var builder resource.Builder
 
 	// Generate a random password if none is given
 	password := in.Password()
@@ -171,67 +188,42 @@ func (b *Backend) CreateUser(in *resource.User) (*resource.User, error) {
 		createUserCall.SetTimezone(in.Timezone())
 	}
 
-	emails, err := b.createEmails(in, createUserCall)
-	if err != nil {
-		return nil, fmt.Errorf(`failed to create emails: %w`, err)
+	var emails []*ent.Email
+	if in.HasEmails() {
+		created, err := b.createEmails(in)
+		if err != nil {
+			return nil, fmt.Errorf(`failed to create emails: %w`, err)
+		}
+		createUserCall.AddEmails(created...)
+		emails = created
 	}
 
-	var name *resource.Names
-	if v := in.Name(); v != nil {
-		nameCreateCall := b.db.Names.Create()
-		if sv := v.FamilyName(); sv != "" {
-			nameCreateCall.SetFamilyName(sv)
-		}
-		if sv := v.Formatted(); sv != "" {
-			nameCreateCall.SetFormatted(sv)
-		}
-		if sv := v.GivenName(); sv != "" {
-			nameCreateCall.SetGivenName(sv)
-		}
-		if sv := v.HonorificPrefix(); sv != "" {
-			nameCreateCall.SetHonorificPrefix(sv)
-		}
-		if sv := v.HonorificSuffix(); sv != "" {
-			nameCreateCall.SetHonorificSuffix(sv)
-		}
-		if sv := v.MiddleName(); sv != "" {
-			nameCreateCall.SetMiddleName(sv)
-		}
-		created, err := nameCreateCall.Save(context.TODO())
+	var name []*ent.Names
+	if in.HasName() {
+		created, err := b.createName(in.Name())
 		if err != nil {
-			return nil, fmt.Errorf(`failed to create user: failed to create name: %w`, err)
+			return nil, fmt.Errorf(`failed to create name: %w`, err)
 		}
 		createUserCall.AddName(created)
-		// TODO: delete in case userCreate fails?
-
-		name = v
+		name = []*ent.Names{created}
 	}
 
 	// now save the data
 	u, err := createUserCall.
 		Save(context.TODO())
 	if err != nil {
-		return nil, fmt.Errorf(`failed to save data: %w`, err)
+		return nil, fmt.Errorf(`failed to save user: %w`, err)
 	}
 
-	userBuilder := builder.User().
-		ID(u.ID.String()).
-		UserName(u.UserName).
-		Meta(
-			builder.Meta().
-				ResourceType(`User`).
-				Location(`https://foobar.com/scim/v2/Users/` + u.ID.String()).
-				MustBuild(),
-		)
+	// u is the generated *ent.User, but it has no edges because
+	// it is only populated during querying.
+	// We could either populate u.Edges ourselves or re-fetch the
+	// user via a query+eager-loading.
+	// For the time being, we're just going to populate it ourselves
+	u.Edges.Emails = emails
+	u.Edges.Name = name
 
-	if len(emails) > 0 {
-		userBuilder.Emails(emails...)
-	}
-	if name != nil {
-		userBuilder.Name(name)
-	}
-
-	return userBuilder.Build()
+	return UserResourceFromEnt(u)
 }
 
 func (b *Backend) RetrieveUser(id string, fields ...string) (*resource.User, error) {
@@ -269,7 +261,8 @@ func (b *Backend) ReplaceUser(id string, in *resource.User) (*resource.User, err
 	}
 
 	replaceUserCall := u.Update().
-		ClearEmails()
+		ClearEmails().
+		ClearName()
 
 	// optional fields
 	if in.HasExternalID() {
@@ -292,32 +285,39 @@ func (b *Backend) ReplaceUser(id string, in *resource.User) (*resource.User, err
 		replaceUserCall.SetTimezone(in.Timezone())
 	}
 
-	var emails []*resource.Email
+	var emails []*ent.Email
 	if in.HasEmails() {
-		v, err := b.createEmails(in, replaceUserCall)
+		created, err := b.createEmails(in)
 		if err != nil {
 			return nil, fmt.Errorf(`failed to create emails: %w`, err)
 		}
-		emails = v
+		replaceUserCall.AddEmails(created...)
+		emails = created
 	}
 
-	var builder resource.Builder
-	userBuilder := builder.User().
-		ID(id).
-		ExternalID(u.ExternalID).
-		UserName(u.UserName).
-		Meta(
-			builder.Meta().
-				ResourceType(`User`).
-				Location(`https://foobar.com/scim/v2/Users/` + u.ID.String()).
-				MustBuild(),
-		)
-
-	if len(emails) > 0 {
-		userBuilder.Emails(emails...)
+	var name []*ent.Names
+	if in.HasName() {
+		created, err := b.createName(in.Name())
+		if err != nil {
+			return nil, fmt.Errorf(`failed to create name: %w`, err)
+		}
+		replaceUserCall.AddName(created)
+		name = []*ent.Names{created}
 	}
 
-	return userBuilder.Build()
+	if _, err := replaceUserCall.Save(context.TODO()); err != nil {
+		return nil, fmt.Errorf(`failed to update user: %w`, err)
+	}
+
+	// u is the generated *ent.User, but it has no edges because
+	// it is only populated during querying.
+	// We could either populate u.Edges ourselves or re-fetch the
+	// user via a query+eager-loading.
+	// For the time being, we're just going to populate it ourselves
+	u.Edges.Emails = emails
+	u.Edges.Name = name
+
+	return UserResourceFromEnt(u)
 }
 
 func (b *Backend) DeleteUser(id string) error {
@@ -486,19 +486,32 @@ func (v *filterVisitor) visitLogExpr(expr filter.Expr) error {
 func (v *filterVisitor) visitParenExpr(expr filter.Expr) error {
 	return fmt.Errorf(`unimplemented`)
 }
+
 func (v *filterVisitor) visitValuePath(expr filter.Expr) error {
 	return fmt.Errorf(`unimplemented`)
 }
 
 func (b *Backend) Search(in *resource.SearchRequest) (*resource.ListResponse, error) {
-	userWhere, groupWhere, err := buildWhere(in.Filter(), true, true)
+	return b.search(in, true, true)
+}
+
+func (b *Backend) SearchUser(in *resource.SearchRequest) (*resource.ListResponse, error) {
+	return b.search(in, true, false)
+}
+
+func (b *Backend) SearchGroup(in *resource.SearchRequest) (*resource.ListResponse, error) {
+	return b.search(in, false, true)
+}
+
+func (b *Backend) search(in *resource.SearchRequest, searchUser, searchGroup bool) (*resource.ListResponse, error) {
+	userWhere, groupWhere, err := buildWhere(in.Filter(), searchUser, searchGroup)
 	if err != nil {
 		return nil, fmt.Errorf(`failed to parse filter: %w`, err)
 	}
 
 	var list []interface{}
 
-	if len(userWhere) > 0 {
+	if searchUser {
 		users, err := b.db.User.Query().Where(userWhere...).
 			All(context.TODO())
 		if err != nil {

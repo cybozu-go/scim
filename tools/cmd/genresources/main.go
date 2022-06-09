@@ -42,6 +42,7 @@ func _main() error {
 	codegen.RegisterZeroVal(`Mutability`, `MutReadOnly`)
 	codegen.RegisterZeroVal(`Returned`, `ReturnedAlways`)
 	codegen.RegisterZeroVal(`Uniqueness`, `UniqNone`)
+	codegen.RegisterZeroVal(`ErrorType`, `ErrUnknown`)
 
 	var objectsFile = flag.String("objects", "objects.yml", "")
 	flag.Parse()
@@ -594,6 +595,9 @@ func generateSchema(object *codegen.Object) error {
 		}
 		if field.Bool(`ent_notempty`) {
 			o.R(`.NotEmpty()`)
+		}
+		if field.Bool(`ent_sensitive`) {
+			o.R(`.Sensitive()`)
 		}
 		o.R(`,`)
 	}

@@ -27,7 +27,7 @@ type User struct {
 	// NickName holds the value of the "nickName" field.
 	NickName string `json:"nickName,omitempty"`
 	// Password holds the value of the "password" field.
-	Password string `json:"password,omitempty"`
+	Password string `json:"-"`
 	// PreferredLanguage holds the value of the "preferredLanguage" field.
 	PreferredLanguage string `json:"preferredLanguage,omitempty"`
 	// ProfileURL holds the value of the "profileURL" field.
@@ -252,8 +252,7 @@ func (u *User) String() string {
 	builder.WriteString(u.Locale)
 	builder.WriteString(", nickName=")
 	builder.WriteString(u.NickName)
-	builder.WriteString(", password=")
-	builder.WriteString(u.Password)
+	builder.WriteString(", password=<sensitive>")
 	builder.WriteString(", preferredLanguage=")
 	builder.WriteString(u.PreferredLanguage)
 	builder.WriteString(", profileURL=")

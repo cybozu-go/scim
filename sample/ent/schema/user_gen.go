@@ -14,7 +14,7 @@ func (User) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.String("locale").Optional(),
 		field.String("nickName").Optional(),
-		field.String("password").Optional().NotEmpty(),
+		field.String("password").Optional().NotEmpty().Sensitive(),
 		field.String("preferredLanguage").Optional(),
 		field.String("profileURL").Optional(),
 		field.String("timezone").Optional(),

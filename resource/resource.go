@@ -116,3 +116,19 @@ const (
 	ReturnedDefault Returned = "default"
 	ReturnedRequest Returned = "request"
 )
+
+type ErrorType string
+
+const (
+	ErrUnknown       ErrorType = `unknown` // not part of RFC7644, but used as our "zero value"
+	ErrInvalidFilter ErrorType = `invalidFilter`
+	ErrTooMany       ErrorType = `tooMany`
+	ErrUniqueness    ErrorType = `uniqueness`
+	ErrMutability    ErrorType = `mutability`
+	ErrInvalidSyntax ErrorType = `invalidSyntax`
+	ErrInvalidPath   ErrorType = `invalidPath`
+	ErrNoTarget      ErrorType = `noTarget`
+	ErrInvalidValue  ErrorType = `invalidValue`
+	ErrInvalidVers   ErrorType = `invalidVers`
+	ErrSensitive     ErrorType = `sensitive`
+)

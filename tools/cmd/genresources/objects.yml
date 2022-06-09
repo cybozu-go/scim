@@ -44,6 +44,7 @@ objects:
         type: bool
       - name: password
         ent_notempty: true
+        ent_sensitive: true
       - name: emails
         type: '[]*Email'
         validator: validateEmails
@@ -256,4 +257,11 @@ objects:
         type: Uniqueness
       - name: referenceTypes
         type: '[]string'
-
+  - name: Error
+    skipCommonFields: true
+    fields:
+      - name: status
+        type: int
+      - name: scimType
+        type: ErrorType
+      - name: detail

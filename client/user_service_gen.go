@@ -693,3 +693,123 @@ func (call *DeleteUserCall) Do(ctx context.Context) error {
 
 	return nil
 }
+
+type SearchUserCall struct {
+	builder *resource.SearchRequestBuilder
+	client  *Client
+	trace   io.Writer
+}
+
+func (svc *UserService) Search() *SearchUserCall {
+	return &SearchUserCall{
+		builder: resource.NewSearchRequestBuilder(),
+		client:  svc.client,
+	}
+}
+
+func (call *SearchUserCall) Attributes(v ...string) *SearchUserCall {
+	call.builder.Attributes(v...)
+	return call
+}
+
+func (call *SearchUserCall) Count(v int) *SearchUserCall {
+	call.builder.Count(v)
+	return call
+}
+
+func (call *SearchUserCall) ExludedAttributes(v ...string) *SearchUserCall {
+	call.builder.ExludedAttributes(v...)
+	return call
+}
+
+func (call *SearchUserCall) Filter(v string) *SearchUserCall {
+	call.builder.Filter(v)
+	return call
+}
+
+func (call *SearchUserCall) SortBy(v string) *SearchUserCall {
+	call.builder.SortBy(v)
+	return call
+}
+
+func (call *SearchUserCall) SortOrder(v string) *SearchUserCall {
+	call.builder.SortOrder(v)
+	return call
+}
+
+func (call *SearchUserCall) StartIndex(v int) *SearchUserCall {
+	call.builder.StartIndex(v)
+	return call
+}
+
+func (call *SearchUserCall) Extension(uri string, value interface{}) *SearchUserCall {
+	call.builder.Extension(uri, value)
+	return call
+}
+
+func (call *SearchUserCall) Validator(v resource.SearchRequestValidator) *SearchUserCall {
+	call.builder.Validator(v)
+	return call
+}
+
+func (call *SearchUserCall) Trace(w io.Writer) *SearchUserCall {
+	call.trace = w
+	return call
+}
+
+func (call *SearchUserCall) makeURL() string {
+	return call.client.baseURL + "/Users/.search"
+}
+
+func (call *SearchUserCall) Do(ctx context.Context) (*resource.ListResponse, error) {
+	payload, err := call.builder.Build()
+	if err != nil {
+		return nil, fmt.Errorf(`failed to generate request payload for SearchUserCall: %w`, err)
+	}
+
+	trace := call.trace
+	u := call.makeURL()
+	if trace != nil {
+		fmt.Fprintf(trace, `trace: client sending call request to %q
+`, u)
+	}
+
+	var body bytes.Buffer
+	if err := json.NewEncoder(&body).Encode(payload); err != nil {
+		return nil, fmt.Errorf(`failed to encode call request: %w`, err)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, u, &body)
+	if err != nil {
+		return nil, fmt.Errorf(`failed to create new HTTP request: %w`, err)
+	}
+
+	req.Header.Set(`Content-Type`, `application/scim+json`)
+	req.Header.Set(`Accept`, `application/scim+json`)
+
+	if trace != nil {
+		buf, _ := httputil.DumpRequestOut(req, true)
+		fmt.Fprintf(trace, "%s\n", buf)
+	}
+
+	res, err := call.client.httpcl.Do(req)
+	if trace != nil {
+		buf, _ := httputil.DumpResponse(res, true)
+		fmt.Fprintf(trace, "%s\n", buf)
+	}
+	if err != nil {
+		return nil, fmt.Errorf(`failed to send request to %q: %w`, u, err)
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(`expected call response %d, got (%d)`, http.StatusOK, res.StatusCode)
+	}
+
+	var respayload resource.ListResponse
+	if err := json.NewDecoder(res.Body).Decode(&respayload); err != nil {
+		return nil, fmt.Errorf(`failed to decode call response: %w`, err)
+	}
+
+	return &respayload, nil
+}

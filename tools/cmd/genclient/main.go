@@ -170,7 +170,11 @@ func generateCall(o *codegen.Output, svc Service, call *codegen.Object, resource
 	}
 	o.L(`}`)
 
-	o.LL(`func (svc *%s) %s(`, svc.Name, strings.TrimSuffix(call.Name(true), `Call`))
+	methodName := strings.TrimSuffix(call.Name(true), `Call`)
+	if v := call.String(`method_name`); v != "" {
+		methodName = v
+	}
+	o.LL(`func (svc *%s) %s(`, svc.Name, methodName)
 	for i, f := range required {
 		if i > 0 {
 			o.R(`, `)

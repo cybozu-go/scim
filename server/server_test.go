@@ -48,7 +48,13 @@ func (m *mockBackend) ReplaceUser(id string, in *resource.User) (*resource.User,
 	}
 
 	// TODO: handle other fields
-	return userBuilder.Build()
+	uNew, err := userBuilder.Build()
+	if err != nil {
+		return nil, fmt.Errorf(`failed to create user: %w`, err)
+	}
+
+	m.users[id] = uNew
+	return uNew, nil
 }
 
 func (m *mockBackend) CreateUser(in *resource.User) (*resource.User, error) {
@@ -111,27 +117,39 @@ func (m *mockBackend) retrieveUserNoLock(id string) (*resource.User, error) {
 	return user, nil
 }
 
-func (m *mockBackend) Search(*resource.SearchRequest) (*resource.ListResponse, error) {
+func (m *mockBackend) SearchUser(*resource.SearchRequest) (*resource.ListResponse, error) {
+	return m.search(nil, true, false)
+}
+
+func (m *mockBackend) search(_ *resource.SearchRequest, searchUser, searchGroup bool) (*resource.ListResponse, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 
 	var b resource.Builder
 
+	var resources []interface{}
+	if searchUser {
+		resources = append(resources, b.User().
+			ID("2819c223-7f76-413861904646").
+			UserName("jsmith").
+			DisplayName("Smith, James").
+			MustBuild(),
+		)
+	}
+
+	if searchGroup {
+		resources = append(resources, b.Group().
+			ID("c8596b90-7539-4f20968d1908").
+			DisplayName("Smith Family").
+			MustBuild(),
+		)
+	}
+
 	return b.ListResponse().
-		TotalResults(2).
+		TotalResults(len(resources)).
 		StartIndex(1).
 		ItemsPerPage(10).
-		Resources(
-			b.User().
-				ID("2819c223-7f76-413861904646").
-				UserName("jsmith").
-				DisplayName("Smith, James").
-				MustBuild(),
-			b.Group().
-				ID("c8596b90-7539-4f20968d1908").
-				DisplayName("Smith Family").
-				MustBuild(),
-		).
+		Resources(resources...).
 		Build()
 }
 

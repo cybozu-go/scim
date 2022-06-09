@@ -36,13 +36,25 @@ func RunConformanceTests(t *testing.T, name string, backend interface{}) {
 
 		cl := client.New(srv.URL, client.WithClient(srv.Client()))
 
-		t.Run("search via /.search", func(t *testing.T) {
+		t.Run("Users", func(t *testing.T) {
+			t.Run("Basic CRUD", UsersBasicCRUD(t, cl))
+			t.Run("Fetch", UsersFetch(t, cl))
+			t.Run("Search", UsersSearch(t, cl))
+		})
+	})
+}
+
+func UsersSearch(t *testing.T, cl *client.Client) func(t *testing.T) {
+	return func(t *testing.T) {
+		t.Run("search via /Users/.search", func(t *testing.T) {
+			// TODO: need to create a group that matches the query
+			// and make sure that the result doesn't contain any groups
 			createdUser := createStockUser(t, cl)
 			//nolint:errcheck
 			defer cl.User().DeleteUser(createdUser.ID()).
 				Do(context.TODO())
 
-			res, err := cl.Search().Search().
+			res, err := cl.User().Search().
 				Trace(TraceWriter).
 				Attributes(`displayName`, `userName`).
 				// Filter(`displayName sw "smith"`).
@@ -53,11 +65,7 @@ func RunConformanceTests(t *testing.T, name string, backend interface{}) {
 			require.NoError(t, err, `cl.Search should succeed`)
 			require.Equal(t, 1, res.TotalResults(), `total results should be 1`)
 		})
-		t.Run("Users", func(t *testing.T) {
-			t.Run("Basic CRUD", UsersBasicCRUD(t, cl))
-			t.Run("Fetch", UsersFetch(t, cl))
-		})
-	})
+	}
 }
 
 func UsersFetch(t *testing.T, cl *client.Client) func(*testing.T) {
@@ -88,7 +96,14 @@ func UsersFetch(t *testing.T, cl *client.Client) func(*testing.T) {
 			// well as the attributes with the "returned" value of always
 			require.Equal(t, createdUser.ID(), u.ID(), `ID should match`)
 			require.Equal(t, createdUser.UserName(), u.UserName(), `UserName should match`)
-			require.Equal(t, createdUser.Emails(), u.Emails(), `Emails should match`)
+
+			if !assert.Equal(t, createdUser.Emails(), u.Emails(), `Emails should match`) {
+				enc := json.NewEncoder(os.Stdout)
+				enc.SetIndent("", "  ")
+				enc.Encode(createdUser.Emails())
+				enc.Encode(u.Emails())
+			}
+
 			if n := u.Name(); assert.NotNil(t, n, `Name should not be nil`) {
 				require.Equal(t, `Ms. Barbara J Jensen III`, n.Formatted(), `Formatted should match`)
 				require.Equal(t, `Jensen`, n.FamilyName(), `FamilyName should match`)
@@ -140,6 +155,7 @@ func createStockUser(t *testing.T, cl *client.Client) *resource.User {
 	}
 	return created
 }
+
 func stockUserCreateCall(cl *client.Client) *client.CreateUserCall {
 	return cl.User().CreateUser().
 		UserName("bjensen").
@@ -163,6 +179,7 @@ func UsersBasicCRUD(t *testing.T, cl *client.Client) func(*testing.T) {
 			createdUser, err := stockUserCreateCall(cl).
 				Do(context.TODO())
 			require.NoError(t, err, `CreateUser should succeed`)
+			require.Empty(t, createdUser.Password(), `user should not return password`)
 
 			t.Run("Fetch user", func(t *testing.T) {
 				_, err = cl.User().GetUser(createdUser.ID()).
@@ -178,29 +195,54 @@ func UsersBasicCRUD(t *testing.T, cl *client.Client) func(*testing.T) {
 					Do(context.TODO())
 				require.NoError(t, err, `ReplaceUser should succeed`)
 
-				require.Equal(t, "bjensen", u.ExternalID(), `externalID should match`)
+				// we need to validate the result from PUT and GET
+				fetched, err := cl.User().GetUser(createdUser.ID()).
+					Do(context.TODO())
+				require.NoError(t, err, `GetUser should succeed`)
 
-				// Sanity
-				require.Equal(t, createdUser.ID(), u.ID())
+				testcases := []struct {
+					Name string
+					User *resource.User
+				}{
+					{
+						Name: "Result from issuing replace",
+						User: u,
+					},
+					{
+						Name: "Result from fetch after replace",
+						User: fetched,
+					},
+				}
 
-				emails := u.Emails()
-				require.Len(t, emails, 1)
-				for _, email := range emails {
-					// hardcoded for loop testing is weird, I know.
-					// am just expecting it be expanded in the future
-					require.Equal(t, `babs-new@jensen.org`, email.Value())
-					require.True(t, email.Primary())
+				for _, tc := range testcases {
+					tc := tc
+					t.Run(tc.Name, func(t *testing.T) {
+						u := tc.User
+						require.Equal(t, "bjensen", u.ExternalID(), `externalID should match`)
+
+						// Sanity
+						require.Equal(t, createdUser.ID(), u.ID())
+
+						emails := u.Emails()
+						require.Len(t, emails, 1)
+						for _, email := range emails {
+							// hardcoded for loop testing is weird, I know.
+							// am just expecting it be expanded in the future
+							require.Equal(t, `babs-new@jensen.org`, email.Value())
+							require.True(t, email.Primary())
+						}
+					})
 				}
 			})
 			t.Run("Delete user", func(t *testing.T) {
 				err := cl.User().DeleteUser(createdUser.ID()).
 					Do(context.TODO())
 				require.NoError(t, err, `DeleteUser should succeed`)
-			})
-			t.Run("Fetch users (after delete)", func(t *testing.T) {
-				_, err := cl.User().GetUser(createdUser.ID()).
-					Do(context.TODO())
-				require.Error(t, err, `GetUser should fail`)
+				t.Run("Fetch users (after delete)", func(t *testing.T) {
+					_, err := cl.User().GetUser(createdUser.ID()).
+						Do(context.TODO())
+					require.Error(t, err, `GetUser should fail`)
+				})
 			})
 		})
 	}

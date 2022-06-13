@@ -785,29 +785,38 @@ func generateUtilities(object *codegen.Object) error {
 	o.L(`}`)
 	o.L(`}`)
 
-	o.LL(`func %sStartsWithPredicate(scimField string, val string) predicate.%s {`, object.Name(false), object.Name(true))
-	o.L(`switch scimField {`)
-	for _, field := range object.Fields() {
-		switch field.Name(false) {
-		case `schemas`:
-			continue
-		default:
+	for _, pred := range []struct {
+		Name   string
+		Method string
+	}{
+		{Name: `StartsWith`, Method: `HasPrefix`},
+		{Name: `EndsWith`, Method: `HasSuffix`},
+		{Name: `Contains`, Method: `Contains`},
+	} {
+		o.LL(`func %s%sPredicate(scimField string, val string) predicate.%s {`, object.Name(false), pred.Name, object.Name(true))
+		o.L(`switch scimField {`)
+		for _, field := range object.Fields() {
+			switch field.Name(false) {
+			case `schemas`:
+				continue
+			default:
+			}
+			if field.Type() != "string" {
+				continue
+			}
+			o.L(`case resource.%s%sKey:`, object.Name(true), field.Name(true))
+			// We can't just use ${Field}HasPrefix here, because we're going to
+			// receive the field name as a parameter
+			o.L(`entFieldName := %sEntFieldFromSCIM(scimField)`, object.Name(true))
+			o.L(`return predicate.%[1]s(func(s *sql.Selector) {`, object.Name(true))
+			o.L(`s.Where(sql.%s(s.C(entFieldName), val))`, pred.Method)
+			o.L(`})`)
 		}
-		if field.Type() != "string" {
-			continue
-		}
-		o.L(`case resource.%s%sKey:`, object.Name(true), field.Name(true))
-		// We can't just use ${Field}HasPrefix here, because we're going to
-		// receive the field name as a parameter
-		o.L(`entFieldName := %sEntFieldFromSCIM(scimField)`, object.Name(true))
-		o.L(`return predicate.%[1]s(func(s *sql.Selector) {`, object.Name(true))
-		o.L(`s.Where(sql.HasPrefix(s.C(entFieldName), val))`)
-		o.L(`})`)
+		o.L(`default:`)
+		o.L(`return nil`)
+		o.L(`}`)
+		o.L(`}`)
 	}
-	o.L(`default:`)
-	o.L(`return nil`)
-	o.L(`}`)
-	o.L(`}`)
 
 	o.LL(`func %sPresencePredicate(scimField string) predicate.%s {`, object.Name(false), object.Name(true))
 	o.L(`switch scimField {`)

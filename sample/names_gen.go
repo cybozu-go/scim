@@ -91,6 +91,80 @@ func namesStartsWithPredicate(scimField string, val string) predicate.Names {
 	}
 }
 
+func namesEndsWithPredicate(scimField string, val string) predicate.Names {
+	switch scimField {
+	case resource.NamesFamilyNameKey:
+		entFieldName := NamesEntFieldFromSCIM(scimField)
+		return predicate.Names(func(s *sql.Selector) {
+			s.Where(sql.HasSuffix(s.C(entFieldName), val))
+		})
+	case resource.NamesFormattedKey:
+		entFieldName := NamesEntFieldFromSCIM(scimField)
+		return predicate.Names(func(s *sql.Selector) {
+			s.Where(sql.HasSuffix(s.C(entFieldName), val))
+		})
+	case resource.NamesGivenNameKey:
+		entFieldName := NamesEntFieldFromSCIM(scimField)
+		return predicate.Names(func(s *sql.Selector) {
+			s.Where(sql.HasSuffix(s.C(entFieldName), val))
+		})
+	case resource.NamesHonorificPrefixKey:
+		entFieldName := NamesEntFieldFromSCIM(scimField)
+		return predicate.Names(func(s *sql.Selector) {
+			s.Where(sql.HasSuffix(s.C(entFieldName), val))
+		})
+	case resource.NamesHonorificSuffixKey:
+		entFieldName := NamesEntFieldFromSCIM(scimField)
+		return predicate.Names(func(s *sql.Selector) {
+			s.Where(sql.HasSuffix(s.C(entFieldName), val))
+		})
+	case resource.NamesMiddleNameKey:
+		entFieldName := NamesEntFieldFromSCIM(scimField)
+		return predicate.Names(func(s *sql.Selector) {
+			s.Where(sql.HasSuffix(s.C(entFieldName), val))
+		})
+	default:
+		return nil
+	}
+}
+
+func namesContainsPredicate(scimField string, val string) predicate.Names {
+	switch scimField {
+	case resource.NamesFamilyNameKey:
+		entFieldName := NamesEntFieldFromSCIM(scimField)
+		return predicate.Names(func(s *sql.Selector) {
+			s.Where(sql.Contains(s.C(entFieldName), val))
+		})
+	case resource.NamesFormattedKey:
+		entFieldName := NamesEntFieldFromSCIM(scimField)
+		return predicate.Names(func(s *sql.Selector) {
+			s.Where(sql.Contains(s.C(entFieldName), val))
+		})
+	case resource.NamesGivenNameKey:
+		entFieldName := NamesEntFieldFromSCIM(scimField)
+		return predicate.Names(func(s *sql.Selector) {
+			s.Where(sql.Contains(s.C(entFieldName), val))
+		})
+	case resource.NamesHonorificPrefixKey:
+		entFieldName := NamesEntFieldFromSCIM(scimField)
+		return predicate.Names(func(s *sql.Selector) {
+			s.Where(sql.Contains(s.C(entFieldName), val))
+		})
+	case resource.NamesHonorificSuffixKey:
+		entFieldName := NamesEntFieldFromSCIM(scimField)
+		return predicate.Names(func(s *sql.Selector) {
+			s.Where(sql.Contains(s.C(entFieldName), val))
+		})
+	case resource.NamesMiddleNameKey:
+		entFieldName := NamesEntFieldFromSCIM(scimField)
+		return predicate.Names(func(s *sql.Selector) {
+			s.Where(sql.Contains(s.C(entFieldName), val))
+		})
+	default:
+		return nil
+	}
+}
+
 func namesPresencePredicate(scimField string) predicate.Names {
 	switch scimField {
 	case resource.NamesFamilyNameKey:

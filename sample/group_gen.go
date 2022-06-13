@@ -2,7 +2,6 @@ package sample
 
 import (
 	"fmt"
-	"log"
 	"reflect"
 
 	"entgo.io/ent/dialect/sql"
@@ -81,7 +80,6 @@ func groupStartsWithPredicate(scimField string, val string) predicate.Group {
 	switch scimField {
 	case resource.GroupDisplayNameKey:
 		entFieldName := GroupEntFieldFromSCIM(scimField)
-		log.Printf("ent field name = %q, val = %q", entFieldName, val)
 		return predicate.Group(func(s *sql.Selector) {
 			s.Where(sql.HasPrefix(s.C(entFieldName), val))
 		})
@@ -94,6 +92,50 @@ func groupStartsWithPredicate(scimField string, val string) predicate.Group {
 		entFieldName := GroupEntFieldFromSCIM(scimField)
 		return predicate.Group(func(s *sql.Selector) {
 			s.Where(sql.HasPrefix(s.C(entFieldName), val))
+		})
+	default:
+		return nil
+	}
+}
+
+func groupEndsWithPredicate(scimField string, val string) predicate.Group {
+	switch scimField {
+	case resource.GroupDisplayNameKey:
+		entFieldName := GroupEntFieldFromSCIM(scimField)
+		return predicate.Group(func(s *sql.Selector) {
+			s.Where(sql.HasSuffix(s.C(entFieldName), val))
+		})
+	case resource.GroupExternalIDKey:
+		entFieldName := GroupEntFieldFromSCIM(scimField)
+		return predicate.Group(func(s *sql.Selector) {
+			s.Where(sql.HasSuffix(s.C(entFieldName), val))
+		})
+	case resource.GroupIDKey:
+		entFieldName := GroupEntFieldFromSCIM(scimField)
+		return predicate.Group(func(s *sql.Selector) {
+			s.Where(sql.HasSuffix(s.C(entFieldName), val))
+		})
+	default:
+		return nil
+	}
+}
+
+func groupContainsPredicate(scimField string, val string) predicate.Group {
+	switch scimField {
+	case resource.GroupDisplayNameKey:
+		entFieldName := GroupEntFieldFromSCIM(scimField)
+		return predicate.Group(func(s *sql.Selector) {
+			s.Where(sql.Contains(s.C(entFieldName), val))
+		})
+	case resource.GroupExternalIDKey:
+		entFieldName := GroupEntFieldFromSCIM(scimField)
+		return predicate.Group(func(s *sql.Selector) {
+			s.Where(sql.Contains(s.C(entFieldName), val))
+		})
+	case resource.GroupIDKey:
+		entFieldName := GroupEntFieldFromSCIM(scimField)
+		return predicate.Group(func(s *sql.Selector) {
+			s.Where(sql.Contains(s.C(entFieldName), val))
 		})
 	default:
 		return nil

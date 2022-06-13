@@ -47,7 +47,7 @@ func New(connspec string) (*Backend, error) {
 	}
 
 	return &Backend{
-		db: client,
+		db: client.Debug(),
 	}, nil
 }
 
@@ -503,7 +503,17 @@ func (v *filterVisitor) visitRegexExpr(expr filter.RegexExpr) error {
 
 	switch expr.Operator() {
 	case filter.ContainsOp:
-		return fmt.Errorf("unimplemented")
+		if v.users != nil {
+			if pred := userContainsPredicate(slhe, srhe); pred != nil {
+				v.users = append(v.users, pred)
+			}
+		}
+		if v.groups != nil {
+			if pred := groupContainsPredicate(slhe, srhe); pred != nil {
+				v.groups = append(v.groups, pred)
+			}
+		}
+		return nil
 	case filter.StartsWithOp:
 		if v.users != nil {
 			if pred := userStartsWithPredicate(slhe, srhe); pred != nil {
@@ -517,7 +527,17 @@ func (v *filterVisitor) visitRegexExpr(expr filter.RegexExpr) error {
 		}
 		return nil
 	case filter.EndsWithOp:
-		return fmt.Errorf("unimplemented")
+		if v.users != nil {
+			if pred := userEndsWithPredicate(slhe, srhe); pred != nil {
+				v.users = append(v.users, pred)
+			}
+		}
+		if v.groups != nil {
+			if pred := groupEndsWithPredicate(slhe, srhe); pred != nil {
+				v.groups = append(v.groups, pred)
+			}
+		}
+		return nil
 	default:
 		return fmt.Errorf(`unhandled regexp operator %q`, expr.Operator())
 	}

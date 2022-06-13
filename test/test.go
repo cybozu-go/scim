@@ -397,15 +397,39 @@ func GroupsSearch(t *testing.T, cl *client.Client) func(t *testing.T) {
 			defer cl.Group().DeleteGroup(g2.ID()).
 				Do(context.TODO())
 
-			res, err := cl.Group().Search().
-				Trace(TraceWriter).
-				Attributes(`displayName`).
-				Filter(`displayName sw "search-test"`).
-				StartIndex(1).
-				Count(10).
-				Do(context.TODO())
-			require.NoError(t, err, `cl.Search should succeed`)
-			require.Equal(t, 2, res.TotalResults(), `total results should be 2`)
+			t.Run("Use `sw` predicate", func(t *testing.T) {
+				res, err := cl.Group().Search().
+					Trace(TraceWriter).
+					Attributes(`displayName`).
+					Filter(`displayName sw "search-test"`).
+					StartIndex(1).
+					Count(10).
+					Do(context.TODO())
+				require.NoError(t, err, `cl.Search should succeed`)
+				require.Equal(t, 2, res.TotalResults(), `total results should be 2`)
+			})
+			t.Run("Use `co` predicate", func(t *testing.T) {
+				res, err := cl.Group().Search().
+					Trace(TraceWriter).
+					Attributes(`displayName`).
+					Filter(`displayName co "arch-test"`).
+					StartIndex(1).
+					Count(10).
+					Do(context.TODO())
+				require.NoError(t, err, `cl.Search should succeed`)
+				require.Equal(t, 2, res.TotalResults(), `total results should be 2`)
+			})
+			t.Run("Use `ew` predicate", func(t *testing.T) {
+				res, err := cl.Group().Search().
+					Trace(TraceWriter).
+					Attributes(`displayName`).
+					Filter(`displayName ew "test1"`).
+					StartIndex(1).
+					Count(10).
+					Do(context.TODO())
+				require.NoError(t, err, `cl.Search should succeed`)
+				require.Equal(t, 1, res.TotalResults(), `total results should be 2`)
+			})
 		})
 	}
 }

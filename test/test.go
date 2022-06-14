@@ -430,6 +430,17 @@ func GroupsSearch(t *testing.T, cl *client.Client) func(t *testing.T) {
 				require.NoError(t, err, `cl.Search should succeed`)
 				require.Equal(t, 1, res.TotalResults(), `total results should be 2`)
 			})
+			t.Run("Use `eq` predicate", func(t *testing.T) {
+				res, err := cl.Group().Search().
+					Trace(TraceWriter).
+					Attributes(`displayName`).
+					Filter(`displayName eq "search-test1"`).
+					StartIndex(1).
+					Count(10).
+					Do(context.TODO())
+				require.NoError(t, err, `cl.Search should succeed`)
+				require.Equal(t, 1, res.TotalResults(), `total results should be 2`)
+			})
 		})
 	}
 }

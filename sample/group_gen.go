@@ -142,6 +142,28 @@ func groupContainsPredicate(scimField string, val string) predicate.Group {
 	}
 }
 
+func groupEqualsPredicate(scimField string, val string) predicate.Group {
+	switch scimField {
+	case resource.GroupDisplayNameKey:
+		entFieldName := GroupEntFieldFromSCIM(scimField)
+		return predicate.Group(func(s *sql.Selector) {
+			s.Where(sql.EQ(s.C(entFieldName), val))
+		})
+	case resource.GroupExternalIDKey:
+		entFieldName := GroupEntFieldFromSCIM(scimField)
+		return predicate.Group(func(s *sql.Selector) {
+			s.Where(sql.EQ(s.C(entFieldName), val))
+		})
+	case resource.GroupIDKey:
+		entFieldName := GroupEntFieldFromSCIM(scimField)
+		return predicate.Group(func(s *sql.Selector) {
+			s.Where(sql.EQ(s.C(entFieldName), val))
+		})
+	default:
+		return nil
+	}
+}
+
 func groupPresencePredicate(scimField string) predicate.Group {
 	switch scimField {
 	case resource.GroupDisplayNameKey:

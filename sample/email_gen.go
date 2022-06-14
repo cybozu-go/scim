@@ -110,6 +110,28 @@ func emailContainsPredicate(scimField string, val string) predicate.Email {
 	}
 }
 
+func emailEqualsPredicate(scimField string, val string) predicate.Email {
+	switch scimField {
+	case resource.EmailDisplayKey:
+		entFieldName := EmailEntFieldFromSCIM(scimField)
+		return predicate.Email(func(s *sql.Selector) {
+			s.Where(sql.EQ(s.C(entFieldName), val))
+		})
+	case resource.EmailTypeKey:
+		entFieldName := EmailEntFieldFromSCIM(scimField)
+		return predicate.Email(func(s *sql.Selector) {
+			s.Where(sql.EQ(s.C(entFieldName), val))
+		})
+	case resource.EmailValueKey:
+		entFieldName := EmailEntFieldFromSCIM(scimField)
+		return predicate.Email(func(s *sql.Selector) {
+			s.Where(sql.EQ(s.C(entFieldName), val))
+		})
+	default:
+		return nil
+	}
+}
+
 func emailPresencePredicate(scimField string) predicate.Email {
 	switch scimField {
 	case resource.EmailDisplayKey:

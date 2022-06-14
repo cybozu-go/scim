@@ -792,6 +792,7 @@ func generateUtilities(object *codegen.Object) error {
 		{Name: `StartsWith`, Method: `HasPrefix`},
 		{Name: `EndsWith`, Method: `HasSuffix`},
 		{Name: `Contains`, Method: `Contains`},
+		{Name: `Equals`, Method: `EQ`},
 	} {
 		o.LL(`func %s%sPredicate(scimField string, val string) predicate.%s {`, object.Name(false), pred.Name, object.Name(true))
 		o.L(`switch scimField {`)

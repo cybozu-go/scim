@@ -543,7 +543,36 @@ func (v *filterVisitor) visitRegexExpr(expr filter.RegexExpr) error {
 	}
 }
 
-func (v *filterVisitor) visitCompareExpr(expr filter.Expr) error {
+func (v *filterVisitor) visitCompareExpr(expr filter.CompareExpr) error {
+	lhe, err := exprAttr(expr.LHE())
+	slhe, ok := lhe.(string)
+	if err != nil || !ok {
+		return fmt.Errorf(`left hand side of CompareExpr is not valid`)
+	}
+
+	rhe, err := exprAttr(expr.RHE())
+	if err != nil {
+		return fmt.Errorf(`right hand side of CompareExpr is not valid: %w`, err)
+	}
+	// convert rhe to string so it can be passed to regexp.QuoteMeta
+	srhe := fmt.Sprintf(`%v`, rhe)
+
+	switch expr.Operator() {
+	case filter.EqualOp:
+		if v.users != nil {
+			if pred := userEqualsPredicate(slhe, srhe); pred != nil {
+				v.users = append(v.users, pred)
+			}
+		}
+		if v.groups != nil {
+			if pred := groupEqualsPredicate(slhe, srhe); pred != nil {
+				v.groups = append(v.groups, pred)
+			}
+		}
+		return nil
+	default:
+		panic(fmt.Sprintf("%s", expr.Operator()))
+	}
 	return fmt.Errorf(`unimplemented`)
 }
 

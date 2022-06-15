@@ -495,9 +495,6 @@ func (b *EnterpriseUserBuilder) init() {
 	b.err = nil
 	b.validator = nil
 	b.object = &EnterpriseUser{}
-
-	b.object.schemas = make(schemas)
-	b.object.schemas.Add(EnterpriseUserSchemaURI)
 }
 
 func (b *EnterpriseUserBuilder) CostCenter(v string) *EnterpriseUserBuilder {

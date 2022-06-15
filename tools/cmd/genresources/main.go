@@ -422,8 +422,10 @@ func generateObject(object *codegen.Object) error {
 	o.L(`b.validator = nil`)
 	o.L(`b.object = &%s{}`, object.Name(true))
 	if schema := object.String(`schema`); schema != "" {
-		o.LL(`b.object.schemas = make(schemas)`)
-		o.L(`b.object.schemas.Add(%sSchemaURI)`, object.Name(true))
+		if object.Bool(`top_level`) {
+			o.LL(`b.object.schemas = make(schemas)`)
+			o.L(`b.object.schemas.Add(%sSchemaURI)`, object.Name(true))
+		}
 	}
 	o.L(`}`)
 

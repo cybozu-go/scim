@@ -22,6 +22,7 @@ objects:
       - name: version
   - name: User
     schema: "urn:ietf:params:scim:schemas:core:2.0:User"
+    top_level: true
     fields:
       - name: userName
         required: true
@@ -108,6 +109,7 @@ objects:
   - name: Group
     schema: urn:ietf:params:scim:schemas:core:2.0:Group
     ent_conversion_helper: groupResourceFromEntHelper
+    top_level: true
     fields:
       - name: displayName
       - name: members
@@ -165,6 +167,7 @@ objects:
   - name: ServiceProviderConfig
     schema: urn:ietf:params:scim:schemas:core:2.0:ServiceProviderConfig
     skipCommonFields: true
+    top_level: true
     fields:
       - name: documentationURI
         json: documentationUri

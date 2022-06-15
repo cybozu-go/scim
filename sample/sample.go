@@ -581,7 +581,6 @@ func (v *filterVisitor) visitCompareExpr(expr filter.CompareExpr) error {
 	default:
 		panic(expr.Operator())
 	}
-	return fmt.Errorf(`unimplemented`)
 }
 
 func (v *filterVisitor) visitLogExpr(expr filter.Expr) error {

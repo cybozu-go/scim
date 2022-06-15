@@ -31,6 +31,12 @@ var _ = groupPresencePredicate
 var _ = namesPresencePredicate
 var _ = emailStartsWithPredicate
 var _ = namesStartsWithPredicate
+var _ = emailEndsWithPredicate
+var _ = namesEndsWithPredicate
+var _ = emailContainsPredicate
+var _ = namesContainsPredicate
+var _ = emailEqualsPredicate
+var _ = namesEqualsPredicate
 
 type Backend struct {
 	db  *ent.Client
@@ -573,7 +579,7 @@ func (v *filterVisitor) visitCompareExpr(expr filter.CompareExpr) error {
 		}
 		return nil
 	default:
-		panic(fmt.Sprintf("%s", expr.Operator()))
+		panic(expr.Operator())
 	}
 	return fmt.Errorf(`unimplemented`)
 }

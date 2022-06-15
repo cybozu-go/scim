@@ -352,11 +352,12 @@ func generateCall(o *codegen.Output, svc Service, call *codegen.Object, resource
 		o.L(`if err != nil {`)
 		o.L("return %sfmt.Errorf(`failed to generate request payload for %s: %%w`, err)", errPrefix, call.Name(true))
 		o.L(`}`)
+		o.R("\n")
 	}
-	o.LL(`trace := call.trace`)
+	o.L(`trace := call.trace`)
 	o.L(`u := call.makeURL()`)
 	o.L(`if trace != nil {`)
-	o.L("fmt.Fprintf(trace, `trace: client sending call request to %%q\n`, u)")
+	o.L("fmt.Fprintf(trace, `trace: client sending call request to %%q\\n`, u)")
 	o.L(`}`)
 
 	if rstype == "" {

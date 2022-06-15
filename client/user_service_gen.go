@@ -67,8 +67,7 @@ func (call *GetUserCall) Do(ctx context.Context) (*resource.User, error) {
 	trace := call.trace
 	u := call.makeURL()
 	if trace != nil {
-		fmt.Fprintf(trace, `trace: client sending call request to %q
-`, u)
+		fmt.Fprintf(trace, `trace: client sending call request to %q\n`, u)
 	}
 
 	var vals url.Values
@@ -264,8 +263,7 @@ func (call *CreateUserCall) Do(ctx context.Context) (*resource.User, error) {
 	trace := call.trace
 	u := call.makeURL()
 	if trace != nil {
-		fmt.Fprintf(trace, `trace: client sending call request to %q
-`, u)
+		fmt.Fprintf(trace, `trace: client sending call request to %q\n`, u)
 	}
 
 	var body bytes.Buffer
@@ -451,8 +449,7 @@ func (call *ReplaceUserCall) Do(ctx context.Context) (*resource.User, error) {
 	trace := call.trace
 	u := call.makeURL()
 	if trace != nil {
-		fmt.Fprintf(trace, `trace: client sending call request to %q
-`, u)
+		fmt.Fprintf(trace, `trace: client sending call request to %q\n`, u)
 	}
 
 	var body bytes.Buffer
@@ -643,8 +640,7 @@ func (call *DeleteUserCall) Do(ctx context.Context) error {
 	trace := call.trace
 	u := call.makeURL()
 	if trace != nil {
-		fmt.Fprintf(trace, `trace: client sending call request to %q
-`, u)
+		fmt.Fprintf(trace, `trace: client sending call request to %q\n`, u)
 	}
 
 	var vals url.Values
@@ -770,8 +766,7 @@ func (call *SearchUserCall) Do(ctx context.Context) (*resource.ListResponse, err
 	trace := call.trace
 	u := call.makeURL()
 	if trace != nil {
-		fmt.Fprintf(trace, `trace: client sending call request to %q
-`, u)
+		fmt.Fprintf(trace, `trace: client sending call request to %q\n`, u)
 	}
 
 	var body bytes.Buffer

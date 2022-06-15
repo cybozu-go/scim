@@ -98,8 +98,7 @@ func (call *SearchCall) Do(ctx context.Context) (*resource.ListResponse, error) 
 	trace := call.trace
 	u := call.makeURL()
 	if trace != nil {
-		fmt.Fprintf(trace, `trace: client sending call request to %q
-`, u)
+		fmt.Fprintf(trace, `trace: client sending call request to %q\n`, u)
 	}
 
 	var body bytes.Buffer

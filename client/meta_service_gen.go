@@ -42,11 +42,10 @@ func (call *GetServiceProviderConfigCall) makeURL() string {
 }
 
 func (call *GetServiceProviderConfigCall) Do(ctx context.Context) (*resource.ServiceProviderConfig, error) {
-
 	trace := call.trace
 	u := call.makeURL()
 	if trace != nil {
-		fmt.Fprintf(trace, `trace: client sending call request to %q`, u)
+		fmt.Fprintf(trace, `trace: client sending call request to %q\n`, u)
 	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)

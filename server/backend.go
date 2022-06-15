@@ -355,7 +355,7 @@ func RetrieveServiceProviderConfigEndpoint(b RetrieveServiceProviderConfigBacken
 		scp, err := b.RetrieveServiceProviderConfig()
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, err.Error())
+			fmt.Fprint(w, err.Error())
 			return
 		}
 

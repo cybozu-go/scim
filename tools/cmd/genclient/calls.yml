@@ -1,4 +1,10 @@
 services:
+  - name: MetaService
+    calls:
+    - name: GetServiceProviderConfigCall
+      method: http.MethodGet
+      response_type: resource.ServiceProviderConfig
+      path: /ServiceProviderConfig
   - name: SearchService
     calls:
     - name: SearchCall

@@ -151,6 +151,7 @@ objects:
     fields:
       - name: typ
         json: type
+        exported_name: Type
         type: AuthenticationSchemeType
         required: true
       - name: name
@@ -186,7 +187,7 @@ objects:
         required: true
         type: '*GenericSupport'
       - name: authenticationSchemes
-        type: '[]AuthenticationScheme'
+        type: '[]*AuthenticationScheme'
         required: true
   - name: SearchRequest
     schema: urn:ietf:params:scim:api:messages:2.0:SearchRequest

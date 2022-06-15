@@ -57,6 +57,10 @@ type SearchGroupBackend interface {
 	SearchGroup(*resource.SearchRequest) (*resource.ListResponse, error)
 }
 
+type RetrieveServiceProviderConfigBackend interface {
+	RetrieveServiceProviderConfig() (*resource.ServiceProviderConfig, error)
+}
+
 func DeleteGroupEndpoint(b DeleteGroupBackend) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
@@ -334,6 +338,31 @@ func SearchGroupEndpoint(b SearchGroupBackend) http.Handler {
 
 		var buf bytes.Buffer
 		if err := json.NewEncoder(&buf).Encode(lr); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			// TODO: log
+			return
+		}
+
+		hdr := w.Header()
+		hdr.Set(ctKey, mimeSCIM)
+		w.WriteHeader(http.StatusOK)
+		_, _ = io.Copy(w, &buf) // not much you can do by this point
+	})
+}
+
+func RetrieveServiceProviderConfigEndpoint(b RetrieveServiceProviderConfigBackend) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		scp, err := b.RetrieveServiceProviderConfig()
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, err.Error())
+			return
+		}
+
+		var buf bytes.Buffer
+		enc := json.NewEncoder(&buf)
+		enc.SetIndent("", "  ")
+		if err := enc.Encode(scp); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			// TODO: log
 			return

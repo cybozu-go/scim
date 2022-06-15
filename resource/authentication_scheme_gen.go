@@ -13,7 +13,7 @@ const (
 	AuthenticationSchemeDocumentationURIKey = "documentationUri"
 	AuthenticationSchemeNameKey             = "name"
 	AuthenticationSchemeSpecURIKey          = "specUri"
-	AuthenticationSchemeTypKey              = "type"
+	AuthenticationSchemeTypeKey             = "type"
 )
 
 type AuthenticationScheme struct {
@@ -109,13 +109,13 @@ func (v *AuthenticationScheme) SpecURI() string {
 	return *(v.specURI)
 }
 
-func (v *AuthenticationScheme) HasTyp() bool {
+func (v *AuthenticationScheme) HasType() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.typ != nil
 }
 
-func (v *AuthenticationScheme) Typ() AuthenticationSchemeType {
+func (v *AuthenticationScheme) Type() AuthenticationSchemeType {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	if v.typ == nil {
@@ -202,7 +202,7 @@ func (v *AuthenticationScheme) Get(name string, options ...GetOption) (interface
 			return nil, false
 		}
 		return *(v.specURI), true
-	case AuthenticationSchemeTypKey:
+	case AuthenticationSchemeTypeKey:
 		if v.typ == nil {
 			return nil, false
 		}
@@ -266,7 +266,7 @@ func (v *AuthenticationScheme) Set(name string, value interface{}) error {
 		}
 		v.specURI = &tmp
 		return nil
-	case AuthenticationSchemeTypKey:
+	case AuthenticationSchemeTypeKey:
 		var tmp AuthenticationSchemeType
 		tmp, ok := value.(AuthenticationSchemeType)
 		if !ok {
@@ -356,7 +356,7 @@ LOOP:
 					return fmt.Errorf(`failed to decode value for key "specUri": %w`, err)
 				}
 				v.specURI = &x
-			case AuthenticationSchemeTypKey:
+			case AuthenticationSchemeTypeKey:
 				var x AuthenticationSchemeType
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "type": %w`, err)
@@ -476,7 +476,7 @@ func (b *AuthenticationSchemeBuilder) SpecURI(v string) *AuthenticationSchemeBui
 	return b
 }
 
-func (b *AuthenticationSchemeBuilder) Typ(v AuthenticationSchemeType) *AuthenticationSchemeBuilder {
+func (b *AuthenticationSchemeBuilder) Type(v AuthenticationSchemeType) *AuthenticationSchemeBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.once.Do(b.init)

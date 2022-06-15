@@ -533,6 +533,9 @@ func (b *SearchRequestBuilder) init() {
 	b.err = nil
 	b.validator = nil
 	b.object = &SearchRequest{}
+
+	b.object.schemas = make(schemas)
+	b.object.schemas.Add(SearchRequestSchemaURI)
 }
 
 func (b *SearchRequestBuilder) Attributes(v ...string) *SearchRequestBuilder {

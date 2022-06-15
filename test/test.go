@@ -45,6 +45,9 @@ func RunConformanceTests(t *testing.T, name string, backend interface{}) {
 			t.Run("Basic CRUD", GroupsBasicCRUD(t, cl))
 			t.Run("Search", GroupsSearch(t, cl))
 		})
+		t.Run("Meta", func(t *testing.T) {
+			t.Run("ServiceProviderConfig", ServiceProviderConfig(t, cl))
+		})
 	})
 }
 
@@ -442,5 +445,15 @@ func GroupsSearch(t *testing.T, cl *client.Client) func(t *testing.T) {
 				require.Equal(t, 1, res.TotalResults(), `total results should be 2`)
 			})
 		})
+	}
+}
+
+func ServiceProviderConfig(t *testing.T, cl *client.Client) func(t *testing.T) {
+	return func(t *testing.T) {
+		spc, err := cl.Meta().GetServiceProviderConfig().
+			Trace(TraceWriter).
+			Do(context.TODO())
+		require.NoError(t, err, `cl.GetServiceProviderConfig should succeed`)
+		_ = spc
 	}
 }

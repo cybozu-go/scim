@@ -413,6 +413,9 @@ func (b *ListResponseBuilder) init() {
 	b.err = nil
 	b.validator = nil
 	b.object = &ListResponse{}
+
+	b.object.schemas = make(schemas)
+	b.object.schemas.Add(ListResponseSchemaURI)
 }
 
 func (b *ListResponseBuilder) ItemsPerPage(v int) *ListResponseBuilder {

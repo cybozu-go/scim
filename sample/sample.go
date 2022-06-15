@@ -33,10 +33,11 @@ var _ = emailStartsWithPredicate
 var _ = namesStartsWithPredicate
 
 type Backend struct {
-	db *ent.Client
+	db  *ent.Client
+	spc *resource.ServiceProviderConfig
 }
 
-func New(connspec string) (*Backend, error) {
+func New(connspec string, spc *resource.ServiceProviderConfig) (*Backend, error) {
 	client, err := ent.Open(dialect.SQLite, connspec)
 	if err != nil {
 		return nil, fmt.Errorf(`failed to open database: %w`, err)
@@ -47,7 +48,8 @@ func New(connspec string) (*Backend, error) {
 	}
 
 	return &Backend{
-		db: client.Debug(),
+		db:  client.Debug(),
+		spc: spc,
 	}, nil
 }
 
@@ -735,4 +737,9 @@ func (b *Backend) DeleteGroup(id string) error {
 	}
 
 	return nil
+}
+
+func (b *Backend) RetrieveServiceProviderConfig() (*resource.ServiceProviderConfig, error) {
+	// TODO: meta?
+	return b.spc, nil
 }

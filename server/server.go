@@ -59,6 +59,10 @@ func NewServer(backend interface{}) (http.Handler, error) {
 	if v, ok := backend.(SearchBackend); ok {
 		b.Search(SearchEndpoint(v))
 	}
+
+	if v, ok := backend.(RetrieveServiceProviderConfigBackend); ok {
+		b.ServiceProviderConfig(RetrieveServiceProviderConfigEndpoint(v))
+	}
 	return b.Build()
 }
 
@@ -208,5 +212,10 @@ func (b *Builder) SearchUser(hh http.Handler) *Builder {
 
 func (b *Builder) Search(hh http.Handler) *Builder {
 	b.Handler(http.MethodPost, `/.search`, hh)
+	return b
+}
+
+func (b *Builder) ServiceProviderConfig(hh http.Handler) *Builder {
+	b.Handler(http.MethodGet, `/ServiceProviderConfig`, hh)
 	return b
 }

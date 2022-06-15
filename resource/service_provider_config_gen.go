@@ -27,7 +27,7 @@ func init() {
 }
 
 type ServiceProviderConfig struct {
-	authenticationSchemes []AuthenticationScheme
+	authenticationSchemes []*AuthenticationScheme
 	bulk                  *BulkSupport
 	changePassword        *GenericSupport
 	documentationURI      *string
@@ -81,7 +81,7 @@ func (v *ServiceProviderConfig) HasAuthenticationSchemes() bool {
 	return v.authenticationSchemes != nil
 }
 
-func (v *ServiceProviderConfig) AuthenticationSchemes() []AuthenticationScheme {
+func (v *ServiceProviderConfig) AuthenticationSchemes() []*AuthenticationScheme {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.authenticationSchemes
@@ -329,10 +329,10 @@ func (v *ServiceProviderConfig) Set(name string, value interface{}) error {
 	defer v.mu.Unlock()
 	switch name {
 	case ServiceProviderConfigAuthenticationSchemesKey:
-		var tmp []AuthenticationScheme
-		tmp, ok := value.([]AuthenticationScheme)
+		var tmp []*AuthenticationScheme
+		tmp, ok := value.([]*AuthenticationScheme)
 		if !ok {
-			return fmt.Errorf(`expected []AuthenticationScheme for field "authenticationSchemes", but got %T`, value)
+			return fmt.Errorf(`expected []*AuthenticationScheme for field "authenticationSchemes", but got %T`, value)
 		}
 		v.authenticationSchemes = tmp
 		return nil
@@ -467,7 +467,7 @@ LOOP:
 		case string:
 			switch tok {
 			case ServiceProviderConfigAuthenticationSchemesKey:
-				var x []AuthenticationScheme
+				var x []*AuthenticationScheme
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "authenticationSchemes": %w`, err)
 				}
@@ -580,9 +580,12 @@ func (b *ServiceProviderConfigBuilder) init() {
 	b.err = nil
 	b.validator = nil
 	b.object = &ServiceProviderConfig{}
+
+	b.object.schemas = make(schemas)
+	b.object.schemas.Add(ServiceProviderConfigSchemaURI)
 }
 
-func (b *ServiceProviderConfigBuilder) AuthenticationSchemes(v ...AuthenticationScheme) *ServiceProviderConfigBuilder {
+func (b *ServiceProviderConfigBuilder) AuthenticationSchemes(v ...*AuthenticationScheme) *ServiceProviderConfigBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.once.Do(b.init)

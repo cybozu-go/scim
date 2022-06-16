@@ -67,6 +67,10 @@ func NewServer(backend interface{}) (http.Handler, error) {
 	if v, ok := backend.(RetrieveResourceTypesBackend); ok {
 		b.ResourceTypes(RetrieveResourceTypesEndpoint(v))
 	}
+
+	if v, ok := backend.(RetrieveSchemasBackend); ok {
+		b.Schemas(RetrieveSchemasEndpoint(v))
+	}
 	return b.Build()
 }
 
@@ -226,5 +230,11 @@ func (b *Builder) ServiceProviderConfig(hh http.Handler) *Builder {
 
 func (b *Builder) ResourceTypes(hh http.Handler) *Builder {
 	b.Handler(http.MethodGet, `/ResourceTypes`, hh)
+	return b
+}
+
+func (b *Builder) Schemas(hh http.Handler) *Builder {
+	b.Handler(http.MethodGet, `/Schemas`, hh)
+	b.Handler(http.MethodGet, `/Schemas/{id}`, hh)
 	return b
 }

@@ -48,6 +48,7 @@ func RunConformanceTests(t *testing.T, name string, backend interface{}) {
 		t.Run("Meta", func(t *testing.T) {
 			t.Run("ServiceProviderConfig", ServiceProviderConfig(t, cl))
 			t.Run("ResourceTypes", ResourceTypes(t, cl))
+			t.Run("Schemas", Schemas(t, cl))
 		})
 	})
 }
@@ -466,5 +467,26 @@ func ResourceTypes(t *testing.T, cl *client.Client) func(t *testing.T) {
 			Do(context.TODO())
 		require.NoError(t, err, `cl.ResourceTypes should succeed`)
 		_ = spc // TODO: perform more checks
+	}
+}
+
+func Schemas(t *testing.T, cl *client.Client) func(t *testing.T) {
+	return func(t *testing.T) {
+		t.Run("Fetch all schemas", func(t *testing.T) {
+			list, err := cl.Meta().GetSchemas().
+				Trace(TraceWriter).
+				Do(context.TODO())
+			require.NoError(t, err, `cl.GetSchema should succeed`)
+			_ = list
+		})
+		t.Run("Fetch individual schemas", func(t *testing.T) {
+			for _, u := range []string{resource.UserSchemaURI, resource.GroupSchemaURI} {
+				s, err := cl.Meta().GetSchema(u).
+					Trace(TraceWriter).
+					Do(context.TODO())
+				require.NoError(t, err, `cl.GetSchemas should succeed`)
+				_ = s
+			}
+		})
 	}
 }

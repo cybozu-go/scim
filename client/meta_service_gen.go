@@ -45,7 +45,7 @@ func (call *GetResourceTypesCall) Do(ctx context.Context) (*[]resource.ResourceT
 	trace := call.trace
 	u := call.makeURL()
 	if trace != nil {
-		fmt.Fprintf(trace, `trace: client sending call request to %q\n`, u)
+		fmt.Fprintf(trace, "trace: client sending call request to %q\n", u)
 	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)
@@ -101,11 +101,11 @@ func (call *GetServiceProviderConfigCall) makeURL() string {
 	return call.client.baseURL + "/ServiceProviderConfig"
 }
 
-func (call *GetServiceProviderConfigCall) Do(ctx context.Context) (*resource.ServiceProviderConfig, error) {
+func (call *GetServiceProviderConfigCall) Do(ctx context.Context) (**resource.ServiceProviderConfig, error) {
 	trace := call.trace
 	u := call.makeURL()
 	if trace != nil {
-		fmt.Fprintf(trace, `trace: client sending call request to %q\n`, u)
+		fmt.Fprintf(trace, "trace: client sending call request to %q\n", u)
 	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)
@@ -133,7 +133,129 @@ func (call *GetServiceProviderConfigCall) Do(ctx context.Context) (*resource.Ser
 		return nil, fmt.Errorf(`expected call response %d, got (%d)`, http.StatusOK, res.StatusCode)
 	}
 
-	var respayload resource.ServiceProviderConfig
+	var respayload *resource.ServiceProviderConfig
+	if err := json.NewDecoder(res.Body).Decode(&respayload); err != nil {
+		return nil, fmt.Errorf(`failed to decode call response: %w`, err)
+	}
+
+	return &respayload, nil
+}
+
+type GetSchemas struct {
+	client *Client
+	trace  io.Writer
+}
+
+func (svc *MetaService) GetSchemas() *GetSchemas {
+	return &GetSchemas{
+		client: svc.client,
+	}
+}
+
+func (call *GetSchemas) Trace(w io.Writer) *GetSchemas {
+	call.trace = w
+	return call
+}
+
+func (call *GetSchemas) makeURL() string {
+	return call.client.baseURL + "/Schemas"
+}
+
+func (call *GetSchemas) Do(ctx context.Context) (*[]*resource.Schema, error) {
+	trace := call.trace
+	u := call.makeURL()
+	if trace != nil {
+		fmt.Fprintf(trace, "trace: client sending call request to %q\n", u)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)
+	if err != nil {
+		return nil, fmt.Errorf(`failed to create new HTTP request: %w`, err)
+	}
+	req.Header.Set(`Accept`, `application/scim+json`)
+
+	if trace != nil {
+		buf, _ := httputil.DumpRequestOut(req, true)
+		fmt.Fprintf(trace, "%s\n", buf)
+	}
+
+	res, err := call.client.httpcl.Do(req)
+	if trace != nil {
+		buf, _ := httputil.DumpResponse(res, true)
+		fmt.Fprintf(trace, "%s\n", buf)
+	}
+	if err != nil {
+		return nil, fmt.Errorf(`failed to send request to %q: %w`, u, err)
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(`expected call response %d, got (%d)`, http.StatusOK, res.StatusCode)
+	}
+
+	var respayload []*resource.Schema
+	if err := json.NewDecoder(res.Body).Decode(&respayload); err != nil {
+		return nil, fmt.Errorf(`failed to decode call response: %w`, err)
+	}
+
+	return &respayload, nil
+}
+
+type GetSchema struct {
+	client *Client
+	trace  io.Writer
+	id     string
+}
+
+func (svc *MetaService) GetSchema(id string) *GetSchema {
+	return &GetSchema{
+		client: svc.client,
+		id:     id,
+	}
+}
+
+func (call *GetSchema) Trace(w io.Writer) *GetSchema {
+	call.trace = w
+	return call
+}
+
+func (call GetSchema) makeURL() string {
+	return call.client.baseURL + "/Schemas/" + call.id
+}
+
+func (call *GetSchema) Do(ctx context.Context) (**resource.Schema, error) {
+	trace := call.trace
+	u := call.makeURL()
+	if trace != nil {
+		fmt.Fprintf(trace, "trace: client sending call request to %q\n", u)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)
+	if err != nil {
+		return nil, fmt.Errorf(`failed to create new HTTP request: %w`, err)
+	}
+	req.Header.Set(`Accept`, `application/scim+json`)
+
+	if trace != nil {
+		buf, _ := httputil.DumpRequestOut(req, true)
+		fmt.Fprintf(trace, "%s\n", buf)
+	}
+
+	res, err := call.client.httpcl.Do(req)
+	if trace != nil {
+		buf, _ := httputil.DumpResponse(res, true)
+		fmt.Fprintf(trace, "%s\n", buf)
+	}
+	if err != nil {
+		return nil, fmt.Errorf(`failed to send request to %q: %w`, u, err)
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(`expected call response %d, got (%d)`, http.StatusOK, res.StatusCode)
+	}
+
+	var respayload *resource.Schema
 	if err := json.NewDecoder(res.Body).Decode(&respayload); err != nil {
 		return nil, fmt.Errorf(`failed to decode call response: %w`, err)
 	}

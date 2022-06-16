@@ -65,6 +65,10 @@ type RetrieveResourceTypesBackend interface {
 	RetrieveResourceTypes() ([]*resource.ResourceType, error)
 }
 
+type RetrieveSchemasBackend interface {
+	RetrieveSchemas() ([]*resource.Schema, error)
+}
+
 func DeleteGroupEndpoint(b DeleteGroupBackend) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
@@ -392,6 +396,46 @@ func RetrieveResourceTypesEndpoint(b RetrieveResourceTypesBackend) http.Handler 
 		enc := json.NewEncoder(&buf)
 		enc.SetIndent("", "  ")
 		if err := enc.Encode(rts); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			// TODO: log
+			return
+		}
+
+		hdr := w.Header()
+		hdr.Set(ctKey, mimeSCIM)
+		w.WriteHeader(http.StatusOK)
+		_, _ = io.Copy(w, &buf) // not much you can do by this point
+	})
+}
+
+func RetrieveSchemasEndpoint(b RetrieveSchemasBackend) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var buf bytes.Buffer
+		enc := json.NewEncoder(&buf)
+		enc.SetIndent("", "  ")
+
+		schemas, err := b.RetrieveSchemas()
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprint(w, err.Error())
+			return
+		}
+
+		var payload interface{}
+		vars := mux.Vars(r)
+		id := vars.Get(`id`)
+		if id == "" {
+			payload = schemas
+		} else {
+			for _, schema := range schemas {
+				if schema.ID() == id {
+					payload = schema
+					break
+				}
+			}
+		}
+
+		if err := enc.Encode(payload); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			// TODO: log
 			return

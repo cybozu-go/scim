@@ -14,3 +14,11 @@ func Get(s string) (*resource.Schema, bool) {
 	schema, ok := schemas[s]
 	return schema, ok
 }
+
+func All() []*resource.Schema {
+	list := make([]*resource.Schema, 0, len(schemas))
+	for _, s := range schemas {
+		list = append(list, s)
+	}
+	return list
+}

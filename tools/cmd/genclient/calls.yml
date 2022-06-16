@@ -7,8 +7,24 @@ services:
       path: /ResourceTypes
     - name: GetServiceProviderConfigCall
       method: http.MethodGet
-      response_type: resource.ServiceProviderConfig
+      response_type: '*resource.ServiceProviderConfig'
       path: /ServiceProviderConfig
+    - name: GetSchemas
+      method: http.MethodGet
+      response_type: '[]*resource.Schema'
+      path: '/Schemas'
+    - name: GetSchema
+      method: http.MethodGet
+      response_type: '*resource.Schema'
+      path: '/Schemas'
+      makeURLTemplate: |
+        func (call {{ .ObjectName }}) makeURL() string {
+          return call.client.baseURL + "{{ .Path }}/" + call.id
+        }
+      fields:
+        - name: id
+          required: true
+
   - name: SearchService
     calls:
     - name: SearchCall

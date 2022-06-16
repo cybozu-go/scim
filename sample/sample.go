@@ -17,6 +17,7 @@ import (
 	"github.com/cybozu-go/scim/sample/ent/group"
 	"github.com/cybozu-go/scim/sample/ent/predicate"
 	"github.com/cybozu-go/scim/sample/ent/user"
+	"github.com/cybozu-go/scim/schema"
 	"github.com/google/uuid"
 	"github.com/lestrrat-go/rungroup"
 	"golang.org/x/text/secure/precis"
@@ -779,4 +780,8 @@ func (b *Backend) RetrieveServiceProviderConfig() (*resource.ServiceProviderConf
 func (b *Backend) RetrieveResourceTypes() ([]*resource.ResourceType, error) {
 	// TODO: meta?
 	return b.rts, nil
+}
+
+func (b *Backend) RetrieveSchemas() ([]*resource.Schema, error) {
+	return schema.All(), nil
 }

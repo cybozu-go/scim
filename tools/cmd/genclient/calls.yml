@@ -36,6 +36,7 @@ services:
   - name: UserService
     calls:
     - name: GetUserCall
+      method_name: Get
       method: http.MethodGet
       resource: PartialResourceRepresentationRequest
       response_type: resource.User
@@ -48,6 +49,7 @@ services:
         - name: id
           required: true
     - name: CreateUserCall
+      method_name: Create
       method: http.MethodPost
       resource: User
       path: /Users
@@ -58,6 +60,7 @@ services:
         - immutable
         - writeOnly
     - name: ReplaceUserCall
+      method_name: Replace
       method: http.MethodPut
       resource: User
       path: /Users
@@ -76,6 +79,7 @@ services:
         - readWrite
         - writeOnly
     - name: DeleteUserCall
+      method_name: Delete
       method: http.MethodDelete
       resource: User
       path: /Users
@@ -98,6 +102,7 @@ services:
   - name: GroupService
     calls:
     - name: GetGroupCall
+      method_name: Get
       method: http.MethodGet
       resource: PartialResourceRepresentationRequest
       response_type: resource.Group
@@ -110,6 +115,7 @@ services:
         - name: id
           required: true
     - name: CreateGroupCall
+      method_name: Create
       method: http.MethodPost
       resource: Group
       path: /Groups
@@ -120,6 +126,7 @@ services:
         - immutable
         - writeOnly
     - name: ReplaceGroupCall
+      method_name: Replace
       method: http.MethodPut
       resource: Group
       path: /Groups
@@ -138,6 +145,7 @@ services:
       #      method: http.MethodPatch
       #      builder: resource.GroupBuilder
     - name: DeleteGroupCall
+      method_name: Delete
       method: http.MethodDelete
       resource: Group
       path: /Groups

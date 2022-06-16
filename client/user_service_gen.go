@@ -31,7 +31,7 @@ type GetUserCall struct {
 	id      string
 }
 
-func (svc *UserService) GetUser(id string) *GetUserCall {
+func (svc *UserService) Get(id string) *GetUserCall {
 	return &GetUserCall{
 		builder: resource.NewPartialResourceRepresentationRequestBuilder(),
 		client:  svc.client,
@@ -128,7 +128,7 @@ type CreateUserCall struct {
 	trace   io.Writer
 }
 
-func (svc *UserService) CreateUser() *CreateUserCall {
+func (svc *UserService) Create() *CreateUserCall {
 	return &CreateUserCall{
 		builder: resource.NewUserBuilder(),
 		client:  svc.client,
@@ -313,7 +313,7 @@ type ReplaceUserCall struct {
 	id      string
 }
 
-func (svc *UserService) ReplaceUser(id string) *ReplaceUserCall {
+func (svc *UserService) Replace(id string) *ReplaceUserCall {
 	return &ReplaceUserCall{
 		builder: resource.NewUserBuilder(),
 		client:  svc.client,
@@ -499,7 +499,7 @@ type DeleteUserCall struct {
 	id      string
 }
 
-func (svc *UserService) DeleteUser(id string) *DeleteUserCall {
+func (svc *UserService) Delete(id string) *DeleteUserCall {
 	return &DeleteUserCall{
 		builder: resource.NewUserBuilder(),
 		client:  svc.client,

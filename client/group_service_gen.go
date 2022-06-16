@@ -31,7 +31,7 @@ type GetGroupCall struct {
 	id      string
 }
 
-func (svc *GroupService) GetGroup(id string) *GetGroupCall {
+func (svc *GroupService) Get(id string) *GetGroupCall {
 	return &GetGroupCall{
 		builder: resource.NewPartialResourceRepresentationRequestBuilder(),
 		client:  svc.client,
@@ -128,7 +128,7 @@ type CreateGroupCall struct {
 	trace   io.Writer
 }
 
-func (svc *GroupService) CreateGroup() *CreateGroupCall {
+func (svc *GroupService) Create() *CreateGroupCall {
 	return &CreateGroupCall{
 		builder: resource.NewGroupBuilder(),
 		client:  svc.client,
@@ -228,7 +228,7 @@ type ReplaceGroupCall struct {
 	id      string
 }
 
-func (svc *GroupService) ReplaceGroup(id string) *ReplaceGroupCall {
+func (svc *GroupService) Replace(id string) *ReplaceGroupCall {
 	return &ReplaceGroupCall{
 		builder: resource.NewGroupBuilder(),
 		client:  svc.client,
@@ -329,7 +329,7 @@ type DeleteGroupCall struct {
 	id      string
 }
 
-func (svc *GroupService) DeleteGroup(id string) *DeleteGroupCall {
+func (svc *GroupService) Delete(id string) *DeleteGroupCall {
 	return &DeleteGroupCall{
 		builder: resource.NewGroupBuilder(),
 		client:  svc.client,

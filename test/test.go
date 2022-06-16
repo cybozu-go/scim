@@ -36,6 +36,7 @@ func RunConformanceTests(t *testing.T, name string, backend interface{}) {
 
 		cl := client.New(srv.URL, client.WithClient(srv.Client()))
 
+		t.Run("Prepare Fixtures", PrepareFixtures(t, cl))
 		t.Run("Users", func(t *testing.T) {
 			t.Run("Basic CRUD", UsersBasicCRUD(t, cl))
 			t.Run("Fetch", UsersFetch(t, cl))
@@ -53,8 +54,14 @@ func RunConformanceTests(t *testing.T, name string, backend interface{}) {
 	})
 }
 
+func PrepareFixtures(t *testing.T, cl *client.Client) func(t *testing.T) {
+	return func(t *testing.T) {
+		cl.User().Create().Do(context.TODO())
+	}
+}
+
 func stockUserCreateCall(cl *client.Client) *client.CreateUserCall {
-	return cl.User().CreateUser().
+	return cl.User().Create().
 		UserName("bjensen").
 		ExternalID("bjensen").
 		DisplayName("Barbara Jensen").
@@ -70,7 +77,7 @@ func stockUserCreateCall(cl *client.Client) *client.CreateUserCall {
 }
 
 func stockGroupCreateCall(cl *client.Client) *client.CreateGroupCall {
-	u1, err := cl.User().CreateUser().
+	u1, err := cl.User().Create().
 		Trace(TraceWriter).
 		UserName("jsmith").
 		ExternalID("jsmith").
@@ -80,7 +87,7 @@ func stockGroupCreateCall(cl *client.Client) *client.CreateGroupCall {
 	if err != nil {
 		panic(err)
 	}
-	u2, err := cl.User().CreateUser().
+	u2, err := cl.User().Create().
 		Trace(TraceWriter).
 		UserName("acooper").
 		ExternalID("acooper").
@@ -90,7 +97,7 @@ func stockGroupCreateCall(cl *client.Client) *client.CreateGroupCall {
 	if err != nil {
 		panic(err)
 	}
-	u3, err := cl.User().CreateUser().
+	u3, err := cl.User().Create().
 		Trace(TraceWriter).
 		UserName("wjohnson").
 		ExternalID("wjohnson").
@@ -106,7 +113,7 @@ func stockGroupCreateCall(cl *client.Client) *client.CreateGroupCall {
 			Ref(u3.Meta().Location()).
 			MustBuild(),
 	}
-	g1, err := cl.Group().CreateGroup().
+	g1, err := cl.Group().Create().
 		Trace(TraceWriter).
 		DisplayName("Product").
 		Members(members...).
@@ -130,7 +137,7 @@ func stockGroupCreateCall(cl *client.Client) *client.CreateGroupCall {
 			MustBuild(),
 	}
 
-	return cl.Group().CreateGroup().
+	return cl.Group().Create().
 		Trace(TraceWriter).
 		DisplayName("Engineering").
 		Members(members...)
@@ -143,7 +150,7 @@ func UsersSearch(t *testing.T, cl *client.Client) func(t *testing.T) {
 			// and make sure that the result doesn't contain any groups
 			createdUser := createStockUser(t, cl)
 			//nolint:errcheck
-			defer cl.User().DeleteUser(createdUser.ID()).
+			defer cl.User().Delete(createdUser.ID()).
 				Do(context.TODO())
 
 			res, err := cl.User().Search().
@@ -162,26 +169,26 @@ func UsersSearch(t *testing.T, cl *client.Client) func(t *testing.T) {
 func UsersFetch(t *testing.T, cl *client.Client) func(*testing.T) {
 	return func(t *testing.T) {
 		t.Run("Fetch unknown user ID", func(t *testing.T) {
-			u, err := cl.User().GetUser("foobar").
+			u, err := cl.User().Get("foobar").
 				Trace(TraceWriter).
 				Do(context.TODO())
-			require.Nil(t, u, `GetUser return value should be nil`)
-			require.Error(t, err, `GetUser should fail`)
+			require.Nil(t, u, `Get return value should be nil`)
+			require.Error(t, err, `Get should fail`)
 		})
 		t.Run("Fetch user", func(t *testing.T) {
 			createdUser, err := stockUserCreateCall(cl).
 				Trace(TraceWriter).
 				Do(context.TODO())
-			require.NoError(t, err, `CreateUser should succeed`)
+			require.NoError(t, err, `Create should succeed`)
 
 			//nolint:errcheck
-			defer cl.User().DeleteUser(createdUser.ID()).
+			defer cl.User().Delete(createdUser.ID()).
 				Do(context.TODO())
 
-			u, err := cl.User().GetUser(createdUser.ID()).
+			u, err := cl.User().Get(createdUser.ID()).
 				Trace(TraceWriter).
 				Do(context.TODO())
-			require.NoError(t, err, `GetUser should succeed`)
+			require.NoError(t, err, `Get should succeed`)
 
 			// fetched user should have non-empty userName and emails, as
 			// well as the attributes with the "returned" value of always
@@ -197,14 +204,14 @@ func UsersFetch(t *testing.T, cl *client.Client) func(*testing.T) {
 		})
 		t.Run("Fetch user with attributes", func(t *testing.T) {
 			createdUser := createStockUser(t, cl)
-			u, err := cl.User().GetUser(createdUser.ID()).
+			u, err := cl.User().Get(createdUser.ID()).
 				Attributes("userName", "emails").
 				Trace(TraceWriter).
 				Do(context.TODO())
-			require.NoError(t, err, `GetUser should succeed`)
+			require.NoError(t, err, `Get should succeed`)
 
 			//nolint:errcheck
-			defer cl.User().DeleteUser(createdUser.ID()).
+			defer cl.User().Delete(createdUser.ID()).
 				Do(context.TODO())
 
 			// fetched user should have non-empty userName and emails, as
@@ -223,13 +230,13 @@ func createStockUser(t *testing.T, cl *client.Client) *resource.User {
 		u, err := stockUserCreateCall(cl).
 			Trace(TraceWriter).
 			Do(context.TODO())
-		require.NoError(t, err, `CreateUser should succeed`)
+		require.NoError(t, err, `Create should succeed`)
 
 		// Make sure that it's really there
-		fetched, err := cl.User().GetUser(u.ID()).
+		fetched, err := cl.User().Get(u.ID()).
 			Trace(TraceWriter).
 			Do(context.TODO())
-		require.NoError(t, err, `GetUser should succeed`)
+		require.NoError(t, err, `Get should succeed`)
 
 		_ = json.NewEncoder(TraceWriter).Encode(fetched)
 		created = u
@@ -246,16 +253,16 @@ func UsersBasicCRUD(t *testing.T, cl *client.Client) func(*testing.T) {
 		// Create a single User, apply Fetch, Replace, Delete
 		createdUser, err := stockUserCreateCall(cl).
 			Do(context.TODO())
-		require.NoError(t, err, `CreateUser should succeed`)
+		require.NoError(t, err, `Create should succeed`)
 		require.Empty(t, createdUser.Password(), `user should not return password`)
 
 		t.Run("Fetch user", func(t *testing.T) {
-			_, err = cl.User().GetUser(createdUser.ID()).
+			_, err = cl.User().Get(createdUser.ID()).
 				Do(context.TODO())
-			require.NoError(t, err, `GetUser should succeed`)
+			require.NoError(t, err, `Get should succeed`)
 		})
 		t.Run("Replace user", func(t *testing.T) {
-			u, err := cl.User().ReplaceUser(createdUser.ID()).
+			u, err := cl.User().Replace(createdUser.ID()).
 				Emails(resource.NewEmailBuilder().
 					Value("babs-new@jensen.org").
 					Primary(true).
@@ -264,9 +271,9 @@ func UsersBasicCRUD(t *testing.T, cl *client.Client) func(*testing.T) {
 			require.NoError(t, err, `ReplaceUser should succeed`)
 
 			// we need to validate the result from PUT and GET
-			fetched, err := cl.User().GetUser(createdUser.ID()).
+			fetched, err := cl.User().Get(createdUser.ID()).
 				Do(context.TODO())
-			require.NoError(t, err, `GetUser should succeed`)
+			require.NoError(t, err, `Get should succeed`)
 
 			testcases := []struct {
 				Name string
@@ -303,13 +310,13 @@ func UsersBasicCRUD(t *testing.T, cl *client.Client) func(*testing.T) {
 			}
 		})
 		t.Run("Delete user", func(t *testing.T) {
-			err := cl.User().DeleteUser(createdUser.ID()).
+			err := cl.User().Delete(createdUser.ID()).
 				Do(context.TODO())
-			require.NoError(t, err, `DeleteUser should succeed`)
+			require.NoError(t, err, `Delete should succeed`)
 			t.Run("Fetch users (after delete)", func(t *testing.T) {
-				_, err := cl.User().GetUser(createdUser.ID()).
+				_, err := cl.User().Get(createdUser.ID()).
 					Do(context.TODO())
-				require.Error(t, err, `GetUser should fail`)
+				require.Error(t, err, `Get should fail`)
 			})
 		})
 	}
@@ -320,26 +327,26 @@ func GroupsBasicCRUD(t *testing.T, cl *client.Client) func(*testing.T) {
 		// Create a single Group, apply Fetch, Replace, Delete
 		createdGroup, err := stockGroupCreateCall(cl).
 			Do(context.TODO())
-		require.NoError(t, err, `CreateGroup should succeed`)
+		require.NoError(t, err, `Create should succeed`)
 		_ = createdGroup
 
 		t.Run("Fetch group", func(t *testing.T) {
-			group, err := cl.Group().GetGroup(createdGroup.ID()).
+			group, err := cl.Group().Get(createdGroup.ID()).
 				Do(context.TODO())
-			require.NoError(t, err, `GetGroup should succeed`)
+			require.NoError(t, err, `Get should succeed`)
 			require.Len(t, group.Members(), len(createdGroup.Members()), `there should be %d members`, len(createdGroup.Members()))
 		})
 		t.Run("Replace group", func(t *testing.T) {
-			u, err := cl.Group().ReplaceGroup(createdGroup.ID()).
+			u, err := cl.Group().Replace(createdGroup.ID()).
 				DisplayName(createdGroup.DisplayName()).
 				Members((createdGroup.Members())[1:]...).
 				Do(context.TODO())
-			require.NoError(t, err, `ReplaceGroup should succeed`)
+			require.NoError(t, err, `Replace should succeed`)
 
 			// we need to validate the result from PUT and GET
-			fetched, err := cl.Group().GetGroup(createdGroup.ID()).
+			fetched, err := cl.Group().Get(createdGroup.ID()).
 				Do(context.TODO())
-			require.NoError(t, err, `GetGroup should succeed`)
+			require.NoError(t, err, `Get should succeed`)
 
 			testcases := []struct {
 				Name  string
@@ -367,13 +374,13 @@ func GroupsBasicCRUD(t *testing.T, cl *client.Client) func(*testing.T) {
 			}
 		})
 		t.Run("Delete group", func(t *testing.T) {
-			err := cl.Group().DeleteGroup(createdGroup.ID()).
+			err := cl.Group().Delete(createdGroup.ID()).
 				Do(context.TODO())
-			require.NoError(t, err, `DeleteGroup should succeed`)
+			require.NoError(t, err, `Delete should succeed`)
 			t.Run("Fetch group (after delete)", func(t *testing.T) {
-				_, err := cl.Group().GetGroup(createdGroup.ID()).
+				_, err := cl.Group().Get(createdGroup.ID()).
 					Do(context.TODO())
-				require.Error(t, err, `GetGroup should fail`)
+				require.Error(t, err, `Get should fail`)
 			})
 		})
 	}
@@ -382,24 +389,24 @@ func GroupsBasicCRUD(t *testing.T, cl *client.Client) func(*testing.T) {
 func GroupsSearch(t *testing.T, cl *client.Client) func(t *testing.T) {
 	return func(t *testing.T) {
 		t.Run("search via /Groups/.search", func(t *testing.T) {
-			g1, err := cl.Group().CreateGroup().
+			g1, err := cl.Group().Create().
 				DisplayName("search-test1").
 				Do(context.TODO())
-			require.NoError(t, err, `CreateGroup should succeed`)
+			require.NoError(t, err, `Create should succeed`)
 
-			g2, err := cl.Group().CreateGroup().
+			g2, err := cl.Group().Create().
 				DisplayName("search-test2").
 				Do(context.TODO())
-			require.NoError(t, err, `CreateGroup should succeed`)
+			require.NoError(t, err, `Create should succeed`)
 
 			_ = g1
 			_ = g2
 
 			//nolint:errcheck
-			defer cl.Group().DeleteGroup(g1.ID()).
+			defer cl.Group().Delete(g1.ID()).
 				Do(context.TODO())
 			//nolint:errcheck
-			defer cl.Group().DeleteGroup(g2.ID()).
+			defer cl.Group().Delete(g2.ID()).
 				Do(context.TODO())
 
 			t.Run("Use `sw` predicate", func(t *testing.T) {

@@ -9,6 +9,8 @@ require (
 	github.com/lestrrat-go/xstrings v0.0.0-20210804220435-4dd8b234342b
 )
 
+replace github.com/cybozu-go/scim => ../../..
+
 require (
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/lestrrat-go/option v1.0.0 // indirect

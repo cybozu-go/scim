@@ -150,6 +150,7 @@ func (call *CreateGroupCall) Members(v ...*resource.GroupMember) *CreateGroupCal
 	return call
 }
 
+// Extension allows users to register an extension using the fully qualified URI
 func (call *CreateGroupCall) Extension(uri string, value interface{}) *CreateGroupCall {
 	call.builder.Extension(uri, value)
 	return call
@@ -251,6 +252,7 @@ func (call *ReplaceGroupCall) Members(v ...*resource.GroupMember) *ReplaceGroupC
 	return call
 }
 
+// Extension allows users to register an extension using the fully qualified URI
 func (call *ReplaceGroupCall) Extension(uri string, value interface{}) *ReplaceGroupCall {
 	call.builder.Extension(uri, value)
 	return call
@@ -478,6 +480,7 @@ func (call *SearchGroupCall) StartIndex(v int) *SearchGroupCall {
 	return call
 }
 
+// Extension allows users to register an extension using the fully qualified URI
 func (call *SearchGroupCall) Extension(uri string, value interface{}) *SearchGroupCall {
 	call.builder.Extension(uri, value)
 	return call

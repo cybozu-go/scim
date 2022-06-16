@@ -799,11 +799,9 @@ func (b *Backend) ListSchemas() (*resource.ListResponse, error) {
 }
 
 func (b *Backend) RetrieveSchema(id string) (*resource.Schema, error) {
-	for _, schema := range schema.All() {
-		if schema.ID() == id {
-			return schema, nil
-		}
+	s, ok := schema.Get(id)
+	if !ok {
+		return nil, fmt.Errorf(`schema %q not found`, id)
 	}
-
-	return nil, fmt.Errorf(`schema %q not found`, id)
+	return s, nil
 }

@@ -70,6 +70,7 @@ func (call *SearchCall) StartIndex(v int) *SearchCall {
 	return call
 }
 
+// Extension allows users to register an extension using the fully qualified URI
 func (call *SearchCall) Extension(uri string, value interface{}) *SearchCall {
 	call.builder.Extension(uri, value)
 	return call

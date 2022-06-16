@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
 	"flag"
@@ -40,8 +41,9 @@ func yaml2json(fn string) ([]byte, error) {
 }
 
 type Service struct {
-	Name  string            `json:"name"`
-	Calls []*codegen.Object `json:"calls"`
+	Name        string            `json:"name"`
+	Description string            `json:"description"`
+	Calls       []*codegen.Object `json:"calls"`
 }
 
 func _main() error {
@@ -121,7 +123,12 @@ func generateService(svc Service, resources map[string]*codegen.Object) error {
 	o := codegen.NewOutput(&buf)
 	o.L(`package client`)
 
-	o.LL(`type %s struct {`, svc.Name)
+	if desc := svc.Description; desc != "" {
+		o.LL(`// %s`, strings.TrimSpace(desc))
+	} else {
+		o.R("\n")
+	}
+	o.L(`type %s struct {`, svc.Name)
 	o.L(`client *Client`)
 	o.L(`}`)
 
@@ -178,7 +185,15 @@ func generateCall(o *codegen.Output, svc Service, call *codegen.Object, resource
 	if v := call.String(`method_name`); v != "" {
 		methodName = v
 	}
-	o.LL(`func (svc *%s) %s(`, svc.Name, methodName)
+
+	o.R("\n")
+	if desc := call.String(`description`); desc != "" {
+		scanner := bufio.NewScanner(strings.NewReader(strings.TrimSpace(desc)))
+		for scanner.Scan() {
+			o.L(`// %s`, scanner.Text())
+		}
+	}
+	o.L(`func (svc *%s) %s(`, svc.Name, methodName)
 	for i, f := range required {
 		if i > 0 {
 			o.R(`, `)
@@ -215,7 +230,7 @@ func generateCall(o *codegen.Output, svc Service, call *codegen.Object, resource
 
 		var fields []codegen.Field
 
-		rschema, ok := schema.Get(rstype)
+		rschema, ok := schema.GetByResourceType(rstype)
 		if !ok {
 			fields = append(rs.Fields(), optional...)
 		} else {
@@ -295,7 +310,8 @@ func generateCall(o *codegen.Output, svc Service, call *codegen.Object, resource
 		}
 
 		if jsonPayload {
-			o.LL(`func (call *%[1]s) Extension(uri string, value interface{}) *%[1]s {`, call.Name(true))
+			o.LL(`// Extension allows users to register an extension using the fully qualified URI`)
+			o.L(`func (call *%[1]s) Extension(uri string, value interface{}) *%[1]s {`, call.Name(true))
 			o.L(`call.builder.Extension(uri, value)`)
 			o.L(`return call`)
 			o.L(`}`)
@@ -361,14 +377,14 @@ func generateCall(o *codegen.Output, svc Service, call *codegen.Object, resource
 	o.L(`}`)
 
 	if rstype == "" {
-		o.LL(`req, err := http.NewRequestWithContext(ctx, %s, u, nil)`, call.String(`method`))
+		o.LL(`req, err := http.NewRequestWithContext(ctx, %s, u, nil)`, call.String(`http_method`))
 	} else {
 		if jsonPayload {
 			o.LL(`var body bytes.Buffer`)
 			o.L(`if err := json.NewEncoder(&body).Encode(payload); err != nil {`)
 			o.L("return %sfmt.Errorf(`failed to encode call request: %%w`, err)", errPrefix)
 			o.L(`}`)
-			o.LL(`req, err := http.NewRequestWithContext(ctx, %s, u, &body)`, call.String(`method`))
+			o.LL(`req, err := http.NewRequestWithContext(ctx, %s, u, &body)`, call.String(`http_method`))
 		} else {
 			o.LL(`var vals url.Values`)
 			o.L(`m := make(map[string]interface{})`)
@@ -392,7 +408,7 @@ func generateCall(o *codegen.Output, svc Service, call *codegen.Object, resource
 			o.L(`if enc := vals.Encode(); len(enc) > 0 {`)
 			o.L(`u = u + "?"+ vals.Encode()`)
 			o.L(`}`)
-			o.L(`req, err := http.NewRequestWithContext(ctx, %s, u, nil)`, call.String(`method`))
+			o.L(`req, err := http.NewRequestWithContext(ctx, %s, u, nil)`, call.String(`http_method`))
 		}
 	}
 

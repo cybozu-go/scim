@@ -14,6 +14,7 @@ import (
 	"github.com/cybozu-go/scim/resource"
 )
 
+// UserService the logical grouping of SCIM user related API calls
 type UserService struct {
 	client *Client
 }
@@ -31,6 +32,8 @@ type GetUserCall struct {
 	id      string
 }
 
+// Get creates an instance of GetUserCall that sends an HTTP GET request to
+// /Users to retrieve the user associated with the specified ID.
 func (svc *UserService) Get(id string) *GetUserCall {
 	return &GetUserCall{
 		builder: resource.NewPartialResourceRepresentationRequestBuilder(),
@@ -128,6 +131,8 @@ type CreateUserCall struct {
 	trace   io.Writer
 }
 
+// Create creates an insance of CreateUserCall that sends an HTTP POST request to
+// /Users to create a new user.
 func (svc *UserService) Create() *CreateUserCall {
 	return &CreateUserCall{
 		builder: resource.NewUserBuilder(),
@@ -235,6 +240,7 @@ func (call *CreateUserCall) X509Certificates(v ...string) *CreateUserCall {
 	return call
 }
 
+// Extension allows users to register an extension using the fully qualified URI
 func (call *CreateUserCall) Extension(uri string, value interface{}) *CreateUserCall {
 	call.builder.Extension(uri, value)
 	return call
@@ -313,6 +319,8 @@ type ReplaceUserCall struct {
 	id      string
 }
 
+// Replace creates an insance of ReplaceUserCall that sends an HTTP PUT request to
+// /Users to replace an existing new user.
 func (svc *UserService) Replace(id string) *ReplaceUserCall {
 	return &ReplaceUserCall{
 		builder: resource.NewUserBuilder(),
@@ -421,6 +429,7 @@ func (call *ReplaceUserCall) X509Certificates(v ...string) *ReplaceUserCall {
 	return call
 }
 
+// Extension allows users to register an extension using the fully qualified URI
 func (call *ReplaceUserCall) Extension(uri string, value interface{}) *ReplaceUserCall {
 	call.builder.Extension(uri, value)
 	return call
@@ -738,6 +747,7 @@ func (call *SearchUserCall) StartIndex(v int) *SearchUserCall {
 	return call
 }
 
+// Extension allows users to register an extension using the fully qualified URI
 func (call *SearchUserCall) Extension(uri string, value interface{}) *SearchUserCall {
 	call.builder.Extension(uri, value)
 	return call

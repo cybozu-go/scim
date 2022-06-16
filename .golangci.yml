@@ -75,6 +75,9 @@ issues:
     - path: /*_example_test.go
       linters:
         - forbidigo
+    - path: resource/resource_type_gen.go
+      linters:
+        - revive
 
   # Maximum issues count per one linter. Set to 0 to disable. Default is 50.
   max-issues-per-linter: 0

@@ -21,6 +21,66 @@ func (client *Client) Meta() *MetaService {
 	}
 }
 
+type GetResourceTypesCall struct {
+	client *Client
+	trace  io.Writer
+}
+
+func (svc *MetaService) GetResourceTypes() *GetResourceTypesCall {
+	return &GetResourceTypesCall{
+		client: svc.client,
+	}
+}
+
+func (call *GetResourceTypesCall) Trace(w io.Writer) *GetResourceTypesCall {
+	call.trace = w
+	return call
+}
+
+func (call *GetResourceTypesCall) makeURL() string {
+	return call.client.baseURL + "/ResourceTypes"
+}
+
+func (call *GetResourceTypesCall) Do(ctx context.Context) (*[]resource.ResourceType, error) {
+	trace := call.trace
+	u := call.makeURL()
+	if trace != nil {
+		fmt.Fprintf(trace, `trace: client sending call request to %q\n`, u)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)
+	if err != nil {
+		return nil, fmt.Errorf(`failed to create new HTTP request: %w`, err)
+	}
+	req.Header.Set(`Accept`, `application/scim+json`)
+
+	if trace != nil {
+		buf, _ := httputil.DumpRequestOut(req, true)
+		fmt.Fprintf(trace, "%s\n", buf)
+	}
+
+	res, err := call.client.httpcl.Do(req)
+	if trace != nil {
+		buf, _ := httputil.DumpResponse(res, true)
+		fmt.Fprintf(trace, "%s\n", buf)
+	}
+	if err != nil {
+		return nil, fmt.Errorf(`failed to send request to %q: %w`, u, err)
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(`expected call response %d, got (%d)`, http.StatusOK, res.StatusCode)
+	}
+
+	var respayload []resource.ResourceType
+	if err := json.NewDecoder(res.Body).Decode(&respayload); err != nil {
+		return nil, fmt.Errorf(`failed to decode call response: %w`, err)
+	}
+
+	return &respayload, nil
+}
+
 type GetServiceProviderConfigCall struct {
 	client *Client
 	trace  io.Writer

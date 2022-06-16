@@ -1,6 +1,10 @@
 services:
   - name: MetaService
     calls:
+    - name: GetResourceTypesCall
+      method: http.MethodGet
+      response_type: '[]resource.ResourceType'
+      path: /ResourceTypes
     - name: GetServiceProviderConfigCall
       method: http.MethodGet
       response_type: resource.ServiceProviderConfig

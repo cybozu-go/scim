@@ -63,6 +63,10 @@ func NewServer(backend interface{}) (http.Handler, error) {
 	if v, ok := backend.(RetrieveServiceProviderConfigBackend); ok {
 		b.ServiceProviderConfig(RetrieveServiceProviderConfigEndpoint(v))
 	}
+
+	if v, ok := backend.(RetrieveResourceTypesBackend); ok {
+		b.ResourceTypes(RetrieveResourceTypesEndpoint(v))
+	}
 	return b.Build()
 }
 
@@ -217,5 +221,10 @@ func (b *Builder) Search(hh http.Handler) *Builder {
 
 func (b *Builder) ServiceProviderConfig(hh http.Handler) *Builder {
 	b.Handler(http.MethodGet, `/ServiceProviderConfig`, hh)
+	return b
+}
+
+func (b *Builder) ResourceTypes(hh http.Handler) *Builder {
+	b.Handler(http.MethodGet, `/ResourceTypes`, hh)
 	return b
 }

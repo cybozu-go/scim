@@ -271,3 +271,23 @@ objects:
       - name: scimType
         type: ErrorType
       - name: detail
+  - name: ResourceType
+    skipCommonFields: true
+    schema: "urn:ietf:params:scim:schemas:core:2.0:ResourceType"
+    top_level: true
+    fields:
+      - name: id
+      - name: name
+      - name: description
+      - name: endpoint
+        required: true
+      - name: schema
+        required: true
+      - name: schemaExtensions
+        type: '[]*SchemaExtension'
+  - name: SchemaExtension
+    skipCommonFields: true
+    fields:
+      - name: schema
+      - name: required
+        type: bool

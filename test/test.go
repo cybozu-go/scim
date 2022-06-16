@@ -47,6 +47,7 @@ func RunConformanceTests(t *testing.T, name string, backend interface{}) {
 		})
 		t.Run("Meta", func(t *testing.T) {
 			t.Run("ServiceProviderConfig", ServiceProviderConfig(t, cl))
+			t.Run("ResourceTypes", ResourceTypes(t, cl))
 		})
 	})
 }
@@ -454,6 +455,16 @@ func ServiceProviderConfig(t *testing.T, cl *client.Client) func(t *testing.T) {
 			Trace(TraceWriter).
 			Do(context.TODO())
 		require.NoError(t, err, `cl.GetServiceProviderConfig should succeed`)
-		_ = spc
+		_ = spc // TODO: perform more checks
+	}
+}
+
+func ResourceTypes(t *testing.T, cl *client.Client) func(t *testing.T) {
+	return func(t *testing.T) {
+		spc, err := cl.Meta().GetResourceTypes().
+			Trace(TraceWriter).
+			Do(context.TODO())
+		require.NoError(t, err, `cl.ResourceTypes should succeed`)
+		_ = spc // TODO: perform more checks
 	}
 }

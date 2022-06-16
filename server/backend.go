@@ -61,6 +61,10 @@ type RetrieveServiceProviderConfigBackend interface {
 	RetrieveServiceProviderConfig() (*resource.ServiceProviderConfig, error)
 }
 
+type RetrieveResourceTypesBackend interface {
+	RetrieveResourceTypes() ([]*resource.ResourceType, error)
+}
+
 func DeleteGroupEndpoint(b DeleteGroupBackend) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
@@ -363,6 +367,31 @@ func RetrieveServiceProviderConfigEndpoint(b RetrieveServiceProviderConfigBacken
 		enc := json.NewEncoder(&buf)
 		enc.SetIndent("", "  ")
 		if err := enc.Encode(scp); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			// TODO: log
+			return
+		}
+
+		hdr := w.Header()
+		hdr.Set(ctKey, mimeSCIM)
+		w.WriteHeader(http.StatusOK)
+		_, _ = io.Copy(w, &buf) // not much you can do by this point
+	})
+}
+
+func RetrieveResourceTypesEndpoint(b RetrieveResourceTypesBackend) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		rts, err := b.RetrieveResourceTypes()
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprint(w, err.Error())
+			return
+		}
+
+		var buf bytes.Buffer
+		enc := json.NewEncoder(&buf)
+		enc.SetIndent("", "  ")
+		if err := enc.Encode(rts); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			// TODO: log
 			return

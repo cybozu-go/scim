@@ -41,6 +41,7 @@ var _ = namesEqualsPredicate
 type Backend struct {
 	db  *ent.Client
 	spc *resource.ServiceProviderConfig
+	rts []*resource.ResourceType
 }
 
 func New(connspec string, spc *resource.ServiceProviderConfig) (*Backend, error) {
@@ -53,9 +54,35 @@ func New(connspec string, spc *resource.ServiceProviderConfig) (*Backend, error)
 		return nil, fmt.Errorf(`failed to create schema resources: %w`, err)
 	}
 
+	var b resource.Builder
+
+	rts := []*resource.ResourceType{
+		b.ResourceType().
+			ID("User").
+			Name("User").
+			Endpoint("/Users").
+			Description("User Account").
+			Schema(resource.UserSchemaURI).
+			SchemaExtensions(
+				b.SchemaExtension().
+					Schema(
+						resource.EnterpriseUserSchemaURI).
+					MustBuild(),
+			).
+			MustBuild(),
+		b.ResourceType().
+			ID("Group").
+			Name("Group").
+			Endpoint("/Groups").
+			Description("Group").
+			Schema(resource.GroupSchemaURI).
+			MustBuild(),
+	}
+
 	return &Backend{
-		db:  client.Debug(),
+		db:  client,
 		spc: spc,
+		rts: rts,
 	}, nil
 }
 
@@ -747,4 +774,9 @@ func (b *Backend) DeleteGroup(id string) error {
 func (b *Backend) RetrieveServiceProviderConfig() (*resource.ServiceProviderConfig, error) {
 	// TODO: meta?
 	return b.spc, nil
+}
+
+func (b *Backend) RetrieveResourceTypes() ([]*resource.ResourceType, error) {
+	// TODO: meta?
+	return b.rts, nil
 }

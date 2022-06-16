@@ -161,7 +161,7 @@ func (call *GetSchemas) makeURL() string {
 	return call.client.baseURL + "/Schemas"
 }
 
-func (call *GetSchemas) Do(ctx context.Context) (*[]*resource.Schema, error) {
+func (call *GetSchemas) Do(ctx context.Context) (**resource.ListResponse, error) {
 	trace := call.trace
 	u := call.makeURL()
 	if trace != nil {
@@ -193,7 +193,7 @@ func (call *GetSchemas) Do(ctx context.Context) (*[]*resource.Schema, error) {
 		return nil, fmt.Errorf(`expected call response %d, got (%d)`, http.StatusOK, res.StatusCode)
 	}
 
-	var respayload []*resource.Schema
+	var respayload *resource.ListResponse
 	if err := json.NewDecoder(res.Body).Decode(&respayload); err != nil {
 		return nil, fmt.Errorf(`failed to decode call response: %w`, err)
 	}

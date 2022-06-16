@@ -782,6 +782,28 @@ func (b *Backend) RetrieveResourceTypes() ([]*resource.ResourceType, error) {
 	return b.rts, nil
 }
 
-func (b *Backend) RetrieveSchemas() ([]*resource.Schema, error) {
-	return schema.All(), nil
+func (b *Backend) ListSchemas() (*resource.ListResponse, error) {
+	schemas := schema.All()
+
+	// Need to convert this to interface{}
+	list := make([]interface{}, len(schemas))
+	for i, s := range schemas {
+		list[i] = s
+	}
+
+	var builder resource.Builder
+	return builder.ListResponse().
+		TotalResults(len(list)).
+		Resources(list...).
+		Build()
+}
+
+func (b *Backend) RetrieveSchema(id string) (*resource.Schema, error) {
+	for _, schema := range schema.All() {
+		if schema.ID() == id {
+			return schema, nil
+		}
+	}
+
+	return nil, fmt.Errorf(`schema %q not found`, id)
 }

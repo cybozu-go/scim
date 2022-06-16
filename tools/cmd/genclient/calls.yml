@@ -11,7 +11,7 @@ services:
       path: /ServiceProviderConfig
     - name: GetSchemas
       method: http.MethodGet
-      response_type: '[]*resource.Schema'
+      response_type: '*resource.ListResponse'
       path: '/Schemas'
     - name: GetSchema
       method: http.MethodGet

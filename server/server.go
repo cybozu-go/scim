@@ -68,8 +68,12 @@ func NewServer(backend interface{}) (http.Handler, error) {
 		b.ResourceTypes(RetrieveResourceTypesEndpoint(v))
 	}
 
-	if v, ok := backend.(RetrieveSchemasBackend); ok {
-		b.Schemas(RetrieveSchemasEndpoint(v))
+	if v, ok := backend.(ListSchemasBackend); ok {
+		b.ListSchemas(ListSchemasEndpoint(v))
+	}
+
+	if v, ok := backend.(RetrieveSchemaBackend); ok {
+		b.RetrieveSchema(RetrieveSchemaEndpoint(v))
 	}
 	return b.Build()
 }
@@ -233,8 +237,12 @@ func (b *Builder) ResourceTypes(hh http.Handler) *Builder {
 	return b
 }
 
-func (b *Builder) Schemas(hh http.Handler) *Builder {
+func (b *Builder) ListSchemas(hh http.Handler) *Builder {
 	b.Handler(http.MethodGet, `/Schemas`, hh)
+	return b
+}
+
+func (b *Builder) RetrieveSchema(hh http.Handler) *Builder {
 	b.Handler(http.MethodGet, `/Schemas/{id}`, hh)
 	return b
 }

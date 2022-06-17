@@ -4,6 +4,13 @@ import (
 	"fmt"
 )
 
+// MemberFrom is a convenience method to directly add a SCIM
+// resource to the Group object without having to construct the
+// GroupMember object yourself.
+//
+// Currently this method only accepts `*resource.User` and
+// `*resource.Group` as its input, and otherwise an error
+// is stored in the builder, failing the Build() call
 func (b *GroupBuilder) MemberFrom(r interface{}) *GroupBuilder {
 	if b.err != nil {
 		return b

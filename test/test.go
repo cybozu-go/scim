@@ -56,7 +56,7 @@ func RunConformanceTests(t *testing.T, name string, backend interface{}) {
 
 func PrepareFixtures(t *testing.T, cl *client.Client) func(t *testing.T) {
 	return func(t *testing.T) {
-		cl.User().Create().Do(context.TODO())
+		// _, _ = cl.User().Create().Do(context.TODO())
 	}
 }
 

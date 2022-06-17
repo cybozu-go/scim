@@ -33,9 +33,7 @@ func (b *GroupBuilder) MemberFrom(r interface{}) *GroupBuilder {
 		b.object.members = append(b.object.members, m)
 	default:
 		b.err = fmt.Errorf(`invalid type passed to MemberFrom: %T`, r)
-		return b
 	}
 
 	return b
-
 }

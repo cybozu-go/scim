@@ -92,7 +92,8 @@ func PrepareFixtures(t *testing.T, cl *client.Client) func(t *testing.T) {
 			for _, r := range list.Resources() {
 				createGroupCall.MemberFrom(r)
 			}
-			createGroupCall.Do(context.TODO())
+			_, err = createGroupCall.Do(context.TODO())
+			require.NoError(t, err, `group creation should succeed`)
 		})
 	}
 }

@@ -1,0 +1,38 @@
+[
+  {
+    "userName": "fgump",
+    "emails": [
+      {
+        "value": "fgump@zemeckis-crew.com"
+      }
+    ],
+    "name": {
+      "givenName": "Forrest",
+      "familyName": "Gump"
+    }
+  },
+  {
+    "userName": "jcurran",
+    "emails": [
+      {
+        "value": "jcurran@zemeckis-crew.com"
+      }
+    ],
+    "name": {
+      "givenName": "Jenny",
+      "familyName": "Curran"
+    }
+  },
+  {
+    "userName": "dtaylor",
+    "emails": [
+      {
+        "value": "dtaylor@zemeckis-crew.com"
+      }
+    ],
+    "name": {
+      "givenName": "Dan",
+      "familyName": "Taylor"
+    }
+  }
+]

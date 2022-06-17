@@ -210,6 +210,14 @@ objects:
   - name: ListResponse
     schema: urn:ietf:params:scim:api:messages:2.0:ListResponse
     skipCommonFields: true
+    # ListResponse is a pain, because while in Go we want type safety in the returned
+    # list of objects, the RFC states that the "Resources" field may contain either
+    # any of the possible resources (and why on earth is this the only field that
+    # is capitalized? WHY?)
+    #
+    # To make this slightly easier, we're going to have to hand-roll the UnmarshalJSON
+    # method instead of generating one
+    skip_unmarshal_json_hook: true
     fields:
       - name: totalResults
         type: int
@@ -218,7 +226,7 @@ objects:
       - name: startIndex
         type: int
       - name: Resources
-        type: "[]interface{}"
+        type: '[]interface{}'
   - name: PartialResourceRepresentationRequest
     skipCommonFields: true
     fields:

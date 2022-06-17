@@ -27,9 +27,31 @@ func (client *Client) User() *UserService {
 
 type GetUserCall struct {
 	builder *resource.PartialResourceRepresentationRequestBuilder
+	object  *resource.PartialResourceRepresentationRequest
+	err     error
 	client  *Client
 	trace   io.Writer
 	id      string
+}
+
+func (call *GetUserCall) payload() (*resource.PartialResourceRepresentationRequest, error) {
+	if object := call.object; object != nil {
+		return object, nil
+	}
+	return call.builder.Build()
+}
+
+func (call *GetUserCall) FromJSON(data []byte) *GetUserCall {
+	if call.err != nil {
+		return call
+	}
+	var in resource.PartialResourceRepresentationRequest
+	if err := json.Unmarshal(data, &in); err != nil {
+		call.err = fmt.Errorf("failed to decode data: %w", err)
+		return call
+	}
+	call.object = &in
+	return call
 }
 
 // Get creates an instance of GetUserCall that sends an HTTP GET request to
@@ -62,7 +84,10 @@ func (call GetUserCall) makeURL() string {
 }
 
 func (call *GetUserCall) Do(ctx context.Context) (*resource.User, error) {
-	payload, err := call.builder.Build()
+	if err := call.err; err != nil {
+		return nil, fmt.Errorf("failed to build request: %w", err)
+	}
+	payload, err := call.payload()
 	if err != nil {
 		return nil, fmt.Errorf(`failed to generate request payload for GetUserCall: %w`, err)
 	}
@@ -127,8 +152,30 @@ func (call *GetUserCall) Do(ctx context.Context) (*resource.User, error) {
 
 type CreateUserCall struct {
 	builder *resource.UserBuilder
+	object  *resource.User
+	err     error
 	client  *Client
 	trace   io.Writer
+}
+
+func (call *CreateUserCall) payload() (*resource.User, error) {
+	if object := call.object; object != nil {
+		return object, nil
+	}
+	return call.builder.Build()
+}
+
+func (call *CreateUserCall) FromJSON(data []byte) *CreateUserCall {
+	if call.err != nil {
+		return call
+	}
+	var in resource.User
+	if err := json.Unmarshal(data, &in); err != nil {
+		call.err = fmt.Errorf("failed to decode data: %w", err)
+		return call
+	}
+	call.object = &in
+	return call
 }
 
 // Create creates an insance of CreateUserCall that sends an HTTP POST request to
@@ -261,7 +308,10 @@ func (call *CreateUserCall) makeURL() string {
 }
 
 func (call *CreateUserCall) Do(ctx context.Context) (*resource.User, error) {
-	payload, err := call.builder.Build()
+	if err := call.err; err != nil {
+		return nil, fmt.Errorf("failed to build request: %w", err)
+	}
+	payload, err := call.payload()
 	if err != nil {
 		return nil, fmt.Errorf(`failed to generate request payload for CreateUserCall: %w`, err)
 	}
@@ -314,9 +364,31 @@ func (call *CreateUserCall) Do(ctx context.Context) (*resource.User, error) {
 
 type ReplaceUserCall struct {
 	builder *resource.UserBuilder
+	object  *resource.User
+	err     error
 	client  *Client
 	trace   io.Writer
 	id      string
+}
+
+func (call *ReplaceUserCall) payload() (*resource.User, error) {
+	if object := call.object; object != nil {
+		return object, nil
+	}
+	return call.builder.Build()
+}
+
+func (call *ReplaceUserCall) FromJSON(data []byte) *ReplaceUserCall {
+	if call.err != nil {
+		return call
+	}
+	var in resource.User
+	if err := json.Unmarshal(data, &in); err != nil {
+		call.err = fmt.Errorf("failed to decode data: %w", err)
+		return call
+	}
+	call.object = &in
+	return call
 }
 
 // Replace creates an insance of ReplaceUserCall that sends an HTTP PUT request to
@@ -450,7 +522,10 @@ func (call ReplaceUserCall) makeURL() string {
 }
 
 func (call *ReplaceUserCall) Do(ctx context.Context) (*resource.User, error) {
-	payload, err := call.builder.Build()
+	if err := call.err; err != nil {
+		return nil, fmt.Errorf("failed to build request: %w", err)
+	}
+	payload, err := call.payload()
 	if err != nil {
 		return nil, fmt.Errorf(`failed to generate request payload for ReplaceUserCall: %w`, err)
 	}
@@ -503,9 +578,31 @@ func (call *ReplaceUserCall) Do(ctx context.Context) (*resource.User, error) {
 
 type DeleteUserCall struct {
 	builder *resource.UserBuilder
+	object  *resource.User
+	err     error
 	client  *Client
 	trace   io.Writer
 	id      string
+}
+
+func (call *DeleteUserCall) payload() (*resource.User, error) {
+	if object := call.object; object != nil {
+		return object, nil
+	}
+	return call.builder.Build()
+}
+
+func (call *DeleteUserCall) FromJSON(data []byte) *DeleteUserCall {
+	if call.err != nil {
+		return call
+	}
+	var in resource.User
+	if err := json.Unmarshal(data, &in); err != nil {
+		call.err = fmt.Errorf("failed to decode data: %w", err)
+		return call
+	}
+	call.object = &in
+	return call
 }
 
 func (svc *UserService) Delete(id string) *DeleteUserCall {
@@ -641,7 +738,10 @@ func (call DeleteUserCall) makeURL() string {
 }
 
 func (call *DeleteUserCall) Do(ctx context.Context) error {
-	payload, err := call.builder.Build()
+	if err := call.err; err != nil {
+		return fmt.Errorf("failed to build request: %w", err)
+	}
+	payload, err := call.payload()
 	if err != nil {
 		return fmt.Errorf(`failed to generate request payload for DeleteUserCall: %w`, err)
 	}
@@ -701,8 +801,30 @@ func (call *DeleteUserCall) Do(ctx context.Context) error {
 
 type SearchUserCall struct {
 	builder *resource.SearchRequestBuilder
+	object  *resource.SearchRequest
+	err     error
 	client  *Client
 	trace   io.Writer
+}
+
+func (call *SearchUserCall) payload() (*resource.SearchRequest, error) {
+	if object := call.object; object != nil {
+		return object, nil
+	}
+	return call.builder.Build()
+}
+
+func (call *SearchUserCall) FromJSON(data []byte) *SearchUserCall {
+	if call.err != nil {
+		return call
+	}
+	var in resource.SearchRequest
+	if err := json.Unmarshal(data, &in); err != nil {
+		call.err = fmt.Errorf("failed to decode data: %w", err)
+		return call
+	}
+	call.object = &in
+	return call
 }
 
 func (svc *UserService) Search() *SearchUserCall {
@@ -768,7 +890,10 @@ func (call *SearchUserCall) makeURL() string {
 }
 
 func (call *SearchUserCall) Do(ctx context.Context) (*resource.ListResponse, error) {
-	payload, err := call.builder.Build()
+	if err := call.err; err != nil {
+		return nil, fmt.Errorf("failed to build request: %w", err)
+	}
+	payload, err := call.payload()
 	if err != nil {
 		return nil, fmt.Errorf(`failed to generate request payload for SearchUserCall: %w`, err)
 	}

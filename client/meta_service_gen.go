@@ -22,6 +22,7 @@ func (client *Client) Meta() *MetaService {
 }
 
 type GetResourceTypesCall struct {
+	err    error
 	client *Client
 	trace  io.Writer
 }
@@ -42,6 +43,9 @@ func (call *GetResourceTypesCall) makeURL() string {
 }
 
 func (call *GetResourceTypesCall) Do(ctx context.Context) (*[]resource.ResourceType, error) {
+	if err := call.err; err != nil {
+		return nil, fmt.Errorf("failed to build request: %w", err)
+	}
 	trace := call.trace
 	u := call.makeURL()
 	if trace != nil {
@@ -82,6 +86,7 @@ func (call *GetResourceTypesCall) Do(ctx context.Context) (*[]resource.ResourceT
 }
 
 type GetServiceProviderConfigCall struct {
+	err    error
 	client *Client
 	trace  io.Writer
 }
@@ -102,6 +107,9 @@ func (call *GetServiceProviderConfigCall) makeURL() string {
 }
 
 func (call *GetServiceProviderConfigCall) Do(ctx context.Context) (**resource.ServiceProviderConfig, error) {
+	if err := call.err; err != nil {
+		return nil, fmt.Errorf("failed to build request: %w", err)
+	}
 	trace := call.trace
 	u := call.makeURL()
 	if trace != nil {
@@ -142,6 +150,7 @@ func (call *GetServiceProviderConfigCall) Do(ctx context.Context) (**resource.Se
 }
 
 type GetSchemas struct {
+	err    error
 	client *Client
 	trace  io.Writer
 }
@@ -162,6 +171,9 @@ func (call *GetSchemas) makeURL() string {
 }
 
 func (call *GetSchemas) Do(ctx context.Context) (**resource.ListResponse, error) {
+	if err := call.err; err != nil {
+		return nil, fmt.Errorf("failed to build request: %w", err)
+	}
 	trace := call.trace
 	u := call.makeURL()
 	if trace != nil {
@@ -202,6 +214,7 @@ func (call *GetSchemas) Do(ctx context.Context) (**resource.ListResponse, error)
 }
 
 type GetSchema struct {
+	err    error
 	client *Client
 	trace  io.Writer
 	id     string
@@ -224,6 +237,9 @@ func (call GetSchema) makeURL() string {
 }
 
 func (call *GetSchema) Do(ctx context.Context) (**resource.Schema, error) {
+	if err := call.err; err != nil {
+		return nil, fmt.Errorf("failed to build request: %w", err)
+	}
 	trace := call.trace
 	u := call.makeURL()
 	if trace != nil {

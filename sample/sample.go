@@ -7,6 +7,7 @@ import (
 	"context"
 	"crypto/rand"
 	"fmt"
+	"log"
 	"math/big"
 	"strings"
 
@@ -581,6 +582,7 @@ func (v *filterVisitor) visitRegexExpr(expr filter.RegexExpr) error {
 
 func (v *filterVisitor) visitCompareExpr(expr filter.CompareExpr) error {
 	lhe, err := exprAttr(expr.LHE())
+	log.Printf("lhe = %q", lhe)
 	slhe, ok := lhe.(string)
 	if err != nil || !ok {
 		return fmt.Errorf(`left hand side of CompareExpr is not valid`)

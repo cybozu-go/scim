@@ -123,6 +123,12 @@ func generateService(svc Service, resources map[string]*codegen.Object) error {
 	o := codegen.NewOutput(&buf)
 	o.L(`package client`)
 
+	o.LL(`import (`)
+	for _, pkg := range []string{`github.com/goccy/go-yaml`} {
+		o.L(`%q`, pkg)
+	}
+	o.L(`)`)
+
 	if desc := svc.Description; desc != "" {
 		o.LL(`// %s`, strings.TrimSpace(desc))
 	} else {
@@ -161,8 +167,10 @@ func generateCall(o *codegen.Output, svc Service, call *codegen.Object, resource
 
 	o.LL(`type %s struct {`, call.Name(true))
 	if rstype != "" {
-		o.L(`builder *resource.%sBuilder`, call.String(`resource`))
+		o.L(`builder *resource.%sBuilder`, rstype)
+		o.L(`object *resource.%s`, rstype)
 	}
+	o.L(`err error`)
 	o.L(`client *Client`)
 	o.L(`trace io.Writer`)
 
@@ -186,6 +194,28 @@ func generateCall(o *codegen.Output, svc Service, call *codegen.Object, resource
 		methodName = v
 	}
 
+	if rstype != "" {
+		o.LL(`func (call *%s) payload() (*resource.%s, error) {`, call.Name(true), rstype)
+		o.L(`if object := call.object; object != nil {`)
+		o.L(`return object, nil`)
+		o.L(`}`)
+		o.L(`return call.builder.Build()`)
+		o.L(`}`)
+
+		o.LL(`func (call *%[1]s) FromJSON(data []byte) *%[1]s {`, call.Name(true))
+		o.L(`if call.err != nil {`)
+		o.L(`return call`)
+		o.L(`}`)
+		o.L(`var in resource.%s`, rstype)
+		o.L(`if err := json.Unmarshal(data, &in); err != nil {`)
+		o.L(`call.err = fmt.Errorf("failed to decode data: %%w", err)`)
+		o.L(`return call`)
+		o.L(`}`)
+		o.L(`call.object = &in`)
+		o.L(`return call`)
+		o.L(`}`)
+	}
+
 	o.R("\n")
 	if desc := call.String(`description`); desc != "" {
 		scanner := bufio.NewScanner(strings.NewReader(strings.TrimSpace(desc)))
@@ -193,6 +223,7 @@ func generateCall(o *codegen.Output, svc Service, call *codegen.Object, resource
 			o.L(`// %s`, scanner.Text())
 		}
 	}
+
 	o.L(`func (svc *%s) %s(`, svc.Name, methodName)
 	for i, f := range required {
 		if i > 0 {
@@ -363,8 +394,12 @@ func generateCall(o *codegen.Output, svc Service, call *codegen.Object, resource
 		o.LL(`func (call *%s) Do(ctx context.Context) (*%s, error) {`, call.Name(true), resType)
 	}
 
+	o.L(`if err := call.err; err != nil {`)
+	o.L(`return %sfmt.Errorf("failed to build request: %%w", err)`, errPrefix)
+	o.L(`}`)
+
 	if rstype != "" {
-		o.L(`payload, err := call.builder.Build()`)
+		o.L(`payload, err := call.payload()`)
 		o.L(`if err != nil {`)
 		o.L("return %sfmt.Errorf(`failed to generate request payload for %s: %%w`, err)", errPrefix, call.Name(true))
 		o.L(`}`)

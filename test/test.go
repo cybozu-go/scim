@@ -2,6 +2,7 @@ package test
 
 import (
 	"context"
+	"embed"
 	"encoding/json"
 	"io"
 	"net/http/httptest"
@@ -15,6 +16,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+//go:embed data/*
+var datasrc embed.FS
 
 var TraceWriter = io.Discard
 
@@ -56,7 +60,40 @@ func RunConformanceTests(t *testing.T, name string, backend interface{}) {
 
 func PrepareFixtures(t *testing.T, cl *client.Client) func(t *testing.T) {
 	return func(t *testing.T) {
-		// _, _ = cl.User().Create().Do(context.TODO())
+		t.Run("Load User fixtures", func(t *testing.T) {
+			f, err := datasrc.Open(`data/users.json`)
+			require.NoError(t, err, `opening file should succeed`)
+
+			var data []json.RawMessage
+			require.NoError(t, json.NewDecoder(f).Decode(&data), `unmarshaling form file should succeed`)
+
+			for _, e := range data {
+				_, err := cl.User().Create().
+					FromJSON(e).
+					Trace(TraceWriter).
+					Do(context.TODO())
+				if !assert.NoError(t, err, `user creation should succeed`) {
+					t.Logf("invalid data: %s", e)
+					return
+				}
+			}
+		})
+		t.Run("Load Group fixtures", func(t *testing.T) {
+			// Unfortunately we can't just automatically create Groups because it
+			// requires that we know the members' internal IDs
+			list, err := cl.User().Search().
+				Trace(TraceWriter).
+				Filter(`email.value ew "zemeckis-crew.com"`).
+				Do(context.TODO())
+			require.NoError(t, err, `user search should succeed`)
+
+			createGroupCall := cl.Group().Create().Trace(TraceWriter).
+				DisplayName(`zemeckis-crew`)
+			for _, r := range list.Resources() {
+				createGroupCall.MemberFrom(r)
+			}
+			createGroupCall.Do(context.TODO())
+		})
 	}
 }
 

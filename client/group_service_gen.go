@@ -26,9 +26,31 @@ func (client *Client) Group() *GroupService {
 
 type GetGroupCall struct {
 	builder *resource.PartialResourceRepresentationRequestBuilder
+	object  *resource.PartialResourceRepresentationRequest
+	err     error
 	client  *Client
 	trace   io.Writer
 	id      string
+}
+
+func (call *GetGroupCall) payload() (*resource.PartialResourceRepresentationRequest, error) {
+	if object := call.object; object != nil {
+		return object, nil
+	}
+	return call.builder.Build()
+}
+
+func (call *GetGroupCall) FromJSON(data []byte) *GetGroupCall {
+	if call.err != nil {
+		return call
+	}
+	var in resource.PartialResourceRepresentationRequest
+	if err := json.Unmarshal(data, &in); err != nil {
+		call.err = fmt.Errorf("failed to decode data: %w", err)
+		return call
+	}
+	call.object = &in
+	return call
 }
 
 func (svc *GroupService) Get(id string) *GetGroupCall {
@@ -59,7 +81,10 @@ func (call GetGroupCall) makeURL() string {
 }
 
 func (call *GetGroupCall) Do(ctx context.Context) (*resource.Group, error) {
-	payload, err := call.builder.Build()
+	if err := call.err; err != nil {
+		return nil, fmt.Errorf("failed to build request: %w", err)
+	}
+	payload, err := call.payload()
 	if err != nil {
 		return nil, fmt.Errorf(`failed to generate request payload for GetGroupCall: %w`, err)
 	}
@@ -124,8 +149,30 @@ func (call *GetGroupCall) Do(ctx context.Context) (*resource.Group, error) {
 
 type CreateGroupCall struct {
 	builder *resource.GroupBuilder
+	object  *resource.Group
+	err     error
 	client  *Client
 	trace   io.Writer
+}
+
+func (call *CreateGroupCall) payload() (*resource.Group, error) {
+	if object := call.object; object != nil {
+		return object, nil
+	}
+	return call.builder.Build()
+}
+
+func (call *CreateGroupCall) FromJSON(data []byte) *CreateGroupCall {
+	if call.err != nil {
+		return call
+	}
+	var in resource.Group
+	if err := json.Unmarshal(data, &in); err != nil {
+		call.err = fmt.Errorf("failed to decode data: %w", err)
+		return call
+	}
+	call.object = &in
+	return call
 }
 
 func (svc *GroupService) Create() *CreateGroupCall {
@@ -171,7 +218,10 @@ func (call *CreateGroupCall) makeURL() string {
 }
 
 func (call *CreateGroupCall) Do(ctx context.Context) (*resource.Group, error) {
-	payload, err := call.builder.Build()
+	if err := call.err; err != nil {
+		return nil, fmt.Errorf("failed to build request: %w", err)
+	}
+	payload, err := call.payload()
 	if err != nil {
 		return nil, fmt.Errorf(`failed to generate request payload for CreateGroupCall: %w`, err)
 	}
@@ -224,9 +274,31 @@ func (call *CreateGroupCall) Do(ctx context.Context) (*resource.Group, error) {
 
 type ReplaceGroupCall struct {
 	builder *resource.GroupBuilder
+	object  *resource.Group
+	err     error
 	client  *Client
 	trace   io.Writer
 	id      string
+}
+
+func (call *ReplaceGroupCall) payload() (*resource.Group, error) {
+	if object := call.object; object != nil {
+		return object, nil
+	}
+	return call.builder.Build()
+}
+
+func (call *ReplaceGroupCall) FromJSON(data []byte) *ReplaceGroupCall {
+	if call.err != nil {
+		return call
+	}
+	var in resource.Group
+	if err := json.Unmarshal(data, &in); err != nil {
+		call.err = fmt.Errorf("failed to decode data: %w", err)
+		return call
+	}
+	call.object = &in
+	return call
 }
 
 func (svc *GroupService) Replace(id string) *ReplaceGroupCall {
@@ -273,7 +345,10 @@ func (call ReplaceGroupCall) makeURL() string {
 }
 
 func (call *ReplaceGroupCall) Do(ctx context.Context) (*resource.Group, error) {
-	payload, err := call.builder.Build()
+	if err := call.err; err != nil {
+		return nil, fmt.Errorf("failed to build request: %w", err)
+	}
+	payload, err := call.payload()
 	if err != nil {
 		return nil, fmt.Errorf(`failed to generate request payload for ReplaceGroupCall: %w`, err)
 	}
@@ -326,9 +401,31 @@ func (call *ReplaceGroupCall) Do(ctx context.Context) (*resource.Group, error) {
 
 type DeleteGroupCall struct {
 	builder *resource.GroupBuilder
+	object  *resource.Group
+	err     error
 	client  *Client
 	trace   io.Writer
 	id      string
+}
+
+func (call *DeleteGroupCall) payload() (*resource.Group, error) {
+	if object := call.object; object != nil {
+		return object, nil
+	}
+	return call.builder.Build()
+}
+
+func (call *DeleteGroupCall) FromJSON(data []byte) *DeleteGroupCall {
+	if call.err != nil {
+		return call
+	}
+	var in resource.Group
+	if err := json.Unmarshal(data, &in); err != nil {
+		call.err = fmt.Errorf("failed to decode data: %w", err)
+		return call
+	}
+	call.object = &in
+	return call
 }
 
 func (svc *GroupService) Delete(id string) *DeleteGroupCall {
@@ -374,7 +471,10 @@ func (call DeleteGroupCall) makeURL() string {
 }
 
 func (call *DeleteGroupCall) Do(ctx context.Context) error {
-	payload, err := call.builder.Build()
+	if err := call.err; err != nil {
+		return fmt.Errorf("failed to build request: %w", err)
+	}
+	payload, err := call.payload()
 	if err != nil {
 		return fmt.Errorf(`failed to generate request payload for DeleteGroupCall: %w`, err)
 	}
@@ -434,8 +534,30 @@ func (call *DeleteGroupCall) Do(ctx context.Context) error {
 
 type SearchGroupCall struct {
 	builder *resource.SearchRequestBuilder
+	object  *resource.SearchRequest
+	err     error
 	client  *Client
 	trace   io.Writer
+}
+
+func (call *SearchGroupCall) payload() (*resource.SearchRequest, error) {
+	if object := call.object; object != nil {
+		return object, nil
+	}
+	return call.builder.Build()
+}
+
+func (call *SearchGroupCall) FromJSON(data []byte) *SearchGroupCall {
+	if call.err != nil {
+		return call
+	}
+	var in resource.SearchRequest
+	if err := json.Unmarshal(data, &in); err != nil {
+		call.err = fmt.Errorf("failed to decode data: %w", err)
+		return call
+	}
+	call.object = &in
+	return call
 }
 
 func (svc *GroupService) Search() *SearchGroupCall {
@@ -501,7 +623,10 @@ func (call *SearchGroupCall) makeURL() string {
 }
 
 func (call *SearchGroupCall) Do(ctx context.Context) (*resource.ListResponse, error) {
-	payload, err := call.builder.Build()
+	if err := call.err; err != nil {
+		return nil, fmt.Errorf("failed to build request: %w", err)
+	}
+	payload, err := call.payload()
 	if err != nil {
 		return nil, fmt.Errorf(`failed to generate request payload for SearchGroupCall: %w`, err)
 	}

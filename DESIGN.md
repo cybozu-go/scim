@@ -190,7 +190,7 @@ But much like the builders for the resources, this quickly becomes problematic w
 you have 20+ fields that you must be able to set values to:
 
 ```go
-user, err := client.CreateUser( lots, and, lots, and, lots, of, fields... )
+user, err := client.User().Create( lots, and, lots, and, lots, of, fields... )
 ```
 
 Using this Google Cloud style convention makes it much easier to give users

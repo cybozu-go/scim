@@ -9,6 +9,42 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestDateTime(t *testing.T) {
+	ref := time.Date(2022, 2, 22, 14, 22, 22, 987654321, time.UTC)
+	testcases := []struct {
+		Value    string
+		Expected time.Time
+		Error    bool
+	}{
+		{
+			Value:    ref.Format(`2006-01-02T15:04:05Z`),
+			Expected: ref.Truncate(time.Second),
+		},
+		{
+			Value:    ref.Format(`2006-01-02T15:04:05.9999999999Z`),
+			Expected: ref,
+		},
+		{
+			Value:    ref.Local().Format(`2006-01-02T15:04:05Z0700`),
+			Expected: ref.Truncate(time.Second).Local(),
+		},
+		{
+			Value:    ref.Local().Format(`2006-01-02T15:04:05Z07:00`),
+			Expected: ref.Truncate(time.Second).Local(),
+		},
+	}
+
+	for _, tc := range testcases {
+		tc := tc
+		t.Run(tc.Value, func(t *testing.T) {
+			parsed, err := resource.ParseDateTime(tc.Value)
+
+			require.NoError(t, err, `resource.ParseDateTime should succeed`)
+			require.Equal(t, tc.Expected, parsed)
+		})
+	}
+}
+
 func TestUser(t *testing.T) {
 	var b resource.Builder
 

@@ -10,6 +10,9 @@ import (
 )
 
 func TestDateTime(t *testing.T) {
+	tokyo, err := time.LoadLocation(`Asia/Tokyo`)
+	require.NoError(t, err, `time.LoadLocation should succeed`)
+
 	ref := time.Date(2022, 2, 22, 14, 22, 22, 987654321, time.UTC)
 	testcases := []struct {
 		Value    string
@@ -25,11 +28,11 @@ func TestDateTime(t *testing.T) {
 			Expected: ref,
 		},
 		{
-			Value:    ref.Local().Format(`2006-01-02T15:04:05Z0700`),
+			Value:    ref.In(tokyo).Format(`2006-01-02T15:04:05Z0700`),
 			Expected: ref.Truncate(time.Second).Local(),
 		},
 		{
-			Value:    ref.Local().Format(`2006-01-02T15:04:05Z07:00`),
+			Value:    ref.In(tokyo).Format(`2006-01-02T15:04:05Z07:00`),
 			Expected: ref.Truncate(time.Second).Local(),
 		},
 	}

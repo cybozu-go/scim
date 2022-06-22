@@ -10,8 +10,11 @@ import (
 )
 
 func TestDateTime(t *testing.T) {
-	tokyo, err := time.LoadLocation(`Asia/Tokyo`)
+	// Load the timezone that is not local
+	var tz *time.Location
+	v, err := time.LoadLocation(`Asia/Tokyo`)
 	require.NoError(t, err, `time.LoadLocation should succeed`)
+	tz = v
 
 	ref := time.Date(2022, 2, 22, 14, 22, 22, 987654321, time.UTC)
 	testcases := []struct {
@@ -28,12 +31,12 @@ func TestDateTime(t *testing.T) {
 			Expected: ref,
 		},
 		{
-			Value:    ref.In(tokyo).Format(`2006-01-02T15:04:05Z0700`),
-			Expected: ref.Truncate(time.Second).Local(),
+			Value:    ref.In(tz).Format(`2006-01-02T15:04:05Z0700`),
+			Expected: ref.Truncate(time.Second).In(tz),
 		},
 		{
-			Value:    ref.In(tokyo).Format(`2006-01-02T15:04:05Z07:00`),
-			Expected: ref.Truncate(time.Second).Local(),
+			Value:    ref.In(tz).Format(`2006-01-02T15:04:05Z07:00`),
+			Expected: ref.Truncate(time.Second).In(tz),
 		},
 	}
 
@@ -43,7 +46,7 @@ func TestDateTime(t *testing.T) {
 			parsed, err := resource.ParseDateTime(tc.Value)
 
 			require.NoError(t, err, `resource.ParseDateTime should succeed`)
-			require.Equal(t, tc.Expected, parsed)
+			require.Equal(t, tc.Expected.UTC(), parsed.UTC())
 		})
 	}
 }

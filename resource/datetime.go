@@ -19,8 +19,7 @@ func ParseDateTime(s string) (time.Time, error) {
 	if looksLikeFourDigitTZ.MatchString(s) {
 		const tzfmt = "2006-01-02T15:04:05.999999999Z0700"
 		return time.Parse(tzfmt, s)
-	} else {
-		const tzfmt = "2006-01-02T15:04:05.999999999Z07:00"
-		return time.Parse(tzfmt, s)
 	}
+	const tzfmt = "2006-01-02T15:04:05.999999999Z07:00"
+	return time.Parse(tzfmt, s)
 }

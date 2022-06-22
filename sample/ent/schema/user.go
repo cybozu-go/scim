@@ -5,16 +5,15 @@ import (
 	"entgo.io/ent/schema/edge"
 )
 
-// User holds the schema definition for the User entity.
-type User struct {
-	ent.Schema
-}
-
 // Edges of the User.
 func (User) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To(`groups`, Group.Type),
 		edge.To(`emails`, Email.Type),
 		edge.To(`name`, Names.Type),
+		edge.To(`entitlements`, Entitlement.Type),
+		edge.To(`roles`, Role.Type),
+		edge.To(`imses`, IMS.Type),
+		edge.To(`phone_numbers`, PhoneNumber.Type),
 	}
 }

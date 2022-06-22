@@ -15,7 +15,7 @@ options:
     comment: |
       WithClient specifies the http.Client instance to use.
   - ident: Trace
-    interface: RequestOption
+    interface: NewOption
     argument_type: io.Writer
     comment: |
       WithTrace allows users to specify a destination to write out the

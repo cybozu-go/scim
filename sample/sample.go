@@ -7,7 +7,6 @@ import (
 	"context"
 	"crypto/rand"
 	"fmt"
-	"log"
 	"math/big"
 	"strings"
 
@@ -39,6 +38,19 @@ var _ = emailContainsPredicate
 var _ = namesContainsPredicate
 var _ = emailEqualsPredicate
 var _ = namesEqualsPredicate
+
+func splitScimField(s string) (string, string, error) {
+	i := strings.IndexByte(s, '.')
+	if i == -1 {
+		return s, "", nil
+	}
+
+	if i == len(s)-1 {
+		return "", "", fmt.Errorf(`invalid field name specification`)
+	}
+
+	return s[:i], s[i+1:], nil
+}
 
 type Backend struct {
 	db  *ent.Client
@@ -82,7 +94,7 @@ func New(connspec string, spc *resource.ServiceProviderConfig) (*Backend, error)
 	}
 
 	return &Backend{
-		db:  client,
+		db:  client.Debug(),
 		spc: spc,
 		rts: rts,
 	}, nil
@@ -123,6 +135,36 @@ func randomString(n int) string {
 	return b.String()
 }
 
+func (b *Backend) createRoles(in *resource.User) ([]*ent.Role, error) {
+	roles := make([]*ent.Role, len(in.Roles()))
+	var hasPrimary bool
+	for i, v := range in.Roles() {
+		roleCreateCall := b.db.Role.Create()
+		roleCreateCall.SetValue(v.Value())
+
+		if v.HasDisplay() {
+			roleCreateCall.SetDisplay(v.Display())
+		}
+		if v.HasType() {
+			roleCreateCall.SetType(v.Type())
+		}
+		if sv := v.Primary(); sv {
+			if hasPrimary {
+				return nil, fmt.Errorf(`invalid user.roles: multiple roles have been set to primary`)
+			}
+			roleCreateCall.SetPrimary(true)
+			hasPrimary = true
+		}
+
+		role, err := roleCreateCall.Save(context.TODO())
+		if err != nil {
+			return nil, fmt.Errorf(`failed to save role %d: %w`, i, err)
+		}
+
+		roles[i] = role
+	}
+	return roles, nil
+}
 func (b *Backend) createEmails(in *resource.User) ([]*ent.Email, error) {
 	emails := make([]*ent.Email, len(in.Emails()))
 	var hasPrimary bool
@@ -228,6 +270,16 @@ func (b *Backend) CreateUser(in *resource.User) (*resource.User, error) {
 		createUserCall.SetTimezone(in.Timezone())
 	}
 
+	var roles []*ent.Role
+	if in.HasRoles() {
+		created, err := b.createRoles(in)
+		if err != nil {
+			return nil, fmt.Errorf(`failed to create roles: %w`, err)
+		}
+		createUserCall.AddRoles(created...)
+		roles = created
+	}
+
 	var emails []*ent.Email
 	if in.HasEmails() {
 		created, err := b.createEmails(in)
@@ -262,6 +314,7 @@ func (b *Backend) CreateUser(in *resource.User) (*resource.User, error) {
 	// For the time being, we're just going to populate it ourselves
 	u.Edges.Emails = emails
 	u.Edges.Name = name
+	u.Edges.Roles = roles
 
 	return UserResourceFromEnt(u)
 }
@@ -433,13 +486,16 @@ func (b *Backend) CreateGroup(in *resource.Group) (*resource.Group, error) {
 }
 
 // XXX passing these boolean variables is so ugly
-func buildWhere(src string, buildUsers, buildGroups bool) ([]predicate.User, []predicate.Group, error) {
+func (b *Backend) buildWhere(src string, buildUsers, buildGroups bool) ([]predicate.User, []predicate.Group, error) {
 	expr, err := filter.Parse(src)
 	if err != nil {
 		return nil, nil, fmt.Errorf(`failed to parse filter: %w`, err)
 	}
 
 	var v filterVisitor
+
+	v.uq = b.db.User.Query()
+	v.gq = b.db.Group.Query()
 
 	// XXX while /.search (at the root level) allows querying for
 	// all resources (well, User and Group only, really), /Users/.search
@@ -463,6 +519,8 @@ func buildWhere(src string, buildUsers, buildGroups bool) ([]predicate.User, []p
 }
 
 type filterVisitor struct {
+	uq     *ent.UserQuery
+	gq     *ent.GroupQuery
 	users  []predicate.User
 	groups []predicate.Group
 }
@@ -541,38 +599,50 @@ func (v *filterVisitor) visitRegexExpr(expr filter.RegexExpr) error {
 	switch expr.Operator() {
 	case filter.ContainsOp:
 		if v.users != nil {
-			if pred := userContainsPredicate(slhe, srhe); pred != nil {
-				v.users = append(v.users, pred)
+			pred, err := userContainsPredicate(v.uq, slhe, srhe)
+			if err != nil {
+				return err
 			}
+			v.users = append(v.users, pred)
 		}
 		if v.groups != nil {
-			if pred := groupContainsPredicate(slhe, srhe); pred != nil {
-				v.groups = append(v.groups, pred)
+			pred, err := groupContainsPredicate(v.gq, slhe, srhe)
+			if err != nil {
+				return err
 			}
+			v.groups = append(v.groups, pred)
 		}
 		return nil
 	case filter.StartsWithOp:
 		if v.users != nil {
-			if pred := userStartsWithPredicate(slhe, srhe); pred != nil {
-				v.users = append(v.users, pred)
+			pred, err := userStartsWithPredicate(v.uq, slhe, srhe)
+			if err != nil {
+				return err
 			}
+			v.users = append(v.users, pred)
 		}
 		if v.groups != nil {
-			if pred := groupStartsWithPredicate(slhe, srhe); pred != nil {
-				v.groups = append(v.groups, pred)
+			pred, err := groupStartsWithPredicate(v.gq, slhe, srhe)
+			if err != nil {
+				return err
 			}
+			v.groups = append(v.groups, pred)
 		}
 		return nil
 	case filter.EndsWithOp:
 		if v.users != nil {
-			if pred := userEndsWithPredicate(slhe, srhe); pred != nil {
-				v.users = append(v.users, pred)
+			pred, err := userEndsWithPredicate(v.uq, slhe, srhe)
+			if err != nil {
+				return err
 			}
+			v.users = append(v.users, pred)
 		}
 		if v.groups != nil {
-			if pred := groupEndsWithPredicate(slhe, srhe); pred != nil {
-				v.groups = append(v.groups, pred)
+			pred, err := groupEndsWithPredicate(v.gq, slhe, srhe)
+			if err != nil {
+				return err
 			}
+			v.groups = append(v.groups, pred)
 		}
 		return nil
 	default:
@@ -582,7 +652,6 @@ func (v *filterVisitor) visitRegexExpr(expr filter.RegexExpr) error {
 
 func (v *filterVisitor) visitCompareExpr(expr filter.CompareExpr) error {
 	lhe, err := exprAttr(expr.LHE())
-	log.Printf("lhe = %q", lhe)
 	slhe, ok := lhe.(string)
 	if err != nil || !ok {
 		return fmt.Errorf(`left hand side of CompareExpr is not valid`)
@@ -598,14 +667,18 @@ func (v *filterVisitor) visitCompareExpr(expr filter.CompareExpr) error {
 	switch expr.Operator() {
 	case filter.EqualOp:
 		if v.users != nil {
-			if pred := userEqualsPredicate(slhe, srhe); pred != nil {
-				v.users = append(v.users, pred)
+			pred, err := userEqualsPredicate(v.uq, slhe, srhe)
+			if err != nil {
+				return err
 			}
+			v.users = append(v.users, pred)
 		}
 		if v.groups != nil {
-			if pred := groupEqualsPredicate(slhe, srhe); pred != nil {
-				v.groups = append(v.groups, pred)
+			pred, err := groupEqualsPredicate(v.gq, slhe, srhe)
+			if err != nil {
+				return err
 			}
+			v.groups = append(v.groups, pred)
 		}
 		return nil
 	default:
@@ -613,8 +686,33 @@ func (v *filterVisitor) visitCompareExpr(expr filter.CompareExpr) error {
 	}
 }
 
-func (v *filterVisitor) visitLogExpr(expr filter.Expr) error {
-	return fmt.Errorf(`unimplemented`)
+func (v *filterVisitor) visitLogExpr(expr filter.LogExpr) error {
+	if err := v.visit(expr.LHE()); err != nil {
+		return fmt.Errorf(`failed to parse left hand side of %q statement: %w`, expr.Operator(), err)
+	}
+	if err := v.visit(expr.RHS()); err != nil {
+		return fmt.Errorf(`failed to parse right hand side of %q statement: %w`, expr.Operator(), err)
+	}
+
+	switch expr.Operator() {
+	case "and":
+		if v.users != nil {
+			v.users = []predicate.User{user.And(v.users...)}
+		}
+		if v.groups != nil {
+			v.groups = []predicate.Group{group.And(v.groups...)}
+		}
+	case "or":
+		if v.users != nil {
+			v.users = []predicate.User{user.Or(v.users...)}
+		}
+		if v.groups != nil {
+			v.groups = []predicate.Group{group.Or(v.groups...)}
+		}
+	default:
+		return fmt.Errorf(`unhandled logical statement operator %q`, expr.Operator())
+	}
+	return nil
 }
 func (v *filterVisitor) visitParenExpr(expr filter.Expr) error {
 	return fmt.Errorf(`unimplemented`)
@@ -637,11 +735,17 @@ func (b *Backend) SearchGroup(in *resource.SearchRequest) (*resource.ListRespons
 }
 
 func (b *Backend) search(in *resource.SearchRequest, searchUser, searchGroup bool) (*resource.ListResponse, error) {
-	userWhere, groupWhere, err := buildWhere(in.Filter(), searchUser, searchGroup)
+	userWhere, groupWhere, err := b.buildWhere(in.Filter(), searchUser, searchGroup)
 	if err != nil {
 		return nil, fmt.Errorf(`failed to parse filter: %w`, err)
 	}
 
+	if in.Filter() != "" && (len(userWhere) == 0 && len(groupWhere) == 0) {
+		var builder resource.Builder
+		return builder.ListResponse().
+			TotalResults(0).
+			Build()
+	}
 	var list []interface{}
 
 	var g rungroup.Group

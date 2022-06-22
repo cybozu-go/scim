@@ -59,7 +59,7 @@ type User struct {
 	phoneNumbers      []string
 	preferredLanguage *string
 	profileURL        *string
-	roles             []string
+	roles             []*Role
 	schemas           schemas
 	timezone          *string
 	title             *string
@@ -324,7 +324,7 @@ func (v *User) HasRoles() bool {
 	return v.roles != nil
 }
 
-func (v *User) Roles() []string {
+func (v *User) Roles() []*Role {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.roles
@@ -813,10 +813,10 @@ func (v *User) Set(name string, value interface{}) error {
 		v.profileURL = &tmp
 		return nil
 	case UserRolesKey:
-		var tmp []string
-		tmp, ok := value.([]string)
+		var tmp []*Role
+		tmp, ok := value.([]*Role)
 		if !ok {
-			return fmt.Errorf(`expected []string for field "roles", but got %T`, value)
+			return fmt.Errorf(`expected []*Role for field "roles", but got %T`, value)
 		}
 		v.roles = tmp
 		return nil
@@ -1067,7 +1067,7 @@ LOOP:
 				}
 				v.profileURL = &x
 			case UserRolesKey:
-				var x []string
+				var x []*Role
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "roles": %w`, err)
 				}
@@ -1394,7 +1394,7 @@ func (b *UserBuilder) ProfileURL(v string) *UserBuilder {
 	return b
 }
 
-func (b *UserBuilder) Roles(v ...string) *UserBuilder {
+func (b *UserBuilder) Roles(v ...*Role) *UserBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.once.Do(b.init)

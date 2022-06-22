@@ -38,7 +38,7 @@ func RunConformanceTests(t *testing.T, name string, backend interface{}) {
 
 		srv := httptest.NewServer(hh)
 
-		cl := client.New(srv.URL, client.WithClient(srv.Client()))
+		cl := client.New(srv.URL, client.WithClient(srv.Client()), client.WithTrace(TraceWriter))
 
 		t.Run("Prepare Fixtures", PrepareFixtures(t, cl))
 		t.Run("Users", func(t *testing.T) {
@@ -70,7 +70,6 @@ func PrepareFixtures(t *testing.T, cl *client.Client) func(t *testing.T) {
 			for _, e := range data {
 				_, err := cl.User().Create().
 					FromJSON(e).
-					Trace(TraceWriter).
 					Do(context.TODO())
 				if !assert.NoError(t, err, `user creation should succeed`) {
 					t.Logf("invalid data: %s", e)
@@ -82,12 +81,11 @@ func PrepareFixtures(t *testing.T, cl *client.Client) func(t *testing.T) {
 			// Unfortunately we can't just automatically create Groups because it
 			// requires that we know the members' internal IDs
 			list, err := cl.User().Search().
-				Trace(TraceWriter).
-				Filter(`email.value ew "zemeckis-crew.com"`).
+				Filter(`emails.value ew "zemeckis-crew.com"`).
 				Do(context.TODO())
 			require.NoError(t, err, `user search should succeed`)
 
-			createGroupCall := cl.Group().Create().Trace(TraceWriter).
+			createGroupCall := cl.Group().Create().
 				DisplayName(`zemeckis-crew`)
 			for _, r := range list.Resources() {
 				createGroupCall.MemberFrom(r)
@@ -116,7 +114,6 @@ func stockUserCreateCall(cl *client.Client) *client.CreateUserCall {
 
 func stockGroupCreateCall(cl *client.Client) *client.CreateGroupCall {
 	u1, err := cl.User().Create().
-		Trace(TraceWriter).
 		UserName("jsmith").
 		ExternalID("jsmith").
 		DisplayName("John Smith").
@@ -126,7 +123,6 @@ func stockGroupCreateCall(cl *client.Client) *client.CreateGroupCall {
 		panic(err)
 	}
 	u2, err := cl.User().Create().
-		Trace(TraceWriter).
 		UserName("acooper").
 		ExternalID("acooper").
 		DisplayName("Alice Cooper").
@@ -136,7 +132,6 @@ func stockGroupCreateCall(cl *client.Client) *client.CreateGroupCall {
 		panic(err)
 	}
 	u3, err := cl.User().Create().
-		Trace(TraceWriter).
 		UserName("wjohnson").
 		ExternalID("wjohnson").
 		DisplayName("William Johnson").
@@ -152,7 +147,6 @@ func stockGroupCreateCall(cl *client.Client) *client.CreateGroupCall {
 			MustBuild(),
 	}
 	g1, err := cl.Group().Create().
-		Trace(TraceWriter).
 		DisplayName("Product").
 		Members(members...).
 		Do(context.TODO())
@@ -176,7 +170,6 @@ func stockGroupCreateCall(cl *client.Client) *client.CreateGroupCall {
 	}
 
 	return cl.Group().Create().
-		Trace(TraceWriter).
 		DisplayName("Engineering").
 		Members(members...)
 }
@@ -184,22 +177,38 @@ func stockGroupCreateCall(cl *client.Client) *client.CreateGroupCall {
 func UsersSearch(t *testing.T, cl *client.Client) func(t *testing.T) {
 	return func(t *testing.T) {
 		t.Run("search via /Users/.search", func(t *testing.T) {
-			// TODO: need to create a group that matches the query
-			// and make sure that the result doesn't contain any groups
-			createdUser := createStockUser(t, cl)
-			//nolint:errcheck
-			defer cl.User().Delete(createdUser.ID()).
-				Do(context.TODO())
+			testcases := []struct {
+				Query        string
+				TotalResults int
+			}{
+				{
+					Query:        `roles.value eq "director"`,
+					TotalResults: 1,
+				},
+				{
+					Query:        `roles.value eq "actor"`,
+					TotalResults: 4,
+				},
+				{
+					Query:        `roles.value eq "actor" OR roles.value eq "director"`,
+					TotalResults: 5,
+				},
+				{
+					Query:        `roles.value eq "actor" AND roles.value eq "director"`,
+					TotalResults: 0,
+				},
+			}
 
-			res, err := cl.User().Search().
-				Trace(TraceWriter).
-				Attributes(`displayName`, `userName`).
-				Filter(`displayName sw "Barbara"`).
-				StartIndex(1).
-				Count(10).
-				Do(context.TODO())
-			require.NoError(t, err, `cl.Search should succeed`)
-			require.Equal(t, 1, res.TotalResults(), `total results should be 1`)
+			for _, tc := range testcases {
+				tc := tc
+				t.Run(tc.Query, func(t *testing.T) {
+					res, err := cl.User().Search().
+						Filter(tc.Query).
+						Do(context.TODO())
+					require.NoError(t, err, `search should succeed`)
+					require.Equal(t, tc.TotalResults, res.TotalResults(), `total results should be %d`, tc.TotalResults)
+				})
+			}
 		})
 	}
 }
@@ -208,14 +217,12 @@ func UsersFetch(t *testing.T, cl *client.Client) func(*testing.T) {
 	return func(t *testing.T) {
 		t.Run("Fetch unknown user ID", func(t *testing.T) {
 			u, err := cl.User().Get("foobar").
-				Trace(TraceWriter).
 				Do(context.TODO())
 			require.Nil(t, u, `Get return value should be nil`)
 			require.Error(t, err, `Get should fail`)
 		})
 		t.Run("Fetch user", func(t *testing.T) {
 			createdUser, err := stockUserCreateCall(cl).
-				Trace(TraceWriter).
 				Do(context.TODO())
 			require.NoError(t, err, `Create should succeed`)
 
@@ -224,7 +231,6 @@ func UsersFetch(t *testing.T, cl *client.Client) func(*testing.T) {
 				Do(context.TODO())
 
 			u, err := cl.User().Get(createdUser.ID()).
-				Trace(TraceWriter).
 				Do(context.TODO())
 			require.NoError(t, err, `Get should succeed`)
 
@@ -244,7 +250,6 @@ func UsersFetch(t *testing.T, cl *client.Client) func(*testing.T) {
 			createdUser := createStockUser(t, cl)
 			u, err := cl.User().Get(createdUser.ID()).
 				Attributes("userName", "emails").
-				Trace(TraceWriter).
 				Do(context.TODO())
 			require.NoError(t, err, `Get should succeed`)
 
@@ -266,13 +271,11 @@ func createStockUser(t *testing.T, cl *client.Client) *resource.User {
 	var created *resource.User
 	t.Run("Create stock user object", func(t *testing.T) {
 		u, err := stockUserCreateCall(cl).
-			Trace(TraceWriter).
 			Do(context.TODO())
 		require.NoError(t, err, `Create should succeed`)
 
 		// Make sure that it's really there
 		fetched, err := cl.User().Get(u.ID()).
-			Trace(TraceWriter).
 			Do(context.TODO())
 		require.NoError(t, err, `Get should succeed`)
 
@@ -449,7 +452,6 @@ func GroupsSearch(t *testing.T, cl *client.Client) func(t *testing.T) {
 
 			t.Run("Use `sw` predicate", func(t *testing.T) {
 				res, err := cl.Group().Search().
-					Trace(TraceWriter).
 					Attributes(`displayName`).
 					Filter(`displayName sw "search-test"`).
 					StartIndex(1).
@@ -460,7 +462,6 @@ func GroupsSearch(t *testing.T, cl *client.Client) func(t *testing.T) {
 			})
 			t.Run("Use `co` predicate", func(t *testing.T) {
 				res, err := cl.Group().Search().
-					Trace(TraceWriter).
 					Attributes(`displayName`).
 					Filter(`displayName co "arch-test"`).
 					StartIndex(1).
@@ -471,7 +472,6 @@ func GroupsSearch(t *testing.T, cl *client.Client) func(t *testing.T) {
 			})
 			t.Run("Use `ew` predicate", func(t *testing.T) {
 				res, err := cl.Group().Search().
-					Trace(TraceWriter).
 					Attributes(`displayName`).
 					Filter(`displayName ew "test1"`).
 					StartIndex(1).
@@ -482,7 +482,6 @@ func GroupsSearch(t *testing.T, cl *client.Client) func(t *testing.T) {
 			})
 			t.Run("Use `eq` predicate", func(t *testing.T) {
 				res, err := cl.Group().Search().
-					Trace(TraceWriter).
 					Attributes(`displayName`).
 					Filter(`displayName eq "search-test1"`).
 					StartIndex(1).
@@ -498,7 +497,6 @@ func GroupsSearch(t *testing.T, cl *client.Client) func(t *testing.T) {
 func ServiceProviderConfig(t *testing.T, cl *client.Client) func(t *testing.T) {
 	return func(t *testing.T) {
 		spc, err := cl.Meta().GetServiceProviderConfig().
-			Trace(TraceWriter).
 			Do(context.TODO())
 		require.NoError(t, err, `cl.GetServiceProviderConfig should succeed`)
 		_ = spc // TODO: perform more checks
@@ -508,7 +506,6 @@ func ServiceProviderConfig(t *testing.T, cl *client.Client) func(t *testing.T) {
 func ResourceTypes(t *testing.T, cl *client.Client) func(t *testing.T) {
 	return func(t *testing.T) {
 		spc, err := cl.Meta().GetResourceTypes().
-			Trace(TraceWriter).
 			Do(context.TODO())
 		require.NoError(t, err, `cl.ResourceTypes should succeed`)
 		_ = spc // TODO: perform more checks
@@ -519,7 +516,6 @@ func Schemas(t *testing.T, cl *client.Client) func(t *testing.T) {
 	return func(t *testing.T) {
 		t.Run("Fetch all schemas", func(t *testing.T) {
 			list, err := cl.Meta().GetSchemas().
-				Trace(TraceWriter).
 				Do(context.TODO())
 			require.NoError(t, err, `cl.GetSchema should succeed`)
 			_ = list
@@ -527,7 +523,6 @@ func Schemas(t *testing.T, cl *client.Client) func(t *testing.T) {
 		t.Run("Fetch individual schemas", func(t *testing.T) {
 			for _, u := range []string{resource.UserSchemaURI, resource.GroupSchemaURI} {
 				s, err := cl.Meta().GetSchema(u).
-					Trace(TraceWriter).
 					Do(context.TODO())
 				require.NoError(t, err, `cl.GetSchemas should succeed`)
 				_ = s

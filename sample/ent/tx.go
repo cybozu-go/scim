@@ -14,12 +14,22 @@ type Tx struct {
 	config
 	// Email is the client for interacting with the Email builders.
 	Email *EmailClient
+	// Entitlement is the client for interacting with the Entitlement builders.
+	Entitlement *EntitlementClient
 	// Group is the client for interacting with the Group builders.
 	Group *GroupClient
+	// IMS is the client for interacting with the IMS builders.
+	IMS *IMSClient
 	// Names is the client for interacting with the Names builders.
 	Names *NamesClient
+	// PhoneNumber is the client for interacting with the PhoneNumber builders.
+	PhoneNumber *PhoneNumberClient
+	// Role is the client for interacting with the Role builders.
+	Role *RoleClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
+	// X509Certificate is the client for interacting with the X509Certificate builders.
+	X509Certificate *X509CertificateClient
 
 	// lazily loaded.
 	client     *Client
@@ -156,9 +166,14 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.Email = NewEmailClient(tx.config)
+	tx.Entitlement = NewEntitlementClient(tx.config)
 	tx.Group = NewGroupClient(tx.config)
+	tx.IMS = NewIMSClient(tx.config)
 	tx.Names = NewNamesClient(tx.config)
+	tx.PhoneNumber = NewPhoneNumberClient(tx.config)
+	tx.Role = NewRoleClient(tx.config)
 	tx.User = NewUserClient(tx.config)
+	tx.X509Certificate = NewX509CertificateClient(tx.config)
 }
 
 // txDriver wraps the given dialect.Tx with a nop dialect.Driver implementation.

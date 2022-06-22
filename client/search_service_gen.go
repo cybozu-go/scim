@@ -122,6 +122,9 @@ func (call *SearchCall) Do(ctx context.Context) (*resource.ListResponse, error) 
 	}
 
 	trace := call.trace
+	if trace == nil {
+		trace = call.client.trace
+	}
 	u := call.makeURL()
 	if trace != nil {
 		fmt.Fprintf(trace, "trace: client sending call request to %q\n", u)

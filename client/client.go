@@ -3,6 +3,7 @@
 package client
 
 import (
+	"io"
 	"net/http"
 	"strings"
 )
@@ -12,6 +13,7 @@ import (
 type Client struct {
 	baseURL string
 	httpcl  *http.Client
+	trace   io.Writer
 }
 
 // New creates a Client instance. The `baseURL` parameter is required,
@@ -21,11 +23,14 @@ type Client struct {
 // handles the authentication, and pass it as an option
 func New(baseURL string, options ...NewOption) *Client {
 	httpcl := http.DefaultClient
+	trace := io.Discard
 	//nolint:forcetypeassert
 	for _, option := range options {
 		switch option.Ident() {
 		case identClient{}:
 			httpcl = option.Value().(*http.Client)
+		case identTrace{}:
+			trace = option.Value().(io.Writer)
 		}
 	}
 
@@ -33,5 +38,6 @@ func New(baseURL string, options ...NewOption) *Client {
 		// Strip trailing slash
 		baseURL: strings.TrimSuffix(baseURL, "/"),
 		httpcl:  httpcl,
+		trace:   trace,
 	}
 }

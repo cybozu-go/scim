@@ -13,9 +13,13 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/cybozu-go/scim/sample/ent/email"
+	"github.com/cybozu-go/scim/sample/ent/entitlement"
 	"github.com/cybozu-go/scim/sample/ent/group"
+	"github.com/cybozu-go/scim/sample/ent/ims"
 	"github.com/cybozu-go/scim/sample/ent/names"
+	"github.com/cybozu-go/scim/sample/ent/phonenumber"
 	"github.com/cybozu-go/scim/sample/ent/predicate"
+	"github.com/cybozu-go/scim/sample/ent/role"
 	"github.com/cybozu-go/scim/sample/ent/user"
 	"github.com/google/uuid"
 )
@@ -30,10 +34,14 @@ type UserQuery struct {
 	fields     []string
 	predicates []predicate.User
 	// eager-loading edges.
-	withGroups *GroupQuery
-	withEmails *EmailQuery
-	withName   *NamesQuery
-	withFKs    bool
+	withGroups       *GroupQuery
+	withEmails       *EmailQuery
+	withName         *NamesQuery
+	withEntitlements *EntitlementQuery
+	withRoles        *RoleQuery
+	withImses        *IMSQuery
+	withPhoneNumbers *PhoneNumberQuery
+	withFKs          bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -129,6 +137,94 @@ func (uq *UserQuery) QueryName() *NamesQuery {
 			sqlgraph.From(user.Table, user.FieldID, selector),
 			sqlgraph.To(names.Table, names.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, user.NameTable, user.NameColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryEntitlements chains the current query on the "entitlements" edge.
+func (uq *UserQuery) QueryEntitlements() *EntitlementQuery {
+	query := &EntitlementQuery{config: uq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := uq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := uq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(entitlement.Table, entitlement.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.EntitlementsTable, user.EntitlementsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryRoles chains the current query on the "roles" edge.
+func (uq *UserQuery) QueryRoles() *RoleQuery {
+	query := &RoleQuery{config: uq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := uq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := uq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(role.Table, role.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.RolesTable, user.RolesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryImses chains the current query on the "imses" edge.
+func (uq *UserQuery) QueryImses() *IMSQuery {
+	query := &IMSQuery{config: uq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := uq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := uq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(ims.Table, ims.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.ImsesTable, user.ImsesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryPhoneNumbers chains the current query on the "phone_numbers" edge.
+func (uq *UserQuery) QueryPhoneNumbers() *PhoneNumberQuery {
+	query := &PhoneNumberQuery{config: uq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := uq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := uq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(phonenumber.Table, phonenumber.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.PhoneNumbersTable, user.PhoneNumbersColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
 		return fromU, nil
@@ -312,14 +408,18 @@ func (uq *UserQuery) Clone() *UserQuery {
 		return nil
 	}
 	return &UserQuery{
-		config:     uq.config,
-		limit:      uq.limit,
-		offset:     uq.offset,
-		order:      append([]OrderFunc{}, uq.order...),
-		predicates: append([]predicate.User{}, uq.predicates...),
-		withGroups: uq.withGroups.Clone(),
-		withEmails: uq.withEmails.Clone(),
-		withName:   uq.withName.Clone(),
+		config:           uq.config,
+		limit:            uq.limit,
+		offset:           uq.offset,
+		order:            append([]OrderFunc{}, uq.order...),
+		predicates:       append([]predicate.User{}, uq.predicates...),
+		withGroups:       uq.withGroups.Clone(),
+		withEmails:       uq.withEmails.Clone(),
+		withName:         uq.withName.Clone(),
+		withEntitlements: uq.withEntitlements.Clone(),
+		withRoles:        uq.withRoles.Clone(),
+		withImses:        uq.withImses.Clone(),
+		withPhoneNumbers: uq.withPhoneNumbers.Clone(),
 		// clone intermediate query.
 		sql:    uq.sql.Clone(),
 		path:   uq.path,
@@ -357,6 +457,50 @@ func (uq *UserQuery) WithName(opts ...func(*NamesQuery)) *UserQuery {
 		opt(query)
 	}
 	uq.withName = query
+	return uq
+}
+
+// WithEntitlements tells the query-builder to eager-load the nodes that are connected to
+// the "entitlements" edge. The optional arguments are used to configure the query builder of the edge.
+func (uq *UserQuery) WithEntitlements(opts ...func(*EntitlementQuery)) *UserQuery {
+	query := &EntitlementQuery{config: uq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	uq.withEntitlements = query
+	return uq
+}
+
+// WithRoles tells the query-builder to eager-load the nodes that are connected to
+// the "roles" edge. The optional arguments are used to configure the query builder of the edge.
+func (uq *UserQuery) WithRoles(opts ...func(*RoleQuery)) *UserQuery {
+	query := &RoleQuery{config: uq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	uq.withRoles = query
+	return uq
+}
+
+// WithImses tells the query-builder to eager-load the nodes that are connected to
+// the "imses" edge. The optional arguments are used to configure the query builder of the edge.
+func (uq *UserQuery) WithImses(opts ...func(*IMSQuery)) *UserQuery {
+	query := &IMSQuery{config: uq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	uq.withImses = query
+	return uq
+}
+
+// WithPhoneNumbers tells the query-builder to eager-load the nodes that are connected to
+// the "phone_numbers" edge. The optional arguments are used to configure the query builder of the edge.
+func (uq *UserQuery) WithPhoneNumbers(opts ...func(*PhoneNumberQuery)) *UserQuery {
+	query := &PhoneNumberQuery{config: uq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	uq.withPhoneNumbers = query
 	return uq
 }
 
@@ -426,10 +570,14 @@ func (uq *UserQuery) sqlAll(ctx context.Context) ([]*User, error) {
 		nodes       = []*User{}
 		withFKs     = uq.withFKs
 		_spec       = uq.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [7]bool{
 			uq.withGroups != nil,
 			uq.withEmails != nil,
 			uq.withName != nil,
+			uq.withEntitlements != nil,
+			uq.withRoles != nil,
+			uq.withImses != nil,
+			uq.withPhoneNumbers != nil,
 		}
 	)
 	if withFKs {
@@ -539,6 +687,122 @@ func (uq *UserQuery) sqlAll(ctx context.Context) ([]*User, error) {
 				return nil, fmt.Errorf(`unexpected foreign-key "user_name" returned %v for node %v`, *fk, n.ID)
 			}
 			node.Edges.Name = append(node.Edges.Name, n)
+		}
+	}
+
+	if query := uq.withEntitlements; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[uuid.UUID]*User)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.Entitlements = []*Entitlement{}
+		}
+		query.withFKs = true
+		query.Where(predicate.Entitlement(func(s *sql.Selector) {
+			s.Where(sql.InValues(user.EntitlementsColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.user_entitlements
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "user_entitlements" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "user_entitlements" returned %v for node %v`, *fk, n.ID)
+			}
+			node.Edges.Entitlements = append(node.Edges.Entitlements, n)
+		}
+	}
+
+	if query := uq.withRoles; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[uuid.UUID]*User)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.Roles = []*Role{}
+		}
+		query.withFKs = true
+		query.Where(predicate.Role(func(s *sql.Selector) {
+			s.Where(sql.InValues(user.RolesColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.user_roles
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "user_roles" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "user_roles" returned %v for node %v`, *fk, n.ID)
+			}
+			node.Edges.Roles = append(node.Edges.Roles, n)
+		}
+	}
+
+	if query := uq.withImses; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[uuid.UUID]*User)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.Imses = []*IMS{}
+		}
+		query.withFKs = true
+		query.Where(predicate.IMS(func(s *sql.Selector) {
+			s.Where(sql.InValues(user.ImsesColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.user_imses
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "user_imses" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "user_imses" returned %v for node %v`, *fk, n.ID)
+			}
+			node.Edges.Imses = append(node.Edges.Imses, n)
+		}
+	}
+
+	if query := uq.withPhoneNumbers; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[uuid.UUID]*User)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.PhoneNumbers = []*PhoneNumber{}
+		}
+		query.withFKs = true
+		query.Where(predicate.PhoneNumber(func(s *sql.Selector) {
+			s.Where(sql.InValues(user.PhoneNumbersColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.user_phone_numbers
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "user_phone_numbers" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "user_phone_numbers" returned %v for node %v`, *fk, n.ID)
+			}
+			node.Edges.PhoneNumbers = append(node.Edges.PhoneNumbers, n)
 		}
 	}
 

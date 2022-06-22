@@ -10,8 +10,12 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/cybozu-go/scim/sample/ent/email"
+	"github.com/cybozu-go/scim/sample/ent/entitlement"
 	"github.com/cybozu-go/scim/sample/ent/group"
+	"github.com/cybozu-go/scim/sample/ent/ims"
 	"github.com/cybozu-go/scim/sample/ent/names"
+	"github.com/cybozu-go/scim/sample/ent/phonenumber"
+	"github.com/cybozu-go/scim/sample/ent/role"
 	"github.com/cybozu-go/scim/sample/ent/user"
 	"github.com/google/uuid"
 )
@@ -240,6 +244,66 @@ func (uc *UserCreate) AddName(n ...*Names) *UserCreate {
 		ids[i] = n[i].ID
 	}
 	return uc.AddNameIDs(ids...)
+}
+
+// AddEntitlementIDs adds the "entitlements" edge to the Entitlement entity by IDs.
+func (uc *UserCreate) AddEntitlementIDs(ids ...int) *UserCreate {
+	uc.mutation.AddEntitlementIDs(ids...)
+	return uc
+}
+
+// AddEntitlements adds the "entitlements" edges to the Entitlement entity.
+func (uc *UserCreate) AddEntitlements(e ...*Entitlement) *UserCreate {
+	ids := make([]int, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return uc.AddEntitlementIDs(ids...)
+}
+
+// AddRoleIDs adds the "roles" edge to the Role entity by IDs.
+func (uc *UserCreate) AddRoleIDs(ids ...int) *UserCreate {
+	uc.mutation.AddRoleIDs(ids...)
+	return uc
+}
+
+// AddRoles adds the "roles" edges to the Role entity.
+func (uc *UserCreate) AddRoles(r ...*Role) *UserCreate {
+	ids := make([]int, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return uc.AddRoleIDs(ids...)
+}
+
+// AddImseIDs adds the "imses" edge to the IMS entity by IDs.
+func (uc *UserCreate) AddImseIDs(ids ...int) *UserCreate {
+	uc.mutation.AddImseIDs(ids...)
+	return uc
+}
+
+// AddImses adds the "imses" edges to the IMS entity.
+func (uc *UserCreate) AddImses(i ...*IMS) *UserCreate {
+	ids := make([]int, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return uc.AddImseIDs(ids...)
+}
+
+// AddPhoneNumberIDs adds the "phone_numbers" edge to the PhoneNumber entity by IDs.
+func (uc *UserCreate) AddPhoneNumberIDs(ids ...int) *UserCreate {
+	uc.mutation.AddPhoneNumberIDs(ids...)
+	return uc
+}
+
+// AddPhoneNumbers adds the "phone_numbers" edges to the PhoneNumber entity.
+func (uc *UserCreate) AddPhoneNumbers(p ...*PhoneNumber) *UserCreate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return uc.AddPhoneNumberIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -515,6 +579,82 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: names.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := uc.mutation.EntitlementsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.EntitlementsTable,
+			Columns: []string{user.EntitlementsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: entitlement.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := uc.mutation.RolesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.RolesTable,
+			Columns: []string{user.RolesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: role.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := uc.mutation.ImsesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ImsesTable,
+			Columns: []string{user.ImsesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: ims.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := uc.mutation.PhoneNumbersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.PhoneNumbersTable,
+			Columns: []string{user.PhoneNumbersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: phonenumber.FieldID,
 				},
 			},
 		}

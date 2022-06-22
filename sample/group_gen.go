@@ -76,91 +76,111 @@ func GroupEntFieldFromSCIM(s string) string {
 	}
 }
 
-func groupStartsWithPredicate(scimField string, val string) predicate.Group {
-	switch scimField {
+func groupStartsWithPredicate(q *ent.GroupQuery, scimField string, val interface{}) (predicate.Group, error) {
+	field, subfield, err := splitScimField(scimField)
+	if err != nil {
+		return nil, err
+	}
+	_ = subfield // TODO: remove later
+	switch field {
 	case resource.GroupDisplayNameKey:
 		entFieldName := GroupEntFieldFromSCIM(scimField)
 		return predicate.Group(func(s *sql.Selector) {
-			s.Where(sql.HasPrefix(s.C(entFieldName), val))
-		})
+			s.Where(sql.HasPrefix(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.GroupExternalIDKey:
 		entFieldName := GroupEntFieldFromSCIM(scimField)
 		return predicate.Group(func(s *sql.Selector) {
-			s.Where(sql.HasPrefix(s.C(entFieldName), val))
-		})
+			s.Where(sql.HasPrefix(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.GroupIDKey:
 		entFieldName := GroupEntFieldFromSCIM(scimField)
 		return predicate.Group(func(s *sql.Selector) {
-			s.Where(sql.HasPrefix(s.C(entFieldName), val))
-		})
+			s.Where(sql.HasPrefix(s.C(entFieldName), val.(string)))
+		}), nil
 	default:
-		return nil
+		return nil, fmt.Errorf("invalid filter field specification")
 	}
 }
 
-func groupEndsWithPredicate(scimField string, val string) predicate.Group {
-	switch scimField {
+func groupEndsWithPredicate(q *ent.GroupQuery, scimField string, val interface{}) (predicate.Group, error) {
+	field, subfield, err := splitScimField(scimField)
+	if err != nil {
+		return nil, err
+	}
+	_ = subfield // TODO: remove later
+	switch field {
 	case resource.GroupDisplayNameKey:
 		entFieldName := GroupEntFieldFromSCIM(scimField)
 		return predicate.Group(func(s *sql.Selector) {
-			s.Where(sql.HasSuffix(s.C(entFieldName), val))
-		})
+			s.Where(sql.HasSuffix(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.GroupExternalIDKey:
 		entFieldName := GroupEntFieldFromSCIM(scimField)
 		return predicate.Group(func(s *sql.Selector) {
-			s.Where(sql.HasSuffix(s.C(entFieldName), val))
-		})
+			s.Where(sql.HasSuffix(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.GroupIDKey:
 		entFieldName := GroupEntFieldFromSCIM(scimField)
 		return predicate.Group(func(s *sql.Selector) {
-			s.Where(sql.HasSuffix(s.C(entFieldName), val))
-		})
+			s.Where(sql.HasSuffix(s.C(entFieldName), val.(string)))
+		}), nil
 	default:
-		return nil
+		return nil, fmt.Errorf("invalid filter field specification")
 	}
 }
 
-func groupContainsPredicate(scimField string, val string) predicate.Group {
-	switch scimField {
+func groupContainsPredicate(q *ent.GroupQuery, scimField string, val interface{}) (predicate.Group, error) {
+	field, subfield, err := splitScimField(scimField)
+	if err != nil {
+		return nil, err
+	}
+	_ = subfield // TODO: remove later
+	switch field {
 	case resource.GroupDisplayNameKey:
 		entFieldName := GroupEntFieldFromSCIM(scimField)
 		return predicate.Group(func(s *sql.Selector) {
-			s.Where(sql.Contains(s.C(entFieldName), val))
-		})
+			s.Where(sql.Contains(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.GroupExternalIDKey:
 		entFieldName := GroupEntFieldFromSCIM(scimField)
 		return predicate.Group(func(s *sql.Selector) {
-			s.Where(sql.Contains(s.C(entFieldName), val))
-		})
+			s.Where(sql.Contains(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.GroupIDKey:
 		entFieldName := GroupEntFieldFromSCIM(scimField)
 		return predicate.Group(func(s *sql.Selector) {
-			s.Where(sql.Contains(s.C(entFieldName), val))
-		})
+			s.Where(sql.Contains(s.C(entFieldName), val.(string)))
+		}), nil
 	default:
-		return nil
+		return nil, fmt.Errorf("invalid filter field specification")
 	}
 }
 
-func groupEqualsPredicate(scimField string, val string) predicate.Group {
-	switch scimField {
+func groupEqualsPredicate(q *ent.GroupQuery, scimField string, val interface{}) (predicate.Group, error) {
+	field, subfield, err := splitScimField(scimField)
+	if err != nil {
+		return nil, err
+	}
+	_ = subfield // TODO: remove later
+	switch field {
 	case resource.GroupDisplayNameKey:
 		entFieldName := GroupEntFieldFromSCIM(scimField)
 		return predicate.Group(func(s *sql.Selector) {
-			s.Where(sql.EQ(s.C(entFieldName), val))
-		})
+			s.Where(sql.EQ(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.GroupExternalIDKey:
 		entFieldName := GroupEntFieldFromSCIM(scimField)
 		return predicate.Group(func(s *sql.Selector) {
-			s.Where(sql.EQ(s.C(entFieldName), val))
-		})
+			s.Where(sql.EQ(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.GroupIDKey:
 		entFieldName := GroupEntFieldFromSCIM(scimField)
 		return predicate.Group(func(s *sql.Selector) {
-			s.Where(sql.EQ(s.C(entFieldName), val))
-		})
+			s.Where(sql.EQ(s.C(entFieldName), val.(string)))
+		}), nil
 	default:
-		return nil
+		return nil, fmt.Errorf("invalid filter field specification")
 	}
 }
 

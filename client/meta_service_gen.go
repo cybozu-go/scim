@@ -47,6 +47,9 @@ func (call *GetResourceTypesCall) Do(ctx context.Context) (*[]resource.ResourceT
 		return nil, fmt.Errorf("failed to build request: %w", err)
 	}
 	trace := call.trace
+	if trace == nil {
+		trace = call.client.trace
+	}
 	u := call.makeURL()
 	if trace != nil {
 		fmt.Fprintf(trace, "trace: client sending call request to %q\n", u)
@@ -111,6 +114,9 @@ func (call *GetServiceProviderConfigCall) Do(ctx context.Context) (**resource.Se
 		return nil, fmt.Errorf("failed to build request: %w", err)
 	}
 	trace := call.trace
+	if trace == nil {
+		trace = call.client.trace
+	}
 	u := call.makeURL()
 	if trace != nil {
 		fmt.Fprintf(trace, "trace: client sending call request to %q\n", u)
@@ -175,6 +181,9 @@ func (call *GetSchemas) Do(ctx context.Context) (**resource.ListResponse, error)
 		return nil, fmt.Errorf("failed to build request: %w", err)
 	}
 	trace := call.trace
+	if trace == nil {
+		trace = call.client.trace
+	}
 	u := call.makeURL()
 	if trace != nil {
 		fmt.Fprintf(trace, "trace: client sending call request to %q\n", u)
@@ -241,6 +250,9 @@ func (call *GetSchema) Do(ctx context.Context) (**resource.Schema, error) {
 		return nil, fmt.Errorf("failed to build request: %w", err)
 	}
 	trace := call.trace
+	if trace == nil {
+		trace = call.client.trace
+	}
 	u := call.makeURL()
 	if trace != nil {
 		fmt.Fprintf(trace, "trace: client sending call request to %q\n", u)

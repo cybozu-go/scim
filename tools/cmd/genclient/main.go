@@ -406,6 +406,9 @@ func generateCall(o *codegen.Output, svc Service, call *codegen.Object, resource
 		o.R("\n")
 	}
 	o.L(`trace := call.trace`)
+	o.L(`if trace == nil {`)
+	o.L(`trace = call.client.trace`)
+	o.L(`}`)
 	o.L(`u := call.makeURL()`)
 	o.L(`if trace != nil {`)
 	o.L(`fmt.Fprintf(trace, "trace: client sending call request to %%q\n", u)`)

@@ -6,6 +6,10 @@ import (
 	"github.com/google/uuid"
 )
 
+type Group struct {
+	ent.Schema
+}
+
 func (Group) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("displayName").Optional(),

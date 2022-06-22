@@ -93,6 +93,9 @@ func (call *GetUserCall) Do(ctx context.Context) (*resource.User, error) {
 	}
 
 	trace := call.trace
+	if trace == nil {
+		trace = call.client.trace
+	}
 	u := call.makeURL()
 	if trace != nil {
 		fmt.Fprintf(trace, "trace: client sending call request to %q\n", u)
@@ -257,7 +260,7 @@ func (call *CreateUserCall) ProfileURL(v string) *CreateUserCall {
 	return call
 }
 
-func (call *CreateUserCall) Roles(v ...string) *CreateUserCall {
+func (call *CreateUserCall) Roles(v ...*resource.Role) *CreateUserCall {
 	call.builder.Roles(v...)
 	return call
 }
@@ -317,6 +320,9 @@ func (call *CreateUserCall) Do(ctx context.Context) (*resource.User, error) {
 	}
 
 	trace := call.trace
+	if trace == nil {
+		trace = call.client.trace
+	}
 	u := call.makeURL()
 	if trace != nil {
 		fmt.Fprintf(trace, "trace: client sending call request to %q\n", u)
@@ -471,7 +477,7 @@ func (call *ReplaceUserCall) ProfileURL(v string) *ReplaceUserCall {
 	return call
 }
 
-func (call *ReplaceUserCall) Roles(v ...string) *ReplaceUserCall {
+func (call *ReplaceUserCall) Roles(v ...*resource.Role) *ReplaceUserCall {
 	call.builder.Roles(v...)
 	return call
 }
@@ -531,6 +537,9 @@ func (call *ReplaceUserCall) Do(ctx context.Context) (*resource.User, error) {
 	}
 
 	trace := call.trace
+	if trace == nil {
+		trace = call.client.trace
+	}
 	u := call.makeURL()
 	if trace != nil {
 		fmt.Fprintf(trace, "trace: client sending call request to %q\n", u)
@@ -698,7 +707,7 @@ func (call *DeleteUserCall) ProfileURL(v string) *DeleteUserCall {
 	return call
 }
 
-func (call *DeleteUserCall) Roles(v ...string) *DeleteUserCall {
+func (call *DeleteUserCall) Roles(v ...*resource.Role) *DeleteUserCall {
 	call.builder.Roles(v...)
 	return call
 }
@@ -747,6 +756,9 @@ func (call *DeleteUserCall) Do(ctx context.Context) error {
 	}
 
 	trace := call.trace
+	if trace == nil {
+		trace = call.client.trace
+	}
 	u := call.makeURL()
 	if trace != nil {
 		fmt.Fprintf(trace, "trace: client sending call request to %q\n", u)
@@ -899,6 +911,9 @@ func (call *SearchUserCall) Do(ctx context.Context) (*resource.ListResponse, err
 	}
 
 	trace := call.trace
+	if trace == nil {
+		trace = call.client.trace
+	}
 	u := call.makeURL()
 	if trace != nil {
 		fmt.Fprintf(trace, "trace: client sending call request to %q\n", u)

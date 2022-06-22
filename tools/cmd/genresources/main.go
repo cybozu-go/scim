@@ -15,7 +15,10 @@ import (
 	"github.com/lestrrat-go/xstrings"
 )
 
+var objects map[string]*codegen.Object
+
 func main() {
+	objects = make(map[string]*codegen.Object)
 	if err := _main(); err != nil {
 		log.Printf("%s", err)
 		os.Exit(1)
@@ -77,12 +80,17 @@ func _main() error {
 
 		object.Organize()
 
+		objects[object.Name(true)] = object
+	}
+
+	for _, object := range def.Objects {
+
 		if err := generateObject(object); err != nil {
 			return fmt.Errorf(`failed to generate object: %s`, err)
 		}
 
 		if err := generateEnt(object); err != nil {
-			return fmt.Errorf(`faile dto generate ent adapter: %s`, err)
+			return fmt.Errorf(`failed to generate ent adapter: %s`, err)
 		}
 	}
 
@@ -528,7 +536,7 @@ func generateEnt(object *codegen.Object) error {
 	// for the time being, only generate for hardcoded objects.
 	// later, move this definition to objects.yml
 	switch object.Name(true) {
-	case `User`, `Group`, `Email`, `Names`:
+	case `User`, `Group`, `Email`, `Names`, `Role`:
 	default:
 		return nil
 	}
@@ -545,11 +553,33 @@ func generateEnt(object *codegen.Object) error {
 	return nil
 }
 
+func singularName(s string) string {
+	s2 := strings.Replace(s, `ddresses`, `ddress`, 1)
+	if s != s2 {
+		s = s2
+	} else {
+		if s[len(s)-1] == 's' {
+			s = s[:len(s)-1]
+		}
+	}
+	return s
+}
+
+func relationFilename(s string) string {
+	s = xstrings.Snake(s)
+	s = strings.Replace(s, `x_509`, `x509`, 1)
+	return singularName(s)
+}
+
 func generateSchema(object *codegen.Object) error {
 	var buf bytes.Buffer
 	o := codegen.NewOutput(&buf)
 
 	o.L(`package schema`)
+
+	o.LL(`type %s struct {`, object.Name(true))
+	o.L(`ent.Schema`)
+	o.L(`}`)
 
 	o.LL(`func (%s) Fields() []ent.Field {`, object.Name(true))
 	o.L(`return []ent.Field{`)
@@ -558,7 +588,47 @@ func generateSchema(object *codegen.Object) error {
 			continue
 		}
 
-		var ft = field.Type()
+		ft := field.Type()
+		/*
+			if ft == `[]string` {
+				switch field.Name(true) {
+				case `Groups`, `Addresses`, `IMS`, `X509Certificates`:
+					continue
+				default:
+				}
+
+				// If this is a simple one-to-many, we can just generate the schema
+				var o2buf bytes.Buffer
+				o2 := codegen.NewOutput(&o2buf)
+				structName := singularName(field.Name(true))
+				o2.L(`package schema`)
+				o2.LL(`type %s struct {`, structName)
+				o2.L(`ent.Schema`)
+				o2.L(`}`)
+				o2.LL(`func (%s) Fields() []ent.Field {`, structName)
+				o2.L(`return []ent.Field{`)
+				o2.L(`field.String("value"),`)
+				o2.L(`field.String("display"),`)
+				o2.L(`field.String("type"),`)
+				o2.L(`field.Bool("primary"),`)
+				o2.L(`}`)
+				o2.L(`}`)
+				o2.LL(`func (%s) Edges() []ent.Edge {`, structName)
+				o2.L(`return []ent.Edge{`)
+				o2.L(`edge.To("user", User.Type).Unique(),`)
+				o2.L(`}`)
+				o2.L(`}`)
+
+				fn := fmt.Sprintf(`../sample/ent/schema/%s_gen.go`, relationFilename(field.Name(false)))
+				if err := o2.WriteFile(fn, codegen.WithFormatCode(true)); err != nil {
+					if cfe, ok := err.(codegen.CodeFormatError); ok {
+						fmt.Fprint(os.Stderr, cfe.Source())
+					}
+					return fmt.Errorf(`failed to write to %s: %w`, fn, err)
+				}
+				continue
+			}
+		*/
 		if strings.HasPrefix(ft, `[]`) || strings.HasPrefix(ft, `*`) {
 			continue
 		}
@@ -796,27 +866,57 @@ func generateUtilities(object *codegen.Object) error {
 		{Name: `Contains`, Method: `Contains`},
 		{Name: `Equals`, Method: `EQ`},
 	} {
-		o.LL(`func %s%sPredicate(scimField string, val string) predicate.%s {`, object.Name(false), pred.Name, object.Name(true))
-		o.L(`switch scimField {`)
+		o.LL(`func %[1]s%[2]sPredicate(q *ent.%[3]sQuery, scimField string, val interface{}) (predicate.%[3]s, error) {`, object.Name(false), pred.Name, object.Name(true))
+		// The scim field may either be a flat (simple) field or a nested field.
+		o.L(`field, subfield, err := splitScimField(scimField)`)
+		o.L(`if err != nil {`)
+		o.L(`return nil, err`)
+		o.L(`}`)
+		o.L(`_ = subfield // TODO: remove later`)
+
+		o.L(`switch field {`)
 		for _, field := range object.Fields() {
 			switch field.Name(false) {
 			case `schemas`:
 				continue
 			default:
 			}
-			if field.Type() != "string" {
-				continue
+
+			switch field.Type() {
+			// predicates against a list actually means "... if any of the values match"
+			// so things like `roles.value eq "foo"` means `if any of the role.value is equal to "foo"`
+			case "[]*Role", "[]*Email":
+				o.L(`case resource.%s%sKey:`, object.Name(true), field.Name(true))
+				// It's going to be a relation, so add a query that goes into the separate entity
+				o.L(`switch subfield {`)
+
+				// TODO don't hardcode
+				// We know at this point that this type is something like []*Foo, so extract the Foo
+				// and get the object definition
+				subObjectName := strings.TrimPrefix(field.Type(), `[]*`)
+				subObject, ok := objects[subObjectName]
+				if !ok {
+					return fmt.Errorf(`could not find object %q`, subObjectName)
+				}
+				for _, subField := range subObject.Fields() {
+					o.L(`case %q:`, subField.Name(false))
+					o.L(`return %s.Has%sWith(%s.%sEQ(val.(%s))), nil`, object.Name(false), field.Name(true), strings.ToLower(singularName(field.Name(false))), subField.Name(true), subField.Type())
+				}
+				o.L(`default:`)
+				o.L(`return nil, fmt.Errorf("invalid filter specification: invalid subfield for %%q", field)`)
+				o.L(`}`)
+			case "string":
+				o.L(`case resource.%s%sKey:`, object.Name(true), field.Name(true))
+				// We can't just use ${Field}HasPrefix here, because we're going to
+				// receive the field name as a parameter
+				o.L(`entFieldName := %sEntFieldFromSCIM(scimField)`, object.Name(true))
+				o.L(`return predicate.%[1]s(func(s *sql.Selector) {`, object.Name(true))
+				o.L(`s.Where(sql.%s(s.C(entFieldName), val.(%s)))`, pred.Method, field.Type())
+				o.L(`}), nil`)
 			}
-			o.L(`case resource.%s%sKey:`, object.Name(true), field.Name(true))
-			// We can't just use ${Field}HasPrefix here, because we're going to
-			// receive the field name as a parameter
-			o.L(`entFieldName := %sEntFieldFromSCIM(scimField)`, object.Name(true))
-			o.L(`return predicate.%[1]s(func(s *sql.Selector) {`, object.Name(true))
-			o.L(`s.Where(sql.%s(s.C(entFieldName), val))`, pred.Method)
-			o.L(`})`)
 		}
 		o.L(`default:`)
-		o.L(`return nil`)
+		o.L(`return nil, fmt.Errorf("invalid filter field specification")`)
 		o.L(`}`)
 		o.L(`}`)
 	}

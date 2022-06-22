@@ -5,6 +5,10 @@ import (
 	"entgo.io/ent/schema/field"
 )
 
+type Email struct {
+	ent.Schema
+}
+
 func (Email) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("display").Optional(),

@@ -9,9 +9,14 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/cybozu-go/scim/sample/ent/email"
+	"github.com/cybozu-go/scim/sample/ent/entitlement"
 	"github.com/cybozu-go/scim/sample/ent/group"
+	"github.com/cybozu-go/scim/sample/ent/ims"
 	"github.com/cybozu-go/scim/sample/ent/names"
+	"github.com/cybozu-go/scim/sample/ent/phonenumber"
+	"github.com/cybozu-go/scim/sample/ent/role"
 	"github.com/cybozu-go/scim/sample/ent/user"
+	"github.com/cybozu-go/scim/sample/ent/x509certificate"
 )
 
 // ent aliases to avoid import conflicts in user's code.
@@ -32,10 +37,15 @@ type OrderFunc func(*sql.Selector)
 // columnChecker returns a function indicates if the column exists in the given column.
 func columnChecker(table string) func(string) error {
 	checks := map[string]func(string) bool{
-		email.Table: email.ValidColumn,
-		group.Table: group.ValidColumn,
-		names.Table: names.ValidColumn,
-		user.Table:  user.ValidColumn,
+		email.Table:           email.ValidColumn,
+		entitlement.Table:     entitlement.ValidColumn,
+		group.Table:           group.ValidColumn,
+		ims.Table:             ims.ValidColumn,
+		names.Table:           names.ValidColumn,
+		phonenumber.Table:     phonenumber.ValidColumn,
+		role.Table:            role.ValidColumn,
+		user.Table:            user.ValidColumn,
+		x509certificate.Table: x509certificate.ValidColumn,
 	}
 	check, ok := checks[table]
 	if !ok {

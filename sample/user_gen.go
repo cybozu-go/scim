@@ -7,7 +7,9 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/cybozu-go/scim/resource"
 	"github.com/cybozu-go/scim/sample/ent"
+	"github.com/cybozu-go/scim/sample/ent/email"
 	"github.com/cybozu-go/scim/sample/ent/predicate"
+	"github.com/cybozu-go/scim/sample/ent/role"
 	"github.com/cybozu-go/scim/sample/ent/user"
 )
 
@@ -165,271 +167,395 @@ func UserEntFieldFromSCIM(s string) string {
 	}
 }
 
-func userStartsWithPredicate(scimField string, val string) predicate.User {
-	switch scimField {
+func userStartsWithPredicate(q *ent.UserQuery, scimField string, val interface{}) (predicate.User, error) {
+	field, subfield, err := splitScimField(scimField)
+	if err != nil {
+		return nil, err
+	}
+	_ = subfield // TODO: remove later
+	switch field {
 	case resource.UserDisplayNameKey:
 		entFieldName := UserEntFieldFromSCIM(scimField)
 		return predicate.User(func(s *sql.Selector) {
-			s.Where(sql.HasPrefix(s.C(entFieldName), val))
-		})
+			s.Where(sql.HasPrefix(s.C(entFieldName), val.(string)))
+		}), nil
+	case resource.UserEmailsKey:
+		switch subfield {
+		case "display":
+			return user.HasEmailsWith(email.DisplayEQ(val.(string))), nil
+		case "primary":
+			return user.HasEmailsWith(email.PrimaryEQ(val.(bool))), nil
+		case "typ":
+			return user.HasEmailsWith(email.TypeEQ(val.(string))), nil
+		case "value":
+			return user.HasEmailsWith(email.ValueEQ(val.(string))), nil
+		default:
+			return nil, fmt.Errorf("invalid filter specification: invalid subfield for %q", field)
+		}
 	case resource.UserExternalIDKey:
 		entFieldName := UserEntFieldFromSCIM(scimField)
 		return predicate.User(func(s *sql.Selector) {
-			s.Where(sql.HasPrefix(s.C(entFieldName), val))
-		})
+			s.Where(sql.HasPrefix(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.UserIDKey:
 		entFieldName := UserEntFieldFromSCIM(scimField)
 		return predicate.User(func(s *sql.Selector) {
-			s.Where(sql.HasPrefix(s.C(entFieldName), val))
-		})
+			s.Where(sql.HasPrefix(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.UserLocaleKey:
 		entFieldName := UserEntFieldFromSCIM(scimField)
 		return predicate.User(func(s *sql.Selector) {
-			s.Where(sql.HasPrefix(s.C(entFieldName), val))
-		})
+			s.Where(sql.HasPrefix(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.UserNickNameKey:
 		entFieldName := UserEntFieldFromSCIM(scimField)
 		return predicate.User(func(s *sql.Selector) {
-			s.Where(sql.HasPrefix(s.C(entFieldName), val))
-		})
+			s.Where(sql.HasPrefix(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.UserPasswordKey:
 		entFieldName := UserEntFieldFromSCIM(scimField)
 		return predicate.User(func(s *sql.Selector) {
-			s.Where(sql.HasPrefix(s.C(entFieldName), val))
-		})
+			s.Where(sql.HasPrefix(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.UserPreferredLanguageKey:
 		entFieldName := UserEntFieldFromSCIM(scimField)
 		return predicate.User(func(s *sql.Selector) {
-			s.Where(sql.HasPrefix(s.C(entFieldName), val))
-		})
+			s.Where(sql.HasPrefix(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.UserProfileURLKey:
 		entFieldName := UserEntFieldFromSCIM(scimField)
 		return predicate.User(func(s *sql.Selector) {
-			s.Where(sql.HasPrefix(s.C(entFieldName), val))
-		})
+			s.Where(sql.HasPrefix(s.C(entFieldName), val.(string)))
+		}), nil
+	case resource.UserRolesKey:
+		switch subfield {
+		case "display":
+			return user.HasRolesWith(role.DisplayEQ(val.(string))), nil
+		case "primary":
+			return user.HasRolesWith(role.PrimaryEQ(val.(bool))), nil
+		case "typ":
+			return user.HasRolesWith(role.TypeEQ(val.(string))), nil
+		case "value":
+			return user.HasRolesWith(role.ValueEQ(val.(string))), nil
+		default:
+			return nil, fmt.Errorf("invalid filter specification: invalid subfield for %q", field)
+		}
 	case resource.UserTimezoneKey:
 		entFieldName := UserEntFieldFromSCIM(scimField)
 		return predicate.User(func(s *sql.Selector) {
-			s.Where(sql.HasPrefix(s.C(entFieldName), val))
-		})
+			s.Where(sql.HasPrefix(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.UserTitleKey:
 		entFieldName := UserEntFieldFromSCIM(scimField)
 		return predicate.User(func(s *sql.Selector) {
-			s.Where(sql.HasPrefix(s.C(entFieldName), val))
-		})
+			s.Where(sql.HasPrefix(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.UserUserNameKey:
 		entFieldName := UserEntFieldFromSCIM(scimField)
 		return predicate.User(func(s *sql.Selector) {
-			s.Where(sql.HasPrefix(s.C(entFieldName), val))
-		})
+			s.Where(sql.HasPrefix(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.UserUserTypeKey:
 		entFieldName := UserEntFieldFromSCIM(scimField)
 		return predicate.User(func(s *sql.Selector) {
-			s.Where(sql.HasPrefix(s.C(entFieldName), val))
-		})
+			s.Where(sql.HasPrefix(s.C(entFieldName), val.(string)))
+		}), nil
 	default:
-		return nil
+		return nil, fmt.Errorf("invalid filter field specification")
 	}
 }
 
-func userEndsWithPredicate(scimField string, val string) predicate.User {
-	switch scimField {
+func userEndsWithPredicate(q *ent.UserQuery, scimField string, val interface{}) (predicate.User, error) {
+	field, subfield, err := splitScimField(scimField)
+	if err != nil {
+		return nil, err
+	}
+	_ = subfield // TODO: remove later
+	switch field {
 	case resource.UserDisplayNameKey:
 		entFieldName := UserEntFieldFromSCIM(scimField)
 		return predicate.User(func(s *sql.Selector) {
-			s.Where(sql.HasSuffix(s.C(entFieldName), val))
-		})
+			s.Where(sql.HasSuffix(s.C(entFieldName), val.(string)))
+		}), nil
+	case resource.UserEmailsKey:
+		switch subfield {
+		case "display":
+			return user.HasEmailsWith(email.DisplayEQ(val.(string))), nil
+		case "primary":
+			return user.HasEmailsWith(email.PrimaryEQ(val.(bool))), nil
+		case "typ":
+			return user.HasEmailsWith(email.TypeEQ(val.(string))), nil
+		case "value":
+			return user.HasEmailsWith(email.ValueEQ(val.(string))), nil
+		default:
+			return nil, fmt.Errorf("invalid filter specification: invalid subfield for %q", field)
+		}
 	case resource.UserExternalIDKey:
 		entFieldName := UserEntFieldFromSCIM(scimField)
 		return predicate.User(func(s *sql.Selector) {
-			s.Where(sql.HasSuffix(s.C(entFieldName), val))
-		})
+			s.Where(sql.HasSuffix(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.UserIDKey:
 		entFieldName := UserEntFieldFromSCIM(scimField)
 		return predicate.User(func(s *sql.Selector) {
-			s.Where(sql.HasSuffix(s.C(entFieldName), val))
-		})
+			s.Where(sql.HasSuffix(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.UserLocaleKey:
 		entFieldName := UserEntFieldFromSCIM(scimField)
 		return predicate.User(func(s *sql.Selector) {
-			s.Where(sql.HasSuffix(s.C(entFieldName), val))
-		})
+			s.Where(sql.HasSuffix(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.UserNickNameKey:
 		entFieldName := UserEntFieldFromSCIM(scimField)
 		return predicate.User(func(s *sql.Selector) {
-			s.Where(sql.HasSuffix(s.C(entFieldName), val))
-		})
+			s.Where(sql.HasSuffix(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.UserPasswordKey:
 		entFieldName := UserEntFieldFromSCIM(scimField)
 		return predicate.User(func(s *sql.Selector) {
-			s.Where(sql.HasSuffix(s.C(entFieldName), val))
-		})
+			s.Where(sql.HasSuffix(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.UserPreferredLanguageKey:
 		entFieldName := UserEntFieldFromSCIM(scimField)
 		return predicate.User(func(s *sql.Selector) {
-			s.Where(sql.HasSuffix(s.C(entFieldName), val))
-		})
+			s.Where(sql.HasSuffix(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.UserProfileURLKey:
 		entFieldName := UserEntFieldFromSCIM(scimField)
 		return predicate.User(func(s *sql.Selector) {
-			s.Where(sql.HasSuffix(s.C(entFieldName), val))
-		})
+			s.Where(sql.HasSuffix(s.C(entFieldName), val.(string)))
+		}), nil
+	case resource.UserRolesKey:
+		switch subfield {
+		case "display":
+			return user.HasRolesWith(role.DisplayEQ(val.(string))), nil
+		case "primary":
+			return user.HasRolesWith(role.PrimaryEQ(val.(bool))), nil
+		case "typ":
+			return user.HasRolesWith(role.TypeEQ(val.(string))), nil
+		case "value":
+			return user.HasRolesWith(role.ValueEQ(val.(string))), nil
+		default:
+			return nil, fmt.Errorf("invalid filter specification: invalid subfield for %q", field)
+		}
 	case resource.UserTimezoneKey:
 		entFieldName := UserEntFieldFromSCIM(scimField)
 		return predicate.User(func(s *sql.Selector) {
-			s.Where(sql.HasSuffix(s.C(entFieldName), val))
-		})
+			s.Where(sql.HasSuffix(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.UserTitleKey:
 		entFieldName := UserEntFieldFromSCIM(scimField)
 		return predicate.User(func(s *sql.Selector) {
-			s.Where(sql.HasSuffix(s.C(entFieldName), val))
-		})
+			s.Where(sql.HasSuffix(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.UserUserNameKey:
 		entFieldName := UserEntFieldFromSCIM(scimField)
 		return predicate.User(func(s *sql.Selector) {
-			s.Where(sql.HasSuffix(s.C(entFieldName), val))
-		})
+			s.Where(sql.HasSuffix(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.UserUserTypeKey:
 		entFieldName := UserEntFieldFromSCIM(scimField)
 		return predicate.User(func(s *sql.Selector) {
-			s.Where(sql.HasSuffix(s.C(entFieldName), val))
-		})
+			s.Where(sql.HasSuffix(s.C(entFieldName), val.(string)))
+		}), nil
 	default:
-		return nil
+		return nil, fmt.Errorf("invalid filter field specification")
 	}
 }
 
-func userContainsPredicate(scimField string, val string) predicate.User {
-	switch scimField {
+func userContainsPredicate(q *ent.UserQuery, scimField string, val interface{}) (predicate.User, error) {
+	field, subfield, err := splitScimField(scimField)
+	if err != nil {
+		return nil, err
+	}
+	_ = subfield // TODO: remove later
+	switch field {
 	case resource.UserDisplayNameKey:
 		entFieldName := UserEntFieldFromSCIM(scimField)
 		return predicate.User(func(s *sql.Selector) {
-			s.Where(sql.Contains(s.C(entFieldName), val))
-		})
+			s.Where(sql.Contains(s.C(entFieldName), val.(string)))
+		}), nil
+	case resource.UserEmailsKey:
+		switch subfield {
+		case "display":
+			return user.HasEmailsWith(email.DisplayEQ(val.(string))), nil
+		case "primary":
+			return user.HasEmailsWith(email.PrimaryEQ(val.(bool))), nil
+		case "typ":
+			return user.HasEmailsWith(email.TypeEQ(val.(string))), nil
+		case "value":
+			return user.HasEmailsWith(email.ValueEQ(val.(string))), nil
+		default:
+			return nil, fmt.Errorf("invalid filter specification: invalid subfield for %q", field)
+		}
 	case resource.UserExternalIDKey:
 		entFieldName := UserEntFieldFromSCIM(scimField)
 		return predicate.User(func(s *sql.Selector) {
-			s.Where(sql.Contains(s.C(entFieldName), val))
-		})
+			s.Where(sql.Contains(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.UserIDKey:
 		entFieldName := UserEntFieldFromSCIM(scimField)
 		return predicate.User(func(s *sql.Selector) {
-			s.Where(sql.Contains(s.C(entFieldName), val))
-		})
+			s.Where(sql.Contains(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.UserLocaleKey:
 		entFieldName := UserEntFieldFromSCIM(scimField)
 		return predicate.User(func(s *sql.Selector) {
-			s.Where(sql.Contains(s.C(entFieldName), val))
-		})
+			s.Where(sql.Contains(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.UserNickNameKey:
 		entFieldName := UserEntFieldFromSCIM(scimField)
 		return predicate.User(func(s *sql.Selector) {
-			s.Where(sql.Contains(s.C(entFieldName), val))
-		})
+			s.Where(sql.Contains(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.UserPasswordKey:
 		entFieldName := UserEntFieldFromSCIM(scimField)
 		return predicate.User(func(s *sql.Selector) {
-			s.Where(sql.Contains(s.C(entFieldName), val))
-		})
+			s.Where(sql.Contains(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.UserPreferredLanguageKey:
 		entFieldName := UserEntFieldFromSCIM(scimField)
 		return predicate.User(func(s *sql.Selector) {
-			s.Where(sql.Contains(s.C(entFieldName), val))
-		})
+			s.Where(sql.Contains(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.UserProfileURLKey:
 		entFieldName := UserEntFieldFromSCIM(scimField)
 		return predicate.User(func(s *sql.Selector) {
-			s.Where(sql.Contains(s.C(entFieldName), val))
-		})
+			s.Where(sql.Contains(s.C(entFieldName), val.(string)))
+		}), nil
+	case resource.UserRolesKey:
+		switch subfield {
+		case "display":
+			return user.HasRolesWith(role.DisplayEQ(val.(string))), nil
+		case "primary":
+			return user.HasRolesWith(role.PrimaryEQ(val.(bool))), nil
+		case "typ":
+			return user.HasRolesWith(role.TypeEQ(val.(string))), nil
+		case "value":
+			return user.HasRolesWith(role.ValueEQ(val.(string))), nil
+		default:
+			return nil, fmt.Errorf("invalid filter specification: invalid subfield for %q", field)
+		}
 	case resource.UserTimezoneKey:
 		entFieldName := UserEntFieldFromSCIM(scimField)
 		return predicate.User(func(s *sql.Selector) {
-			s.Where(sql.Contains(s.C(entFieldName), val))
-		})
+			s.Where(sql.Contains(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.UserTitleKey:
 		entFieldName := UserEntFieldFromSCIM(scimField)
 		return predicate.User(func(s *sql.Selector) {
-			s.Where(sql.Contains(s.C(entFieldName), val))
-		})
+			s.Where(sql.Contains(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.UserUserNameKey:
 		entFieldName := UserEntFieldFromSCIM(scimField)
 		return predicate.User(func(s *sql.Selector) {
-			s.Where(sql.Contains(s.C(entFieldName), val))
-		})
+			s.Where(sql.Contains(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.UserUserTypeKey:
 		entFieldName := UserEntFieldFromSCIM(scimField)
 		return predicate.User(func(s *sql.Selector) {
-			s.Where(sql.Contains(s.C(entFieldName), val))
-		})
+			s.Where(sql.Contains(s.C(entFieldName), val.(string)))
+		}), nil
 	default:
-		return nil
+		return nil, fmt.Errorf("invalid filter field specification")
 	}
 }
 
-func userEqualsPredicate(scimField string, val string) predicate.User {
-	switch scimField {
+func userEqualsPredicate(q *ent.UserQuery, scimField string, val interface{}) (predicate.User, error) {
+	field, subfield, err := splitScimField(scimField)
+	if err != nil {
+		return nil, err
+	}
+	_ = subfield // TODO: remove later
+	switch field {
 	case resource.UserDisplayNameKey:
 		entFieldName := UserEntFieldFromSCIM(scimField)
 		return predicate.User(func(s *sql.Selector) {
-			s.Where(sql.EQ(s.C(entFieldName), val))
-		})
+			s.Where(sql.EQ(s.C(entFieldName), val.(string)))
+		}), nil
+	case resource.UserEmailsKey:
+		switch subfield {
+		case "display":
+			return user.HasEmailsWith(email.DisplayEQ(val.(string))), nil
+		case "primary":
+			return user.HasEmailsWith(email.PrimaryEQ(val.(bool))), nil
+		case "typ":
+			return user.HasEmailsWith(email.TypeEQ(val.(string))), nil
+		case "value":
+			return user.HasEmailsWith(email.ValueEQ(val.(string))), nil
+		default:
+			return nil, fmt.Errorf("invalid filter specification: invalid subfield for %q", field)
+		}
 	case resource.UserExternalIDKey:
 		entFieldName := UserEntFieldFromSCIM(scimField)
 		return predicate.User(func(s *sql.Selector) {
-			s.Where(sql.EQ(s.C(entFieldName), val))
-		})
+			s.Where(sql.EQ(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.UserIDKey:
 		entFieldName := UserEntFieldFromSCIM(scimField)
 		return predicate.User(func(s *sql.Selector) {
-			s.Where(sql.EQ(s.C(entFieldName), val))
-		})
+			s.Where(sql.EQ(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.UserLocaleKey:
 		entFieldName := UserEntFieldFromSCIM(scimField)
 		return predicate.User(func(s *sql.Selector) {
-			s.Where(sql.EQ(s.C(entFieldName), val))
-		})
+			s.Where(sql.EQ(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.UserNickNameKey:
 		entFieldName := UserEntFieldFromSCIM(scimField)
 		return predicate.User(func(s *sql.Selector) {
-			s.Where(sql.EQ(s.C(entFieldName), val))
-		})
+			s.Where(sql.EQ(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.UserPasswordKey:
 		entFieldName := UserEntFieldFromSCIM(scimField)
 		return predicate.User(func(s *sql.Selector) {
-			s.Where(sql.EQ(s.C(entFieldName), val))
-		})
+			s.Where(sql.EQ(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.UserPreferredLanguageKey:
 		entFieldName := UserEntFieldFromSCIM(scimField)
 		return predicate.User(func(s *sql.Selector) {
-			s.Where(sql.EQ(s.C(entFieldName), val))
-		})
+			s.Where(sql.EQ(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.UserProfileURLKey:
 		entFieldName := UserEntFieldFromSCIM(scimField)
 		return predicate.User(func(s *sql.Selector) {
-			s.Where(sql.EQ(s.C(entFieldName), val))
-		})
+			s.Where(sql.EQ(s.C(entFieldName), val.(string)))
+		}), nil
+	case resource.UserRolesKey:
+		switch subfield {
+		case "display":
+			return user.HasRolesWith(role.DisplayEQ(val.(string))), nil
+		case "primary":
+			return user.HasRolesWith(role.PrimaryEQ(val.(bool))), nil
+		case "typ":
+			return user.HasRolesWith(role.TypeEQ(val.(string))), nil
+		case "value":
+			return user.HasRolesWith(role.ValueEQ(val.(string))), nil
+		default:
+			return nil, fmt.Errorf("invalid filter specification: invalid subfield for %q", field)
+		}
 	case resource.UserTimezoneKey:
 		entFieldName := UserEntFieldFromSCIM(scimField)
 		return predicate.User(func(s *sql.Selector) {
-			s.Where(sql.EQ(s.C(entFieldName), val))
-		})
+			s.Where(sql.EQ(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.UserTitleKey:
 		entFieldName := UserEntFieldFromSCIM(scimField)
 		return predicate.User(func(s *sql.Selector) {
-			s.Where(sql.EQ(s.C(entFieldName), val))
-		})
+			s.Where(sql.EQ(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.UserUserNameKey:
 		entFieldName := UserEntFieldFromSCIM(scimField)
 		return predicate.User(func(s *sql.Selector) {
-			s.Where(sql.EQ(s.C(entFieldName), val))
-		})
+			s.Where(sql.EQ(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.UserUserTypeKey:
 		entFieldName := UserEntFieldFromSCIM(scimField)
 		return predicate.User(func(s *sql.Selector) {
-			s.Where(sql.EQ(s.C(entFieldName), val))
-		})
+			s.Where(sql.EQ(s.C(entFieldName), val.(string)))
+		}), nil
 	default:
-		return nil
+		return nil, fmt.Errorf("invalid filter field specification")
 	}
 }
 

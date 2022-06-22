@@ -90,6 +90,9 @@ func (call *GetGroupCall) Do(ctx context.Context) (*resource.Group, error) {
 	}
 
 	trace := call.trace
+	if trace == nil {
+		trace = call.client.trace
+	}
 	u := call.makeURL()
 	if trace != nil {
 		fmt.Fprintf(trace, "trace: client sending call request to %q\n", u)
@@ -227,6 +230,9 @@ func (call *CreateGroupCall) Do(ctx context.Context) (*resource.Group, error) {
 	}
 
 	trace := call.trace
+	if trace == nil {
+		trace = call.client.trace
+	}
 	u := call.makeURL()
 	if trace != nil {
 		fmt.Fprintf(trace, "trace: client sending call request to %q\n", u)
@@ -354,6 +360,9 @@ func (call *ReplaceGroupCall) Do(ctx context.Context) (*resource.Group, error) {
 	}
 
 	trace := call.trace
+	if trace == nil {
+		trace = call.client.trace
+	}
 	u := call.makeURL()
 	if trace != nil {
 		fmt.Fprintf(trace, "trace: client sending call request to %q\n", u)
@@ -480,6 +489,9 @@ func (call *DeleteGroupCall) Do(ctx context.Context) error {
 	}
 
 	trace := call.trace
+	if trace == nil {
+		trace = call.client.trace
+	}
 	u := call.makeURL()
 	if trace != nil {
 		fmt.Fprintf(trace, "trace: client sending call request to %q\n", u)
@@ -632,6 +644,9 @@ func (call *SearchGroupCall) Do(ctx context.Context) (*resource.ListResponse, er
 	}
 
 	trace := call.trace
+	if trace == nil {
+		trace = call.client.trace
+	}
 	u := call.makeURL()
 	if trace != nil {
 		fmt.Fprintf(trace, "trace: client sending call request to %q\n", u)

@@ -54,6 +54,6 @@ func WithClient(v *http.Client) NewOption {
 
 // WithTrace allows users to specify a destination to write out the
 // details of a request
-func WithTrace(v io.Writer) RequestOption {
-	return &requestOption{option.New(identTrace{}, v)}
+func WithTrace(v io.Writer) NewOption {
+	return &newOption{option.New(identTrace{}, v)}
 }

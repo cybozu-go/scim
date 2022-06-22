@@ -5,6 +5,10 @@ import (
 	"entgo.io/ent/schema/field"
 )
 
+type Names struct {
+	ent.Schema
+}
+
 func (Names) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("familyName").Optional(),

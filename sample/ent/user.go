@@ -54,9 +54,17 @@ type UserEdges struct {
 	Emails []*Email `json:"emails,omitempty"`
 	// Name holds the value of the name edge.
 	Name []*Names `json:"name,omitempty"`
+	// Entitlements holds the value of the entitlements edge.
+	Entitlements []*Entitlement `json:"entitlements,omitempty"`
+	// Roles holds the value of the roles edge.
+	Roles []*Role `json:"roles,omitempty"`
+	// Imses holds the value of the imses edge.
+	Imses []*IMS `json:"imses,omitempty"`
+	// PhoneNumbers holds the value of the phone_numbers edge.
+	PhoneNumbers []*PhoneNumber `json:"phone_numbers,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [7]bool
 }
 
 // GroupsOrErr returns the Groups value or an error if the edge
@@ -84,6 +92,42 @@ func (e UserEdges) NameOrErr() ([]*Names, error) {
 		return e.Name, nil
 	}
 	return nil, &NotLoadedError{edge: "name"}
+}
+
+// EntitlementsOrErr returns the Entitlements value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) EntitlementsOrErr() ([]*Entitlement, error) {
+	if e.loadedTypes[3] {
+		return e.Entitlements, nil
+	}
+	return nil, &NotLoadedError{edge: "entitlements"}
+}
+
+// RolesOrErr returns the Roles value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) RolesOrErr() ([]*Role, error) {
+	if e.loadedTypes[4] {
+		return e.Roles, nil
+	}
+	return nil, &NotLoadedError{edge: "roles"}
+}
+
+// ImsesOrErr returns the Imses value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) ImsesOrErr() ([]*IMS, error) {
+	if e.loadedTypes[5] {
+		return e.Imses, nil
+	}
+	return nil, &NotLoadedError{edge: "imses"}
+}
+
+// PhoneNumbersOrErr returns the PhoneNumbers value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) PhoneNumbersOrErr() ([]*PhoneNumber, error) {
+	if e.loadedTypes[6] {
+		return e.PhoneNumbers, nil
+	}
+	return nil, &NotLoadedError{edge: "phone_numbers"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -217,6 +261,26 @@ func (u *User) QueryEmails() *EmailQuery {
 // QueryName queries the "name" edge of the User entity.
 func (u *User) QueryName() *NamesQuery {
 	return (&UserClient{config: u.config}).QueryName(u)
+}
+
+// QueryEntitlements queries the "entitlements" edge of the User entity.
+func (u *User) QueryEntitlements() *EntitlementQuery {
+	return (&UserClient{config: u.config}).QueryEntitlements(u)
+}
+
+// QueryRoles queries the "roles" edge of the User entity.
+func (u *User) QueryRoles() *RoleQuery {
+	return (&UserClient{config: u.config}).QueryRoles(u)
+}
+
+// QueryImses queries the "imses" edge of the User entity.
+func (u *User) QueryImses() *IMSQuery {
+	return (&UserClient{config: u.config}).QueryImses(u)
+}
+
+// QueryPhoneNumbers queries the "phone_numbers" edge of the User entity.
+func (u *User) QueryPhoneNumbers() *PhoneNumberQuery {
+	return (&UserClient{config: u.config}).QueryPhoneNumbers(u)
 }
 
 // Update returns a builder for updating this User.

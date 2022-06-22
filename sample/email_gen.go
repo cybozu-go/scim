@@ -1,6 +1,7 @@
 package sample
 
 import (
+	"fmt"
 	"reflect"
 
 	"entgo.io/ent/dialect/sql"
@@ -44,91 +45,111 @@ func EmailEntFieldFromSCIM(s string) string {
 	}
 }
 
-func emailStartsWithPredicate(scimField string, val string) predicate.Email {
-	switch scimField {
+func emailStartsWithPredicate(q *ent.EmailQuery, scimField string, val interface{}) (predicate.Email, error) {
+	field, subfield, err := splitScimField(scimField)
+	if err != nil {
+		return nil, err
+	}
+	_ = subfield // TODO: remove later
+	switch field {
 	case resource.EmailDisplayKey:
 		entFieldName := EmailEntFieldFromSCIM(scimField)
 		return predicate.Email(func(s *sql.Selector) {
-			s.Where(sql.HasPrefix(s.C(entFieldName), val))
-		})
+			s.Where(sql.HasPrefix(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.EmailTypeKey:
 		entFieldName := EmailEntFieldFromSCIM(scimField)
 		return predicate.Email(func(s *sql.Selector) {
-			s.Where(sql.HasPrefix(s.C(entFieldName), val))
-		})
+			s.Where(sql.HasPrefix(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.EmailValueKey:
 		entFieldName := EmailEntFieldFromSCIM(scimField)
 		return predicate.Email(func(s *sql.Selector) {
-			s.Where(sql.HasPrefix(s.C(entFieldName), val))
-		})
+			s.Where(sql.HasPrefix(s.C(entFieldName), val.(string)))
+		}), nil
 	default:
-		return nil
+		return nil, fmt.Errorf("invalid filter field specification")
 	}
 }
 
-func emailEndsWithPredicate(scimField string, val string) predicate.Email {
-	switch scimField {
+func emailEndsWithPredicate(q *ent.EmailQuery, scimField string, val interface{}) (predicate.Email, error) {
+	field, subfield, err := splitScimField(scimField)
+	if err != nil {
+		return nil, err
+	}
+	_ = subfield // TODO: remove later
+	switch field {
 	case resource.EmailDisplayKey:
 		entFieldName := EmailEntFieldFromSCIM(scimField)
 		return predicate.Email(func(s *sql.Selector) {
-			s.Where(sql.HasSuffix(s.C(entFieldName), val))
-		})
+			s.Where(sql.HasSuffix(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.EmailTypeKey:
 		entFieldName := EmailEntFieldFromSCIM(scimField)
 		return predicate.Email(func(s *sql.Selector) {
-			s.Where(sql.HasSuffix(s.C(entFieldName), val))
-		})
+			s.Where(sql.HasSuffix(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.EmailValueKey:
 		entFieldName := EmailEntFieldFromSCIM(scimField)
 		return predicate.Email(func(s *sql.Selector) {
-			s.Where(sql.HasSuffix(s.C(entFieldName), val))
-		})
+			s.Where(sql.HasSuffix(s.C(entFieldName), val.(string)))
+		}), nil
 	default:
-		return nil
+		return nil, fmt.Errorf("invalid filter field specification")
 	}
 }
 
-func emailContainsPredicate(scimField string, val string) predicate.Email {
-	switch scimField {
+func emailContainsPredicate(q *ent.EmailQuery, scimField string, val interface{}) (predicate.Email, error) {
+	field, subfield, err := splitScimField(scimField)
+	if err != nil {
+		return nil, err
+	}
+	_ = subfield // TODO: remove later
+	switch field {
 	case resource.EmailDisplayKey:
 		entFieldName := EmailEntFieldFromSCIM(scimField)
 		return predicate.Email(func(s *sql.Selector) {
-			s.Where(sql.Contains(s.C(entFieldName), val))
-		})
+			s.Where(sql.Contains(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.EmailTypeKey:
 		entFieldName := EmailEntFieldFromSCIM(scimField)
 		return predicate.Email(func(s *sql.Selector) {
-			s.Where(sql.Contains(s.C(entFieldName), val))
-		})
+			s.Where(sql.Contains(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.EmailValueKey:
 		entFieldName := EmailEntFieldFromSCIM(scimField)
 		return predicate.Email(func(s *sql.Selector) {
-			s.Where(sql.Contains(s.C(entFieldName), val))
-		})
+			s.Where(sql.Contains(s.C(entFieldName), val.(string)))
+		}), nil
 	default:
-		return nil
+		return nil, fmt.Errorf("invalid filter field specification")
 	}
 }
 
-func emailEqualsPredicate(scimField string, val string) predicate.Email {
-	switch scimField {
+func emailEqualsPredicate(q *ent.EmailQuery, scimField string, val interface{}) (predicate.Email, error) {
+	field, subfield, err := splitScimField(scimField)
+	if err != nil {
+		return nil, err
+	}
+	_ = subfield // TODO: remove later
+	switch field {
 	case resource.EmailDisplayKey:
 		entFieldName := EmailEntFieldFromSCIM(scimField)
 		return predicate.Email(func(s *sql.Selector) {
-			s.Where(sql.EQ(s.C(entFieldName), val))
-		})
+			s.Where(sql.EQ(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.EmailTypeKey:
 		entFieldName := EmailEntFieldFromSCIM(scimField)
 		return predicate.Email(func(s *sql.Selector) {
-			s.Where(sql.EQ(s.C(entFieldName), val))
-		})
+			s.Where(sql.EQ(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.EmailValueKey:
 		entFieldName := EmailEntFieldFromSCIM(scimField)
 		return predicate.Email(func(s *sql.Selector) {
-			s.Where(sql.EQ(s.C(entFieldName), val))
-		})
+			s.Where(sql.EQ(s.C(entFieldName), val.(string)))
+		}), nil
 	default:
-		return nil
+		return nil, fmt.Errorf("invalid filter field specification")
 	}
 }
 

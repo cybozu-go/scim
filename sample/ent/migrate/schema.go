@@ -31,6 +31,36 @@ var (
 			},
 		},
 	}
+	// EntitlementsColumns holds the columns for the "entitlements" table.
+	EntitlementsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "value", Type: field.TypeString},
+		{Name: "display", Type: field.TypeString},
+		{Name: "type", Type: field.TypeString},
+		{Name: "primary", Type: field.TypeBool},
+		{Name: "entitlement_user", Type: field.TypeUUID, Nullable: true},
+		{Name: "user_entitlements", Type: field.TypeUUID, Nullable: true},
+	}
+	// EntitlementsTable holds the schema information for the "entitlements" table.
+	EntitlementsTable = &schema.Table{
+		Name:       "entitlements",
+		Columns:    EntitlementsColumns,
+		PrimaryKey: []*schema.Column{EntitlementsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "entitlements_users_user",
+				Columns:    []*schema.Column{EntitlementsColumns[5]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "entitlements_users_entitlements",
+				Columns:    []*schema.Column{EntitlementsColumns[6]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// GroupsColumns holds the columns for the "groups" table.
 	GroupsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -59,6 +89,33 @@ var (
 			},
 		},
 	}
+	// ImSsColumns holds the columns for the "im_ss" table.
+	ImSsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "value", Type: field.TypeString},
+		{Name: "ims_user", Type: field.TypeUUID, Nullable: true},
+		{Name: "user_imses", Type: field.TypeUUID, Nullable: true},
+	}
+	// ImSsTable holds the schema information for the "im_ss" table.
+	ImSsTable = &schema.Table{
+		Name:       "im_ss",
+		Columns:    ImSsColumns,
+		PrimaryKey: []*schema.Column{ImSsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "im_ss_users_user",
+				Columns:    []*schema.Column{ImSsColumns[2]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "im_ss_users_imses",
+				Columns:    []*schema.Column{ImSsColumns[3]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// NamesColumns holds the columns for the "names" table.
 	NamesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -79,6 +136,59 @@ var (
 			{
 				Symbol:     "names_users_name",
 				Columns:    []*schema.Column{NamesColumns[7]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
+	// PhoneNumbersColumns holds the columns for the "phone_numbers" table.
+	PhoneNumbersColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "value", Type: field.TypeString},
+		{Name: "display", Type: field.TypeString},
+		{Name: "type", Type: field.TypeString},
+		{Name: "primary", Type: field.TypeBool},
+		{Name: "phone_number_user", Type: field.TypeUUID, Nullable: true},
+		{Name: "user_phone_numbers", Type: field.TypeUUID, Nullable: true},
+	}
+	// PhoneNumbersTable holds the schema information for the "phone_numbers" table.
+	PhoneNumbersTable = &schema.Table{
+		Name:       "phone_numbers",
+		Columns:    PhoneNumbersColumns,
+		PrimaryKey: []*schema.Column{PhoneNumbersColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "phone_numbers_users_user",
+				Columns:    []*schema.Column{PhoneNumbersColumns[5]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "phone_numbers_users_phone_numbers",
+				Columns:    []*schema.Column{PhoneNumbersColumns[6]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
+	// RolesColumns holds the columns for the "roles" table.
+	RolesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "display", Type: field.TypeString, Nullable: true},
+		{Name: "primary", Type: field.TypeBool, Nullable: true},
+		{Name: "type", Type: field.TypeString, Nullable: true},
+		{Name: "value", Type: field.TypeString},
+		{Name: "user_roles", Type: field.TypeUUID, Nullable: true},
+	}
+	// RolesTable holds the schema information for the "roles" table.
+	RolesTable = &schema.Table{
+		Name:       "roles",
+		Columns:    RolesColumns,
+		PrimaryKey: []*schema.Column{RolesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "roles_users_roles",
+				Columns:    []*schema.Column{RolesColumns[5]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -115,19 +225,52 @@ var (
 			},
 		},
 	}
+	// X509certificatesColumns holds the columns for the "x509certificates" table.
+	X509certificatesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "value", Type: field.TypeString},
+		{Name: "x509certificate_user", Type: field.TypeUUID, Nullable: true},
+	}
+	// X509certificatesTable holds the schema information for the "x509certificates" table.
+	X509certificatesTable = &schema.Table{
+		Name:       "x509certificates",
+		Columns:    X509certificatesColumns,
+		PrimaryKey: []*schema.Column{X509certificatesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "x509certificates_users_user",
+				Columns:    []*schema.Column{X509certificatesColumns[2]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		EmailsTable,
+		EntitlementsTable,
 		GroupsTable,
+		ImSsTable,
 		NamesTable,
+		PhoneNumbersTable,
+		RolesTable,
 		UsersTable,
+		X509certificatesTable,
 	}
 )
 
 func init() {
 	EmailsTable.ForeignKeys[0].RefTable = UsersTable
+	EntitlementsTable.ForeignKeys[0].RefTable = UsersTable
+	EntitlementsTable.ForeignKeys[1].RefTable = UsersTable
 	GroupsTable.ForeignKeys[0].RefTable = GroupsTable
 	GroupsTable.ForeignKeys[1].RefTable = UsersTable
+	ImSsTable.ForeignKeys[0].RefTable = UsersTable
+	ImSsTable.ForeignKeys[1].RefTable = UsersTable
 	NamesTable.ForeignKeys[0].RefTable = UsersTable
+	PhoneNumbersTable.ForeignKeys[0].RefTable = UsersTable
+	PhoneNumbersTable.ForeignKeys[1].RefTable = UsersTable
+	RolesTable.ForeignKeys[0].RefTable = UsersTable
 	UsersTable.ForeignKeys[0].RefTable = GroupsTable
+	X509certificatesTable.ForeignKeys[0].RefTable = UsersTable
 }

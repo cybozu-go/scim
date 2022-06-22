@@ -1,6 +1,7 @@
 package sample
 
 import (
+	"fmt"
 	"reflect"
 
 	"entgo.io/ent/dialect/sql"
@@ -54,151 +55,171 @@ func NamesEntFieldFromSCIM(s string) string {
 	}
 }
 
-func namesStartsWithPredicate(scimField string, val string) predicate.Names {
-	switch scimField {
+func namesStartsWithPredicate(q *ent.NamesQuery, scimField string, val interface{}) (predicate.Names, error) {
+	field, subfield, err := splitScimField(scimField)
+	if err != nil {
+		return nil, err
+	}
+	_ = subfield // TODO: remove later
+	switch field {
 	case resource.NamesFamilyNameKey:
 		entFieldName := NamesEntFieldFromSCIM(scimField)
 		return predicate.Names(func(s *sql.Selector) {
-			s.Where(sql.HasPrefix(s.C(entFieldName), val))
-		})
+			s.Where(sql.HasPrefix(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.NamesFormattedKey:
 		entFieldName := NamesEntFieldFromSCIM(scimField)
 		return predicate.Names(func(s *sql.Selector) {
-			s.Where(sql.HasPrefix(s.C(entFieldName), val))
-		})
+			s.Where(sql.HasPrefix(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.NamesGivenNameKey:
 		entFieldName := NamesEntFieldFromSCIM(scimField)
 		return predicate.Names(func(s *sql.Selector) {
-			s.Where(sql.HasPrefix(s.C(entFieldName), val))
-		})
+			s.Where(sql.HasPrefix(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.NamesHonorificPrefixKey:
 		entFieldName := NamesEntFieldFromSCIM(scimField)
 		return predicate.Names(func(s *sql.Selector) {
-			s.Where(sql.HasPrefix(s.C(entFieldName), val))
-		})
+			s.Where(sql.HasPrefix(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.NamesHonorificSuffixKey:
 		entFieldName := NamesEntFieldFromSCIM(scimField)
 		return predicate.Names(func(s *sql.Selector) {
-			s.Where(sql.HasPrefix(s.C(entFieldName), val))
-		})
+			s.Where(sql.HasPrefix(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.NamesMiddleNameKey:
 		entFieldName := NamesEntFieldFromSCIM(scimField)
 		return predicate.Names(func(s *sql.Selector) {
-			s.Where(sql.HasPrefix(s.C(entFieldName), val))
-		})
+			s.Where(sql.HasPrefix(s.C(entFieldName), val.(string)))
+		}), nil
 	default:
-		return nil
+		return nil, fmt.Errorf("invalid filter field specification")
 	}
 }
 
-func namesEndsWithPredicate(scimField string, val string) predicate.Names {
-	switch scimField {
+func namesEndsWithPredicate(q *ent.NamesQuery, scimField string, val interface{}) (predicate.Names, error) {
+	field, subfield, err := splitScimField(scimField)
+	if err != nil {
+		return nil, err
+	}
+	_ = subfield // TODO: remove later
+	switch field {
 	case resource.NamesFamilyNameKey:
 		entFieldName := NamesEntFieldFromSCIM(scimField)
 		return predicate.Names(func(s *sql.Selector) {
-			s.Where(sql.HasSuffix(s.C(entFieldName), val))
-		})
+			s.Where(sql.HasSuffix(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.NamesFormattedKey:
 		entFieldName := NamesEntFieldFromSCIM(scimField)
 		return predicate.Names(func(s *sql.Selector) {
-			s.Where(sql.HasSuffix(s.C(entFieldName), val))
-		})
+			s.Where(sql.HasSuffix(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.NamesGivenNameKey:
 		entFieldName := NamesEntFieldFromSCIM(scimField)
 		return predicate.Names(func(s *sql.Selector) {
-			s.Where(sql.HasSuffix(s.C(entFieldName), val))
-		})
+			s.Where(sql.HasSuffix(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.NamesHonorificPrefixKey:
 		entFieldName := NamesEntFieldFromSCIM(scimField)
 		return predicate.Names(func(s *sql.Selector) {
-			s.Where(sql.HasSuffix(s.C(entFieldName), val))
-		})
+			s.Where(sql.HasSuffix(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.NamesHonorificSuffixKey:
 		entFieldName := NamesEntFieldFromSCIM(scimField)
 		return predicate.Names(func(s *sql.Selector) {
-			s.Where(sql.HasSuffix(s.C(entFieldName), val))
-		})
+			s.Where(sql.HasSuffix(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.NamesMiddleNameKey:
 		entFieldName := NamesEntFieldFromSCIM(scimField)
 		return predicate.Names(func(s *sql.Selector) {
-			s.Where(sql.HasSuffix(s.C(entFieldName), val))
-		})
+			s.Where(sql.HasSuffix(s.C(entFieldName), val.(string)))
+		}), nil
 	default:
-		return nil
+		return nil, fmt.Errorf("invalid filter field specification")
 	}
 }
 
-func namesContainsPredicate(scimField string, val string) predicate.Names {
-	switch scimField {
+func namesContainsPredicate(q *ent.NamesQuery, scimField string, val interface{}) (predicate.Names, error) {
+	field, subfield, err := splitScimField(scimField)
+	if err != nil {
+		return nil, err
+	}
+	_ = subfield // TODO: remove later
+	switch field {
 	case resource.NamesFamilyNameKey:
 		entFieldName := NamesEntFieldFromSCIM(scimField)
 		return predicate.Names(func(s *sql.Selector) {
-			s.Where(sql.Contains(s.C(entFieldName), val))
-		})
+			s.Where(sql.Contains(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.NamesFormattedKey:
 		entFieldName := NamesEntFieldFromSCIM(scimField)
 		return predicate.Names(func(s *sql.Selector) {
-			s.Where(sql.Contains(s.C(entFieldName), val))
-		})
+			s.Where(sql.Contains(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.NamesGivenNameKey:
 		entFieldName := NamesEntFieldFromSCIM(scimField)
 		return predicate.Names(func(s *sql.Selector) {
-			s.Where(sql.Contains(s.C(entFieldName), val))
-		})
+			s.Where(sql.Contains(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.NamesHonorificPrefixKey:
 		entFieldName := NamesEntFieldFromSCIM(scimField)
 		return predicate.Names(func(s *sql.Selector) {
-			s.Where(sql.Contains(s.C(entFieldName), val))
-		})
+			s.Where(sql.Contains(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.NamesHonorificSuffixKey:
 		entFieldName := NamesEntFieldFromSCIM(scimField)
 		return predicate.Names(func(s *sql.Selector) {
-			s.Where(sql.Contains(s.C(entFieldName), val))
-		})
+			s.Where(sql.Contains(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.NamesMiddleNameKey:
 		entFieldName := NamesEntFieldFromSCIM(scimField)
 		return predicate.Names(func(s *sql.Selector) {
-			s.Where(sql.Contains(s.C(entFieldName), val))
-		})
+			s.Where(sql.Contains(s.C(entFieldName), val.(string)))
+		}), nil
 	default:
-		return nil
+		return nil, fmt.Errorf("invalid filter field specification")
 	}
 }
 
-func namesEqualsPredicate(scimField string, val string) predicate.Names {
-	switch scimField {
+func namesEqualsPredicate(q *ent.NamesQuery, scimField string, val interface{}) (predicate.Names, error) {
+	field, subfield, err := splitScimField(scimField)
+	if err != nil {
+		return nil, err
+	}
+	_ = subfield // TODO: remove later
+	switch field {
 	case resource.NamesFamilyNameKey:
 		entFieldName := NamesEntFieldFromSCIM(scimField)
 		return predicate.Names(func(s *sql.Selector) {
-			s.Where(sql.EQ(s.C(entFieldName), val))
-		})
+			s.Where(sql.EQ(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.NamesFormattedKey:
 		entFieldName := NamesEntFieldFromSCIM(scimField)
 		return predicate.Names(func(s *sql.Selector) {
-			s.Where(sql.EQ(s.C(entFieldName), val))
-		})
+			s.Where(sql.EQ(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.NamesGivenNameKey:
 		entFieldName := NamesEntFieldFromSCIM(scimField)
 		return predicate.Names(func(s *sql.Selector) {
-			s.Where(sql.EQ(s.C(entFieldName), val))
-		})
+			s.Where(sql.EQ(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.NamesHonorificPrefixKey:
 		entFieldName := NamesEntFieldFromSCIM(scimField)
 		return predicate.Names(func(s *sql.Selector) {
-			s.Where(sql.EQ(s.C(entFieldName), val))
-		})
+			s.Where(sql.EQ(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.NamesHonorificSuffixKey:
 		entFieldName := NamesEntFieldFromSCIM(scimField)
 		return predicate.Names(func(s *sql.Selector) {
-			s.Where(sql.EQ(s.C(entFieldName), val))
-		})
+			s.Where(sql.EQ(s.C(entFieldName), val.(string)))
+		}), nil
 	case resource.NamesMiddleNameKey:
 		entFieldName := NamesEntFieldFromSCIM(scimField)
 		return predicate.Names(func(s *sql.Selector) {
-			s.Where(sql.EQ(s.C(entFieldName), val))
-		})
+			s.Where(sql.EQ(s.C(entFieldName), val.(string)))
+		}), nil
 	default:
-		return nil
+		return nil, fmt.Errorf("invalid filter field specification")
 	}
 }
 

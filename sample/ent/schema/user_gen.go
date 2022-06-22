@@ -6,6 +6,10 @@ import (
 	"github.com/google/uuid"
 )
 
+type User struct {
+	ent.Schema
+}
+
 func (User) Fields() []ent.Field {
 	return []ent.Field{
 		field.Bool("active").Optional(),

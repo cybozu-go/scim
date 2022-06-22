@@ -62,10 +62,22 @@ objects:
       - name: entitlements
         type: '[]string'
       - name: roles
-        type: '[]string'
+        type: '[]*Role'
       - name: x509Certificates
         type: '[]string'
   - name: Email
+    skipCommonFields: true
+    fields:
+      - name: value
+        required: true
+      - name: display
+      - name: typ
+        ent_name: type
+        exported_name: Type
+        json: type
+      - name: primary
+        type: bool
+  - name: Role
     skipCommonFields: true
     fields:
       - name: value

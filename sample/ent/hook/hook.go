@@ -22,6 +22,19 @@ func (f EmailFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error
 	return f(ctx, mv)
 }
 
+// The EntitlementFunc type is an adapter to allow the use of ordinary
+// function as Entitlement mutator.
+type EntitlementFunc func(context.Context, *ent.EntitlementMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f EntitlementFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.EntitlementMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.EntitlementMutation", m)
+	}
+	return f(ctx, mv)
+}
+
 // The GroupFunc type is an adapter to allow the use of ordinary
 // function as Group mutator.
 type GroupFunc func(context.Context, *ent.GroupMutation) (ent.Value, error)
@@ -31,6 +44,19 @@ func (f GroupFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error
 	mv, ok := m.(*ent.GroupMutation)
 	if !ok {
 		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.GroupMutation", m)
+	}
+	return f(ctx, mv)
+}
+
+// The IMSFunc type is an adapter to allow the use of ordinary
+// function as IMS mutator.
+type IMSFunc func(context.Context, *ent.IMSMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f IMSFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.IMSMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IMSMutation", m)
 	}
 	return f(ctx, mv)
 }
@@ -48,6 +74,32 @@ func (f NamesFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error
 	return f(ctx, mv)
 }
 
+// The PhoneNumberFunc type is an adapter to allow the use of ordinary
+// function as PhoneNumber mutator.
+type PhoneNumberFunc func(context.Context, *ent.PhoneNumberMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f PhoneNumberFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.PhoneNumberMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.PhoneNumberMutation", m)
+	}
+	return f(ctx, mv)
+}
+
+// The RoleFunc type is an adapter to allow the use of ordinary
+// function as Role mutator.
+type RoleFunc func(context.Context, *ent.RoleMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f RoleFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.RoleMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.RoleMutation", m)
+	}
+	return f(ctx, mv)
+}
+
 // The UserFunc type is an adapter to allow the use of ordinary
 // function as User mutator.
 type UserFunc func(context.Context, *ent.UserMutation) (ent.Value, error)
@@ -57,6 +109,19 @@ func (f UserFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error)
 	mv, ok := m.(*ent.UserMutation)
 	if !ok {
 		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.UserMutation", m)
+	}
+	return f(ctx, mv)
+}
+
+// The X509CertificateFunc type is an adapter to allow the use of ordinary
+// function as X509Certificate mutator.
+type X509CertificateFunc func(context.Context, *ent.X509CertificateMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f X509CertificateFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.X509CertificateMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.X509CertificateMutation", m)
 	}
 	return f(ctx, mv)
 }

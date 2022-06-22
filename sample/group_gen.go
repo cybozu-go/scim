@@ -13,19 +13,19 @@ import (
 
 func groupLoadEntFields(q *ent.GroupQuery, fields []string) {
 	if len(fields) == 0 {
-		fields = []string{"displayName", "externalID", "id", "members"}
+		fields = []string{resource.GroupDisplayNameKey, resource.GroupExternalIDKey, resource.GroupIDKey, resource.GroupMembersKey}
 	}
 	selectNames := make([]string, 0, len(fields))
 	for _, f := range fields {
 		switch f {
-		case "displayName":
+		case resource.GroupDisplayNameKey:
 			selectNames = append(selectNames, group.FieldDisplayName)
-		case "externalID":
+		case resource.GroupExternalIDKey:
 			selectNames = append(selectNames, group.FieldExternalID)
-		case "id":
+		case resource.GroupIDKey:
 			selectNames = append(selectNames, group.FieldID)
-		case "members":
-		case "meta":
+		case resource.GroupMembersKey:
+		case resource.GroupMetaKey:
 		}
 	}
 	q.Select(selectNames...)
@@ -77,6 +77,7 @@ func GroupEntFieldFromSCIM(s string) string {
 }
 
 func groupStartsWithPredicate(q *ent.GroupQuery, scimField string, val interface{}) (predicate.Group, error) {
+	_ = q
 	field, subfield, err := splitScimField(scimField)
 	if err != nil {
 		return nil, err
@@ -86,16 +87,19 @@ func groupStartsWithPredicate(q *ent.GroupQuery, scimField string, val interface
 	case resource.GroupDisplayNameKey:
 		entFieldName := GroupEntFieldFromSCIM(scimField)
 		return predicate.Group(func(s *sql.Selector) {
+			//nolint:forcetypeassert
 			s.Where(sql.HasPrefix(s.C(entFieldName), val.(string)))
 		}), nil
 	case resource.GroupExternalIDKey:
 		entFieldName := GroupEntFieldFromSCIM(scimField)
 		return predicate.Group(func(s *sql.Selector) {
+			//nolint:forcetypeassert
 			s.Where(sql.HasPrefix(s.C(entFieldName), val.(string)))
 		}), nil
 	case resource.GroupIDKey:
 		entFieldName := GroupEntFieldFromSCIM(scimField)
 		return predicate.Group(func(s *sql.Selector) {
+			//nolint:forcetypeassert
 			s.Where(sql.HasPrefix(s.C(entFieldName), val.(string)))
 		}), nil
 	default:
@@ -104,6 +108,7 @@ func groupStartsWithPredicate(q *ent.GroupQuery, scimField string, val interface
 }
 
 func groupEndsWithPredicate(q *ent.GroupQuery, scimField string, val interface{}) (predicate.Group, error) {
+	_ = q
 	field, subfield, err := splitScimField(scimField)
 	if err != nil {
 		return nil, err
@@ -113,16 +118,19 @@ func groupEndsWithPredicate(q *ent.GroupQuery, scimField string, val interface{}
 	case resource.GroupDisplayNameKey:
 		entFieldName := GroupEntFieldFromSCIM(scimField)
 		return predicate.Group(func(s *sql.Selector) {
+			//nolint:forcetypeassert
 			s.Where(sql.HasSuffix(s.C(entFieldName), val.(string)))
 		}), nil
 	case resource.GroupExternalIDKey:
 		entFieldName := GroupEntFieldFromSCIM(scimField)
 		return predicate.Group(func(s *sql.Selector) {
+			//nolint:forcetypeassert
 			s.Where(sql.HasSuffix(s.C(entFieldName), val.(string)))
 		}), nil
 	case resource.GroupIDKey:
 		entFieldName := GroupEntFieldFromSCIM(scimField)
 		return predicate.Group(func(s *sql.Selector) {
+			//nolint:forcetypeassert
 			s.Where(sql.HasSuffix(s.C(entFieldName), val.(string)))
 		}), nil
 	default:
@@ -131,6 +139,7 @@ func groupEndsWithPredicate(q *ent.GroupQuery, scimField string, val interface{}
 }
 
 func groupContainsPredicate(q *ent.GroupQuery, scimField string, val interface{}) (predicate.Group, error) {
+	_ = q
 	field, subfield, err := splitScimField(scimField)
 	if err != nil {
 		return nil, err
@@ -140,16 +149,19 @@ func groupContainsPredicate(q *ent.GroupQuery, scimField string, val interface{}
 	case resource.GroupDisplayNameKey:
 		entFieldName := GroupEntFieldFromSCIM(scimField)
 		return predicate.Group(func(s *sql.Selector) {
+			//nolint:forcetypeassert
 			s.Where(sql.Contains(s.C(entFieldName), val.(string)))
 		}), nil
 	case resource.GroupExternalIDKey:
 		entFieldName := GroupEntFieldFromSCIM(scimField)
 		return predicate.Group(func(s *sql.Selector) {
+			//nolint:forcetypeassert
 			s.Where(sql.Contains(s.C(entFieldName), val.(string)))
 		}), nil
 	case resource.GroupIDKey:
 		entFieldName := GroupEntFieldFromSCIM(scimField)
 		return predicate.Group(func(s *sql.Selector) {
+			//nolint:forcetypeassert
 			s.Where(sql.Contains(s.C(entFieldName), val.(string)))
 		}), nil
 	default:
@@ -158,6 +170,7 @@ func groupContainsPredicate(q *ent.GroupQuery, scimField string, val interface{}
 }
 
 func groupEqualsPredicate(q *ent.GroupQuery, scimField string, val interface{}) (predicate.Group, error) {
+	_ = q
 	field, subfield, err := splitScimField(scimField)
 	if err != nil {
 		return nil, err
@@ -167,16 +180,19 @@ func groupEqualsPredicate(q *ent.GroupQuery, scimField string, val interface{}) 
 	case resource.GroupDisplayNameKey:
 		entFieldName := GroupEntFieldFromSCIM(scimField)
 		return predicate.Group(func(s *sql.Selector) {
+			//nolint:forcetypeassert
 			s.Where(sql.EQ(s.C(entFieldName), val.(string)))
 		}), nil
 	case resource.GroupExternalIDKey:
 		entFieldName := GroupEntFieldFromSCIM(scimField)
 		return predicate.Group(func(s *sql.Selector) {
+			//nolint:forcetypeassert
 			s.Where(sql.EQ(s.C(entFieldName), val.(string)))
 		}), nil
 	case resource.GroupIDKey:
 		entFieldName := GroupEntFieldFromSCIM(scimField)
 		return predicate.Group(func(s *sql.Selector) {
+			//nolint:forcetypeassert
 			s.Where(sql.EQ(s.C(entFieldName), val.(string)))
 		}), nil
 	default:

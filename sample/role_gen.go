@@ -46,6 +46,7 @@ func RoleEntFieldFromSCIM(s string) string {
 }
 
 func roleStartsWithPredicate(q *ent.RoleQuery, scimField string, val interface{}) (predicate.Role, error) {
+	_ = q
 	field, subfield, err := splitScimField(scimField)
 	if err != nil {
 		return nil, err
@@ -55,16 +56,19 @@ func roleStartsWithPredicate(q *ent.RoleQuery, scimField string, val interface{}
 	case resource.RoleDisplayKey:
 		entFieldName := RoleEntFieldFromSCIM(scimField)
 		return predicate.Role(func(s *sql.Selector) {
+			//nolint:forcetypeassert
 			s.Where(sql.HasPrefix(s.C(entFieldName), val.(string)))
 		}), nil
 	case resource.RoleTypeKey:
 		entFieldName := RoleEntFieldFromSCIM(scimField)
 		return predicate.Role(func(s *sql.Selector) {
+			//nolint:forcetypeassert
 			s.Where(sql.HasPrefix(s.C(entFieldName), val.(string)))
 		}), nil
 	case resource.RoleValueKey:
 		entFieldName := RoleEntFieldFromSCIM(scimField)
 		return predicate.Role(func(s *sql.Selector) {
+			//nolint:forcetypeassert
 			s.Where(sql.HasPrefix(s.C(entFieldName), val.(string)))
 		}), nil
 	default:
@@ -73,6 +77,7 @@ func roleStartsWithPredicate(q *ent.RoleQuery, scimField string, val interface{}
 }
 
 func roleEndsWithPredicate(q *ent.RoleQuery, scimField string, val interface{}) (predicate.Role, error) {
+	_ = q
 	field, subfield, err := splitScimField(scimField)
 	if err != nil {
 		return nil, err
@@ -82,16 +87,19 @@ func roleEndsWithPredicate(q *ent.RoleQuery, scimField string, val interface{}) 
 	case resource.RoleDisplayKey:
 		entFieldName := RoleEntFieldFromSCIM(scimField)
 		return predicate.Role(func(s *sql.Selector) {
+			//nolint:forcetypeassert
 			s.Where(sql.HasSuffix(s.C(entFieldName), val.(string)))
 		}), nil
 	case resource.RoleTypeKey:
 		entFieldName := RoleEntFieldFromSCIM(scimField)
 		return predicate.Role(func(s *sql.Selector) {
+			//nolint:forcetypeassert
 			s.Where(sql.HasSuffix(s.C(entFieldName), val.(string)))
 		}), nil
 	case resource.RoleValueKey:
 		entFieldName := RoleEntFieldFromSCIM(scimField)
 		return predicate.Role(func(s *sql.Selector) {
+			//nolint:forcetypeassert
 			s.Where(sql.HasSuffix(s.C(entFieldName), val.(string)))
 		}), nil
 	default:
@@ -100,6 +108,7 @@ func roleEndsWithPredicate(q *ent.RoleQuery, scimField string, val interface{}) 
 }
 
 func roleContainsPredicate(q *ent.RoleQuery, scimField string, val interface{}) (predicate.Role, error) {
+	_ = q
 	field, subfield, err := splitScimField(scimField)
 	if err != nil {
 		return nil, err
@@ -109,16 +118,19 @@ func roleContainsPredicate(q *ent.RoleQuery, scimField string, val interface{}) 
 	case resource.RoleDisplayKey:
 		entFieldName := RoleEntFieldFromSCIM(scimField)
 		return predicate.Role(func(s *sql.Selector) {
+			//nolint:forcetypeassert
 			s.Where(sql.Contains(s.C(entFieldName), val.(string)))
 		}), nil
 	case resource.RoleTypeKey:
 		entFieldName := RoleEntFieldFromSCIM(scimField)
 		return predicate.Role(func(s *sql.Selector) {
+			//nolint:forcetypeassert
 			s.Where(sql.Contains(s.C(entFieldName), val.(string)))
 		}), nil
 	case resource.RoleValueKey:
 		entFieldName := RoleEntFieldFromSCIM(scimField)
 		return predicate.Role(func(s *sql.Selector) {
+			//nolint:forcetypeassert
 			s.Where(sql.Contains(s.C(entFieldName), val.(string)))
 		}), nil
 	default:
@@ -127,6 +139,7 @@ func roleContainsPredicate(q *ent.RoleQuery, scimField string, val interface{}) 
 }
 
 func roleEqualsPredicate(q *ent.RoleQuery, scimField string, val interface{}) (predicate.Role, error) {
+	_ = q
 	field, subfield, err := splitScimField(scimField)
 	if err != nil {
 		return nil, err
@@ -136,16 +149,19 @@ func roleEqualsPredicate(q *ent.RoleQuery, scimField string, val interface{}) (p
 	case resource.RoleDisplayKey:
 		entFieldName := RoleEntFieldFromSCIM(scimField)
 		return predicate.Role(func(s *sql.Selector) {
+			//nolint:forcetypeassert
 			s.Where(sql.EQ(s.C(entFieldName), val.(string)))
 		}), nil
 	case resource.RoleTypeKey:
 		entFieldName := RoleEntFieldFromSCIM(scimField)
 		return predicate.Role(func(s *sql.Selector) {
+			//nolint:forcetypeassert
 			s.Where(sql.EQ(s.C(entFieldName), val.(string)))
 		}), nil
 	case resource.RoleValueKey:
 		entFieldName := RoleEntFieldFromSCIM(scimField)
 		return predicate.Role(func(s *sql.Selector) {
+			//nolint:forcetypeassert
 			s.Where(sql.EQ(s.C(entFieldName), val.(string)))
 		}), nil
 	default:

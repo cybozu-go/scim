@@ -56,6 +56,7 @@ func NamesEntFieldFromSCIM(s string) string {
 }
 
 func namesStartsWithPredicate(q *ent.NamesQuery, scimField string, val interface{}) (predicate.Names, error) {
+	_ = q
 	field, subfield, err := splitScimField(scimField)
 	if err != nil {
 		return nil, err
@@ -65,31 +66,37 @@ func namesStartsWithPredicate(q *ent.NamesQuery, scimField string, val interface
 	case resource.NamesFamilyNameKey:
 		entFieldName := NamesEntFieldFromSCIM(scimField)
 		return predicate.Names(func(s *sql.Selector) {
+			//nolint:forcetypeassert
 			s.Where(sql.HasPrefix(s.C(entFieldName), val.(string)))
 		}), nil
 	case resource.NamesFormattedKey:
 		entFieldName := NamesEntFieldFromSCIM(scimField)
 		return predicate.Names(func(s *sql.Selector) {
+			//nolint:forcetypeassert
 			s.Where(sql.HasPrefix(s.C(entFieldName), val.(string)))
 		}), nil
 	case resource.NamesGivenNameKey:
 		entFieldName := NamesEntFieldFromSCIM(scimField)
 		return predicate.Names(func(s *sql.Selector) {
+			//nolint:forcetypeassert
 			s.Where(sql.HasPrefix(s.C(entFieldName), val.(string)))
 		}), nil
 	case resource.NamesHonorificPrefixKey:
 		entFieldName := NamesEntFieldFromSCIM(scimField)
 		return predicate.Names(func(s *sql.Selector) {
+			//nolint:forcetypeassert
 			s.Where(sql.HasPrefix(s.C(entFieldName), val.(string)))
 		}), nil
 	case resource.NamesHonorificSuffixKey:
 		entFieldName := NamesEntFieldFromSCIM(scimField)
 		return predicate.Names(func(s *sql.Selector) {
+			//nolint:forcetypeassert
 			s.Where(sql.HasPrefix(s.C(entFieldName), val.(string)))
 		}), nil
 	case resource.NamesMiddleNameKey:
 		entFieldName := NamesEntFieldFromSCIM(scimField)
 		return predicate.Names(func(s *sql.Selector) {
+			//nolint:forcetypeassert
 			s.Where(sql.HasPrefix(s.C(entFieldName), val.(string)))
 		}), nil
 	default:
@@ -98,6 +105,7 @@ func namesStartsWithPredicate(q *ent.NamesQuery, scimField string, val interface
 }
 
 func namesEndsWithPredicate(q *ent.NamesQuery, scimField string, val interface{}) (predicate.Names, error) {
+	_ = q
 	field, subfield, err := splitScimField(scimField)
 	if err != nil {
 		return nil, err
@@ -107,31 +115,37 @@ func namesEndsWithPredicate(q *ent.NamesQuery, scimField string, val interface{}
 	case resource.NamesFamilyNameKey:
 		entFieldName := NamesEntFieldFromSCIM(scimField)
 		return predicate.Names(func(s *sql.Selector) {
+			//nolint:forcetypeassert
 			s.Where(sql.HasSuffix(s.C(entFieldName), val.(string)))
 		}), nil
 	case resource.NamesFormattedKey:
 		entFieldName := NamesEntFieldFromSCIM(scimField)
 		return predicate.Names(func(s *sql.Selector) {
+			//nolint:forcetypeassert
 			s.Where(sql.HasSuffix(s.C(entFieldName), val.(string)))
 		}), nil
 	case resource.NamesGivenNameKey:
 		entFieldName := NamesEntFieldFromSCIM(scimField)
 		return predicate.Names(func(s *sql.Selector) {
+			//nolint:forcetypeassert
 			s.Where(sql.HasSuffix(s.C(entFieldName), val.(string)))
 		}), nil
 	case resource.NamesHonorificPrefixKey:
 		entFieldName := NamesEntFieldFromSCIM(scimField)
 		return predicate.Names(func(s *sql.Selector) {
+			//nolint:forcetypeassert
 			s.Where(sql.HasSuffix(s.C(entFieldName), val.(string)))
 		}), nil
 	case resource.NamesHonorificSuffixKey:
 		entFieldName := NamesEntFieldFromSCIM(scimField)
 		return predicate.Names(func(s *sql.Selector) {
+			//nolint:forcetypeassert
 			s.Where(sql.HasSuffix(s.C(entFieldName), val.(string)))
 		}), nil
 	case resource.NamesMiddleNameKey:
 		entFieldName := NamesEntFieldFromSCIM(scimField)
 		return predicate.Names(func(s *sql.Selector) {
+			//nolint:forcetypeassert
 			s.Where(sql.HasSuffix(s.C(entFieldName), val.(string)))
 		}), nil
 	default:
@@ -140,6 +154,7 @@ func namesEndsWithPredicate(q *ent.NamesQuery, scimField string, val interface{}
 }
 
 func namesContainsPredicate(q *ent.NamesQuery, scimField string, val interface{}) (predicate.Names, error) {
+	_ = q
 	field, subfield, err := splitScimField(scimField)
 	if err != nil {
 		return nil, err
@@ -149,31 +164,37 @@ func namesContainsPredicate(q *ent.NamesQuery, scimField string, val interface{}
 	case resource.NamesFamilyNameKey:
 		entFieldName := NamesEntFieldFromSCIM(scimField)
 		return predicate.Names(func(s *sql.Selector) {
+			//nolint:forcetypeassert
 			s.Where(sql.Contains(s.C(entFieldName), val.(string)))
 		}), nil
 	case resource.NamesFormattedKey:
 		entFieldName := NamesEntFieldFromSCIM(scimField)
 		return predicate.Names(func(s *sql.Selector) {
+			//nolint:forcetypeassert
 			s.Where(sql.Contains(s.C(entFieldName), val.(string)))
 		}), nil
 	case resource.NamesGivenNameKey:
 		entFieldName := NamesEntFieldFromSCIM(scimField)
 		return predicate.Names(func(s *sql.Selector) {
+			//nolint:forcetypeassert
 			s.Where(sql.Contains(s.C(entFieldName), val.(string)))
 		}), nil
 	case resource.NamesHonorificPrefixKey:
 		entFieldName := NamesEntFieldFromSCIM(scimField)
 		return predicate.Names(func(s *sql.Selector) {
+			//nolint:forcetypeassert
 			s.Where(sql.Contains(s.C(entFieldName), val.(string)))
 		}), nil
 	case resource.NamesHonorificSuffixKey:
 		entFieldName := NamesEntFieldFromSCIM(scimField)
 		return predicate.Names(func(s *sql.Selector) {
+			//nolint:forcetypeassert
 			s.Where(sql.Contains(s.C(entFieldName), val.(string)))
 		}), nil
 	case resource.NamesMiddleNameKey:
 		entFieldName := NamesEntFieldFromSCIM(scimField)
 		return predicate.Names(func(s *sql.Selector) {
+			//nolint:forcetypeassert
 			s.Where(sql.Contains(s.C(entFieldName), val.(string)))
 		}), nil
 	default:
@@ -182,6 +203,7 @@ func namesContainsPredicate(q *ent.NamesQuery, scimField string, val interface{}
 }
 
 func namesEqualsPredicate(q *ent.NamesQuery, scimField string, val interface{}) (predicate.Names, error) {
+	_ = q
 	field, subfield, err := splitScimField(scimField)
 	if err != nil {
 		return nil, err
@@ -191,31 +213,37 @@ func namesEqualsPredicate(q *ent.NamesQuery, scimField string, val interface{}) 
 	case resource.NamesFamilyNameKey:
 		entFieldName := NamesEntFieldFromSCIM(scimField)
 		return predicate.Names(func(s *sql.Selector) {
+			//nolint:forcetypeassert
 			s.Where(sql.EQ(s.C(entFieldName), val.(string)))
 		}), nil
 	case resource.NamesFormattedKey:
 		entFieldName := NamesEntFieldFromSCIM(scimField)
 		return predicate.Names(func(s *sql.Selector) {
+			//nolint:forcetypeassert
 			s.Where(sql.EQ(s.C(entFieldName), val.(string)))
 		}), nil
 	case resource.NamesGivenNameKey:
 		entFieldName := NamesEntFieldFromSCIM(scimField)
 		return predicate.Names(func(s *sql.Selector) {
+			//nolint:forcetypeassert
 			s.Where(sql.EQ(s.C(entFieldName), val.(string)))
 		}), nil
 	case resource.NamesHonorificPrefixKey:
 		entFieldName := NamesEntFieldFromSCIM(scimField)
 		return predicate.Names(func(s *sql.Selector) {
+			//nolint:forcetypeassert
 			s.Where(sql.EQ(s.C(entFieldName), val.(string)))
 		}), nil
 	case resource.NamesHonorificSuffixKey:
 		entFieldName := NamesEntFieldFromSCIM(scimField)
 		return predicate.Names(func(s *sql.Selector) {
+			//nolint:forcetypeassert
 			s.Where(sql.EQ(s.C(entFieldName), val.(string)))
 		}), nil
 	case resource.NamesMiddleNameKey:
 		entFieldName := NamesEntFieldFromSCIM(scimField)
 		return predicate.Names(func(s *sql.Selector) {
+			//nolint:forcetypeassert
 			s.Where(sql.EQ(s.C(entFieldName), val.(string)))
 		}), nil
 	default:

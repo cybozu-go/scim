@@ -7,6 +7,7 @@ import (
 	"context"
 	"crypto/rand"
 	"fmt"
+	"log"
 	"math/big"
 	"strings"
 
@@ -27,17 +28,22 @@ import (
 )
 
 //FIXME
-var _ = emailPresencePredicate
 var _ = groupPresencePredicate
-var _ = namesPresencePredicate
+var _ = emailPresencePredicate
 var _ = emailStartsWithPredicate
-var _ = namesStartsWithPredicate
 var _ = emailEndsWithPredicate
-var _ = namesEndsWithPredicate
 var _ = emailContainsPredicate
-var _ = namesContainsPredicate
 var _ = emailEqualsPredicate
+var _ = namesPresencePredicate
+var _ = namesStartsWithPredicate
+var _ = namesEndsWithPredicate
+var _ = namesContainsPredicate
 var _ = namesEqualsPredicate
+var _ = roleStartsWithPredicate
+var _ = roleEndsWithPredicate
+var _ = roleContainsPredicate
+var _ = roleEqualsPredicate
+var _ = rolePresencePredicate
 
 func splitScimField(s string) (string, string, error) {
 	i := strings.IndexByte(s, '.')
@@ -328,6 +334,7 @@ func (b *Backend) RetrieveUser(id string, fields ...string) (*resource.User, err
 	userQuery := b.db.User.Query().
 		Where(user.IDEQ(parsedUUID))
 
+	log.Printf("fields = %#v", fields)
 	userLoadEntFields(userQuery, fields)
 
 	u, err := userQuery.

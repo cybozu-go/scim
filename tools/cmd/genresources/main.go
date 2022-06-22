@@ -713,7 +713,7 @@ func generateUtilities(object *codegen.Object) error {
 			if i > 0 {
 				o.R(`,`)
 			}
-			o.R(`%q`, field.Name(false))
+			o.R(`resource.%s%sKey`, object.Name(true), field.Name(true))
 		}
 		o.R(`}`)
 		o.L(`}`)
@@ -732,7 +732,7 @@ func generateUtilities(object *codegen.Object) error {
 				}
 			}
 
-			o.L(`case %q:`, field.Name(false))
+			o.L(`case resource.%s%sKey:`, object.Name(true), field.Name(true))
 			// Special case
 			var ft = field.Type()
 			if strings.HasPrefix(ft, `[]`) || strings.HasPrefix(ft, `*`) {
@@ -867,6 +867,7 @@ func generateUtilities(object *codegen.Object) error {
 		{Name: `Equals`, Method: `EQ`},
 	} {
 		o.LL(`func %[1]s%[2]sPredicate(q *ent.%[3]sQuery, scimField string, val interface{}) (predicate.%[3]s, error) {`, object.Name(false), pred.Name, object.Name(true))
+		o.L(`_ = q`) // in case the predicate doesn't actually need to use the query object
 		// The scim field may either be a flat (simple) field or a nested field.
 		o.L(`field, subfield, err := splitScimField(scimField)`)
 		o.L(`if err != nil {`)
@@ -899,7 +900,8 @@ func generateUtilities(object *codegen.Object) error {
 					return fmt.Errorf(`could not find object %q`, subObjectName)
 				}
 				for _, subField := range subObject.Fields() {
-					o.L(`case %q:`, subField.Name(false))
+					o.L(`case resource.%s%sKey:`, subObjectName, subField.Name(true))
+					o.L(`//nolint:forcetypeassert`)
 					o.L(`return %s.Has%sWith(%s.%sEQ(val.(%s))), nil`, object.Name(false), field.Name(true), strings.ToLower(singularName(field.Name(false))), subField.Name(true), subField.Type())
 				}
 				o.L(`default:`)
@@ -911,6 +913,7 @@ func generateUtilities(object *codegen.Object) error {
 				// receive the field name as a parameter
 				o.L(`entFieldName := %sEntFieldFromSCIM(scimField)`, object.Name(true))
 				o.L(`return predicate.%[1]s(func(s *sql.Selector) {`, object.Name(true))
+				o.L(`//nolint:forcetypeassert`)
 				o.L(`s.Where(sql.%s(s.C(entFieldName), val.(%s)))`, pred.Method, field.Type())
 				o.L(`}), nil`)
 			}

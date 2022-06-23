@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"math/big"
 	"strings"
+	"sync"
 
 	"entgo.io/ent/dialect"
 	"github.com/cybozu-go/scim/filter"
@@ -751,6 +752,8 @@ func (b *Backend) search(in *resource.SearchRequest, searchUser, searchGroup boo
 			TotalResults(0).
 			Build()
 	}
+
+	var listMu sync.Mutex
 	var list []interface{}
 
 	var g rungroup.Group
@@ -767,7 +770,9 @@ func (b *Backend) search(in *resource.SearchRequest, searchUser, searchGroup boo
 				if err != nil {
 					return fmt.Errorf(`failed to convert internal data to SCIM resource: %w`, err)
 				}
+				listMu.Lock()
 				list = append(list, r)
+				listMu.Unlock()
 			}
 			return nil
 		}))
@@ -786,7 +791,9 @@ func (b *Backend) search(in *resource.SearchRequest, searchUser, searchGroup boo
 				if err != nil {
 					return fmt.Errorf(`failed to convert internal data to SCIM resource: %w`, err)
 				}
+				listMu.Lock()
 				list = append(list, r)
+				listMu.Unlock()
 			}
 			return nil
 		}))

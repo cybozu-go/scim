@@ -13,12 +13,21 @@ import (
 	"github.com/cybozu-go/scim/sample/ent/user"
 )
 
-func userLoadEntFields(q *ent.UserQuery, fields []string) {
-	if len(fields) == 0 {
-		fields = []string{resource.UserActiveKey, resource.UserAddressesKey, resource.UserDisplayNameKey, resource.UserEmailsKey, resource.UserEntitlementsKey, resource.UserExternalIDKey, resource.UserGroupsKey, resource.UserIDKey, resource.UserIMSKey, resource.UserLocaleKey, resource.UserNameKey, resource.UserNickNameKey, resource.UserPasswordKey, resource.UserPhoneNumbersKey, resource.UserPreferredLanguageKey, resource.UserProfileURLKey, resource.UserRolesKey, resource.UserTimezoneKey, resource.UserTitleKey, resource.UserUserNameKey, resource.UserUserTypeKey, resource.UserX509CertificatesKey}
+func userLoadEntFields(q *ent.UserQuery, scimFields, excludedFields []string) {
+	fields := make(map[string]struct{})
+	if len(scimFields) == 0 {
+		scimFields = []string{resource.UserActiveKey, resource.UserAddressesKey, resource.UserDisplayNameKey, resource.UserEmailsKey, resource.UserEntitlementsKey, resource.UserExternalIDKey, resource.UserGroupsKey, resource.UserIDKey, resource.UserIMSKey, resource.UserLocaleKey, resource.UserNameKey, resource.UserNickNameKey, resource.UserPasswordKey, resource.UserPhoneNumbersKey, resource.UserPreferredLanguageKey, resource.UserProfileURLKey, resource.UserRolesKey, resource.UserTimezoneKey, resource.UserTitleKey, resource.UserUserNameKey, resource.UserUserTypeKey, resource.UserX509CertificatesKey}
+	}
+
+	for _, name := range scimFields {
+		fields[name] = struct{}{}
+	}
+
+	for _, name := range excludedFields {
+		delete(fields, name)
 	}
 	selectNames := make([]string, 0, len(fields))
-	for _, f := range fields {
+	for f := range fields {
 		switch f {
 		case resource.UserActiveKey:
 			selectNames = append(selectNames, user.FieldActive)

@@ -7,7 +7,6 @@ import (
 	"context"
 	"crypto/rand"
 	"fmt"
-	"log"
 	"math/big"
 	"strings"
 
@@ -325,7 +324,7 @@ func (b *Backend) CreateUser(in *resource.User) (*resource.User, error) {
 	return UserResourceFromEnt(u)
 }
 
-func (b *Backend) RetrieveUser(id string, fields ...string) (*resource.User, error) {
+func (b *Backend) RetrieveUser(id string, fields []string, excludedFields []string) (*resource.User, error) {
 	parsedUUID, err := uuid.Parse(id)
 	if err != nil {
 		return nil, fmt.Errorf(`failed to parse ID: %w`, err)
@@ -334,8 +333,7 @@ func (b *Backend) RetrieveUser(id string, fields ...string) (*resource.User, err
 	userQuery := b.db.User.Query().
 		Where(user.IDEQ(parsedUUID))
 
-	log.Printf("fields = %#v", fields)
-	userLoadEntFields(userQuery, fields)
+	userLoadEntFields(userQuery, fields, excludedFields)
 
 	u, err := userQuery.
 		Only(context.TODO())
@@ -805,7 +803,7 @@ func (b *Backend) search(in *resource.SearchRequest, searchUser, searchGroup boo
 		Build()
 }
 
-func (b *Backend) RetrieveGroup(id string, fields ...string) (*resource.Group, error) {
+func (b *Backend) RetrieveGroup(id string, fields []string, excludedFields []string) (*resource.Group, error) {
 	parsedUUID, err := uuid.Parse(id)
 	if err != nil {
 		return nil, fmt.Errorf(`failed to parse ID: %w`, err)
@@ -816,7 +814,7 @@ func (b *Backend) RetrieveGroup(id string, fields ...string) (*resource.Group, e
 		WithChildren().
 		Where(group.IDEQ(parsedUUID))
 
-	groupLoadEntFields(groupQuery, fields)
+	groupLoadEntFields(groupQuery, fields, excludedFields)
 
 	g, err := groupQuery.
 		Only(context.TODO())
@@ -869,7 +867,7 @@ func (b *Backend) ReplaceGroup(id string, in *resource.Group) (*resource.Group, 
 
 	// Okay, I'm sure we can get the edges (users+children -> members)
 	// somehow without re-fetching the data, but we're going to punt this
-	return b.RetrieveGroup(id)
+	return b.RetrieveGroup(id, nil, nil)
 }
 
 func (b *Backend) DeleteGroup(id string) error {

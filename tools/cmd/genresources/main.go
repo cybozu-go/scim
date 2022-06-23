@@ -695,21 +695,27 @@ func generateUtilities(object *codegen.Object) error {
 	o.L(`)`)
 
 	if object.String(`schema`) != "" {
-		o.LL(`func %sLoadEntFields(q *ent.%sQuery, fields []string) {`, object.Name(false), object.Name(true))
-		o.L(`if len(fields) == 0 {`)
-		o.L(`fields = []string{`)
+		o.LL(`func %sLoadEntFields(q *ent.%sQuery, scimFields, excludedFields []string) {`, object.Name(false), object.Name(true))
+		o.L(`fields := make(map[string]struct{})`)
+		o.L(`if len(scimFields) == 0 {`)
+		o.L(`scimFields = []string {`)
+
 		for i, field := range object.Fields() {
 			switch field.Name(false) {
-			case "schemas", "meta":
+			case "schemas", "meta": // These are handled separately
 				continue
 			}
 			if field.Bool(`skipCommonFields`) {
 				switch field.Name(false) {
-				case "id", "externalID":
+				case "id", "externalID": // these are only required when they are imported
 					continue
 				}
 			}
 
+			// Theoretically, there cold be any number of fields that
+			// have the "returned" field set to `never` or `request`, but
+			// in practice only password is set to never, and
+			// there are no fields set to request (TODO: check again)
 			if i > 0 {
 				o.R(`,`)
 			}
@@ -717,9 +723,18 @@ func generateUtilities(object *codegen.Object) error {
 		}
 		o.R(`}`)
 		o.L(`}`)
+		o.LL(`for _, name := range scimFields {`)
+		// Theoretically we need to prevent the user from deleting
+		// fields set to "always", but only "id" has this in practice
+		o.L(`fields[name] = struct{}{}`)
+		o.L(`}`)
+
+		o.LL(`for _, name := range excludedFields {`)
+		o.L(`delete(fields, name)`)
+		o.L(`}`)
 
 		o.L(`selectNames := make([]string, 0, len(fields))`)
-		o.L(`for _, f := range fields {`)
+		o.L(`for f := range fields {`)
 		o.L(`switch f {`)
 		for _, field := range object.Fields() {
 			if field.Name(false) == "schemas" {

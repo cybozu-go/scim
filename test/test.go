@@ -264,6 +264,27 @@ func UsersFetch(t *testing.T, cl *client.Client) func(*testing.T) {
 			require.Equal(t, createdUser.Emails(), u.Emails(), `Emails should match`)
 			require.Nil(t, u.Name(), `Name should be nil`)
 		})
+		t.Run("Fetch user with excludedAttributes", func(t *testing.T) {
+			t.Run("exclude attributes with returned=always", func(t *testing.T) {
+				createdUser := createStockUser(t, cl)
+				u, err := cl.User().Get(createdUser.ID()).
+					ExcludedAttributes("id", "name").
+					Do(context.TODO())
+				require.NoError(t, err, `Get should succeed`)
+
+				//nolint:errcheck
+				defer cl.User().Delete(createdUser.ID()).
+					Do(context.TODO())
+
+					// ID is returned=always
+				require.Equal(t, createdUser.ID(), u.ID(), `ID should match`)
+				require.Equal(t, createdUser.UserName(), u.UserName(), `UserName should match`)
+				require.Equal(t, createdUser.Emails(), u.Emails(), `Emails should match`)
+				require.NotNil(t, u.Meta(), `Meta should not be nil`)
+				require.Equal(t, `User`, u.Meta().ResourceType(), `meta.resource_type should match`)
+				require.Nil(t, u.Name(), `Name should be nil`)
+			})
+		})
 	}
 }
 

@@ -26,7 +26,7 @@ type ReplaceGroupBackend interface {
 }
 
 type RetrieveGroupBackend interface {
-	RetrieveGroup(string, ...string) (*resource.Group, error)
+	RetrieveGroup(string, []string, []string) (*resource.Group, error)
 }
 
 type CreateUserBackend interface {
@@ -42,7 +42,7 @@ type ReplaceUserBackend interface {
 }
 
 type RetrieveUserBackend interface {
-	RetrieveUser(string, ...string) (*resource.User, error)
+	RetrieveUser(string, []string, []string) (*resource.User, error)
 }
 
 type SearchBackend interface {
@@ -131,7 +131,7 @@ func RetrieveGroupEndpoint(b RetrieveGroupBackend) http.Handler {
 		}
 
 		// TODO: handle "attributes" and stuff?
-		group, err := b.RetrieveGroup(id)
+		group, err := b.RetrieveGroup(id, nil, nil)
 		if err != nil {
 			// TODO: distinguish between error and not found error
 			// TODO: log
@@ -230,7 +230,12 @@ func RetrieveUserEndpoint(b RetrieveUserBackend) http.Handler {
 		if v := r.URL.Query().Get(`attributes`); v != "" {
 			attrs = strings.Split(v, ",")
 		}
-		user, err := b.RetrieveUser(id, attrs...)
+
+		var excluded []string
+		if v := r.URL.Query().Get(`excludedAttributes`); v != "" {
+			excluded = strings.Split(v, ",")
+		}
+		user, err := b.RetrieveUser(id, attrs, excluded)
 		if err != nil {
 			// TODO: distinguish between error and not found error
 			// TODO: log

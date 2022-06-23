@@ -11,12 +11,21 @@ import (
 	"github.com/cybozu-go/scim/sample/ent/predicate"
 )
 
-func groupLoadEntFields(q *ent.GroupQuery, fields []string) {
-	if len(fields) == 0 {
-		fields = []string{resource.GroupDisplayNameKey, resource.GroupExternalIDKey, resource.GroupIDKey, resource.GroupMembersKey}
+func groupLoadEntFields(q *ent.GroupQuery, scimFields, excludedFields []string) {
+	fields := make(map[string]struct{})
+	if len(scimFields) == 0 {
+		scimFields = []string{resource.GroupDisplayNameKey, resource.GroupExternalIDKey, resource.GroupIDKey, resource.GroupMembersKey}
+	}
+
+	for _, name := range scimFields {
+		fields[name] = struct{}{}
+	}
+
+	for _, name := range excludedFields {
+		delete(fields, name)
 	}
 	selectNames := make([]string, 0, len(fields))
-	for _, f := range fields {
+	for f := range fields {
 		switch f {
 		case resource.GroupDisplayNameKey:
 			selectNames = append(selectNames, group.FieldDisplayName)

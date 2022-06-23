@@ -41,3 +41,9 @@ func New(baseURL string, options ...NewOption) *Client {
 		trace:   trace,
 	}
 }
+
+func (client *Client) Search() *SearchCall {
+	// This is a very rare case where the service name (Search) stutters
+	// withe Call verb (Search)... so we break rule and just return SearchCall
+	return (&SearchService{client: client}).Search()
+}

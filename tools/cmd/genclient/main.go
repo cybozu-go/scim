@@ -138,11 +138,13 @@ func generateService(svc Service, resources map[string]*codegen.Object) error {
 	o.L(`client *Client`)
 	o.L(`}`)
 
-	o.LL(`func (client *Client) %s() *%s {`, strings.TrimSuffix(svc.Name, `Service`), svc.Name)
-	o.L(`return &%s{`, svc.Name)
-	o.L(`client: client,`)
-	o.L(`}`)
-	o.L(`}`)
+	if svc.Name != "SearchService" {
+		o.LL(`func (client *Client) %s() *%s {`, strings.TrimSuffix(svc.Name, `Service`), svc.Name)
+		o.L(`return &%s{`, svc.Name)
+		o.L(`client: client,`)
+		o.L(`}`)
+		o.L(`}`)
+	}
 
 	for _, call := range svc.Calls {
 		fmt.Printf("    ⌛ Call %s...\n", call.Name(true))

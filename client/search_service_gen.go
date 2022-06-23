@@ -16,12 +16,6 @@ type SearchService struct {
 	client *Client
 }
 
-func (client *Client) Search() *SearchService {
-	return &SearchService{
-		client: client,
-	}
-}
-
 type SearchCall struct {
 	builder *resource.SearchRequestBuilder
 	object  *resource.SearchRequest

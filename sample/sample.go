@@ -99,7 +99,7 @@ func New(connspec string, spc *resource.ServiceProviderConfig) (*Backend, error)
 	}
 
 	return &Backend{
-		db:  client.Debug(),
+		db:  client,
 		spc: spc,
 		rts: rts,
 	}, nil

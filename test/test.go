@@ -51,6 +51,7 @@ func RunConformanceTests(t *testing.T, name string, backend interface{}) {
 			t.Run("Basic CRUD", GroupsBasicCRUD(t, cl))
 			t.Run("Search", GroupsSearch(t, cl))
 		})
+		t.Run("Mixed Search", MixedSearch(t, cl))
 		t.Run("Meta", func(t *testing.T) {
 			t.Run("ServiceProviderConfig", ServiceProviderConfig(t, cl))
 			t.Run("ResourceTypes", ResourceTypes(t, cl))
@@ -87,7 +88,7 @@ func PrepareFixtures(t *testing.T, cl *client.Client) func(t *testing.T) {
 			require.NoError(t, err, `user search should succeed`)
 
 			createGroupCall := cl.Group().Create().
-				DisplayName(`zemeckis-crew`)
+				DisplayName(`Zemeckis Crew`)
 			for _, r := range list.Resources() {
 				createGroupCall.MemberFrom(r)
 			}
@@ -516,7 +517,7 @@ func GroupsSearch(t *testing.T, cl *client.Client) func(t *testing.T) {
 					Count(10).
 					Do(context.TODO())
 				require.NoError(t, err, `cl.Search should succeed`)
-				require.Equal(t, 1, res.TotalResults(), `total results should be 2`)
+				require.Equal(t, 1, res.TotalResults(), `total results should be 1`)
 				for _, r := range res.Resources() {
 					g, ok := r.(*resource.Group)
 					require.True(t, ok, `resource should be a Group`)
@@ -525,6 +526,34 @@ func GroupsSearch(t *testing.T, cl *client.Client) func(t *testing.T) {
 				}
 			})
 		})
+	}
+}
+
+func MixedSearch(t *testing.T, cl *client.Client) func(t *testing.T) {
+	return func(t *testing.T) {
+		res, err := cl.Search().
+			Filter(`displayName co "Zemeckis"`).
+			Do(context.TODO())
+		require.NoError(t, err, `cl.Search should succeed`)
+		require.Equal(t, 2, res.TotalResults(), `total results should be 2`)
+
+		var groups int
+		var users int
+		var others int
+		for _, r := range res.Resources() {
+			switch r.(type) {
+			case *resource.Group:
+				groups++
+			case *resource.User:
+				users++
+			default:
+				others++
+			}
+		}
+
+		require.Equal(t, 0, others, `there should be zero resources other than users/groups`)
+		require.Equal(t, 1, users, `there should 1 user`)
+		require.Equal(t, 1, groups, `there should 1 group`)
 	}
 }
 

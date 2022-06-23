@@ -130,8 +130,16 @@ func RetrieveGroupEndpoint(b RetrieveGroupBackend) http.Handler {
 			return
 		}
 
-		// TODO: handle "attributes" and stuff?
-		group, err := b.RetrieveGroup(id, nil, nil)
+		var attrs []string
+		if v := r.URL.Query().Get(`attributes`); v != "" {
+			attrs = strings.Split(v, ",")
+		}
+
+		var excluded []string
+		if v := r.URL.Query().Get(`excludedAttributes`); v != "" {
+			excluded = strings.Split(v, ",")
+		}
+		group, err := b.RetrieveGroup(id, attrs, excluded)
 		if err != nil {
 			// TODO: distinguish between error and not found error
 			// TODO: log

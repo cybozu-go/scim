@@ -8,6 +8,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/cybozu-go/scim/client"
@@ -500,6 +501,12 @@ func GroupsSearch(t *testing.T, cl *client.Client) func(t *testing.T) {
 					Do(context.TODO())
 				require.NoError(t, err, `cl.Search should succeed`)
 				require.Equal(t, 1, res.TotalResults(), `total results should be 2`)
+				for _, r := range res.Resources() {
+					g, ok := r.(*resource.Group)
+					require.True(t, ok, `resource should be a Group`)
+					require.True(t, strings.HasSuffix(g.DisplayName(), `test1`), `display name should match filter query`)
+					require.Empty(t, g.Members())
+				}
 			})
 			t.Run("Use `eq` predicate", func(t *testing.T) {
 				res, err := cl.Group().Search().
@@ -510,6 +517,12 @@ func GroupsSearch(t *testing.T, cl *client.Client) func(t *testing.T) {
 					Do(context.TODO())
 				require.NoError(t, err, `cl.Search should succeed`)
 				require.Equal(t, 1, res.TotalResults(), `total results should be 2`)
+				for _, r := range res.Resources() {
+					g, ok := r.(*resource.Group)
+					require.True(t, ok, `resource should be a Group`)
+					require.Equal(t, g.DisplayName(), `search-test1`, `display name should match filter query`)
+					require.Empty(t, g.Members())
+				}
 			})
 		})
 	}

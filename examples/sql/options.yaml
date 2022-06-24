@@ -1,11 +1,11 @@
-package_name: filter
-output: filter/options_gen.go
+package_name: sql
+output: examples/sql/options_gen.go
 interfaces:
-  - name: SQLOption
+  - name: Option
 options:
   - ident: ColumnMapper
-    interface: SQLOption
+    interface: Option
     argument_type: ColumnMapper
   - ident: Dialect
-    interface: SQLOption
+    interface: Option
     argument_type: string

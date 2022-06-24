@@ -260,7 +260,7 @@ func (call *CreateUserCall) ProfileURL(v string) *CreateUserCall {
 	return call
 }
 
-func (call *CreateUserCall) Roles(v ...*resource.Role) *CreateUserCall {
+func (call *CreateUserCall) Roles(v ...string) *CreateUserCall {
 	call.builder.Roles(v...)
 	return call
 }
@@ -477,7 +477,7 @@ func (call *ReplaceUserCall) ProfileURL(v string) *ReplaceUserCall {
 	return call
 }
 
-func (call *ReplaceUserCall) Roles(v ...*resource.Role) *ReplaceUserCall {
+func (call *ReplaceUserCall) Roles(v ...string) *ReplaceUserCall {
 	call.builder.Roles(v...)
 	return call
 }
@@ -707,7 +707,7 @@ func (call *DeleteUserCall) ProfileURL(v string) *DeleteUserCall {
 	return call
 }
 
-func (call *DeleteUserCall) Roles(v ...*resource.Role) *DeleteUserCall {
+func (call *DeleteUserCall) Roles(v ...string) *DeleteUserCall {
 	call.builder.Roles(v...)
 	return call
 }

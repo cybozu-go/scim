@@ -1,4 +1,4 @@
-package filter_test
+package sql_test
 
 import (
 	"testing"
@@ -13,7 +13,7 @@ func TestSQL(t *testing.T) {
 		ExpectedSQL  string
 		ExpectedArgs []interface{}
 		Error        bool
-		SQLOptions   []filter.SQLOption
+		SQLOptions   []sql.Option
 	}{
 		{
 			Filter:       `userName eq "bjensen"`,
@@ -22,7 +22,7 @@ func TestSQL(t *testing.T) {
 		},
 		{
 			Filter: `name.familyName co "O'Malley"`,
-			SQLOptions: []filter.SQLOption{
+			SQLOptions: []filter.Option{
 				filter.WithColumnMapper(filter.MapColumnMapper(map[string]string{
 					`name.familyName`: `familyName`,
 				})),
@@ -42,7 +42,7 @@ func TestSQL(t *testing.T) {
 		},
 		{
 			Filter: `meta.lastModified gt "2011-05-13T04:42:34Z"`,
-			SQLOptions: []filter.SQLOption{
+			SQLOptions: []filter.Option{
 				filter.WithColumnMapper(filter.MapColumnMapper(map[string]string{
 					`meta.lastModified`: `lastModified`,
 				})),
@@ -52,7 +52,7 @@ func TestSQL(t *testing.T) {
 		},
 		{
 			Filter: `meta.lastModified ge "2011-05-13T04:42:34Z"`,
-			SQLOptions: []filter.SQLOption{
+			SQLOptions: []filter.Option{
 				filter.WithColumnMapper(filter.MapColumnMapper(map[string]string{
 					`meta.lastModified`: `lastModified`,
 				})),
@@ -62,7 +62,7 @@ func TestSQL(t *testing.T) {
 		},
 		{
 			Filter: `meta.lastModified lt "2011-05-13T04:42:34Z"`,
-			SQLOptions: []filter.SQLOption{
+			SQLOptions: []filter.Option{
 				filter.WithColumnMapper(filter.MapColumnMapper(map[string]string{
 					`meta.lastModified`: `lastModified`,
 				})),
@@ -72,7 +72,7 @@ func TestSQL(t *testing.T) {
 		},
 		{
 			Filter: `meta.lastModified le "2011-05-13T04:42:34Z"`,
-			SQLOptions: []filter.SQLOption{
+			SQLOptions: []filter.Option{
 				filter.WithColumnMapper(filter.MapColumnMapper(map[string]string{
 					`meta.lastModified`: `lastModified`,
 				})),

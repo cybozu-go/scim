@@ -62,7 +62,7 @@ objects:
       - name: entitlements
         type: '[]string'
       - name: roles
-        type: '[]*Role'
+        type: '[]string'
       - name: x509Certificates
         type: '[]string'
   - name: Email

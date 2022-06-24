@@ -86,10 +86,6 @@ func _main() error {
 		if err := generateObject(object); err != nil {
 			return fmt.Errorf(`failed to generate object: %s`, err)
 		}
-
-		if err := generateEnt(object); err != nil {
-			return fmt.Errorf(`failed to generate ent adapter: %s`, err)
-		}
 	}
 
 	return nil

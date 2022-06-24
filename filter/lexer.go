@@ -28,6 +28,7 @@ package filter
 import (
 	"fmt"
 	"strconv"
+	"strings"
 	"unicode"
 )
 
@@ -61,6 +62,15 @@ var keywords = map[string]int{
 	"null":                 tNULL,
 }
 
+var caseInsensitiveKeywords map[string]struct{}
+
+func init() {
+	caseInsensitiveKeywords = make(map[string]struct{})
+	for _, k := range []string{NotOp, AndOp, OrOp, PresenceOp, EqualOp, NotEqualOp, ContainsOp, StartsWithOp, EndsWithOp, GreaterThanOp, GreaterThanOrEqualToOp, LessThanOp, LessThanOrEqualToOp} {
+		caseInsensitiveKeywords[strings.ToLower(k)] = struct{}{}
+	}
+}
+
 type position struct {
 	Line   int
 	Column int
@@ -87,8 +97,15 @@ func (s *scanner) Scan() (tok int, lit interface{}, pos position, err error) {
 		if ch == '"' {
 			tok, lit = tVALUE, s.scanAttrValue()
 		} else {
-			lit = s.scanIdentifier()
-			if keyword, ok := keywords[lit.(string)]; ok {
+			ident := s.scanIdentifier()
+			// some operators need to be lower-cased
+			lcident := strings.ToLower(ident)
+			if _, ok := caseInsensitiveKeywords[lcident]; ok {
+				ident = lcident
+			}
+			lit = ident
+
+			if keyword, ok := keywords[ident]; ok {
 				tok = keyword
 			} else {
 				tok = tIDENT

@@ -67,11 +67,6 @@ issues:
     - path: internal/codegen/codegen.go
       linters:
         - errcheck
-    - path: internal/jwxtest/jwxtest.go
-      linters:
-        - errcheck
-        - errchkjson
-        - forcetypeassert
     - path: /*_test.go
       linters:
         - errcheck
@@ -80,9 +75,9 @@ issues:
     - path: /*_example_test.go
       linters:
         - forbidigo
-    - path: cmd/jwx/jwx.go
+    - path: resource/resource_type_gen.go
       linters:
-        - forbidigo
+        - revive
 
   # Maximum issues count per one linter. Set to 0 to disable. Default is 50.
   max-issues-per-linter: 0

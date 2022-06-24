@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
 	"flag"
@@ -10,10 +11,10 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/goccy/go-yaml"
-	"github.com/lestrrat-go/codegen"
 	"github.com/cybozu-go/scim/resource"
 	"github.com/cybozu-go/scim/schema"
+	"github.com/goccy/go-yaml"
+	"github.com/lestrrat-go/codegen"
 	"github.com/lestrrat-go/xstrings"
 )
 
@@ -40,8 +41,9 @@ func yaml2json(fn string) ([]byte, error) {
 }
 
 type Service struct {
-	Name  string            `json:"name"`
-	Calls []*codegen.Object `json:"calls"`
+	Name        string            `json:"name"`
+	Description string            `json:"description"`
+	Calls       []*codegen.Object `json:"calls"`
 }
 
 func _main() error {
@@ -121,15 +123,28 @@ func generateService(svc Service, resources map[string]*codegen.Object) error {
 	o := codegen.NewOutput(&buf)
 	o.L(`package client`)
 
-	o.LL(`type %s struct {`, svc.Name)
+	o.LL(`import (`)
+	for _, pkg := range []string{`github.com/goccy/go-yaml`} {
+		o.L(`%q`, pkg)
+	}
+	o.L(`)`)
+
+	if desc := svc.Description; desc != "" {
+		o.LL(`// %s`, strings.TrimSpace(desc))
+	} else {
+		o.R("\n")
+	}
+	o.L(`type %s struct {`, svc.Name)
 	o.L(`client *Client`)
 	o.L(`}`)
 
-	o.LL(`func (client *Client) %s() *%s {`, strings.TrimSuffix(svc.Name, `Service`), svc.Name)
-	o.L(`return &%s{`, svc.Name)
-	o.L(`client: client,`)
-	o.L(`}`)
-	o.L(`}`)
+	if svc.Name != "SearchService" {
+		o.LL(`func (client *Client) %s() *%s {`, strings.TrimSuffix(svc.Name, `Service`), svc.Name)
+		o.L(`return &%s{`, svc.Name)
+		o.L(`client: client,`)
+		o.L(`}`)
+		o.L(`}`)
+	}
 
 	for _, call := range svc.Calls {
 		fmt.Printf("    ⌛ Call %s...\n", call.Name(true))
@@ -150,8 +165,14 @@ func generateService(svc Service, resources map[string]*codegen.Object) error {
 }
 
 func generateCall(o *codegen.Output, svc Service, call *codegen.Object, resources map[string]*codegen.Object) error {
+	rstype := call.String(`resource`)
+
 	o.LL(`type %s struct {`, call.Name(true))
-	o.L(`builder *resource.%sBuilder`, call.String(`resource`))
+	if rstype != "" {
+		o.L(`builder *resource.%sBuilder`, rstype)
+		o.L(`object *resource.%s`, rstype)
+	}
+	o.L(`err error`)
 	o.L(`client *Client`)
 	o.L(`trace io.Writer`)
 
@@ -170,7 +191,42 @@ func generateCall(o *codegen.Output, svc Service, call *codegen.Object, resource
 	}
 	o.L(`}`)
 
-	o.LL(`func (svc *%s) %s(`, svc.Name, strings.TrimSuffix(call.Name(true), `Call`))
+	methodName := strings.TrimSuffix(call.Name(true), `Call`)
+	if v := call.String(`method_name`); v != "" {
+		methodName = v
+	}
+
+	if rstype != "" {
+		o.LL(`func (call *%s) payload() (*resource.%s, error) {`, call.Name(true), rstype)
+		o.L(`if object := call.object; object != nil {`)
+		o.L(`return object, nil`)
+		o.L(`}`)
+		o.L(`return call.builder.Build()`)
+		o.L(`}`)
+
+		o.LL(`func (call *%[1]s) FromJSON(data []byte) *%[1]s {`, call.Name(true))
+		o.L(`if call.err != nil {`)
+		o.L(`return call`)
+		o.L(`}`)
+		o.L(`var in resource.%s`, rstype)
+		o.L(`if err := json.Unmarshal(data, &in); err != nil {`)
+		o.L(`call.err = fmt.Errorf("failed to decode data: %%w", err)`)
+		o.L(`return call`)
+		o.L(`}`)
+		o.L(`call.object = &in`)
+		o.L(`return call`)
+		o.L(`}`)
+	}
+
+	o.R("\n")
+	if desc := call.String(`description`); desc != "" {
+		scanner := bufio.NewScanner(strings.NewReader(strings.TrimSpace(desc)))
+		for scanner.Scan() {
+			o.L(`// %s`, scanner.Text())
+		}
+	}
+
+	o.L(`func (svc *%s) %s(`, svc.Name, methodName)
 	for i, f := range required {
 		if i > 0 {
 			o.R(`, `)
@@ -179,7 +235,9 @@ func generateCall(o *codegen.Output, svc Service, call *codegen.Object, resource
 	}
 	o.R(`) *%s {`, call.Name(true))
 	o.L(`return &%s{`, call.Name(true))
-	o.L(`builder: resource.New%sBuilder(),`, call.String(`resource`))
+	if rstype != "" {
+		o.L(`builder: resource.New%sBuilder(),`, call.String(`resource`))
+	}
 	o.L(`client: svc.client,`)
 	for _, f := range required {
 		o.L(`%[1]s: %[1]s,`, f.Name(false))
@@ -187,103 +245,115 @@ func generateCall(o *codegen.Output, svc Service, call *codegen.Object, resource
 	o.L(`}`)
 	o.L(`}`)
 
-	rs, ok := resources[call.String(`resource`)]
-	if !ok {
-		return fmt.Errorf(`resouce %q not found`, call.String(`resource`))
-	}
+	resType := call.String(`response_type`)
+	jsonPayload := call.Bool(`jsonPayload`)
 
-	var fields []codegen.Field
+	// if we need to generate a resource to be sent to the server, we look it up
+	// an empty "resource" means no resource generation is necessary, and we can
+	// just send an "empty" request
+	if rstype != "" {
+		rs, ok := resources[rstype]
+		if !ok {
+			return fmt.Errorf(`resource %q not found`, rstype)
+		}
 
-	rschema, ok := schema.Get(call.String(`resource`))
-	if !ok {
-		fields = append(rs.Fields(), optional...)
-	} else {
-		mutabilities := make(map[string]struct{})
-		if iface, ok := call.Extra(`allowedMutability`); ok {
-			if vam, ok := iface.([]interface{}); ok {
-				for _, v := range vam {
-					if sv, ok := v.(string); ok {
-						mutabilities[sv] = struct{}{}
+		if resType == "" {
+			resType = `resource.` + rs.Name(true)
+		}
+
+		var fields []codegen.Field
+
+		rschema, ok := schema.GetByResourceType(rstype)
+		if !ok {
+			fields = append(rs.Fields(), optional...)
+		} else {
+			mutabilities := make(map[string]struct{})
+			if iface, ok := call.Extra(`allowedMutability`); ok {
+				if vam, ok := iface.([]interface{}); ok {
+					for _, v := range vam {
+						if sv, ok := v.(string); ok {
+							mutabilities[sv] = struct{}{}
+						}
 					}
 				}
 			}
-		}
 
-		allowed := make(map[string]struct{})
-		if len(mutabilities) > 0 {
-			attrs := rschema.Attributes()
-			// I found out RFC7643 talks about “externalId” field, but it’s not in any of the defined schemas :(
-			eid := resource.NewSchemaAttributeBuilder().
-				Name(`externalId`).
-				Mutability(resource.MutWriteOnly).
-				MustBuild()
-
-			for _, attr := range append(attrs, eid) {
-				mut := string(attr.Mutability())
-				if _, ok := mutabilities[mut]; !ok {
-					continue
-				}
-
-				allowed[attr.Name()] = struct{}{}
-			}
-		}
-
-		for _, f := range append(rs.Fields(), optional...) {
+			allowed := make(map[string]struct{})
 			if len(mutabilities) > 0 {
-				if _, ok := allowed[f.JSON()]; !ok {
-					continue
+				attrs := rschema.Attributes()
+				// I found out RFC7643 talks about “externalId” field, but it’s not in any of the defined schemas :(
+				eid := resource.NewSchemaAttributeBuilder().
+					Name(`externalId`).
+					Mutability(resource.MutWriteOnly).
+					MustBuild()
+
+				for _, attr := range append(attrs, eid) {
+					mut := string(attr.Mutability())
+					if _, ok := mutabilities[mut]; !ok {
+						continue
+					}
+
+					allowed[attr.Name()] = struct{}{}
 				}
 			}
-			fields = append(fields, f)
-		}
-	}
 
-	for _, field := range fields {
-		var typ string
-		var isSlice bool
-		if IsSlice(field) {
-			typ = strings.TrimPrefix(field.Type(), `[]`)
-			isSlice = true
-		} else {
-			typ = field.Type()
+			for _, f := range append(rs.Fields(), optional...) {
+				if len(mutabilities) > 0 {
+					if _, ok := allowed[f.JSON()]; !ok {
+						continue
+					}
+				}
+				fields = append(fields, f)
+			}
 		}
 
-		var hasPtrPrefix bool
-		if strings.HasPrefix(typ, `*`) {
-			typ = strings.TrimPrefix(typ, `*`)
-			hasPtrPrefix = true
+		for _, field := range fields {
+			var typ string
+			var isSlice bool
+			if IsSlice(field) {
+				typ = strings.TrimPrefix(field.Type(), `[]`)
+				isSlice = true
+			} else {
+				typ = field.Type()
+			}
+
+			var hasPtrPrefix bool
+			if strings.HasPrefix(typ, `*`) {
+				typ = strings.TrimPrefix(typ, `*`)
+				hasPtrPrefix = true
+			}
+
+			if _, ok := resources[typ]; ok {
+				typ = `resource.` + typ
+			}
+			if hasPtrPrefix {
+				typ = `*` + typ
+			}
+
+			// If the argument is a slice, the parameter type should be varg
+			if isSlice {
+				o.LL(`func (call *%[1]s) %[2]s(v ...%[3]s) *%[1]s {`, call.Name(true), field.Name(true), typ)
+				o.L(`call.builder.%s(v...)`, field.Name(true))
+			} else {
+				o.LL(`func (call *%[1]s) %[2]s(v %[3]s) *%[1]s {`, call.Name(true), field.Name(true), typ)
+				o.L(`call.builder.%s(v)`, field.Name(true))
+			}
+			o.L(`return call`)
+			o.L(`}`)
 		}
 
-		if _, ok := resources[typ]; ok {
-			typ = `resource.` + typ
-		}
-		if hasPtrPrefix {
-			typ = `*` + typ
-		}
+		if jsonPayload {
+			o.LL(`// Extension allows users to register an extension using the fully qualified URI`)
+			o.L(`func (call *%[1]s) Extension(uri string, value interface{}) *%[1]s {`, call.Name(true))
+			o.L(`call.builder.Extension(uri, value)`)
+			o.L(`return call`)
+			o.L(`}`)
 
-		// If the argument is a slice, the parameter type should be varg
-		if isSlice {
-			o.LL(`func (call *%[1]s) %[2]s(v ...%[3]s) *%[1]s {`, call.Name(true), field.Name(true), typ)
-			o.L(`call.builder.%s(v...)`, field.Name(true))
-		} else {
-			o.LL(`func (call *%[1]s) %[2]s(v %[3]s) *%[1]s {`, call.Name(true), field.Name(true), typ)
-			o.L(`call.builder.%s(v)`, field.Name(true))
+			o.LL(`func (call *%[1]s) Validator(v resource.%[2]sValidator) *%[1]s {`, call.Name(true), rs.Name(true))
+			o.L(`call.builder.Validator(v)`)
+			o.L(`return call`)
+			o.L(`}`)
 		}
-		o.L(`return call`)
-		o.L(`}`)
-	}
-
-	jsonPayload := call.Bool(`jsonPayload`)
-	if jsonPayload {
-		o.LL(`func (call *%[1]s) Extension(uri string, value interface{}) *%[1]s {`, call.Name(true))
-		o.L(`call.builder.Extension(uri, value)`)
-		o.L(`return call`)
-		o.L(`}`)
-
-		o.LL(`func (call *%[1]s) Validator(v resource.%[2]sValidator) *%[1]s {`, call.Name(true), rs.Name(true))
-		o.L(`call.builder.Validator(v)`)
-		o.L(`return call`)
-		o.L(`}`)
 	}
 
 	o.LL(`func (call *%[1]s) Trace(w io.Writer) *%[1]s {`, call.Name(true))
@@ -314,9 +384,8 @@ func generateCall(o *codegen.Output, svc Service, call *codegen.Object, resource
 		o.L(`}`)
 	}
 
-	resType := call.String(`response_type`)
 	if resType == "" {
-		resType = `resource.` + rs.Name(true)
+		return fmt.Errorf(`response_type is not specified for %q`, call.Name(true))
 	}
 
 	var errPrefix string
@@ -327,48 +396,60 @@ func generateCall(o *codegen.Output, svc Service, call *codegen.Object, resource
 		o.LL(`func (call *%s) Do(ctx context.Context) (*%s, error) {`, call.Name(true), resType)
 	}
 
-	o.L(`payload, err := call.builder.Build()`)
-	o.L(`if err != nil {`)
-	o.L("return %sfmt.Errorf(`failed to generate request payload for %s: %%w`, err)", errPrefix, call.Name(true))
+	o.L(`if err := call.err; err != nil {`)
+	o.L(`return %sfmt.Errorf("failed to build request: %%w", err)`, errPrefix)
 	o.L(`}`)
-	o.LL(`trace := call.trace`)
+
+	if rstype != "" {
+		o.L(`payload, err := call.payload()`)
+		o.L(`if err != nil {`)
+		o.L("return %sfmt.Errorf(`failed to generate request payload for %s: %%w`, err)", errPrefix, call.Name(true))
+		o.L(`}`)
+		o.R("\n")
+	}
+	o.L(`trace := call.trace`)
+	o.L(`if trace == nil {`)
+	o.L(`trace = call.client.trace`)
+	o.L(`}`)
 	o.L(`u := call.makeURL()`)
 	o.L(`if trace != nil {`)
-	o.L("fmt.Fprintf(trace, `trace: client sending call request to %%q\n`, u)")
+	o.L(`fmt.Fprintf(trace, "trace: client sending call request to %%q\n", u)`)
 	o.L(`}`)
 
-	if jsonPayload {
-		o.LL(`var body bytes.Buffer`)
-		o.L(`if err := json.NewEncoder(&body).Encode(payload); err != nil {`)
-		o.L("return %sfmt.Errorf(`failed to encode call request: %%w`, err)", errPrefix)
-		o.L(`}`)
-		o.LL(`req, err := http.NewRequestWithContext(ctx, %s, u, &body)`, call.String(`method`))
+	if rstype == "" {
+		o.LL(`req, err := http.NewRequestWithContext(ctx, %s, u, nil)`, call.String(`http_method`))
 	} else {
-		o.LL(`var vals url.Values`)
-		o.L(`m := make(map[string]interface{})`)
-		o.L(`if err := payload.AsMap(m); err != nil {`)
-		o.L("return %sfmt.Errorf(`failed to convert resource into map: %%w`, err)", errPrefix)
-		o.L(`}`)
-		o.L(`if len(m) > 0 {`)
-		o.L(`vals = make(url.Values)`)
-		o.L(`for key, value := range m {`)
-		// HACK: this needs to be fixed
-		o.L(`switch value := value.(type) {`)
-		o.L(`case []string:`)
-		o.L(`for _, x := range value {`)
-		o.L(`vals.Add(key, x)`)
-		o.L(`}`)
-		o.L(`default:`)
-		// TODO: this is over simplified
-		o.L("vals.Add(key, fmt.Sprintf(`%%s`, value))")
-		o.L(`}`)
-		o.L(`}`)
-		o.L(`}`)
+		if jsonPayload {
+			o.LL(`var body bytes.Buffer`)
+			o.L(`if err := json.NewEncoder(&body).Encode(payload); err != nil {`)
+			o.L("return %sfmt.Errorf(`failed to encode call request: %%w`, err)", errPrefix)
+			o.L(`}`)
+			o.LL(`req, err := http.NewRequestWithContext(ctx, %s, u, &body)`, call.String(`http_method`))
+		} else {
+			o.LL(`var vals url.Values`)
+			o.L(`m := make(map[string]interface{})`)
+			o.L(`if err := payload.AsMap(m); err != nil {`)
+			o.L("return %sfmt.Errorf(`failed to convert resource into map: %%w`, err)", errPrefix)
+			o.L(`}`)
+			o.L(`if len(m) > 0 {`)
+			o.L(`vals = make(url.Values)`)
+			o.L(`for key, value := range m {`)
+			// HACK: this needs to be fixed
+			o.L(`switch value := value.(type) {`)
+			o.L(`case []string:`)
+			o.L(`vals.Add(key, strings.Join(value, ","))`)
+			o.L(`default:`)
+			// TODO: this is over simplified
+			o.L("vals.Add(key, fmt.Sprintf(`%%s`, value))")
+			o.L(`}`)
+			o.L(`}`)
+			o.L(`}`)
 
-		o.L(`if enc := vals.Encode(); len(enc) > 0 {`)
-		o.L(`u = u + "?"+ vals.Encode()`)
-		o.L(`}`)
-		o.L(`req, err := http.NewRequestWithContext(ctx, %s, u, nil)`, call.String(`method`))
+			o.L(`if enc := vals.Encode(); len(enc) > 0 {`)
+			o.L(`u = u + "?"+ vals.Encode()`)
+			o.L(`}`)
+			o.L(`req, err := http.NewRequestWithContext(ctx, %s, u, nil)`, call.String(`http_method`))
+		}
 	}
 
 	o.L(`if err != nil {`)

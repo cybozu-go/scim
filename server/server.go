@@ -48,8 +48,32 @@ func NewServer(backend interface{}) (http.Handler, error) {
 		b.RetrieveUser(RetrieveUserEndpoint(v))
 	}
 
+	if v, ok := backend.(SearchGroupBackend); ok {
+		b.SearchGroup(SearchGroupEndpoint(v))
+	}
+
+	if v, ok := backend.(SearchUserBackend); ok {
+		b.SearchUser(SearchUserEndpoint(v))
+	}
+
 	if v, ok := backend.(SearchBackend); ok {
 		b.Search(SearchEndpoint(v))
+	}
+
+	if v, ok := backend.(RetrieveServiceProviderConfigBackend); ok {
+		b.ServiceProviderConfig(RetrieveServiceProviderConfigEndpoint(v))
+	}
+
+	if v, ok := backend.(RetrieveResourceTypesBackend); ok {
+		b.ResourceTypes(RetrieveResourceTypesEndpoint(v))
+	}
+
+	if v, ok := backend.(ListSchemasBackend); ok {
+		b.ListSchemas(ListSchemasEndpoint(v))
+	}
+
+	if v, ok := backend.(RetrieveSchemaBackend); ok {
+		b.RetrieveSchema(RetrieveSchemaEndpoint(v))
 	}
 	return b.Build()
 }
@@ -188,7 +212,37 @@ func (b *Builder) RetrieveUser(hh http.Handler) *Builder {
 	return b
 }
 
+func (b *Builder) SearchGroup(hh http.Handler) *Builder {
+	b.Handler(http.MethodPost, `/Groups/.search`, hh)
+	return b
+}
+
+func (b *Builder) SearchUser(hh http.Handler) *Builder {
+	b.Handler(http.MethodPost, `/Users/.search`, hh)
+	return b
+}
+
 func (b *Builder) Search(hh http.Handler) *Builder {
 	b.Handler(http.MethodPost, `/.search`, hh)
+	return b
+}
+
+func (b *Builder) ServiceProviderConfig(hh http.Handler) *Builder {
+	b.Handler(http.MethodGet, `/ServiceProviderConfig`, hh)
+	return b
+}
+
+func (b *Builder) ResourceTypes(hh http.Handler) *Builder {
+	b.Handler(http.MethodGet, `/ResourceTypes`, hh)
+	return b
+}
+
+func (b *Builder) ListSchemas(hh http.Handler) *Builder {
+	b.Handler(http.MethodGet, `/Schemas`, hh)
+	return b
+}
+
+func (b *Builder) RetrieveSchema(hh http.Handler) *Builder {
+	b.Handler(http.MethodGet, `/Schemas/{id}`, hh)
 	return b
 }

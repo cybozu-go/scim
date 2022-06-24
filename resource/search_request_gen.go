@@ -9,14 +9,14 @@ import (
 )
 
 const (
-	searchRequestAttributesJSONKey        = "attributes"
-	searchRequestCountJSONKey             = "count"
-	searchRequestExludedAttributesJSONKey = "exludedAttributes"
-	searchRequestFilterJSONKey            = "filter"
-	searchRequestSchemasJSONKey           = "schemas"
-	searchRequestSortByJSONKey            = "sortBy"
-	searchRequestSortOrderJSONKey         = "sortOrder"
-	searchRequestStartIndexJSONKey        = "startIndex"
+	SearchRequestAttributesKey        = "attributes"
+	SearchRequestCountKey             = "count"
+	SearchRequestExludedAttributesKey = "exludedAttributes"
+	SearchRequestFilterKey            = "filter"
+	SearchRequestSchemasKey           = "schemas"
+	SearchRequestSortByKey            = "sortBy"
+	SearchRequestSortOrderKey         = "sortOrder"
+	SearchRequestStartIndexKey        = "startIndex"
 )
 
 const SearchRequestSchemaURI = "urn:ietf:params:scim:api:messages:2.0:SearchRequest"
@@ -52,10 +52,22 @@ var DefaultSearchRequestValidator SearchRequestValidator = SearchRequestValidate
 	return nil
 })
 
+func (v *SearchRequest) HasAttributes() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.attributes != nil
+}
+
 func (v *SearchRequest) Attributes() []string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.attributes
+}
+
+func (v *SearchRequest) HasCount() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.count != nil
 }
 
 func (v *SearchRequest) Count() int {
@@ -67,10 +79,22 @@ func (v *SearchRequest) Count() int {
 	return *(v.count)
 }
 
+func (v *SearchRequest) HasExludedAttributes() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.exludedAttributes != nil
+}
+
 func (v *SearchRequest) ExludedAttributes() []string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.exludedAttributes
+}
+
+func (v *SearchRequest) HasFilter() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.filter != nil
 }
 
 func (v *SearchRequest) Filter() string {
@@ -82,10 +106,22 @@ func (v *SearchRequest) Filter() string {
 	return *(v.filter)
 }
 
+func (v *SearchRequest) HasSchemas() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return true
+}
+
 func (v *SearchRequest) Schemas() []string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.schemas.List()
+}
+
+func (v *SearchRequest) HasSortBy() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.sortBy != nil
 }
 
 func (v *SearchRequest) SortBy() string {
@@ -97,6 +133,12 @@ func (v *SearchRequest) SortBy() string {
 	return *(v.sortBy)
 }
 
+func (v *SearchRequest) HasSortOrder() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.sortOrder != nil
+}
+
 func (v *SearchRequest) SortOrder() string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -104,6 +146,12 @@ func (v *SearchRequest) SortOrder() string {
 		return ""
 	}
 	return *(v.sortOrder)
+}
+
+func (v *SearchRequest) HasStartIndex() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.startIndex != nil
 }
 
 func (v *SearchRequest) StartIndex() int {
@@ -182,42 +230,42 @@ func (v *SearchRequest) Get(name string, options ...GetOption) (interface{}, boo
 		}
 	}
 	switch name {
-	case searchRequestAttributesJSONKey:
+	case SearchRequestAttributesKey:
 		if v.attributes == nil {
 			return nil, false
 		}
 		return v.attributes, true
-	case searchRequestCountJSONKey:
+	case SearchRequestCountKey:
 		if v.count == nil {
 			return nil, false
 		}
 		return *(v.count), true
-	case searchRequestExludedAttributesJSONKey:
+	case SearchRequestExludedAttributesKey:
 		if v.exludedAttributes == nil {
 			return nil, false
 		}
 		return v.exludedAttributes, true
-	case searchRequestFilterJSONKey:
+	case SearchRequestFilterKey:
 		if v.filter == nil {
 			return nil, false
 		}
 		return *(v.filter), true
-	case searchRequestSchemasJSONKey:
+	case SearchRequestSchemasKey:
 		if v.schemas == nil {
 			return nil, false
 		}
 		return v.schemas, true
-	case searchRequestSortByJSONKey:
+	case SearchRequestSortByKey:
 		if v.sortBy == nil {
 			return nil, false
 		}
 		return *(v.sortBy), true
-	case searchRequestSortOrderJSONKey:
+	case SearchRequestSortOrderKey:
 		if v.sortOrder == nil {
 			return nil, false
 		}
 		return *(v.sortOrder), true
-	case searchRequestStartIndexJSONKey:
+	case SearchRequestStartIndexKey:
 		if v.startIndex == nil {
 			return nil, false
 		}
@@ -249,7 +297,7 @@ func (v *SearchRequest) Set(name string, value interface{}) error {
 	v.mu.Lock()
 	defer v.mu.Unlock()
 	switch name {
-	case searchRequestAttributesJSONKey:
+	case SearchRequestAttributesKey:
 		var tmp []string
 		tmp, ok := value.([]string)
 		if !ok {
@@ -257,7 +305,7 @@ func (v *SearchRequest) Set(name string, value interface{}) error {
 		}
 		v.attributes = tmp
 		return nil
-	case searchRequestCountJSONKey:
+	case SearchRequestCountKey:
 		var tmp int
 		tmp, ok := value.(int)
 		if !ok {
@@ -265,7 +313,7 @@ func (v *SearchRequest) Set(name string, value interface{}) error {
 		}
 		v.count = &tmp
 		return nil
-	case searchRequestExludedAttributesJSONKey:
+	case SearchRequestExludedAttributesKey:
 		var tmp []string
 		tmp, ok := value.([]string)
 		if !ok {
@@ -273,7 +321,7 @@ func (v *SearchRequest) Set(name string, value interface{}) error {
 		}
 		v.exludedAttributes = tmp
 		return nil
-	case searchRequestFilterJSONKey:
+	case SearchRequestFilterKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -281,7 +329,7 @@ func (v *SearchRequest) Set(name string, value interface{}) error {
 		}
 		v.filter = &tmp
 		return nil
-	case searchRequestSchemasJSONKey:
+	case SearchRequestSchemasKey:
 		var tmp schemas
 		tmp, ok := value.(schemas)
 		if !ok {
@@ -289,7 +337,7 @@ func (v *SearchRequest) Set(name string, value interface{}) error {
 		}
 		v.schemas = tmp
 		return nil
-	case searchRequestSortByJSONKey:
+	case SearchRequestSortByKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -297,7 +345,7 @@ func (v *SearchRequest) Set(name string, value interface{}) error {
 		}
 		v.sortBy = &tmp
 		return nil
-	case searchRequestSortOrderJSONKey:
+	case SearchRequestSortOrderKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -305,7 +353,7 @@ func (v *SearchRequest) Set(name string, value interface{}) error {
 		}
 		v.sortOrder = &tmp
 		return nil
-	case searchRequestStartIndexJSONKey:
+	case SearchRequestStartIndexKey:
 		var tmp int
 		tmp, ok := value.(int)
 		if !ok {
@@ -321,6 +369,21 @@ func (v *SearchRequest) Set(name string, value interface{}) error {
 		}
 		pp[name] = value
 		return nil
+	}
+}
+
+func (v *SearchRequest) Clone() *SearchRequest {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	return &SearchRequest{
+		attributes:        v.attributes,
+		count:             v.count,
+		exludedAttributes: v.exludedAttributes,
+		filter:            v.filter,
+		schemas:           v.schemas,
+		sortBy:            v.sortBy,
+		sortOrder:         v.sortOrder,
+		startIndex:        v.startIndex,
 	}
 }
 
@@ -362,49 +425,49 @@ LOOP:
 			}
 		case string:
 			switch tok {
-			case searchRequestAttributesJSONKey:
+			case SearchRequestAttributesKey:
 				var x []string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "attributes": %w`, err)
 				}
 				v.attributes = x
-			case searchRequestCountJSONKey:
+			case SearchRequestCountKey:
 				var x int
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "count": %w`, err)
 				}
 				v.count = &x
-			case searchRequestExludedAttributesJSONKey:
+			case SearchRequestExludedAttributesKey:
 				var x []string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "exludedAttributes": %w`, err)
 				}
 				v.exludedAttributes = x
-			case searchRequestFilterJSONKey:
+			case SearchRequestFilterKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "filter": %w`, err)
 				}
 				v.filter = &x
-			case searchRequestSchemasJSONKey:
+			case SearchRequestSchemasKey:
 				var x schemas
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "schemas": %w`, err)
 				}
 				v.schemas = x
-			case searchRequestSortByJSONKey:
+			case SearchRequestSortByKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "sortBy": %w`, err)
 				}
 				v.sortBy = &x
-			case searchRequestSortOrderJSONKey:
+			case SearchRequestSortOrderKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "sortOrder": %w`, err)
 				}
 				v.sortOrder = &x
-			case searchRequestStartIndexJSONKey:
+			case SearchRequestStartIndexKey:
 				var x int
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "startIndex": %w`, err)
@@ -458,6 +521,12 @@ func NewSearchRequestBuilder() *SearchRequestBuilder {
 	var b SearchRequestBuilder
 	b.init()
 	return &b
+}
+
+func (b *SearchRequestBuilder) From(in *SearchRequest) *SearchRequestBuilder {
+	b.once.Do(b.init)
+	b.object = in.Clone()
+	return b
 }
 
 func (b *SearchRequestBuilder) init() {
@@ -611,10 +680,8 @@ func (b *SearchRequestBuilder) Build() (*SearchRequest, error) {
 	if validator == nil {
 		validator = DefaultSearchRequestValidator
 	}
-	if validator != nil {
-		if err := validator.Validate(object); err != nil {
-			return nil, err
-		}
+	if err := validator.Validate(object); err != nil {
+		return nil, err
 	}
 	return object, nil
 }

@@ -9,7 +9,7 @@ import (
 	"github.com/cybozu-go/scim/client"
 )
 
-func ExampleClient_CreateUser() {
+func ExampleClient_UserCreate() {
 	// TODO: setup a toy SCIM server
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusCreated)
@@ -19,7 +19,7 @@ func ExampleClient_CreateUser() {
 
 	cl := client.New(srv.URL)
 
-	user, err := cl.User().CreateUser().
+	user, err := cl.User().Create().
 		DisplayName(`Daisuke Maki`).
 		ExternalID(`lestrrat`).
 		Do(context.TODO())

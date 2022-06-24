@@ -1,0 +1,85 @@
+[
+  {
+    "userName": "rzemeckis",
+    "displayName": "Robert Zemeckis",
+    "emails": [
+      {
+        "value": "rzemckis@zemeckis-crew.com"
+      }
+    ],
+    "roles": [
+      {
+        "value": "director"
+      }
+    ]
+  },
+  {
+    "userName": "fgump",
+    "emails": [
+      {
+        "value": "fgump@zemeckis-crew.com"
+      }
+    ],
+    "name": {
+      "givenName": "Forrest",
+      "familyName": "Gump"
+    },
+    "roles": [
+      {
+        "value": "actor"
+      }
+    ]
+  },
+  {
+    "userName": "jcurran",
+    "emails": [
+      {
+        "value": "jcurran@zemeckis-crew.com"
+      }
+    ],
+    "name": {
+      "givenName": "Jenny",
+      "familyName": "Curran"
+    },
+    "roles": [
+      {
+        "value": "actor"
+      }
+    ]
+  },
+  {
+    "userName": "dtaylor",
+    "emails": [
+      {
+        "value": "dtaylor@zemeckis-crew.com"
+      }
+    ],
+    "name": {
+      "givenName": "Dan",
+      "familyName": "Taylor"
+    },
+    "roles": [
+      {
+        "value": "actor"
+      }
+    ]
+  },
+  {
+    "userName": "bubba",
+    "emails": [
+      {
+        "value": "bubba@zemeckis-crew.com"
+      }
+    ],
+    "name": {
+      "givenName": "Benjamin",
+      "middleName": "Buford",
+      "familyName": "Blue"
+    },
+    "roles": [
+      {
+        "value": "actor"
+      }
+    ]
+  }
+]

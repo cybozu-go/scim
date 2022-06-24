@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	partialResourceRepresentationRequestAttributesJSONKey         = "attributes"
-	partialResourceRepresentationRequestExcludedAttributesJSONKey = "excludedAttributes"
+	PartialResourceRepresentationRequestAttributesKey         = "attributes"
+	PartialResourceRepresentationRequestExcludedAttributesKey = "excludedAttributes"
 )
 
 type PartialResourceRepresentationRequest struct {
@@ -34,10 +34,22 @@ var DefaultPartialResourceRepresentationRequestValidator PartialResourceRepresen
 	return nil
 })
 
+func (v *PartialResourceRepresentationRequest) HasAttributes() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.attributes != nil
+}
+
 func (v *PartialResourceRepresentationRequest) Attributes() []string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.attributes
+}
+
+func (v *PartialResourceRepresentationRequest) HasExcludedAttributes() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.excludedAttributes != nil
 }
 
 func (v *PartialResourceRepresentationRequest) ExcludedAttributes() []string {
@@ -95,12 +107,12 @@ func (v *PartialResourceRepresentationRequest) Get(name string, options ...GetOp
 		}
 	}
 	switch name {
-	case partialResourceRepresentationRequestAttributesJSONKey:
+	case PartialResourceRepresentationRequestAttributesKey:
 		if v.attributes == nil {
 			return nil, false
 		}
 		return v.attributes, true
-	case partialResourceRepresentationRequestExcludedAttributesJSONKey:
+	case PartialResourceRepresentationRequestExcludedAttributesKey:
 		if v.excludedAttributes == nil {
 			return nil, false
 		}
@@ -132,7 +144,7 @@ func (v *PartialResourceRepresentationRequest) Set(name string, value interface{
 	v.mu.Lock()
 	defer v.mu.Unlock()
 	switch name {
-	case partialResourceRepresentationRequestAttributesJSONKey:
+	case PartialResourceRepresentationRequestAttributesKey:
 		var tmp []string
 		tmp, ok := value.([]string)
 		if !ok {
@@ -140,7 +152,7 @@ func (v *PartialResourceRepresentationRequest) Set(name string, value interface{
 		}
 		v.attributes = tmp
 		return nil
-	case partialResourceRepresentationRequestExcludedAttributesJSONKey:
+	case PartialResourceRepresentationRequestExcludedAttributesKey:
 		var tmp []string
 		tmp, ok := value.([]string)
 		if !ok {
@@ -156,6 +168,15 @@ func (v *PartialResourceRepresentationRequest) Set(name string, value interface{
 		}
 		pp[name] = value
 		return nil
+	}
+}
+
+func (v *PartialResourceRepresentationRequest) Clone() *PartialResourceRepresentationRequest {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	return &PartialResourceRepresentationRequest{
+		attributes:         v.attributes,
+		excludedAttributes: v.excludedAttributes,
 	}
 }
 
@@ -191,13 +212,13 @@ LOOP:
 			}
 		case string:
 			switch tok {
-			case partialResourceRepresentationRequestAttributesJSONKey:
+			case PartialResourceRepresentationRequestAttributesKey:
 				var x []string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "attributes": %w`, err)
 				}
 				v.attributes = x
-			case partialResourceRepresentationRequestExcludedAttributesJSONKey:
+			case PartialResourceRepresentationRequestExcludedAttributesKey:
 				var x []string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "excludedAttributes": %w`, err)
@@ -251,6 +272,12 @@ func NewPartialResourceRepresentationRequestBuilder() *PartialResourceRepresenta
 	var b PartialResourceRepresentationRequestBuilder
 	b.init()
 	return &b
+}
+
+func (b *PartialResourceRepresentationRequestBuilder) From(in *PartialResourceRepresentationRequest) *PartialResourceRepresentationRequestBuilder {
+	b.once.Do(b.init)
+	b.object = in.Clone()
+	return b
 }
 
 func (b *PartialResourceRepresentationRequestBuilder) init() {
@@ -312,10 +339,8 @@ func (b *PartialResourceRepresentationRequestBuilder) Build() (*PartialResourceR
 	if validator == nil {
 		validator = DefaultPartialResourceRepresentationRequestValidator
 	}
-	if validator != nil {
-		if err := validator.Validate(object); err != nil {
-			return nil, err
-		}
+	if err := validator.Validate(object); err != nil {
+		return nil, err
 	}
 	return object, nil
 }

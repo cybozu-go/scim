@@ -1,6 +1,10 @@
 common:
   - name: id
     required: true
+    generated: true
+    ent_type: "uuid.UUID{}"
+    ent_default: "uuid.New"
+    ent_build_method: UUID
   - name: externalID
     json: externalId
   - name: meta
@@ -18,9 +22,12 @@ objects:
       - name: version
   - name: User
     schema: "urn:ietf:params:scim:schemas:core:2.0:User"
+    top_level: true
     fields:
       - name: userName
         required: true
+        ent_notempty: true
+        ent_unique: true
       - name: displayName
       - name: name
         type: '*Names'
@@ -33,10 +40,13 @@ objects:
       - name: title
       - name: userType
       - name: preferredLanguage
+      - name: locale
       - name: timezone
       - name: active
         type: bool
       - name: password
+        ent_notempty: true
+        ent_sensitive: true
       - name: emails
         type: '[]*Email'
         validator: validateEmails
@@ -52,15 +62,29 @@ objects:
       - name: entitlements
         type: '[]string'
       - name: roles
-        type: '[]string'
+        type: '[]*Role'
       - name: x509Certificates
         type: '[]string'
   - name: Email
     skipCommonFields: true
     fields:
       - name: value
+        required: true
       - name: display
       - name: typ
+        ent_name: type
+        exported_name: Type
+        json: type
+      - name: primary
+        type: bool
+  - name: Role
+    skipCommonFields: true
+    fields:
+      - name: value
+        required: true
+      - name: display
+      - name: typ
+        ent_name: type
         exported_name: Type
         json: type
       - name: primary
@@ -96,11 +120,14 @@ objects:
         readOnly: true
   - name: Group
     schema: urn:ietf:params:scim:schemas:core:2.0:Group
+    ent_conversion_helper: groupResourceFromEntHelper
+    top_level: true
     fields:
       - name: displayName
       - name: members
-        type: '[]*User'
+        type: '[]*GroupMember'
   - name: GroupMember
+    skipCommonFields: true
     fields:
       - name: value
       - name: ref
@@ -138,6 +165,7 @@ objects:
     fields:
       - name: typ
         json: type
+        exported_name: Type
         type: AuthenticationSchemeType
         required: true
       - name: name
@@ -151,6 +179,7 @@ objects:
   - name: ServiceProviderConfig
     schema: urn:ietf:params:scim:schemas:core:2.0:ServiceProviderConfig
     skipCommonFields: true
+    top_level: true
     fields:
       - name: documentationURI
         json: documentationUri
@@ -173,7 +202,7 @@ objects:
         required: true
         type: '*GenericSupport'
       - name: authenticationSchemes
-        type: '[]AuthenticationScheme'
+        type: '[]*AuthenticationScheme'
         required: true
   - name: SearchRequest
     schema: urn:ietf:params:scim:api:messages:2.0:SearchRequest
@@ -193,6 +222,14 @@ objects:
   - name: ListResponse
     schema: urn:ietf:params:scim:api:messages:2.0:ListResponse
     skipCommonFields: true
+    # ListResponse is a pain, because while in Go we want type safety in the returned
+    # list of objects, the RFC states that the "Resources" field may contain either
+    # any of the possible resources (and why on earth is this the only field that
+    # is capitalized? WHY?)
+    #
+    # To make this slightly easier, we're going to have to hand-roll the UnmarshalJSON
+    # method instead of generating one
+    skip_unmarshal_json_hook: true
     fields:
       - name: totalResults
         type: int
@@ -201,7 +238,7 @@ objects:
       - name: startIndex
         type: int
       - name: Resources
-        type: "[]interface{}"
+        type: '[]interface{}'
   - name: PartialResourceRepresentationRequest
     skipCommonFields: true
     fields:
@@ -246,4 +283,31 @@ objects:
         type: Uniqueness
       - name: referenceTypes
         type: '[]string'
-
+  - name: Error
+    skipCommonFields: true
+    fields:
+      - name: status
+        type: int
+      - name: scimType
+        type: ErrorType
+      - name: detail
+  - name: ResourceType
+    skipCommonFields: true
+    schema: "urn:ietf:params:scim:schemas:core:2.0:ResourceType"
+    top_level: true
+    fields:
+      - name: id
+      - name: name
+      - name: description
+      - name: endpoint
+        required: true
+      - name: schema
+        required: true
+      - name: schemaExtensions
+        type: '[]*SchemaExtension'
+  - name: SchemaExtension
+    skipCommonFields: true
+    fields:
+      - name: schema
+      - name: required
+        type: bool

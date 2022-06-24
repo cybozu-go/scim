@@ -9,19 +9,13 @@ import (
 )
 
 const (
-	groupMemberDisplayJSONKey    = "display"
-	groupMemberExternalIDJSONKey = "externalId"
-	groupMemberIDJSONKey         = "id"
-	groupMemberMetaJSONKey       = "meta"
-	groupMemberRefJSONKey        = "$ref"
-	groupMemberValueJSONKey      = "value"
+	GroupMemberDisplayKey = "display"
+	GroupMemberRefKey     = "$ref"
+	GroupMemberValueKey   = "value"
 )
 
 type GroupMember struct {
 	display       *string
-	externalID    *string
-	id            *string
-	meta          *Meta
 	ref           *string
 	value         *string
 	privateParams map[string]interface{}
@@ -39,11 +33,14 @@ func (f GroupMemberValidateFunc) Validate(v *GroupMember) error {
 }
 
 var DefaultGroupMemberValidator GroupMemberValidator = GroupMemberValidateFunc(func(v *GroupMember) error {
-	if v.id == nil {
-		return fmt.Errorf(`required field "id" is missing`)
-	}
 	return nil
 })
+
+func (v *GroupMember) HasDisplay() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.display != nil
+}
 
 func (v *GroupMember) Display() string {
 	v.mu.RLock()
@@ -54,28 +51,10 @@ func (v *GroupMember) Display() string {
 	return *(v.display)
 }
 
-func (v *GroupMember) ExternalID() string {
+func (v *GroupMember) HasRef() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	if v.externalID == nil {
-		return ""
-	}
-	return *(v.externalID)
-}
-
-func (v *GroupMember) ID() string {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	if v.id == nil {
-		return ""
-	}
-	return *(v.id)
-}
-
-func (v *GroupMember) Meta() *Meta {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	return v.meta
+	return v.ref != nil
 }
 
 func (v *GroupMember) Ref() string {
@@ -85,6 +64,12 @@ func (v *GroupMember) Ref() string {
 		return ""
 	}
 	return *(v.ref)
+}
+
+func (v *GroupMember) HasValue() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.value != nil
 }
 
 func (v *GroupMember) Value() string {
@@ -97,18 +82,9 @@ func (v *GroupMember) Value() string {
 }
 
 func (v *GroupMember) makePairs() []pair {
-	pairs := make([]pair, 0, 6)
+	pairs := make([]pair, 0, 3)
 	if v.display != nil {
 		pairs = append(pairs, pair{Key: "display", Value: *(v.display)})
-	}
-	if v.externalID != nil {
-		pairs = append(pairs, pair{Key: "externalId", Value: *(v.externalID)})
-	}
-	if v.id != nil {
-		pairs = append(pairs, pair{Key: "id", Value: *(v.id)})
-	}
-	if v.meta != nil {
-		pairs = append(pairs, pair{Key: "meta", Value: v.meta})
 	}
 	if v.ref != nil {
 		pairs = append(pairs, pair{Key: "$ref", Value: *(v.ref)})
@@ -157,32 +133,17 @@ func (v *GroupMember) Get(name string, options ...GetOption) (interface{}, bool)
 		}
 	}
 	switch name {
-	case groupMemberDisplayJSONKey:
+	case GroupMemberDisplayKey:
 		if v.display == nil {
 			return nil, false
 		}
 		return *(v.display), true
-	case groupMemberExternalIDJSONKey:
-		if v.externalID == nil {
-			return nil, false
-		}
-		return *(v.externalID), true
-	case groupMemberIDJSONKey:
-		if v.id == nil {
-			return nil, false
-		}
-		return *(v.id), true
-	case groupMemberMetaJSONKey:
-		if v.meta == nil {
-			return nil, false
-		}
-		return v.meta, true
-	case groupMemberRefJSONKey:
+	case GroupMemberRefKey:
 		if v.ref == nil {
 			return nil, false
 		}
 		return *(v.ref), true
-	case groupMemberValueJSONKey:
+	case GroupMemberValueKey:
 		if v.value == nil {
 			return nil, false
 		}
@@ -214,7 +175,7 @@ func (v *GroupMember) Set(name string, value interface{}) error {
 	v.mu.Lock()
 	defer v.mu.Unlock()
 	switch name {
-	case groupMemberDisplayJSONKey:
+	case GroupMemberDisplayKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -222,31 +183,7 @@ func (v *GroupMember) Set(name string, value interface{}) error {
 		}
 		v.display = &tmp
 		return nil
-	case groupMemberExternalIDJSONKey:
-		var tmp string
-		tmp, ok := value.(string)
-		if !ok {
-			return fmt.Errorf(`expected string for field "externalId", but got %T`, value)
-		}
-		v.externalID = &tmp
-		return nil
-	case groupMemberIDJSONKey:
-		var tmp string
-		tmp, ok := value.(string)
-		if !ok {
-			return fmt.Errorf(`expected string for field "id", but got %T`, value)
-		}
-		v.id = &tmp
-		return nil
-	case groupMemberMetaJSONKey:
-		var tmp *Meta
-		tmp, ok := value.(*Meta)
-		if !ok {
-			return fmt.Errorf(`expected *Meta for field "meta", but got %T`, value)
-		}
-		v.meta = tmp
-		return nil
-	case groupMemberRefJSONKey:
+	case GroupMemberRefKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -254,7 +191,7 @@ func (v *GroupMember) Set(name string, value interface{}) error {
 		}
 		v.ref = &tmp
 		return nil
-	case groupMemberValueJSONKey:
+	case GroupMemberValueKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -273,11 +210,18 @@ func (v *GroupMember) Set(name string, value interface{}) error {
 	}
 }
 
+func (v *GroupMember) Clone() *GroupMember {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	return &GroupMember{
+		display: v.display,
+		ref:     v.ref,
+		value:   v.value,
+	}
+}
+
 func (v *GroupMember) UnmarshalJSON(data []byte) error {
 	v.display = nil
-	v.externalID = nil
-	v.id = nil
-	v.meta = nil
 	v.ref = nil
 	v.value = nil
 	v.privateParams = nil
@@ -309,37 +253,19 @@ LOOP:
 			}
 		case string:
 			switch tok {
-			case groupMemberDisplayJSONKey:
+			case GroupMemberDisplayKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "display": %w`, err)
 				}
 				v.display = &x
-			case groupMemberExternalIDJSONKey:
-				var x string
-				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "externalId": %w`, err)
-				}
-				v.externalID = &x
-			case groupMemberIDJSONKey:
-				var x string
-				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "id": %w`, err)
-				}
-				v.id = &x
-			case groupMemberMetaJSONKey:
-				var x *Meta
-				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "meta": %w`, err)
-				}
-				v.meta = x
-			case groupMemberRefJSONKey:
+			case GroupMemberRefKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "$ref": %w`, err)
 				}
 				v.ref = &x
-			case groupMemberValueJSONKey:
+			case GroupMemberValueKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "value": %w`, err)
@@ -395,6 +321,12 @@ func NewGroupMemberBuilder() *GroupMemberBuilder {
 	return &b
 }
 
+func (b *GroupMemberBuilder) From(in *GroupMember) *GroupMemberBuilder {
+	b.once.Do(b.init)
+	b.object = in.Clone()
+	return b
+}
+
 func (b *GroupMemberBuilder) init() {
 	b.err = nil
 	b.validator = nil
@@ -409,45 +341,6 @@ func (b *GroupMemberBuilder) Display(v string) *GroupMemberBuilder {
 		return b
 	}
 	if err := b.object.Set("display", v); err != nil {
-		b.err = err
-	}
-	return b
-}
-
-func (b *GroupMemberBuilder) ExternalID(v string) *GroupMemberBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	if err := b.object.Set("externalId", v); err != nil {
-		b.err = err
-	}
-	return b
-}
-
-func (b *GroupMemberBuilder) ID(v string) *GroupMemberBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	if err := b.object.Set("id", v); err != nil {
-		b.err = err
-	}
-	return b
-}
-
-func (b *GroupMemberBuilder) Meta(v *Meta) *GroupMemberBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	if err := b.object.Set("meta", v); err != nil {
 		b.err = err
 	}
 	return b
@@ -506,10 +399,8 @@ func (b *GroupMemberBuilder) Build() (*GroupMember, error) {
 	if validator == nil {
 		validator = DefaultGroupMemberValidator
 	}
-	if validator != nil {
-		if err := validator.Validate(object); err != nil {
-			return nil, err
-		}
+	if err := validator.Validate(object); err != nil {
+		return nil, err
 	}
 	return object, nil
 }

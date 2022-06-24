@@ -1,16 +1,48 @@
 services:
+  - name: MetaService
+    calls:
+    - name: GetResourceTypesCall
+      http_method: http.MethodGet
+      response_type: '[]resource.ResourceType'
+      path: /ResourceTypes
+    - name: GetServiceProviderConfigCall
+      http_method: http.MethodGet
+      response_type: '*resource.ServiceProviderConfig'
+      path: /ServiceProviderConfig
+    - name: GetSchemas
+      http_method: http.MethodGet
+      response_type: '*resource.ListResponse'
+      path: '/Schemas'
+    - name: GetSchema
+      http_method: http.MethodGet
+      response_type: '*resource.Schema'
+      path: '/Schemas'
+      makeURLTemplate: |
+        func (call {{ .ObjectName }}) makeURL() string {
+          return call.client.baseURL + "{{ .Path }}/" + call.id
+        }
+      fields:
+        - name: id
+          required: true
+
   - name: SearchService
     calls:
     - name: SearchCall
-      method: http.MethodPost
+      http_method: http.MethodPost
       resource: SearchRequest
       response_type: resource.ListResponse
       path: /.search
       jsonPayload: true
   - name: UserService
+    description: |
+      UserService the logical grouping of SCIM user related API calls
     calls:
     - name: GetUserCall
-      method: http.MethodGet
+      description: |
+        Get creates an instance of GetUserCall that sends an HTTP GET request to
+        /Users to retrieve the user associated with the specified ID.
+      method_name: Get
+      http_method: http.MethodGet
       resource: PartialResourceRepresentationRequest
       response_type: resource.User
       path: /Users
@@ -22,7 +54,11 @@ services:
         - name: id
           required: true
     - name: CreateUserCall
-      method: http.MethodPost
+      description: |
+        Create creates an insance of CreateUserCall that sends an HTTP POST request to
+        /Users to create a new user.
+      method_name: Create
+      http_method: http.MethodPost
       resource: User
       path: /Users
       jsonPayload: true
@@ -32,7 +68,11 @@ services:
         - immutable
         - writeOnly
     - name: ReplaceUserCall
-      method: http.MethodPut
+      description: |
+        Replace creates an insance of ReplaceUserCall that sends an HTTP PUT request to
+        /Users to replace an existing new user.
+      method_name: Replace
+      http_method: http.MethodPut
       resource: User
       path: /Users
       makeURLTemplate: |
@@ -44,13 +84,14 @@ services:
         - name: id
           required: true
       #    - name: ModifyUserCall
-      #      method: http.MethodPatch
+      #      http_method: http.MethodPatch
       #      builder: resource.UserBuilder
       allowedMutability:
         - readWrite
         - writeOnly
     - name: DeleteUserCall
-      method: http.MethodDelete
+      method_name: Delete
+      http_method: http.MethodDelete
       resource: User
       path: /Users
       successStatus: http.StatusNoContent
@@ -62,10 +103,18 @@ services:
       fields:
         - name: id
           required: true
+    - name: SearchUserCall
+      method_name: Search
+      http_method: http.MethodPost
+      resource: SearchRequest
+      response_type: resource.ListResponse
+      path: /Users/.search
+      jsonPayload: true
   - name: GroupService
     calls:
     - name: GetGroupCall
-      method: http.MethodGet
+      method_name: Get
+      http_method: http.MethodGet
       resource: PartialResourceRepresentationRequest
       response_type: resource.Group
       path: /Groups
@@ -77,7 +126,8 @@ services:
         - name: id
           required: true
     - name: CreateGroupCall
-      method: http.MethodPost
+      method_name: Create
+      http_method: http.MethodPost
       resource: Group
       path: /Groups
       jsonPayload: true
@@ -87,7 +137,8 @@ services:
         - immutable
         - writeOnly
     - name: ReplaceGroupCall
-      method: http.MethodPut
+      method_name: Replace
+      http_method: http.MethodPut
       resource: Group
       path: /Groups
       makeURLTemplate: |
@@ -102,10 +153,11 @@ services:
         - readWrite
         - writeOnly
       #    - name: ModifyGroupCall
-      #      method: http.MethodPatch
+      #      http_method: http.MethodPatch
       #      builder: resource.GroupBuilder
     - name: DeleteGroupCall
-      method: http.MethodDelete
+      method_name: Delete
+      http_method: http.MethodDelete
       resource: Group
       path: /Groups
       successStatus: http.StatusNoContent
@@ -117,5 +169,12 @@ services:
       fields:
         - name: id
           required: true
+    - name: SearchGroupCall
+      method_name: Search
+      http_method: http.MethodPost
+      resource: SearchRequest
+      response_type: resource.ListResponse
+      path: /Groups/.search
+      jsonPayload: true
 
 

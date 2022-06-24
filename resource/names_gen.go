@@ -9,12 +9,12 @@ import (
 )
 
 const (
-	namesFamilyNameJSONKey      = "familyName"
-	namesFormattedJSONKey       = "formatted"
-	namesGivenNameJSONKey       = "givenName"
-	namesHonorificPrefixJSONKey = "honorificPrefix"
-	namesHonorificSuffixJSONKey = "honorificSuffix"
-	namesMiddleNameJSONKey      = "middleName"
+	NamesFamilyNameKey      = "familyName"
+	NamesFormattedKey       = "formatted"
+	NamesGivenNameKey       = "givenName"
+	NamesHonorificPrefixKey = "honorificPrefix"
+	NamesHonorificSuffixKey = "honorificSuffix"
+	NamesMiddleNameKey      = "middleName"
 )
 
 type Names struct {
@@ -42,6 +42,12 @@ var DefaultNamesValidator NamesValidator = NamesValidateFunc(func(v *Names) erro
 	return nil
 })
 
+func (v *Names) HasFamilyName() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.familyName != nil
+}
+
 func (v *Names) FamilyName() string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -49,6 +55,12 @@ func (v *Names) FamilyName() string {
 		return ""
 	}
 	return *(v.familyName)
+}
+
+func (v *Names) HasFormatted() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.formatted != nil
 }
 
 func (v *Names) Formatted() string {
@@ -60,6 +72,12 @@ func (v *Names) Formatted() string {
 	return *(v.formatted)
 }
 
+func (v *Names) HasGivenName() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.givenName != nil
+}
+
 func (v *Names) GivenName() string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -67,6 +85,12 @@ func (v *Names) GivenName() string {
 		return ""
 	}
 	return *(v.givenName)
+}
+
+func (v *Names) HasHonorificPrefix() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.honorificPrefix != nil
 }
 
 func (v *Names) HonorificPrefix() string {
@@ -78,6 +102,12 @@ func (v *Names) HonorificPrefix() string {
 	return *(v.honorificPrefix)
 }
 
+func (v *Names) HasHonorificSuffix() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.honorificSuffix != nil
+}
+
 func (v *Names) HonorificSuffix() string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -85,6 +115,12 @@ func (v *Names) HonorificSuffix() string {
 		return ""
 	}
 	return *(v.honorificSuffix)
+}
+
+func (v *Names) HasMiddleName() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.middleName != nil
 }
 
 func (v *Names) MiddleName() string {
@@ -157,32 +193,32 @@ func (v *Names) Get(name string, options ...GetOption) (interface{}, bool) {
 		}
 	}
 	switch name {
-	case namesFamilyNameJSONKey:
+	case NamesFamilyNameKey:
 		if v.familyName == nil {
 			return nil, false
 		}
 		return *(v.familyName), true
-	case namesFormattedJSONKey:
+	case NamesFormattedKey:
 		if v.formatted == nil {
 			return nil, false
 		}
 		return *(v.formatted), true
-	case namesGivenNameJSONKey:
+	case NamesGivenNameKey:
 		if v.givenName == nil {
 			return nil, false
 		}
 		return *(v.givenName), true
-	case namesHonorificPrefixJSONKey:
+	case NamesHonorificPrefixKey:
 		if v.honorificPrefix == nil {
 			return nil, false
 		}
 		return *(v.honorificPrefix), true
-	case namesHonorificSuffixJSONKey:
+	case NamesHonorificSuffixKey:
 		if v.honorificSuffix == nil {
 			return nil, false
 		}
 		return *(v.honorificSuffix), true
-	case namesMiddleNameJSONKey:
+	case NamesMiddleNameKey:
 		if v.middleName == nil {
 			return nil, false
 		}
@@ -214,7 +250,7 @@ func (v *Names) Set(name string, value interface{}) error {
 	v.mu.Lock()
 	defer v.mu.Unlock()
 	switch name {
-	case namesFamilyNameJSONKey:
+	case NamesFamilyNameKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -222,7 +258,7 @@ func (v *Names) Set(name string, value interface{}) error {
 		}
 		v.familyName = &tmp
 		return nil
-	case namesFormattedJSONKey:
+	case NamesFormattedKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -230,7 +266,7 @@ func (v *Names) Set(name string, value interface{}) error {
 		}
 		v.formatted = &tmp
 		return nil
-	case namesGivenNameJSONKey:
+	case NamesGivenNameKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -238,7 +274,7 @@ func (v *Names) Set(name string, value interface{}) error {
 		}
 		v.givenName = &tmp
 		return nil
-	case namesHonorificPrefixJSONKey:
+	case NamesHonorificPrefixKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -246,7 +282,7 @@ func (v *Names) Set(name string, value interface{}) error {
 		}
 		v.honorificPrefix = &tmp
 		return nil
-	case namesHonorificSuffixJSONKey:
+	case NamesHonorificSuffixKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -254,7 +290,7 @@ func (v *Names) Set(name string, value interface{}) error {
 		}
 		v.honorificSuffix = &tmp
 		return nil
-	case namesMiddleNameJSONKey:
+	case NamesMiddleNameKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -270,6 +306,19 @@ func (v *Names) Set(name string, value interface{}) error {
 		}
 		pp[name] = value
 		return nil
+	}
+}
+
+func (v *Names) Clone() *Names {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	return &Names{
+		familyName:      v.familyName,
+		formatted:       v.formatted,
+		givenName:       v.givenName,
+		honorificPrefix: v.honorificPrefix,
+		honorificSuffix: v.honorificSuffix,
+		middleName:      v.middleName,
 	}
 }
 
@@ -309,37 +358,37 @@ LOOP:
 			}
 		case string:
 			switch tok {
-			case namesFamilyNameJSONKey:
+			case NamesFamilyNameKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "familyName": %w`, err)
 				}
 				v.familyName = &x
-			case namesFormattedJSONKey:
+			case NamesFormattedKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "formatted": %w`, err)
 				}
 				v.formatted = &x
-			case namesGivenNameJSONKey:
+			case NamesGivenNameKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "givenName": %w`, err)
 				}
 				v.givenName = &x
-			case namesHonorificPrefixJSONKey:
+			case NamesHonorificPrefixKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "honorificPrefix": %w`, err)
 				}
 				v.honorificPrefix = &x
-			case namesHonorificSuffixJSONKey:
+			case NamesHonorificSuffixKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "honorificSuffix": %w`, err)
 				}
 				v.honorificSuffix = &x
-			case namesMiddleNameJSONKey:
+			case NamesMiddleNameKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "middleName": %w`, err)
@@ -393,6 +442,12 @@ func NewNamesBuilder() *NamesBuilder {
 	var b NamesBuilder
 	b.init()
 	return &b
+}
+
+func (b *NamesBuilder) From(in *Names) *NamesBuilder {
+	b.once.Do(b.init)
+	b.object = in.Clone()
+	return b
 }
 
 func (b *NamesBuilder) init() {
@@ -506,10 +561,8 @@ func (b *NamesBuilder) Build() (*Names, error) {
 	if validator == nil {
 		validator = DefaultNamesValidator
 	}
-	if validator != nil {
-		if err := validator.Validate(object); err != nil {
-			return nil, err
-		}
+	if err := validator.Validate(object); err != nil {
+		return nil, err
 	}
 	return object, nil
 }

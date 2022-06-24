@@ -16,16 +16,32 @@ type SearchService struct {
 	client *Client
 }
 
-func (client *Client) Search() *SearchService {
-	return &SearchService{
-		client: client,
-	}
-}
-
 type SearchCall struct {
 	builder *resource.SearchRequestBuilder
+	object  *resource.SearchRequest
+	err     error
 	client  *Client
 	trace   io.Writer
+}
+
+func (call *SearchCall) payload() (*resource.SearchRequest, error) {
+	if object := call.object; object != nil {
+		return object, nil
+	}
+	return call.builder.Build()
+}
+
+func (call *SearchCall) FromJSON(data []byte) *SearchCall {
+	if call.err != nil {
+		return call
+	}
+	var in resource.SearchRequest
+	if err := json.Unmarshal(data, &in); err != nil {
+		call.err = fmt.Errorf("failed to decode data: %w", err)
+		return call
+	}
+	call.object = &in
+	return call
 }
 
 func (svc *SearchService) Search() *SearchCall {
@@ -70,6 +86,7 @@ func (call *SearchCall) StartIndex(v int) *SearchCall {
 	return call
 }
 
+// Extension allows users to register an extension using the fully qualified URI
 func (call *SearchCall) Extension(uri string, value interface{}) *SearchCall {
 	call.builder.Extension(uri, value)
 	return call
@@ -90,16 +107,21 @@ func (call *SearchCall) makeURL() string {
 }
 
 func (call *SearchCall) Do(ctx context.Context) (*resource.ListResponse, error) {
-	payload, err := call.builder.Build()
+	if err := call.err; err != nil {
+		return nil, fmt.Errorf("failed to build request: %w", err)
+	}
+	payload, err := call.payload()
 	if err != nil {
 		return nil, fmt.Errorf(`failed to generate request payload for SearchCall: %w`, err)
 	}
 
 	trace := call.trace
+	if trace == nil {
+		trace = call.client.trace
+	}
 	u := call.makeURL()
 	if trace != nil {
-		fmt.Fprintf(trace, `trace: client sending call request to %q
-`, u)
+		fmt.Fprintf(trace, "trace: client sending call request to %q\n", u)
 	}
 
 	var body bytes.Buffer

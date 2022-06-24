@@ -9,11 +9,11 @@ import (
 )
 
 const (
-	listResponseItemsPerPageJSONKey = "itemsPerPage"
-	listResponseResourcesJSONKey    = "resources"
-	listResponseSchemasJSONKey      = "schemas"
-	listResponseStartIndexJSONKey   = "startIndex"
-	listResponseTotalResultsJSONKey = "totalResults"
+	ListResponseItemsPerPageKey = "itemsPerPage"
+	ListResponseResourcesKey    = "resources"
+	ListResponseSchemasKey      = "schemas"
+	ListResponseStartIndexKey   = "startIndex"
+	ListResponseTotalResultsKey = "totalResults"
 )
 
 const ListResponseSchemaURI = "urn:ietf:params:scim:api:messages:2.0:ListResponse"
@@ -46,6 +46,12 @@ var DefaultListResponseValidator ListResponseValidator = ListResponseValidateFun
 	return nil
 })
 
+func (v *ListResponse) HasItemsPerPage() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.itemsPerPage != nil
+}
+
 func (v *ListResponse) ItemsPerPage() int {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -55,16 +61,34 @@ func (v *ListResponse) ItemsPerPage() int {
 	return *(v.itemsPerPage)
 }
 
+func (v *ListResponse) HasResources() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.resources != nil
+}
+
 func (v *ListResponse) Resources() []interface{} {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.resources
 }
 
+func (v *ListResponse) HasSchemas() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return true
+}
+
 func (v *ListResponse) Schemas() []string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.schemas.List()
+}
+
+func (v *ListResponse) HasStartIndex() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.startIndex != nil
 }
 
 func (v *ListResponse) StartIndex() int {
@@ -74,6 +98,12 @@ func (v *ListResponse) StartIndex() int {
 		return 0
 	}
 	return *(v.startIndex)
+}
+
+func (v *ListResponse) HasTotalResults() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.totalResults != nil
 }
 
 func (v *ListResponse) TotalResults() int {
@@ -143,27 +173,27 @@ func (v *ListResponse) Get(name string, options ...GetOption) (interface{}, bool
 		}
 	}
 	switch name {
-	case listResponseItemsPerPageJSONKey:
+	case ListResponseItemsPerPageKey:
 		if v.itemsPerPage == nil {
 			return nil, false
 		}
 		return *(v.itemsPerPage), true
-	case listResponseResourcesJSONKey:
+	case ListResponseResourcesKey:
 		if v.resources == nil {
 			return nil, false
 		}
 		return v.resources, true
-	case listResponseSchemasJSONKey:
+	case ListResponseSchemasKey:
 		if v.schemas == nil {
 			return nil, false
 		}
 		return v.schemas, true
-	case listResponseStartIndexJSONKey:
+	case ListResponseStartIndexKey:
 		if v.startIndex == nil {
 			return nil, false
 		}
 		return *(v.startIndex), true
-	case listResponseTotalResultsJSONKey:
+	case ListResponseTotalResultsKey:
 		if v.totalResults == nil {
 			return nil, false
 		}
@@ -195,7 +225,7 @@ func (v *ListResponse) Set(name string, value interface{}) error {
 	v.mu.Lock()
 	defer v.mu.Unlock()
 	switch name {
-	case listResponseItemsPerPageJSONKey:
+	case ListResponseItemsPerPageKey:
 		var tmp int
 		tmp, ok := value.(int)
 		if !ok {
@@ -203,7 +233,7 @@ func (v *ListResponse) Set(name string, value interface{}) error {
 		}
 		v.itemsPerPage = &tmp
 		return nil
-	case listResponseResourcesJSONKey:
+	case ListResponseResourcesKey:
 		var tmp []interface{}
 		tmp, ok := value.([]interface{})
 		if !ok {
@@ -211,7 +241,7 @@ func (v *ListResponse) Set(name string, value interface{}) error {
 		}
 		v.resources = tmp
 		return nil
-	case listResponseSchemasJSONKey:
+	case ListResponseSchemasKey:
 		var tmp schemas
 		tmp, ok := value.(schemas)
 		if !ok {
@@ -219,7 +249,7 @@ func (v *ListResponse) Set(name string, value interface{}) error {
 		}
 		v.schemas = tmp
 		return nil
-	case listResponseStartIndexJSONKey:
+	case ListResponseStartIndexKey:
 		var tmp int
 		tmp, ok := value.(int)
 		if !ok {
@@ -227,7 +257,7 @@ func (v *ListResponse) Set(name string, value interface{}) error {
 		}
 		v.startIndex = &tmp
 		return nil
-	case listResponseTotalResultsJSONKey:
+	case ListResponseTotalResultsKey:
 		var tmp int
 		tmp, ok := value.(int)
 		if !ok {
@@ -246,94 +276,16 @@ func (v *ListResponse) Set(name string, value interface{}) error {
 	}
 }
 
-func (v *ListResponse) UnmarshalJSON(data []byte) error {
-	v.itemsPerPage = nil
-	v.resources = nil
-	v.schemas = nil
-	v.startIndex = nil
-	v.totalResults = nil
-	v.privateParams = nil
-	dec := json.NewDecoder(bytes.NewReader(data))
-	{ // first token
-		tok, err := dec.Token()
-		if err != nil {
-			return fmt.Errorf("failed to read next token: %s", err)
-		}
-		tok, ok := tok.(json.Delim)
-		if !ok {
-			return fmt.Errorf("expected first token to be '{', got %c", tok)
-		}
+func (v *ListResponse) Clone() *ListResponse {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	return &ListResponse{
+		itemsPerPage: v.itemsPerPage,
+		resources:    v.resources,
+		schemas:      v.schemas,
+		startIndex:   v.startIndex,
+		totalResults: v.totalResults,
 	}
-	var privateParams map[string]interface{}
-
-LOOP:
-	for {
-		tok, err := dec.Token()
-		if err != nil {
-			return fmt.Errorf("failed to read next token: %s", err)
-		}
-		switch tok := tok.(type) {
-		case json.Delim:
-			if tok == '}' {
-				break LOOP
-			} else {
-				return fmt.Errorf("unexpected token %c found", tok)
-			}
-		case string:
-			switch tok {
-			case listResponseItemsPerPageJSONKey:
-				var x int
-				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "itemsPerPage": %w`, err)
-				}
-				v.itemsPerPage = &x
-			case listResponseResourcesJSONKey:
-				var x []interface{}
-				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "resources": %w`, err)
-				}
-				v.resources = x
-			case listResponseSchemasJSONKey:
-				var x schemas
-				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "schemas": %w`, err)
-				}
-				v.schemas = x
-			case listResponseStartIndexJSONKey:
-				var x int
-				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "startIndex": %w`, err)
-				}
-				v.startIndex = &x
-			case listResponseTotalResultsJSONKey:
-				var x int
-				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "totalResults": %w`, err)
-				}
-				v.totalResults = &x
-			default:
-				var x interface{}
-				if rx, ok := registry.Get(tok); ok {
-					x = rx
-					if err := dec.Decode(x); err != nil {
-						return fmt.Errorf(`failed to decode value for key %q: %w`, tok, err)
-					}
-				} else {
-					if err := dec.Decode(&x); err != nil {
-						return fmt.Errorf(`failed to decode value for key %q: %w`, tok, err)
-					}
-				}
-				if privateParams == nil {
-					privateParams = make(map[string]interface{})
-				}
-				privateParams[tok] = x
-			}
-		}
-	}
-	if privateParams != nil {
-		v.privateParams = privateParams
-	}
-	return nil
 }
 
 func (v *ListResponse) AsMap(dst map[string]interface{}) error {
@@ -359,6 +311,12 @@ func NewListResponseBuilder() *ListResponseBuilder {
 	var b ListResponseBuilder
 	b.init()
 	return &b
+}
+
+func (b *ListResponseBuilder) From(in *ListResponse) *ListResponseBuilder {
+	b.once.Do(b.init)
+	b.object = in.Clone()
+	return b
 }
 
 func (b *ListResponseBuilder) init() {
@@ -473,10 +431,8 @@ func (b *ListResponseBuilder) Build() (*ListResponse, error) {
 	if validator == nil {
 		validator = DefaultListResponseValidator
 	}
-	if validator != nil {
-		if err := validator.Validate(object); err != nil {
-			return nil, err
-		}
+	if err := validator.Validate(object); err != nil {
+		return nil, err
 	}
 	return object, nil
 }

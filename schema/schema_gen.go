@@ -10,200 +10,6 @@ func init() {
 			Description("User Account").
 			Attributes(
 				resource.NewSchemaAttributeBuilder().
-					Name("userName").
-					Type("string").
-					MultiValued(false).
-					Description("Unique identifier for the User, typically used by the user to directly authenticate to the service provider. Each User MUST include a non-empty userName value. This identifier MUST be unique across the service provider's entire set of Users. REQUIRED.").
-					Required(true).
-					CaseExact(false).
-					Required(true).
-					Mutability(resource.MutReadWrite).
-					Returned(resource.ReturnedDefault).
-					Uniqueness(resource.UniqServer).
-					MustBuild(),
-				resource.NewSchemaAttributeBuilder().
-					Name("name").
-					Type("complex").
-					MultiValued(false).
-					Description("The components of the user's real name. Providers MAY return just the full name as a single string in the formatted sub-attribute, or they MAY return just the individual component attributes using the other sub-attributes, or they MAY return both. If both variants are returned, they SHOULD be describing the same name, with the formatted name indicating how the component attributes should be combined.").
-					Required(false).
-					CaseExact(false).
-					Required(false).
-					Mutability(resource.MutReadWrite).
-					Returned(resource.ReturnedDefault).
-					Uniqueness(resource.UniqNone).
-					SubAttributes(
-						resource.NewSchemaAttributeBuilder().
-							Name("formatted").
-							Type("string").
-							MultiValued(false).
-							Description("The full name, including all middle names, titles, and suffixes as appropriate, formatted for display (e.g., 'Ms. Barbara J Jensen, III').").
-							Required(false).
-							CaseExact(false).
-							Required(false).
-							Mutability(resource.MutReadWrite).
-							Returned(resource.ReturnedDefault).
-							Uniqueness(resource.UniqNone).
-							MustBuild(),
-						resource.NewSchemaAttributeBuilder().
-							Name("familyName").
-							Type("string").
-							MultiValued(false).
-							Description("The family name of the User, or last name in most Western languages (e.g., 'Jensen' given the full name 'Ms. Barbara J Jensen, III').").
-							Required(false).
-							CaseExact(false).
-							Required(false).
-							Mutability(resource.MutReadWrite).
-							Returned(resource.ReturnedDefault).
-							Uniqueness(resource.UniqNone).
-							MustBuild(),
-						resource.NewSchemaAttributeBuilder().
-							Name("givenName").
-							Type("string").
-							MultiValued(false).
-							Description("The given name of the User, or first name in most Western languages (e.g., 'Barbara' given the full name 'Ms. Barbara J Jensen, III').").
-							Required(false).
-							CaseExact(false).
-							Required(false).
-							Mutability(resource.MutReadWrite).
-							Returned(resource.ReturnedDefault).
-							Uniqueness(resource.UniqNone).
-							MustBuild(),
-						resource.NewSchemaAttributeBuilder().
-							Name("middleName").
-							Type("string").
-							MultiValued(false).
-							Description("The middle name(s) of the User (e.g., 'Jane' given the full name 'Ms. Barbara J Jensen, III').").
-							Required(false).
-							CaseExact(false).
-							Required(false).
-							Mutability(resource.MutReadWrite).
-							Returned(resource.ReturnedDefault).
-							Uniqueness(resource.UniqNone).
-							MustBuild(),
-						resource.NewSchemaAttributeBuilder().
-							Name("honorificPrefix").
-							Type("string").
-							MultiValued(false).
-							Description("The honorific prefix(es) of the User, or title in most Western languages (e.g., 'Ms.' given the full name 'Ms. Barbara J Jensen, III').").
-							Required(false).
-							CaseExact(false).
-							Required(false).
-							Mutability(resource.MutReadWrite).
-							Returned(resource.ReturnedDefault).
-							Uniqueness(resource.UniqNone).
-							MustBuild(),
-						resource.NewSchemaAttributeBuilder().
-							Name("honorificSuffix").
-							Type("string").
-							MultiValued(false).
-							Description("The honorific suffix(es) of the User, or suffix in most Western languages (e.g., 'III' given the full name 'Ms. Barbara J Jensen, III').").
-							Required(false).
-							CaseExact(false).
-							Required(false).
-							Mutability(resource.MutReadWrite).
-							Returned(resource.ReturnedDefault).
-							Uniqueness(resource.UniqNone).
-							MustBuild(),
-					).
-					MustBuild(),
-				resource.NewSchemaAttributeBuilder().
-					Name("displayName").
-					Type("string").
-					MultiValued(false).
-					Description("The name of the User, suitable for display to end-users. The name SHOULD be the full name of the User being described, if known.").
-					Required(false).
-					CaseExact(false).
-					Required(false).
-					Mutability(resource.MutReadWrite).
-					Returned(resource.ReturnedDefault).
-					Uniqueness(resource.UniqNone).
-					MustBuild(),
-				resource.NewSchemaAttributeBuilder().
-					Name("nickName").
-					Type("string").
-					MultiValued(false).
-					Description("The casual way to address the user in real life, e.g., 'Bob' or 'Bobby' instead of 'Robert'. This attribute SHOULD NOT be used to represent a User's username (e.g., 'bjensen' or 'mpepperidge').").
-					Required(false).
-					CaseExact(false).
-					Required(false).
-					Mutability(resource.MutReadWrite).
-					Returned(resource.ReturnedDefault).
-					Uniqueness(resource.UniqNone).
-					MustBuild(),
-				resource.NewSchemaAttributeBuilder().
-					Name("profileUrl").
-					Type("reference").
-					MultiValued(false).
-					Description("A fully qualified URL pointing to a page representing the User's online profile.").
-					Required(false).
-					CaseExact(false).
-					Required(false).
-					Mutability(resource.MutReadWrite).
-					Returned(resource.ReturnedDefault).
-					Uniqueness(resource.UniqNone).
-					MustBuild(),
-				resource.NewSchemaAttributeBuilder().
-					Name("title").
-					Type("string").
-					MultiValued(false).
-					Description("The user's title, such as \"Vice President.\"").
-					Required(false).
-					CaseExact(false).
-					Required(false).
-					Mutability(resource.MutReadWrite).
-					Returned(resource.ReturnedDefault).
-					Uniqueness(resource.UniqNone).
-					MustBuild(),
-				resource.NewSchemaAttributeBuilder().
-					Name("userType").
-					Type("string").
-					MultiValued(false).
-					Description("Used to identify the relationship between the organization and the user. Typical values used might be 'Contractor', 'Employee', 'Intern', 'Temp', 'External', and 'Unknown', but any value may be used.").
-					Required(false).
-					CaseExact(false).
-					Required(false).
-					Mutability(resource.MutReadWrite).
-					Returned(resource.ReturnedDefault).
-					Uniqueness(resource.UniqNone).
-					MustBuild(),
-				resource.NewSchemaAttributeBuilder().
-					Name("preferredLanguage").
-					Type("string").
-					MultiValued(false).
-					Description("Indicates the User's preferred written or spoken language. Generally used for selecting a localized user interface; e.g., 'en_US' specifies the language English and country US.").
-					Required(false).
-					CaseExact(false).
-					Required(false).
-					Mutability(resource.MutReadWrite).
-					Returned(resource.ReturnedDefault).
-					Uniqueness(resource.UniqNone).
-					MustBuild(),
-				resource.NewSchemaAttributeBuilder().
-					Name("locale").
-					Type("string").
-					MultiValued(false).
-					Description("Used to indicate the User's default location for purposes of localizing items such as currency, date time format, or numerical representations.").
-					Required(false).
-					CaseExact(false).
-					Required(false).
-					Mutability(resource.MutReadWrite).
-					Returned(resource.ReturnedDefault).
-					Uniqueness(resource.UniqNone).
-					MustBuild(),
-				resource.NewSchemaAttributeBuilder().
-					Name("timezone").
-					Type("string").
-					MultiValued(false).
-					Description("The User's time zone in the 'Olson' time zone database format, e.g., 'America/Los_Angeles'.").
-					Required(false).
-					CaseExact(false).
-					Required(false).
-					Mutability(resource.MutReadWrite).
-					Returned(resource.ReturnedDefault).
-					Uniqueness(resource.UniqNone).
-					MustBuild(),
-				resource.NewSchemaAttributeBuilder().
 					Name("active").
 					Type("boolean").
 					MultiValued(false).
@@ -214,266 +20,6 @@ func init() {
 					Mutability(resource.MutReadWrite).
 					Returned(resource.ReturnedDefault).
 					Uniqueness(resource.UniqNone).
-					MustBuild(),
-				resource.NewSchemaAttributeBuilder().
-					Name("password").
-					Type("string").
-					MultiValued(false).
-					Description("The User's cleartext password. This attribute is intended to be used as a means to specify an initial password when creating a new User or to reset an existing User's password.").
-					Required(false).
-					CaseExact(false).
-					Required(false).
-					Mutability(resource.MutWriteOnly).
-					Returned(resource.ReturnedNever).
-					Uniqueness(resource.UniqNone).
-					MustBuild(),
-				resource.NewSchemaAttributeBuilder().
-					Name("emails").
-					Type("complex").
-					MultiValued(true).
-					Description("Email addresses for the user. The value SHOULD be canonicalized by the service provider, e.g., 'bjensen@example.com' instead of 'bjensen@EXAMPLE.COM'. Canonical type values of 'work', 'home', and 'other'.").
-					Required(false).
-					CaseExact(false).
-					Required(false).
-					Mutability(resource.MutReadWrite).
-					Returned(resource.ReturnedDefault).
-					Uniqueness(resource.UniqNone).
-					SubAttributes(
-						resource.NewSchemaAttributeBuilder().
-							Name("value").
-							Type("string").
-							MultiValued(false).
-							Description("Email addresses for the user. The value SHOULD be canonicalized by the service provider, e.g., 'bjensen@example.com' instead of 'bjensen@EXAMPLE.COM'.  Canonical type values of 'work', 'home', and 'other'.").
-							Required(false).
-							CaseExact(false).
-							Required(false).
-							Mutability(resource.MutReadWrite).
-							Returned(resource.ReturnedDefault).
-							Uniqueness(resource.UniqNone).
-							MustBuild(),
-						resource.NewSchemaAttributeBuilder().
-							Name("display").
-							Type("string").
-							MultiValued(false).
-							Description("A human-readable name, primarily used for display purposes. READ-ONLY.").
-							Required(false).
-							CaseExact(false).
-							Required(false).
-							Mutability(resource.MutReadWrite).
-							Returned(resource.ReturnedDefault).
-							Uniqueness(resource.UniqNone).
-							MustBuild(),
-						resource.NewSchemaAttributeBuilder().
-							Name("type").
-							Type("string").
-							MultiValued(false).
-							Description("A label indicating the attribute's function, e.g., 'work' or 'home'.").
-							Required(false).
-							CaseExact(false).
-							Required(false).
-							Mutability(resource.MutReadWrite).
-							Returned(resource.ReturnedDefault).
-							Uniqueness(resource.UniqNone).
-							MustBuild(),
-						resource.NewSchemaAttributeBuilder().
-							Name("primary").
-							Type("boolean").
-							MultiValued(false).
-							Description("A Boolean value indicating the 'primary' or preferred attribute value for this attribute, e.g., the preferred mailing address or primary email address. The primary attribute value 'true' MUST appear no more than once.").
-							Required(false).
-							CaseExact(false).
-							Required(false).
-							Mutability(resource.MutReadWrite).
-							Returned(resource.ReturnedDefault).
-							Uniqueness(resource.UniqNone).
-							MustBuild(),
-					).
-					MustBuild(),
-				resource.NewSchemaAttributeBuilder().
-					Name("phoneNumbers").
-					Type("complex").
-					MultiValued(true).
-					Description("Phone numbers for the User. The value SHOULD be canonicalized by the service provider according to the format specified in RFC 3966, e.g., 'tel:+1-201-555-0123'.  Canonical type values of 'work', 'home', 'mobile', 'fax', 'pager', and 'other'.").
-					Required(false).
-					CaseExact(false).
-					Required(false).
-					Mutability(resource.MutReadWrite).
-					Returned(resource.ReturnedDefault).
-					Uniqueness(resource.UniqNone).
-					SubAttributes(
-						resource.NewSchemaAttributeBuilder().
-							Name("value").
-							Type("string").
-							MultiValued(false).
-							Description("Phone number of the User.").
-							Required(false).
-							CaseExact(false).
-							Required(false).
-							Mutability(resource.MutReadWrite).
-							Returned(resource.ReturnedDefault).
-							Uniqueness(resource.UniqNone).
-							MustBuild(),
-						resource.NewSchemaAttributeBuilder().
-							Name("display").
-							Type("string").
-							MultiValued(false).
-							Description("A human-readable name, primarily used for display purposes. READ-ONLY.").
-							Required(false).
-							CaseExact(false).
-							Required(false).
-							Mutability(resource.MutReadWrite).
-							Returned(resource.ReturnedDefault).
-							Uniqueness(resource.UniqNone).
-							MustBuild(),
-						resource.NewSchemaAttributeBuilder().
-							Name("type").
-							Type("string").
-							MultiValued(false).
-							Description("A label indicating the attribute's function, e.g., 'work', 'home', 'mobile'.").
-							Required(false).
-							CaseExact(false).
-							Required(false).
-							Mutability(resource.MutReadWrite).
-							Returned(resource.ReturnedDefault).
-							Uniqueness(resource.UniqNone).
-							MustBuild(),
-						resource.NewSchemaAttributeBuilder().
-							Name("primary").
-							Type("boolean").
-							MultiValued(false).
-							Description("A Boolean value indicating the 'primary' or preferred attribute value for this attribute, e.g., the preferred phone number or primary phone number. The primary attribute value 'true' MUST appear no more than once.").
-							Required(false).
-							CaseExact(false).
-							Required(false).
-							Mutability(resource.MutReadWrite).
-							Returned(resource.ReturnedDefault).
-							Uniqueness(resource.UniqNone).
-							MustBuild(),
-					).
-					MustBuild(),
-				resource.NewSchemaAttributeBuilder().
-					Name("ims").
-					Type("complex").
-					MultiValued(true).
-					Description("Instant messaging addresses for the User.").
-					Required(false).
-					CaseExact(false).
-					Required(false).
-					Mutability(resource.MutReadWrite).
-					Returned(resource.ReturnedDefault).
-					Uniqueness(resource.UniqNone).
-					SubAttributes(
-						resource.NewSchemaAttributeBuilder().
-							Name("value").
-							Type("string").
-							MultiValued(false).
-							Description("Instant messaging address for the User.").
-							Required(false).
-							CaseExact(false).
-							Required(false).
-							Mutability(resource.MutReadWrite).
-							Returned(resource.ReturnedDefault).
-							Uniqueness(resource.UniqNone).
-							MustBuild(),
-						resource.NewSchemaAttributeBuilder().
-							Name("display").
-							Type("string").
-							MultiValued(false).
-							Description("A human-readable name, primarily used for display purposes. READ-ONLY.").
-							Required(false).
-							CaseExact(false).
-							Required(false).
-							Mutability(resource.MutReadWrite).
-							Returned(resource.ReturnedDefault).
-							Uniqueness(resource.UniqNone).
-							MustBuild(),
-						resource.NewSchemaAttributeBuilder().
-							Name("type").
-							Type("string").
-							MultiValued(false).
-							Description("A label indicating the attribute's function, e.g., 'aim', 'gtalk', 'xmpp'.").
-							Required(false).
-							CaseExact(false).
-							Required(false).
-							Mutability(resource.MutReadWrite).
-							Returned(resource.ReturnedDefault).
-							Uniqueness(resource.UniqNone).
-							MustBuild(),
-						resource.NewSchemaAttributeBuilder().
-							Name("primary").
-							Type("boolean").
-							MultiValued(false).
-							Description("A Boolean value indicating the 'primary' or preferred attribute value for this attribute, e.g., the preferred messenger or primary messenger. The primary attribute value 'true' MUST appear no more than once.").
-							Required(false).
-							CaseExact(false).
-							Required(false).
-							Mutability(resource.MutReadWrite).
-							Returned(resource.ReturnedDefault).
-							Uniqueness(resource.UniqNone).
-							MustBuild(),
-					).
-					MustBuild(),
-				resource.NewSchemaAttributeBuilder().
-					Name("photos").
-					Type("complex").
-					MultiValued(true).
-					Description("URLs of photos of the User.").
-					Required(false).
-					CaseExact(false).
-					Required(false).
-					Mutability(resource.MutReadWrite).
-					Returned(resource.ReturnedDefault).
-					Uniqueness(resource.UniqNone).
-					SubAttributes(
-						resource.NewSchemaAttributeBuilder().
-							Name("value").
-							Type("reference").
-							MultiValued(false).
-							Description("URL of a photo of the User.").
-							Required(false).
-							CaseExact(false).
-							Required(false).
-							Mutability(resource.MutReadWrite).
-							Returned(resource.ReturnedDefault).
-							Uniqueness(resource.UniqNone).
-							MustBuild(),
-						resource.NewSchemaAttributeBuilder().
-							Name("display").
-							Type("string").
-							MultiValued(false).
-							Description("A human-readable name, primarily used for display purposes. READ-ONLY.").
-							Required(false).
-							CaseExact(false).
-							Required(false).
-							Mutability(resource.MutReadWrite).
-							Returned(resource.ReturnedDefault).
-							Uniqueness(resource.UniqNone).
-							MustBuild(),
-						resource.NewSchemaAttributeBuilder().
-							Name("type").
-							Type("string").
-							MultiValued(false).
-							Description("A label indicating the attribute's function, i.e., 'photo' or 'thumbnail'.").
-							Required(false).
-							CaseExact(false).
-							Required(false).
-							Mutability(resource.MutReadWrite).
-							Returned(resource.ReturnedDefault).
-							Uniqueness(resource.UniqNone).
-							MustBuild(),
-						resource.NewSchemaAttributeBuilder().
-							Name("primary").
-							Type("boolean").
-							MultiValued(false).
-							Description("A Boolean value indicating the 'primary' or preferred attribute value for this attribute, e.g., the preferred photo or thumbnail. The primary attribute value 'true' MUST appear no more than once.").
-							Required(false).
-							CaseExact(false).
-							Required(false).
-							Mutability(resource.MutReadWrite).
-							Returned(resource.ReturnedDefault).
-							Uniqueness(resource.UniqNone).
-							MustBuild(),
-					).
 					MustBuild(),
 				resource.NewSchemaAttributeBuilder().
 					Name("addresses").
@@ -574,14 +120,26 @@ func init() {
 					).
 					MustBuild(),
 				resource.NewSchemaAttributeBuilder().
-					Name("groups").
-					Type("complex").
-					MultiValued(true).
-					Description("A list of groups to which the user belongs, either through direct membership, through nested groups, or dynamically calculated.").
+					Name("displayName").
+					Type("string").
+					MultiValued(false).
+					Description("The name of the User, suitable for display to end-users. The name SHOULD be the full name of the User being described, if known.").
 					Required(false).
 					CaseExact(false).
 					Required(false).
-					Mutability(resource.MutReadOnly).
+					Mutability(resource.MutReadWrite).
+					Returned(resource.ReturnedDefault).
+					Uniqueness(resource.UniqNone).
+					MustBuild(),
+				resource.NewSchemaAttributeBuilder().
+					Name("emails").
+					Type("complex").
+					MultiValued(true).
+					Description("Email addresses for the user. The value SHOULD be canonicalized by the service provider, e.g., 'bjensen@example.com' instead of 'bjensen@EXAMPLE.COM'. Canonical type values of 'work', 'home', and 'other'.").
+					Required(false).
+					CaseExact(false).
+					Required(false).
+					Mutability(resource.MutReadWrite).
 					Returned(resource.ReturnedDefault).
 					Uniqueness(resource.UniqNone).
 					SubAttributes(
@@ -589,23 +147,11 @@ func init() {
 							Name("value").
 							Type("string").
 							MultiValued(false).
-							Description("The identifier of the User's group.").
+							Description("Email addresses for the user. The value SHOULD be canonicalized by the service provider, e.g., 'bjensen@example.com' instead of 'bjensen@EXAMPLE.COM'.  Canonical type values of 'work', 'home', and 'other'.").
 							Required(false).
 							CaseExact(false).
 							Required(false).
-							Mutability(resource.MutReadOnly).
-							Returned(resource.ReturnedDefault).
-							Uniqueness(resource.UniqNone).
-							MustBuild(),
-						resource.NewSchemaAttributeBuilder().
-							Name("$ref").
-							Type("reference").
-							MultiValued(false).
-							Description("The URI of the corresponding 'Group' resource to which the user belongs.").
-							Required(false).
-							CaseExact(false).
-							Required(false).
-							Mutability(resource.MutReadOnly).
+							Mutability(resource.MutReadWrite).
 							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
 							MustBuild(),
@@ -617,7 +163,7 @@ func init() {
 							Required(false).
 							CaseExact(false).
 							Required(false).
-							Mutability(resource.MutReadOnly).
+							Mutability(resource.MutReadWrite).
 							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
 							MustBuild(),
@@ -625,11 +171,23 @@ func init() {
 							Name("type").
 							Type("string").
 							MultiValued(false).
-							Description("A label indicating the attribute's function, e.g., 'direct' or 'indirect'.").
+							Description("A label indicating the attribute's function, e.g., 'work' or 'home'.").
 							Required(false).
 							CaseExact(false).
 							Required(false).
-							Mutability(resource.MutReadOnly).
+							Mutability(resource.MutReadWrite).
+							Returned(resource.ReturnedDefault).
+							Uniqueness(resource.UniqNone).
+							MustBuild(),
+						resource.NewSchemaAttributeBuilder().
+							Name("primary").
+							Type("boolean").
+							MultiValued(false).
+							Description("A Boolean value indicating the 'primary' or preferred attribute value for this attribute, e.g., the preferred mailing address or primary email address. The primary attribute value 'true' MUST appear no more than once.").
+							Required(false).
+							CaseExact(false).
+							Required(false).
+							Mutability(resource.MutReadWrite).
 							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
 							MustBuild(),
@@ -698,6 +256,450 @@ func init() {
 					).
 					MustBuild(),
 				resource.NewSchemaAttributeBuilder().
+					Name("externalId").
+					Type("string").
+					MultiValued(false).
+					Description("A String that is an identifier for the resource as defined by the provisioning client. The \"externalId\" may simplify identification of a resource between the provisioning client and the service provider by allowing the client to use a filter to locate the resource with an identifier from the provisioning domain, obviating the need to store a local mapping between the provisioning domain's identifier of the resource and the identifier used by the service provider. Each resource MAY include a non-empty \"externalId\" value. The value of the \"externalId\" attribute is always issued by the provisioning client and MUST NOT be specified by the service provider. The service provider MUST always interpret the externalId as scoped to the provisioning domain. While the server does not enforce uniqueness, it is assumed that the value's uniqueness is controlled by the client setting the value").
+					Required(false).
+					CaseExact(true).
+					Required(false).
+					Mutability(resource.MutReadWrite).
+					Returned(resource.ReturnedDefault).
+					Uniqueness(resource.UniqNone).
+					MustBuild(),
+				resource.NewSchemaAttributeBuilder().
+					Name("groups").
+					Type("complex").
+					MultiValued(true).
+					Description("A list of groups to which the user belongs, either through direct membership, through nested groups, or dynamically calculated.").
+					Required(false).
+					CaseExact(false).
+					Required(false).
+					Mutability(resource.MutReadOnly).
+					Returned(resource.ReturnedDefault).
+					Uniqueness(resource.UniqNone).
+					SubAttributes(
+						resource.NewSchemaAttributeBuilder().
+							Name("value").
+							Type("string").
+							MultiValued(false).
+							Description("The identifier of the User's group.").
+							Required(false).
+							CaseExact(false).
+							Required(false).
+							Mutability(resource.MutReadOnly).
+							Returned(resource.ReturnedDefault).
+							Uniqueness(resource.UniqNone).
+							MustBuild(),
+						resource.NewSchemaAttributeBuilder().
+							Name("$ref").
+							Type("reference").
+							MultiValued(false).
+							Description("The URI of the corresponding 'Group' resource to which the user belongs.").
+							Required(false).
+							CaseExact(false).
+							Required(false).
+							Mutability(resource.MutReadOnly).
+							Returned(resource.ReturnedDefault).
+							Uniqueness(resource.UniqNone).
+							MustBuild(),
+						resource.NewSchemaAttributeBuilder().
+							Name("display").
+							Type("string").
+							MultiValued(false).
+							Description("A human-readable name, primarily used for display purposes. READ-ONLY.").
+							Required(false).
+							CaseExact(false).
+							Required(false).
+							Mutability(resource.MutReadOnly).
+							Returned(resource.ReturnedDefault).
+							Uniqueness(resource.UniqNone).
+							MustBuild(),
+						resource.NewSchemaAttributeBuilder().
+							Name("type").
+							Type("string").
+							MultiValued(false).
+							Description("A label indicating the attribute's function, e.g., 'direct' or 'indirect'.").
+							Required(false).
+							CaseExact(false).
+							Required(false).
+							Mutability(resource.MutReadOnly).
+							Returned(resource.ReturnedDefault).
+							Uniqueness(resource.UniqNone).
+							MustBuild(),
+					).
+					MustBuild(),
+				resource.NewSchemaAttributeBuilder().
+					Name("id").
+					Type("string").
+					MultiValued(false).
+					Description("A unique identifier for a SCIM resource as defined by the service provider. Each representation of the resource MUST include a non-empty \"id\" value.  This identifier MUST be unique across the SCIM service provider's entire set of resources. It MUST be a stable, non-reassignable identifier that does not change when the same resource is returned in subsequent requests.  The value of the \"id\" attribute is always issued by the service provider and MUST NOT be specified by the client.  The string \"bulkId\" is a reserved keyword and MUST NOT be used within any unique identifier value.").
+					Required(true).
+					CaseExact(false).
+					Required(true).
+					Mutability(resource.MutReadOnly).
+					Returned(resource.ReturnedAlways).
+					Uniqueness(resource.UniqGlobal).
+					MustBuild(),
+				resource.NewSchemaAttributeBuilder().
+					Name("ims").
+					Type("complex").
+					MultiValued(true).
+					Description("Instant messaging addresses for the User.").
+					Required(false).
+					CaseExact(false).
+					Required(false).
+					Mutability(resource.MutReadWrite).
+					Returned(resource.ReturnedDefault).
+					Uniqueness(resource.UniqNone).
+					SubAttributes(
+						resource.NewSchemaAttributeBuilder().
+							Name("value").
+							Type("string").
+							MultiValued(false).
+							Description("Instant messaging address for the User.").
+							Required(false).
+							CaseExact(false).
+							Required(false).
+							Mutability(resource.MutReadWrite).
+							Returned(resource.ReturnedDefault).
+							Uniqueness(resource.UniqNone).
+							MustBuild(),
+						resource.NewSchemaAttributeBuilder().
+							Name("display").
+							Type("string").
+							MultiValued(false).
+							Description("A human-readable name, primarily used for display purposes. READ-ONLY.").
+							Required(false).
+							CaseExact(false).
+							Required(false).
+							Mutability(resource.MutReadWrite).
+							Returned(resource.ReturnedDefault).
+							Uniqueness(resource.UniqNone).
+							MustBuild(),
+						resource.NewSchemaAttributeBuilder().
+							Name("type").
+							Type("string").
+							MultiValued(false).
+							Description("A label indicating the attribute's function, e.g., 'aim', 'gtalk' 'xmpp'.").
+							Required(false).
+							CaseExact(false).
+							Required(false).
+							Mutability(resource.MutReadWrite).
+							Returned(resource.ReturnedDefault).
+							Uniqueness(resource.UniqNone).
+							MustBuild(),
+						resource.NewSchemaAttributeBuilder().
+							Name("primary").
+							Type("boolean").
+							MultiValued(false).
+							Description("A Boolean value indicating the 'primary' or preferred attribute value for this attribute, e.g., the preferred messenger or primary messenger. The primary attribute value 'true' MUST appear no more than once.").
+							Required(false).
+							CaseExact(false).
+							Required(false).
+							Mutability(resource.MutReadWrite).
+							Returned(resource.ReturnedDefault).
+							Uniqueness(resource.UniqNone).
+							MustBuild(),
+					).
+					MustBuild(),
+				resource.NewSchemaAttributeBuilder().
+					Name("locale").
+					Type("string").
+					MultiValued(false).
+					Description("Used to indicate the User's default location for purposes of localizing items such as currency, date time format, or numerical representations.").
+					Required(false).
+					CaseExact(false).
+					Required(false).
+					Mutability(resource.MutReadWrite).
+					Returned(resource.ReturnedDefault).
+					Uniqueness(resource.UniqNone).
+					MustBuild(),
+				resource.NewSchemaAttributeBuilder().
+					Name("meta").
+					Type("complex").
+					MultiValued(false).
+					Description("A complex attribute containing resource metadata. All \"meta\" sub-attributes are assigned by the service provider (have a \"mutability\" of \"readOnly\"), and all of these sub-attributes have a \"returned\" characteristic of \"default\".  This attribute SHALL be ignored when provided by clients.").
+					Required(false).
+					CaseExact(false).
+					Required(false).
+					Mutability(resource.MutReadOnly).
+					Returned(resource.ReturnedDefault).
+					Uniqueness(resource.UniqNone).
+					SubAttributes(
+						resource.NewSchemaAttributeBuilder().
+							Name("resourceType").
+							Type("string").
+							MultiValued(false).
+							Description("The name of the resource type of the resource").
+							Required(true).
+							CaseExact(true).
+							Required(true).
+							Mutability(resource.MutReadOnly).
+							Returned(resource.ReturnedAlways).
+							Uniqueness(resource.UniqNone).
+							MustBuild(),
+					).
+					MustBuild(),
+				resource.NewSchemaAttributeBuilder().
+					Name("name").
+					Type("complex").
+					MultiValued(false).
+					Description("The components of the user's real name. Providers MAY return just\nthe full name as a single string in the formatted sub-attribute, or they MAY\nreturn just the individual component attributes using the other sub-attributes\nor they MAY return both. If both variants are returned, they SHOULD be describing\nthe same name, with the formatted name indicating how the component attributes\nshould be combined.\n").
+					Required(false).
+					CaseExact(false).
+					Required(false).
+					Mutability(resource.MutReadWrite).
+					Returned(resource.ReturnedDefault).
+					Uniqueness(resource.UniqNone).
+					SubAttributes(
+						resource.NewSchemaAttributeBuilder().
+							Name("formatted").
+							Type("string").
+							MultiValued(false).
+							Description("The full name, including all middle names, titles, and suffixes as appropriate, formatted for display (e.g., 'Ms. Barbara J Jensen, III').").
+							Required(false).
+							CaseExact(false).
+							Required(false).
+							Mutability(resource.MutReadWrite).
+							Returned(resource.ReturnedDefault).
+							Uniqueness(resource.UniqNone).
+							MustBuild(),
+						resource.NewSchemaAttributeBuilder().
+							Name("familyName").
+							Type("string").
+							MultiValued(false).
+							Description("The family name of the User, or last name in most Western languages (e.g., 'Jensen' given the full name 'Ms. Barbara J Jensen, III').").
+							Required(false).
+							CaseExact(false).
+							Required(false).
+							Mutability(resource.MutReadWrite).
+							Returned(resource.ReturnedDefault).
+							Uniqueness(resource.UniqNone).
+							MustBuild(),
+						resource.NewSchemaAttributeBuilder().
+							Name("givenName").
+							Type("string").
+							MultiValued(false).
+							Description("The given name of the User, or first name in most Western languages (e.g., 'Barbara' given the full name 'Ms. Barbara J Jensen, III').").
+							Required(false).
+							CaseExact(false).
+							Required(false).
+							Mutability(resource.MutReadWrite).
+							Returned(resource.ReturnedDefault).
+							Uniqueness(resource.UniqNone).
+							MustBuild(),
+						resource.NewSchemaAttributeBuilder().
+							Name("middleName").
+							Type("string").
+							MultiValued(false).
+							Description("The middle name(s) of the User (e.g., 'Jane' given the full name 'Ms. Barbara J Jensen, III').").
+							Required(false).
+							CaseExact(false).
+							Required(false).
+							Mutability(resource.MutReadWrite).
+							Returned(resource.ReturnedDefault).
+							Uniqueness(resource.UniqNone).
+							MustBuild(),
+						resource.NewSchemaAttributeBuilder().
+							Name("honorificPrefix").
+							Type("string").
+							MultiValued(false).
+							Description("The honorific prefix(es) of the User, or title in most Western languages (e.g., 'Ms.' given the full name 'Ms. Barbara J Jensen, III').").
+							Required(false).
+							CaseExact(false).
+							Required(false).
+							Mutability(resource.MutReadWrite).
+							Returned(resource.ReturnedDefault).
+							Uniqueness(resource.UniqNone).
+							MustBuild(),
+						resource.NewSchemaAttributeBuilder().
+							Name("honorificSuffix").
+							Type("string").
+							MultiValued(false).
+							Description("The honorific suffix(es) of the User, or suffix in most Western languages (e.g., 'III' given the full name 'Ms. Barbara J Jensen, III').").
+							Required(false).
+							CaseExact(false).
+							Required(false).
+							Mutability(resource.MutReadWrite).
+							Returned(resource.ReturnedDefault).
+							Uniqueness(resource.UniqNone).
+							MustBuild(),
+					).
+					MustBuild(),
+				resource.NewSchemaAttributeBuilder().
+					Name("nickName").
+					Type("string").
+					MultiValued(false).
+					Description("The casual way to address the user in real life, e.g., 'Bob' or 'Bobby' instead of 'Robert'. This attribute SHOULD NOT be used to represent a User's username (e.g., 'bjensen' or 'mpepperidge').").
+					Required(false).
+					CaseExact(false).
+					Required(false).
+					Mutability(resource.MutReadWrite).
+					Returned(resource.ReturnedDefault).
+					Uniqueness(resource.UniqNone).
+					MustBuild(),
+				resource.NewSchemaAttributeBuilder().
+					Name("password").
+					Type("string").
+					MultiValued(false).
+					Description("The User's cleartext password. This attribute is intended to be used as a means to specify an initial password when creating a new User or to reset an existing User's password.").
+					Required(false).
+					CaseExact(false).
+					Required(false).
+					Mutability(resource.MutWriteOnly).
+					Returned(resource.ReturnedNever).
+					Uniqueness(resource.UniqNone).
+					MustBuild(),
+				resource.NewSchemaAttributeBuilder().
+					Name("phoneNumbers").
+					Type("complex").
+					MultiValued(true).
+					Description("Phone numbers for the User. The value SHOULD be canonicalized by the service provider according to the format specified in RFC 3966, e.g., 'tel:+1-201-555-0123'.  Canonical type values of 'work', 'home', 'mobile', 'fax', 'pager', and 'other'.").
+					Required(false).
+					CaseExact(false).
+					Required(false).
+					Mutability(resource.MutReadWrite).
+					Returned(resource.ReturnedDefault).
+					Uniqueness(resource.UniqNone).
+					SubAttributes(
+						resource.NewSchemaAttributeBuilder().
+							Name("value").
+							Type("string").
+							MultiValued(false).
+							Description("Phone number of the User.").
+							Required(false).
+							CaseExact(false).
+							Required(false).
+							Mutability(resource.MutReadWrite).
+							Returned(resource.ReturnedDefault).
+							Uniqueness(resource.UniqNone).
+							MustBuild(),
+						resource.NewSchemaAttributeBuilder().
+							Name("display").
+							Type("string").
+							MultiValued(false).
+							Description("A human-readable name, primarily used for display purposes. READ-ONLY.").
+							Required(false).
+							CaseExact(false).
+							Required(false).
+							Mutability(resource.MutReadWrite).
+							Returned(resource.ReturnedDefault).
+							Uniqueness(resource.UniqNone).
+							MustBuild(),
+						resource.NewSchemaAttributeBuilder().
+							Name("type").
+							Type("string").
+							MultiValued(false).
+							Description("A label indicating the attribute's function, e.g., 'work', 'home' 'mobile'.").
+							Required(false).
+							CaseExact(false).
+							Required(false).
+							Mutability(resource.MutReadWrite).
+							Returned(resource.ReturnedDefault).
+							Uniqueness(resource.UniqNone).
+							MustBuild(),
+						resource.NewSchemaAttributeBuilder().
+							Name("primary").
+							Type("boolean").
+							MultiValued(false).
+							Description("A Boolean value indicating the 'primary' or preferred attribute value for this attribute, e.g., the preferred phone number or primary phone number. The primary attribute value 'true' MUST appear no more than once.").
+							Required(false).
+							CaseExact(false).
+							Required(false).
+							Mutability(resource.MutReadWrite).
+							Returned(resource.ReturnedDefault).
+							Uniqueness(resource.UniqNone).
+							MustBuild(),
+					).
+					MustBuild(),
+				resource.NewSchemaAttributeBuilder().
+					Name("photos").
+					Type("complex").
+					MultiValued(true).
+					Description("URLs of photos of the User.").
+					Required(false).
+					CaseExact(false).
+					Required(false).
+					Mutability(resource.MutReadWrite).
+					Returned(resource.ReturnedDefault).
+					Uniqueness(resource.UniqNone).
+					SubAttributes(
+						resource.NewSchemaAttributeBuilder().
+							Name("value").
+							Type("reference").
+							MultiValued(false).
+							Description("URL of a photo of the User.").
+							Required(false).
+							CaseExact(false).
+							Required(false).
+							Mutability(resource.MutReadWrite).
+							Returned(resource.ReturnedDefault).
+							Uniqueness(resource.UniqNone).
+							MustBuild(),
+						resource.NewSchemaAttributeBuilder().
+							Name("display").
+							Type("string").
+							MultiValued(false).
+							Description("A human-readable name, primarily used for display purposes. READ-ONLY.").
+							Required(false).
+							CaseExact(false).
+							Required(false).
+							Mutability(resource.MutReadWrite).
+							Returned(resource.ReturnedDefault).
+							Uniqueness(resource.UniqNone).
+							MustBuild(),
+						resource.NewSchemaAttributeBuilder().
+							Name("type").
+							Type("string").
+							MultiValued(false).
+							Description("A label indicating the attribute's function, i.e., 'photo' or 'thumbnail'.").
+							Required(false).
+							CaseExact(false).
+							Required(false).
+							Mutability(resource.MutReadWrite).
+							Returned(resource.ReturnedDefault).
+							Uniqueness(resource.UniqNone).
+							MustBuild(),
+						resource.NewSchemaAttributeBuilder().
+							Name("primary").
+							Type("boolean").
+							MultiValued(false).
+							Description("A Boolean value indicating the 'primary' or preferred attribute value for this attribute, e.g., the preferred photo or thumbnail. The primary attribute value 'true' MUST appear no more than once.").
+							Required(false).
+							CaseExact(false).
+							Required(false).
+							Mutability(resource.MutReadWrite).
+							Returned(resource.ReturnedDefault).
+							Uniqueness(resource.UniqNone).
+							MustBuild(),
+					).
+					MustBuild(),
+				resource.NewSchemaAttributeBuilder().
+					Name("preferredLanguage").
+					Type("string").
+					MultiValued(false).
+					Description("Indicates the User's preferred written or spoken language. Generally used for selecting a localized user interface; e.g., 'en_US' specifies the language English and country US.").
+					Required(false).
+					CaseExact(false).
+					Required(false).
+					Mutability(resource.MutReadWrite).
+					Returned(resource.ReturnedDefault).
+					Uniqueness(resource.UniqNone).
+					MustBuild(),
+				resource.NewSchemaAttributeBuilder().
+					Name("profileUrl").
+					Type("reference").
+					MultiValued(false).
+					Description("A fully qualified URL pointing to a page representing the User's online profile.").
+					Required(false).
+					CaseExact(false).
+					Required(false).
+					Mutability(resource.MutReadWrite).
+					Returned(resource.ReturnedDefault).
+					Uniqueness(resource.UniqNone).
+					MustBuild(),
+				resource.NewSchemaAttributeBuilder().
 					Name("roles").
 					Type("complex").
 					MultiValued(true).
@@ -758,6 +760,54 @@ func init() {
 							Uniqueness(resource.UniqNone).
 							MustBuild(),
 					).
+					MustBuild(),
+				resource.NewSchemaAttributeBuilder().
+					Name("timezone").
+					Type("string").
+					MultiValued(false).
+					Description("The User's time zone in the 'Olson' time zone database format, e.g. 'America/Los_Angeles'.").
+					Required(false).
+					CaseExact(false).
+					Required(false).
+					Mutability(resource.MutReadWrite).
+					Returned(resource.ReturnedDefault).
+					Uniqueness(resource.UniqNone).
+					MustBuild(),
+				resource.NewSchemaAttributeBuilder().
+					Name("title").
+					Type("string").
+					MultiValued(false).
+					Description("The user's title, such as \"Vice President.\"").
+					Required(false).
+					CaseExact(false).
+					Required(false).
+					Mutability(resource.MutReadWrite).
+					Returned(resource.ReturnedDefault).
+					Uniqueness(resource.UniqNone).
+					MustBuild(),
+				resource.NewSchemaAttributeBuilder().
+					Name("userName").
+					Type("string").
+					MultiValued(false).
+					Description("Unique identifier for the User, typically used by the user to directly\nauthenticate to the service provider. Each User MUST include a non-empty userName\nvalue. This identifier MUST be unique across the service provider's entire set\nof Users. REQUIRED.\n").
+					Required(true).
+					CaseExact(false).
+					Required(true).
+					Mutability(resource.MutReadWrite).
+					Returned(resource.ReturnedDefault).
+					Uniqueness(resource.UniqServer).
+					MustBuild(),
+				resource.NewSchemaAttributeBuilder().
+					Name("userType").
+					Type("string").
+					MultiValued(false).
+					Description("Used to identify the relationship between the organization and the user. Typical values used might be 'Contractor', 'Employee', 'Intern', 'Temp' 'External', and 'Unknown', but any value may be used.").
+					Required(false).
+					CaseExact(false).
+					Required(false).
+					Mutability(resource.MutReadWrite).
+					Returned(resource.ReturnedDefault).
+					Uniqueness(resource.UniqNone).
 					MustBuild(),
 				resource.NewSchemaAttributeBuilder().
 					Name("x509Certificates").
@@ -847,6 +897,30 @@ func init() {
 					Uniqueness(resource.UniqNone).
 					MustBuild(),
 				resource.NewSchemaAttributeBuilder().
+					Name("externalId").
+					Type("string").
+					MultiValued(false).
+					Description("A String that is an identifier for the resource as defined by the provisioning client. The \"externalId\" may simplify identification of a resource between the provisioning client and the service provider by allowing the client to use a filter to locate the resource with an identifier from the provisioning domain, obviating the need to store a local mapping between the provisioning domain's identifier of the resource and the identifier used by the service provider. Each resource MAY include a non-empty \"externalId\" value. The value of the \"externalId\" attribute is always issued by the provisioning client and MUST NOT be specified by the service provider. The service provider MUST always interpret the externalId as scoped to the provisioning domain. While the server does not enforce uniqueness, it is assumed that the value's uniqueness is controlled by the client setting the value").
+					Required(false).
+					CaseExact(true).
+					Required(false).
+					Mutability(resource.MutReadWrite).
+					Returned(resource.ReturnedDefault).
+					Uniqueness(resource.UniqNone).
+					MustBuild(),
+				resource.NewSchemaAttributeBuilder().
+					Name("id").
+					Type("string").
+					MultiValued(false).
+					Description("A unique identifier for a SCIM resource as defined by the service provider. Each representation of the resource MUST include a non-empty \"id\" value.  This identifier MUST be unique across the SCIM service provider's entire set of resources. It MUST be a stable, non-reassignable identifier that does not change when the same resource is returned in subsequent requests.  The value of the \"id\" attribute is always issued by the service provider and MUST NOT be specified by the client.  The string \"bulkId\" is a reserved keyword and MUST NOT be used within any unique identifier value.").
+					Required(true).
+					CaseExact(false).
+					Required(true).
+					Mutability(resource.MutReadOnly).
+					Returned(resource.ReturnedAlways).
+					Uniqueness(resource.UniqGlobal).
+					MustBuild(),
+				resource.NewSchemaAttributeBuilder().
 					Name("members").
 					Type("complex").
 					MultiValued(true).
@@ -896,6 +970,32 @@ func init() {
 							MustBuild(),
 					).
 					MustBuild(),
+				resource.NewSchemaAttributeBuilder().
+					Name("meta").
+					Type("complex").
+					MultiValued(false).
+					Description("A complex attribute containing resource metadata. All \"meta\" sub-attributes are assigned by the service provider (have a \"mutability\" of \"readOnly\"), and all of these sub-attributes have a \"returned\" characteristic of \"default\".  This attribute SHALL be ignored when provided by clients.").
+					Required(false).
+					CaseExact(false).
+					Required(false).
+					Mutability(resource.MutReadOnly).
+					Returned(resource.ReturnedDefault).
+					Uniqueness(resource.UniqNone).
+					SubAttributes(
+						resource.NewSchemaAttributeBuilder().
+							Name("resourceType").
+							Type("string").
+							MultiValued(false).
+							Description("The name of the resource type of the resource").
+							Required(true).
+							CaseExact(true).
+							Required(true).
+							Mutability(resource.MutReadOnly).
+							Returned(resource.ReturnedAlways).
+							Uniqueness(resource.UniqNone).
+							MustBuild(),
+					).
+					MustBuild(),
 			).
 			Name("Group").
 			MustBuild()
@@ -910,18 +1010,6 @@ func init() {
 			Description("Enterprise User").
 			Attributes(
 				resource.NewSchemaAttributeBuilder().
-					Name("employeeNumber").
-					Type("string").
-					MultiValued(false).
-					Description("Numeric or alphanumeric identifier assigned to a person, typically based on order of hire or association with an organization.").
-					Required(false).
-					CaseExact(false).
-					Required(false).
-					Mutability(resource.MutReadWrite).
-					Returned(resource.ReturnedDefault).
-					Uniqueness(resource.UniqNone).
-					MustBuild(),
-				resource.NewSchemaAttributeBuilder().
 					Name("costCenter").
 					Type("string").
 					MultiValued(false).
@@ -934,10 +1022,10 @@ func init() {
 					Uniqueness(resource.UniqNone).
 					MustBuild(),
 				resource.NewSchemaAttributeBuilder().
-					Name("organization").
+					Name("department").
 					Type("string").
 					MultiValued(false).
-					Description("Identifies the name of an organization.").
+					Description("Identifies the name of a department.").
 					Required(false).
 					CaseExact(false).
 					Required(false).
@@ -958,16 +1046,40 @@ func init() {
 					Uniqueness(resource.UniqNone).
 					MustBuild(),
 				resource.NewSchemaAttributeBuilder().
-					Name("department").
+					Name("employeeNumber").
 					Type("string").
 					MultiValued(false).
-					Description("Identifies the name of a department.").
+					Description("Numeric or alphanumeric identifier assigned to a person, typically based on order of hire or association with an organization.").
 					Required(false).
 					CaseExact(false).
 					Required(false).
 					Mutability(resource.MutReadWrite).
 					Returned(resource.ReturnedDefault).
 					Uniqueness(resource.UniqNone).
+					MustBuild(),
+				resource.NewSchemaAttributeBuilder().
+					Name("externalId").
+					Type("string").
+					MultiValued(false).
+					Description("A String that is an identifier for the resource as defined by the provisioning client. The \"externalId\" may simplify identification of a resource between the provisioning client and the service provider by allowing the client to use a filter to locate the resource with an identifier from the provisioning domain, obviating the need to store a local mapping between the provisioning domain's identifier of the resource and the identifier used by the service provider. Each resource MAY include a non-empty \"externalId\" value. The value of the \"externalId\" attribute is always issued by the provisioning client and MUST NOT be specified by the service provider. The service provider MUST always interpret the externalId as scoped to the provisioning domain. While the server does not enforce uniqueness, it is assumed that the value's uniqueness is controlled by the client setting the value").
+					Required(false).
+					CaseExact(true).
+					Required(false).
+					Mutability(resource.MutReadWrite).
+					Returned(resource.ReturnedDefault).
+					Uniqueness(resource.UniqNone).
+					MustBuild(),
+				resource.NewSchemaAttributeBuilder().
+					Name("id").
+					Type("string").
+					MultiValued(false).
+					Description("A unique identifier for a SCIM resource as defined by the service provider. Each representation of the resource MUST include a non-empty \"id\" value.  This identifier MUST be unique across the SCIM service provider's entire set of resources. It MUST be a stable, non-reassignable identifier that does not change when the same resource is returned in subsequent requests.  The value of the \"id\" attribute is always issued by the service provider and MUST NOT be specified by the client.  The string \"bulkId\" is a reserved keyword and MUST NOT be used within any unique identifier value.").
+					Required(true).
+					CaseExact(false).
+					Required(true).
+					Mutability(resource.MutReadOnly).
+					Returned(resource.ReturnedAlways).
+					Uniqueness(resource.UniqGlobal).
 					MustBuild(),
 				resource.NewSchemaAttributeBuilder().
 					Name("manager").
@@ -1018,6 +1130,44 @@ func init() {
 							Uniqueness(resource.UniqNone).
 							MustBuild(),
 					).
+					MustBuild(),
+				resource.NewSchemaAttributeBuilder().
+					Name("meta").
+					Type("complex").
+					MultiValued(false).
+					Description("A complex attribute containing resource metadata. All \"meta\" sub-attributes are assigned by the service provider (have a \"mutability\" of \"readOnly\"), and all of these sub-attributes have a \"returned\" characteristic of \"default\".  This attribute SHALL be ignored when provided by clients.").
+					Required(false).
+					CaseExact(false).
+					Required(false).
+					Mutability(resource.MutReadOnly).
+					Returned(resource.ReturnedDefault).
+					Uniqueness(resource.UniqNone).
+					SubAttributes(
+						resource.NewSchemaAttributeBuilder().
+							Name("resourceType").
+							Type("string").
+							MultiValued(false).
+							Description("The name of the resource type of the resource").
+							Required(true).
+							CaseExact(true).
+							Required(true).
+							Mutability(resource.MutReadOnly).
+							Returned(resource.ReturnedAlways).
+							Uniqueness(resource.UniqNone).
+							MustBuild(),
+					).
+					MustBuild(),
+				resource.NewSchemaAttributeBuilder().
+					Name("organization").
+					Type("string").
+					MultiValued(false).
+					Description("Identifies the name of an organization.").
+					Required(false).
+					CaseExact(false).
+					Required(false).
+					Mutability(resource.MutReadWrite).
+					Returned(resource.ReturnedDefault).
+					Uniqueness(resource.UniqNone).
 					MustBuild(),
 			).
 			Name("EnterpriseUser").

@@ -10,11 +10,11 @@ import (
 )
 
 const (
-	metaCreatedJSONKey      = "created"
-	metaLastModifiedJSONKey = "lastModified"
-	metaLocationJSONKey     = "location"
-	metaResourceTypeJSONKey = "resourceType"
-	metaVersionJSONKey      = "version"
+	MetaCreatedKey      = "created"
+	MetaLastModifiedKey = "lastModified"
+	MetaLocationKey     = "location"
+	MetaResourceTypeKey = "resourceType"
+	MetaVersionKey      = "version"
 )
 
 type Meta struct {
@@ -41,6 +41,12 @@ var DefaultMetaValidator MetaValidator = MetaValidateFunc(func(v *Meta) error {
 	return nil
 })
 
+func (v *Meta) HasCreated() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.created != nil
+}
+
 func (v *Meta) Created() time.Time {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -48,6 +54,12 @@ func (v *Meta) Created() time.Time {
 		return time.Time{}
 	}
 	return *(v.created)
+}
+
+func (v *Meta) HasLastModified() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.lastModified != nil
 }
 
 func (v *Meta) LastModified() time.Time {
@@ -59,6 +71,12 @@ func (v *Meta) LastModified() time.Time {
 	return *(v.lastModified)
 }
 
+func (v *Meta) HasLocation() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.location != nil
+}
+
 func (v *Meta) Location() string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -68,6 +86,12 @@ func (v *Meta) Location() string {
 	return *(v.location)
 }
 
+func (v *Meta) HasResourceType() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.resourceType != nil
+}
+
 func (v *Meta) ResourceType() string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -75,6 +99,12 @@ func (v *Meta) ResourceType() string {
 		return ""
 	}
 	return *(v.resourceType)
+}
+
+func (v *Meta) HasVersion() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.version != nil
 }
 
 func (v *Meta) Version() string {
@@ -144,27 +174,27 @@ func (v *Meta) Get(name string, options ...GetOption) (interface{}, bool) {
 		}
 	}
 	switch name {
-	case metaCreatedJSONKey:
+	case MetaCreatedKey:
 		if v.created == nil {
 			return nil, false
 		}
 		return *(v.created), true
-	case metaLastModifiedJSONKey:
+	case MetaLastModifiedKey:
 		if v.lastModified == nil {
 			return nil, false
 		}
 		return *(v.lastModified), true
-	case metaLocationJSONKey:
+	case MetaLocationKey:
 		if v.location == nil {
 			return nil, false
 		}
 		return *(v.location), true
-	case metaResourceTypeJSONKey:
+	case MetaResourceTypeKey:
 		if v.resourceType == nil {
 			return nil, false
 		}
 		return *(v.resourceType), true
-	case metaVersionJSONKey:
+	case MetaVersionKey:
 		if v.version == nil {
 			return nil, false
 		}
@@ -196,7 +226,7 @@ func (v *Meta) Set(name string, value interface{}) error {
 	v.mu.Lock()
 	defer v.mu.Unlock()
 	switch name {
-	case metaCreatedJSONKey:
+	case MetaCreatedKey:
 		var tmp time.Time
 		tmp, ok := value.(time.Time)
 		if !ok {
@@ -204,7 +234,7 @@ func (v *Meta) Set(name string, value interface{}) error {
 		}
 		v.created = &tmp
 		return nil
-	case metaLastModifiedJSONKey:
+	case MetaLastModifiedKey:
 		var tmp time.Time
 		tmp, ok := value.(time.Time)
 		if !ok {
@@ -212,7 +242,7 @@ func (v *Meta) Set(name string, value interface{}) error {
 		}
 		v.lastModified = &tmp
 		return nil
-	case metaLocationJSONKey:
+	case MetaLocationKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -220,7 +250,7 @@ func (v *Meta) Set(name string, value interface{}) error {
 		}
 		v.location = &tmp
 		return nil
-	case metaResourceTypeJSONKey:
+	case MetaResourceTypeKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -228,7 +258,7 @@ func (v *Meta) Set(name string, value interface{}) error {
 		}
 		v.resourceType = &tmp
 		return nil
-	case metaVersionJSONKey:
+	case MetaVersionKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -244,6 +274,18 @@ func (v *Meta) Set(name string, value interface{}) error {
 		}
 		pp[name] = value
 		return nil
+	}
+}
+
+func (v *Meta) Clone() *Meta {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	return &Meta{
+		created:      v.created,
+		lastModified: v.lastModified,
+		location:     v.location,
+		resourceType: v.resourceType,
+		version:      v.version,
 	}
 }
 
@@ -282,31 +324,31 @@ LOOP:
 			}
 		case string:
 			switch tok {
-			case metaCreatedJSONKey:
+			case MetaCreatedKey:
 				var x time.Time
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "created": %w`, err)
 				}
 				v.created = &x
-			case metaLastModifiedJSONKey:
+			case MetaLastModifiedKey:
 				var x time.Time
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "lastModified": %w`, err)
 				}
 				v.lastModified = &x
-			case metaLocationJSONKey:
+			case MetaLocationKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "location": %w`, err)
 				}
 				v.location = &x
-			case metaResourceTypeJSONKey:
+			case MetaResourceTypeKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "resourceType": %w`, err)
 				}
 				v.resourceType = &x
-			case metaVersionJSONKey:
+			case MetaVersionKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "version": %w`, err)
@@ -360,6 +402,12 @@ func NewMetaBuilder() *MetaBuilder {
 	var b MetaBuilder
 	b.init()
 	return &b
+}
+
+func (b *MetaBuilder) From(in *Meta) *MetaBuilder {
+	b.once.Do(b.init)
+	b.object = in.Clone()
+	return b
 }
 
 func (b *MetaBuilder) init() {
@@ -460,10 +508,8 @@ func (b *MetaBuilder) Build() (*Meta, error) {
 	if validator == nil {
 		validator = DefaultMetaValidator
 	}
-	if validator != nil {
-		if err := validator.Validate(object); err != nil {
-			return nil, err
-		}
+	if err := validator.Validate(object); err != nil {
+		return nil, err
 	}
 	return object, nil
 }

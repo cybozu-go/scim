@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	genericSupportSupportedJSONKey = "supported"
+	GenericSupportSupportedKey = "supported"
 )
 
 type GenericSupport struct {
@@ -30,10 +30,16 @@ func (f GenericSupportValidateFunc) Validate(v *GenericSupport) error {
 
 var DefaultGenericSupportValidator GenericSupportValidator = GenericSupportValidateFunc(func(v *GenericSupport) error {
 	if v.supported == nil {
-		return fmt.Errorf(`required field "supported" is missing`)
+		return fmt.Errorf(`required field "supported" is missing in "GenericSupport"`)
 	}
 	return nil
 })
+
+func (v *GenericSupport) HasSupported() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.supported != nil
+}
 
 func (v *GenericSupport) Supported() bool {
 	v.mu.RLock()
@@ -90,7 +96,7 @@ func (v *GenericSupport) Get(name string, options ...GetOption) (interface{}, bo
 		}
 	}
 	switch name {
-	case genericSupportSupportedJSONKey:
+	case GenericSupportSupportedKey:
 		if v.supported == nil {
 			return nil, false
 		}
@@ -122,7 +128,7 @@ func (v *GenericSupport) Set(name string, value interface{}) error {
 	v.mu.Lock()
 	defer v.mu.Unlock()
 	switch name {
-	case genericSupportSupportedJSONKey:
+	case GenericSupportSupportedKey:
 		var tmp bool
 		tmp, ok := value.(bool)
 		if !ok {
@@ -138,6 +144,14 @@ func (v *GenericSupport) Set(name string, value interface{}) error {
 		}
 		pp[name] = value
 		return nil
+	}
+}
+
+func (v *GenericSupport) Clone() *GenericSupport {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	return &GenericSupport{
+		supported: v.supported,
 	}
 }
 
@@ -172,7 +186,7 @@ LOOP:
 			}
 		case string:
 			switch tok {
-			case genericSupportSupportedJSONKey:
+			case GenericSupportSupportedKey:
 				var x bool
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "supported": %w`, err)
@@ -228,6 +242,12 @@ func NewGenericSupportBuilder() *GenericSupportBuilder {
 	return &b
 }
 
+func (b *GenericSupportBuilder) From(in *GenericSupport) *GenericSupportBuilder {
+	b.once.Do(b.init)
+	b.object = in.Clone()
+	return b
+}
+
 func (b *GenericSupportBuilder) init() {
 	b.err = nil
 	b.validator = nil
@@ -274,10 +294,8 @@ func (b *GenericSupportBuilder) Build() (*GenericSupport, error) {
 	if validator == nil {
 		validator = DefaultGenericSupportValidator
 	}
-	if validator != nil {
-		if err := validator.Validate(object); err != nil {
-			return nil, err
-		}
+	if err := validator.Validate(object); err != nil {
+		return nil, err
 	}
 	return object, nil
 }

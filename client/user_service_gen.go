@@ -9,10 +9,12 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"strings"
 
 	"github.com/cybozu-go/scim/resource"
 )
 
+// UserService the logical grouping of SCIM user related API calls
 type UserService struct {
 	client *Client
 }
@@ -25,12 +27,36 @@ func (client *Client) User() *UserService {
 
 type GetUserCall struct {
 	builder *resource.PartialResourceRepresentationRequestBuilder
+	object  *resource.PartialResourceRepresentationRequest
+	err     error
 	client  *Client
 	trace   io.Writer
 	id      string
 }
 
-func (svc *UserService) GetUser(id string) *GetUserCall {
+func (call *GetUserCall) payload() (*resource.PartialResourceRepresentationRequest, error) {
+	if object := call.object; object != nil {
+		return object, nil
+	}
+	return call.builder.Build()
+}
+
+func (call *GetUserCall) FromJSON(data []byte) *GetUserCall {
+	if call.err != nil {
+		return call
+	}
+	var in resource.PartialResourceRepresentationRequest
+	if err := json.Unmarshal(data, &in); err != nil {
+		call.err = fmt.Errorf("failed to decode data: %w", err)
+		return call
+	}
+	call.object = &in
+	return call
+}
+
+// Get creates an instance of GetUserCall that sends an HTTP GET request to
+// /Users to retrieve the user associated with the specified ID.
+func (svc *UserService) Get(id string) *GetUserCall {
 	return &GetUserCall{
 		builder: resource.NewPartialResourceRepresentationRequestBuilder(),
 		client:  svc.client,
@@ -58,16 +84,21 @@ func (call GetUserCall) makeURL() string {
 }
 
 func (call *GetUserCall) Do(ctx context.Context) (*resource.User, error) {
-	payload, err := call.builder.Build()
+	if err := call.err; err != nil {
+		return nil, fmt.Errorf("failed to build request: %w", err)
+	}
+	payload, err := call.payload()
 	if err != nil {
 		return nil, fmt.Errorf(`failed to generate request payload for GetUserCall: %w`, err)
 	}
 
 	trace := call.trace
+	if trace == nil {
+		trace = call.client.trace
+	}
 	u := call.makeURL()
 	if trace != nil {
-		fmt.Fprintf(trace, `trace: client sending call request to %q
-`, u)
+		fmt.Fprintf(trace, "trace: client sending call request to %q\n", u)
 	}
 
 	var vals url.Values
@@ -80,9 +111,7 @@ func (call *GetUserCall) Do(ctx context.Context) (*resource.User, error) {
 		for key, value := range m {
 			switch value := value.(type) {
 			case []string:
-				for _, x := range value {
-					vals.Add(key, x)
-				}
+				vals.Add(key, strings.Join(value, ","))
 			default:
 				vals.Add(key, fmt.Sprintf(`%s`, value))
 			}
@@ -126,11 +155,35 @@ func (call *GetUserCall) Do(ctx context.Context) (*resource.User, error) {
 
 type CreateUserCall struct {
 	builder *resource.UserBuilder
+	object  *resource.User
+	err     error
 	client  *Client
 	trace   io.Writer
 }
 
-func (svc *UserService) CreateUser() *CreateUserCall {
+func (call *CreateUserCall) payload() (*resource.User, error) {
+	if object := call.object; object != nil {
+		return object, nil
+	}
+	return call.builder.Build()
+}
+
+func (call *CreateUserCall) FromJSON(data []byte) *CreateUserCall {
+	if call.err != nil {
+		return call
+	}
+	var in resource.User
+	if err := json.Unmarshal(data, &in); err != nil {
+		call.err = fmt.Errorf("failed to decode data: %w", err)
+		return call
+	}
+	call.object = &in
+	return call
+}
+
+// Create creates an insance of CreateUserCall that sends an HTTP POST request to
+// /Users to create a new user.
+func (svc *UserService) Create() *CreateUserCall {
 	return &CreateUserCall{
 		builder: resource.NewUserBuilder(),
 		client:  svc.client,
@@ -172,6 +225,11 @@ func (call *CreateUserCall) IMS(v ...string) *CreateUserCall {
 	return call
 }
 
+func (call *CreateUserCall) Locale(v string) *CreateUserCall {
+	call.builder.Locale(v)
+	return call
+}
+
 func (call *CreateUserCall) Name(v *resource.Names) *CreateUserCall {
 	call.builder.Name(v)
 	return call
@@ -202,7 +260,7 @@ func (call *CreateUserCall) ProfileURL(v string) *CreateUserCall {
 	return call
 }
 
-func (call *CreateUserCall) Roles(v ...string) *CreateUserCall {
+func (call *CreateUserCall) Roles(v ...*resource.Role) *CreateUserCall {
 	call.builder.Roles(v...)
 	return call
 }
@@ -232,6 +290,7 @@ func (call *CreateUserCall) X509Certificates(v ...string) *CreateUserCall {
 	return call
 }
 
+// Extension allows users to register an extension using the fully qualified URI
 func (call *CreateUserCall) Extension(uri string, value interface{}) *CreateUserCall {
 	call.builder.Extension(uri, value)
 	return call
@@ -252,16 +311,21 @@ func (call *CreateUserCall) makeURL() string {
 }
 
 func (call *CreateUserCall) Do(ctx context.Context) (*resource.User, error) {
-	payload, err := call.builder.Build()
+	if err := call.err; err != nil {
+		return nil, fmt.Errorf("failed to build request: %w", err)
+	}
+	payload, err := call.payload()
 	if err != nil {
 		return nil, fmt.Errorf(`failed to generate request payload for CreateUserCall: %w`, err)
 	}
 
 	trace := call.trace
+	if trace == nil {
+		trace = call.client.trace
+	}
 	u := call.makeURL()
 	if trace != nil {
-		fmt.Fprintf(trace, `trace: client sending call request to %q
-`, u)
+		fmt.Fprintf(trace, "trace: client sending call request to %q\n", u)
 	}
 
 	var body bytes.Buffer
@@ -306,12 +370,36 @@ func (call *CreateUserCall) Do(ctx context.Context) (*resource.User, error) {
 
 type ReplaceUserCall struct {
 	builder *resource.UserBuilder
+	object  *resource.User
+	err     error
 	client  *Client
 	trace   io.Writer
 	id      string
 }
 
-func (svc *UserService) ReplaceUser(id string) *ReplaceUserCall {
+func (call *ReplaceUserCall) payload() (*resource.User, error) {
+	if object := call.object; object != nil {
+		return object, nil
+	}
+	return call.builder.Build()
+}
+
+func (call *ReplaceUserCall) FromJSON(data []byte) *ReplaceUserCall {
+	if call.err != nil {
+		return call
+	}
+	var in resource.User
+	if err := json.Unmarshal(data, &in); err != nil {
+		call.err = fmt.Errorf("failed to decode data: %w", err)
+		return call
+	}
+	call.object = &in
+	return call
+}
+
+// Replace creates an insance of ReplaceUserCall that sends an HTTP PUT request to
+// /Users to replace an existing new user.
+func (svc *UserService) Replace(id string) *ReplaceUserCall {
 	return &ReplaceUserCall{
 		builder: resource.NewUserBuilder(),
 		client:  svc.client,
@@ -354,6 +442,11 @@ func (call *ReplaceUserCall) IMS(v ...string) *ReplaceUserCall {
 	return call
 }
 
+func (call *ReplaceUserCall) Locale(v string) *ReplaceUserCall {
+	call.builder.Locale(v)
+	return call
+}
+
 func (call *ReplaceUserCall) Name(v *resource.Names) *ReplaceUserCall {
 	call.builder.Name(v)
 	return call
@@ -384,7 +477,7 @@ func (call *ReplaceUserCall) ProfileURL(v string) *ReplaceUserCall {
 	return call
 }
 
-func (call *ReplaceUserCall) Roles(v ...string) *ReplaceUserCall {
+func (call *ReplaceUserCall) Roles(v ...*resource.Role) *ReplaceUserCall {
 	call.builder.Roles(v...)
 	return call
 }
@@ -414,6 +507,7 @@ func (call *ReplaceUserCall) X509Certificates(v ...string) *ReplaceUserCall {
 	return call
 }
 
+// Extension allows users to register an extension using the fully qualified URI
 func (call *ReplaceUserCall) Extension(uri string, value interface{}) *ReplaceUserCall {
 	call.builder.Extension(uri, value)
 	return call
@@ -434,16 +528,21 @@ func (call ReplaceUserCall) makeURL() string {
 }
 
 func (call *ReplaceUserCall) Do(ctx context.Context) (*resource.User, error) {
-	payload, err := call.builder.Build()
+	if err := call.err; err != nil {
+		return nil, fmt.Errorf("failed to build request: %w", err)
+	}
+	payload, err := call.payload()
 	if err != nil {
 		return nil, fmt.Errorf(`failed to generate request payload for ReplaceUserCall: %w`, err)
 	}
 
 	trace := call.trace
+	if trace == nil {
+		trace = call.client.trace
+	}
 	u := call.makeURL()
 	if trace != nil {
-		fmt.Fprintf(trace, `trace: client sending call request to %q
-`, u)
+		fmt.Fprintf(trace, "trace: client sending call request to %q\n", u)
 	}
 
 	var body bytes.Buffer
@@ -488,12 +587,34 @@ func (call *ReplaceUserCall) Do(ctx context.Context) (*resource.User, error) {
 
 type DeleteUserCall struct {
 	builder *resource.UserBuilder
+	object  *resource.User
+	err     error
 	client  *Client
 	trace   io.Writer
 	id      string
 }
 
-func (svc *UserService) DeleteUser(id string) *DeleteUserCall {
+func (call *DeleteUserCall) payload() (*resource.User, error) {
+	if object := call.object; object != nil {
+		return object, nil
+	}
+	return call.builder.Build()
+}
+
+func (call *DeleteUserCall) FromJSON(data []byte) *DeleteUserCall {
+	if call.err != nil {
+		return call
+	}
+	var in resource.User
+	if err := json.Unmarshal(data, &in); err != nil {
+		call.err = fmt.Errorf("failed to decode data: %w", err)
+		return call
+	}
+	call.object = &in
+	return call
+}
+
+func (svc *UserService) Delete(id string) *DeleteUserCall {
 	return &DeleteUserCall{
 		builder: resource.NewUserBuilder(),
 		client:  svc.client,
@@ -546,6 +667,11 @@ func (call *DeleteUserCall) IMS(v ...string) *DeleteUserCall {
 	return call
 }
 
+func (call *DeleteUserCall) Locale(v string) *DeleteUserCall {
+	call.builder.Locale(v)
+	return call
+}
+
 func (call *DeleteUserCall) Meta(v *resource.Meta) *DeleteUserCall {
 	call.builder.Meta(v)
 	return call
@@ -581,7 +707,7 @@ func (call *DeleteUserCall) ProfileURL(v string) *DeleteUserCall {
 	return call
 }
 
-func (call *DeleteUserCall) Roles(v ...string) *DeleteUserCall {
+func (call *DeleteUserCall) Roles(v ...*resource.Role) *DeleteUserCall {
 	call.builder.Roles(v...)
 	return call
 }
@@ -621,16 +747,21 @@ func (call DeleteUserCall) makeURL() string {
 }
 
 func (call *DeleteUserCall) Do(ctx context.Context) error {
-	payload, err := call.builder.Build()
+	if err := call.err; err != nil {
+		return fmt.Errorf("failed to build request: %w", err)
+	}
+	payload, err := call.payload()
 	if err != nil {
 		return fmt.Errorf(`failed to generate request payload for DeleteUserCall: %w`, err)
 	}
 
 	trace := call.trace
+	if trace == nil {
+		trace = call.client.trace
+	}
 	u := call.makeURL()
 	if trace != nil {
-		fmt.Fprintf(trace, `trace: client sending call request to %q
-`, u)
+		fmt.Fprintf(trace, "trace: client sending call request to %q\n", u)
 	}
 
 	var vals url.Values
@@ -643,9 +774,7 @@ func (call *DeleteUserCall) Do(ctx context.Context) error {
 		for key, value := range m {
 			switch value := value.(type) {
 			case []string:
-				for _, x := range value {
-					vals.Add(key, x)
-				}
+				vals.Add(key, strings.Join(value, ","))
 			default:
 				vals.Add(key, fmt.Sprintf(`%s`, value))
 			}
@@ -680,4 +809,152 @@ func (call *DeleteUserCall) Do(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+type SearchUserCall struct {
+	builder *resource.SearchRequestBuilder
+	object  *resource.SearchRequest
+	err     error
+	client  *Client
+	trace   io.Writer
+}
+
+func (call *SearchUserCall) payload() (*resource.SearchRequest, error) {
+	if object := call.object; object != nil {
+		return object, nil
+	}
+	return call.builder.Build()
+}
+
+func (call *SearchUserCall) FromJSON(data []byte) *SearchUserCall {
+	if call.err != nil {
+		return call
+	}
+	var in resource.SearchRequest
+	if err := json.Unmarshal(data, &in); err != nil {
+		call.err = fmt.Errorf("failed to decode data: %w", err)
+		return call
+	}
+	call.object = &in
+	return call
+}
+
+func (svc *UserService) Search() *SearchUserCall {
+	return &SearchUserCall{
+		builder: resource.NewSearchRequestBuilder(),
+		client:  svc.client,
+	}
+}
+
+func (call *SearchUserCall) Attributes(v ...string) *SearchUserCall {
+	call.builder.Attributes(v...)
+	return call
+}
+
+func (call *SearchUserCall) Count(v int) *SearchUserCall {
+	call.builder.Count(v)
+	return call
+}
+
+func (call *SearchUserCall) ExludedAttributes(v ...string) *SearchUserCall {
+	call.builder.ExludedAttributes(v...)
+	return call
+}
+
+func (call *SearchUserCall) Filter(v string) *SearchUserCall {
+	call.builder.Filter(v)
+	return call
+}
+
+func (call *SearchUserCall) SortBy(v string) *SearchUserCall {
+	call.builder.SortBy(v)
+	return call
+}
+
+func (call *SearchUserCall) SortOrder(v string) *SearchUserCall {
+	call.builder.SortOrder(v)
+	return call
+}
+
+func (call *SearchUserCall) StartIndex(v int) *SearchUserCall {
+	call.builder.StartIndex(v)
+	return call
+}
+
+// Extension allows users to register an extension using the fully qualified URI
+func (call *SearchUserCall) Extension(uri string, value interface{}) *SearchUserCall {
+	call.builder.Extension(uri, value)
+	return call
+}
+
+func (call *SearchUserCall) Validator(v resource.SearchRequestValidator) *SearchUserCall {
+	call.builder.Validator(v)
+	return call
+}
+
+func (call *SearchUserCall) Trace(w io.Writer) *SearchUserCall {
+	call.trace = w
+	return call
+}
+
+func (call *SearchUserCall) makeURL() string {
+	return call.client.baseURL + "/Users/.search"
+}
+
+func (call *SearchUserCall) Do(ctx context.Context) (*resource.ListResponse, error) {
+	if err := call.err; err != nil {
+		return nil, fmt.Errorf("failed to build request: %w", err)
+	}
+	payload, err := call.payload()
+	if err != nil {
+		return nil, fmt.Errorf(`failed to generate request payload for SearchUserCall: %w`, err)
+	}
+
+	trace := call.trace
+	if trace == nil {
+		trace = call.client.trace
+	}
+	u := call.makeURL()
+	if trace != nil {
+		fmt.Fprintf(trace, "trace: client sending call request to %q\n", u)
+	}
+
+	var body bytes.Buffer
+	if err := json.NewEncoder(&body).Encode(payload); err != nil {
+		return nil, fmt.Errorf(`failed to encode call request: %w`, err)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, u, &body)
+	if err != nil {
+		return nil, fmt.Errorf(`failed to create new HTTP request: %w`, err)
+	}
+
+	req.Header.Set(`Content-Type`, `application/scim+json`)
+	req.Header.Set(`Accept`, `application/scim+json`)
+
+	if trace != nil {
+		buf, _ := httputil.DumpRequestOut(req, true)
+		fmt.Fprintf(trace, "%s\n", buf)
+	}
+
+	res, err := call.client.httpcl.Do(req)
+	if trace != nil {
+		buf, _ := httputil.DumpResponse(res, true)
+		fmt.Fprintf(trace, "%s\n", buf)
+	}
+	if err != nil {
+		return nil, fmt.Errorf(`failed to send request to %q: %w`, u, err)
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(`expected call response %d, got (%d)`, http.StatusOK, res.StatusCode)
+	}
+
+	var respayload resource.ListResponse
+	if err := json.NewDecoder(res.Body).Decode(&respayload); err != nil {
+		return nil, fmt.Errorf(`failed to decode call response: %w`, err)
+	}
+
+	return &respayload, nil
 }

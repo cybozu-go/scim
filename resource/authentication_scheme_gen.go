@@ -9,11 +9,11 @@ import (
 )
 
 const (
-	authenticationSchemeDescriptionJSONKey      = "description"
-	authenticationSchemeDocumentationURIJSONKey = "documentationUri"
-	authenticationSchemeNameJSONKey             = "name"
-	authenticationSchemeSpecURIJSONKey          = "specUri"
-	authenticationSchemeTypJSONKey              = "type"
+	AuthenticationSchemeDescriptionKey      = "description"
+	AuthenticationSchemeDocumentationURIKey = "documentationUri"
+	AuthenticationSchemeNameKey             = "name"
+	AuthenticationSchemeSpecURIKey          = "specUri"
+	AuthenticationSchemeTypeKey             = "type"
 )
 
 type AuthenticationScheme struct {
@@ -38,16 +38,22 @@ func (f AuthenticationSchemeValidateFunc) Validate(v *AuthenticationScheme) erro
 
 var DefaultAuthenticationSchemeValidator AuthenticationSchemeValidator = AuthenticationSchemeValidateFunc(func(v *AuthenticationScheme) error {
 	if v.description == nil {
-		return fmt.Errorf(`required field "description" is missing`)
+		return fmt.Errorf(`required field "description" is missing in "AuthenticationScheme"`)
 	}
 	if v.name == nil {
-		return fmt.Errorf(`required field "name" is missing`)
+		return fmt.Errorf(`required field "name" is missing in "AuthenticationScheme"`)
 	}
 	if v.typ == nil {
-		return fmt.Errorf(`required field "type" is missing`)
+		return fmt.Errorf(`required field "type" is missing in "AuthenticationScheme"`)
 	}
 	return nil
 })
+
+func (v *AuthenticationScheme) HasDescription() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.description != nil
+}
 
 func (v *AuthenticationScheme) Description() string {
 	v.mu.RLock()
@@ -56,6 +62,12 @@ func (v *AuthenticationScheme) Description() string {
 		return ""
 	}
 	return *(v.description)
+}
+
+func (v *AuthenticationScheme) HasDocumentationURI() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.documentationURI != nil
 }
 
 func (v *AuthenticationScheme) DocumentationURI() string {
@@ -67,6 +79,12 @@ func (v *AuthenticationScheme) DocumentationURI() string {
 	return *(v.documentationURI)
 }
 
+func (v *AuthenticationScheme) HasName() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.name != nil
+}
+
 func (v *AuthenticationScheme) Name() string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -74,6 +92,12 @@ func (v *AuthenticationScheme) Name() string {
 		return ""
 	}
 	return *(v.name)
+}
+
+func (v *AuthenticationScheme) HasSpecURI() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.specURI != nil
 }
 
 func (v *AuthenticationScheme) SpecURI() string {
@@ -85,7 +109,13 @@ func (v *AuthenticationScheme) SpecURI() string {
 	return *(v.specURI)
 }
 
-func (v *AuthenticationScheme) Typ() AuthenticationSchemeType {
+func (v *AuthenticationScheme) HasType() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.typ != nil
+}
+
+func (v *AuthenticationScheme) Type() AuthenticationSchemeType {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	if v.typ == nil {
@@ -152,27 +182,27 @@ func (v *AuthenticationScheme) Get(name string, options ...GetOption) (interface
 		}
 	}
 	switch name {
-	case authenticationSchemeDescriptionJSONKey:
+	case AuthenticationSchemeDescriptionKey:
 		if v.description == nil {
 			return nil, false
 		}
 		return *(v.description), true
-	case authenticationSchemeDocumentationURIJSONKey:
+	case AuthenticationSchemeDocumentationURIKey:
 		if v.documentationURI == nil {
 			return nil, false
 		}
 		return *(v.documentationURI), true
-	case authenticationSchemeNameJSONKey:
+	case AuthenticationSchemeNameKey:
 		if v.name == nil {
 			return nil, false
 		}
 		return *(v.name), true
-	case authenticationSchemeSpecURIJSONKey:
+	case AuthenticationSchemeSpecURIKey:
 		if v.specURI == nil {
 			return nil, false
 		}
 		return *(v.specURI), true
-	case authenticationSchemeTypJSONKey:
+	case AuthenticationSchemeTypeKey:
 		if v.typ == nil {
 			return nil, false
 		}
@@ -204,7 +234,7 @@ func (v *AuthenticationScheme) Set(name string, value interface{}) error {
 	v.mu.Lock()
 	defer v.mu.Unlock()
 	switch name {
-	case authenticationSchemeDescriptionJSONKey:
+	case AuthenticationSchemeDescriptionKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -212,7 +242,7 @@ func (v *AuthenticationScheme) Set(name string, value interface{}) error {
 		}
 		v.description = &tmp
 		return nil
-	case authenticationSchemeDocumentationURIJSONKey:
+	case AuthenticationSchemeDocumentationURIKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -220,7 +250,7 @@ func (v *AuthenticationScheme) Set(name string, value interface{}) error {
 		}
 		v.documentationURI = &tmp
 		return nil
-	case authenticationSchemeNameJSONKey:
+	case AuthenticationSchemeNameKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -228,7 +258,7 @@ func (v *AuthenticationScheme) Set(name string, value interface{}) error {
 		}
 		v.name = &tmp
 		return nil
-	case authenticationSchemeSpecURIJSONKey:
+	case AuthenticationSchemeSpecURIKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -236,7 +266,7 @@ func (v *AuthenticationScheme) Set(name string, value interface{}) error {
 		}
 		v.specURI = &tmp
 		return nil
-	case authenticationSchemeTypJSONKey:
+	case AuthenticationSchemeTypeKey:
 		var tmp AuthenticationSchemeType
 		tmp, ok := value.(AuthenticationSchemeType)
 		if !ok {
@@ -252,6 +282,18 @@ func (v *AuthenticationScheme) Set(name string, value interface{}) error {
 		}
 		pp[name] = value
 		return nil
+	}
+}
+
+func (v *AuthenticationScheme) Clone() *AuthenticationScheme {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	return &AuthenticationScheme{
+		description:      v.description,
+		documentationURI: v.documentationURI,
+		name:             v.name,
+		specURI:          v.specURI,
+		typ:              v.typ,
 	}
 }
 
@@ -290,31 +332,31 @@ LOOP:
 			}
 		case string:
 			switch tok {
-			case authenticationSchemeDescriptionJSONKey:
+			case AuthenticationSchemeDescriptionKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "description": %w`, err)
 				}
 				v.description = &x
-			case authenticationSchemeDocumentationURIJSONKey:
+			case AuthenticationSchemeDocumentationURIKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "documentationUri": %w`, err)
 				}
 				v.documentationURI = &x
-			case authenticationSchemeNameJSONKey:
+			case AuthenticationSchemeNameKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "name": %w`, err)
 				}
 				v.name = &x
-			case authenticationSchemeSpecURIJSONKey:
+			case AuthenticationSchemeSpecURIKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "specUri": %w`, err)
 				}
 				v.specURI = &x
-			case authenticationSchemeTypJSONKey:
+			case AuthenticationSchemeTypeKey:
 				var x AuthenticationSchemeType
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "type": %w`, err)
@@ -368,6 +410,12 @@ func NewAuthenticationSchemeBuilder() *AuthenticationSchemeBuilder {
 	var b AuthenticationSchemeBuilder
 	b.init()
 	return &b
+}
+
+func (b *AuthenticationSchemeBuilder) From(in *AuthenticationScheme) *AuthenticationSchemeBuilder {
+	b.once.Do(b.init)
+	b.object = in.Clone()
+	return b
 }
 
 func (b *AuthenticationSchemeBuilder) init() {
@@ -428,7 +476,7 @@ func (b *AuthenticationSchemeBuilder) SpecURI(v string) *AuthenticationSchemeBui
 	return b
 }
 
-func (b *AuthenticationSchemeBuilder) Typ(v AuthenticationSchemeType) *AuthenticationSchemeBuilder {
+func (b *AuthenticationSchemeBuilder) Type(v AuthenticationSchemeType) *AuthenticationSchemeBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.once.Do(b.init)
@@ -468,10 +516,8 @@ func (b *AuthenticationSchemeBuilder) Build() (*AuthenticationScheme, error) {
 	if validator == nil {
 		validator = DefaultAuthenticationSchemeValidator
 	}
-	if validator != nil {
-		if err := validator.Validate(object); err != nil {
-			return nil, err
-		}
+	if err := validator.Validate(object); err != nil {
+		return nil, err
 	}
 	return object, nil
 }

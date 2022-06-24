@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	filterSupportMaxResultsJSONKey = "maxResults"
-	filterSupportSupportedJSONKey  = "supported"
+	FilterSupportMaxResultsKey = "maxResults"
+	FilterSupportSupportedKey  = "supported"
 )
 
 type FilterSupport struct {
@@ -32,13 +32,19 @@ func (f FilterSupportValidateFunc) Validate(v *FilterSupport) error {
 
 var DefaultFilterSupportValidator FilterSupportValidator = FilterSupportValidateFunc(func(v *FilterSupport) error {
 	if v.maxResults == nil {
-		return fmt.Errorf(`required field "maxResults" is missing`)
+		return fmt.Errorf(`required field "maxResults" is missing in "FilterSupport"`)
 	}
 	if v.supported == nil {
-		return fmt.Errorf(`required field "supported" is missing`)
+		return fmt.Errorf(`required field "supported" is missing in "FilterSupport"`)
 	}
 	return nil
 })
+
+func (v *FilterSupport) HasMaxResults() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.maxResults != nil
+}
 
 func (v *FilterSupport) MaxResults() int {
 	v.mu.RLock()
@@ -47,6 +53,12 @@ func (v *FilterSupport) MaxResults() int {
 		return 0
 	}
 	return *(v.maxResults)
+}
+
+func (v *FilterSupport) HasSupported() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.supported != nil
 }
 
 func (v *FilterSupport) Supported() bool {
@@ -107,12 +119,12 @@ func (v *FilterSupport) Get(name string, options ...GetOption) (interface{}, boo
 		}
 	}
 	switch name {
-	case filterSupportMaxResultsJSONKey:
+	case FilterSupportMaxResultsKey:
 		if v.maxResults == nil {
 			return nil, false
 		}
 		return *(v.maxResults), true
-	case filterSupportSupportedJSONKey:
+	case FilterSupportSupportedKey:
 		if v.supported == nil {
 			return nil, false
 		}
@@ -144,7 +156,7 @@ func (v *FilterSupport) Set(name string, value interface{}) error {
 	v.mu.Lock()
 	defer v.mu.Unlock()
 	switch name {
-	case filterSupportMaxResultsJSONKey:
+	case FilterSupportMaxResultsKey:
 		var tmp int
 		tmp, ok := value.(int)
 		if !ok {
@@ -152,7 +164,7 @@ func (v *FilterSupport) Set(name string, value interface{}) error {
 		}
 		v.maxResults = &tmp
 		return nil
-	case filterSupportSupportedJSONKey:
+	case FilterSupportSupportedKey:
 		var tmp bool
 		tmp, ok := value.(bool)
 		if !ok {
@@ -168,6 +180,15 @@ func (v *FilterSupport) Set(name string, value interface{}) error {
 		}
 		pp[name] = value
 		return nil
+	}
+}
+
+func (v *FilterSupport) Clone() *FilterSupport {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	return &FilterSupport{
+		maxResults: v.maxResults,
+		supported:  v.supported,
 	}
 }
 
@@ -203,13 +224,13 @@ LOOP:
 			}
 		case string:
 			switch tok {
-			case filterSupportMaxResultsJSONKey:
+			case FilterSupportMaxResultsKey:
 				var x int
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "maxResults": %w`, err)
 				}
 				v.maxResults = &x
-			case filterSupportSupportedJSONKey:
+			case FilterSupportSupportedKey:
 				var x bool
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "supported": %w`, err)
@@ -263,6 +284,12 @@ func NewFilterSupportBuilder() *FilterSupportBuilder {
 	var b FilterSupportBuilder
 	b.init()
 	return &b
+}
+
+func (b *FilterSupportBuilder) From(in *FilterSupport) *FilterSupportBuilder {
+	b.once.Do(b.init)
+	b.object = in.Clone()
+	return b
 }
 
 func (b *FilterSupportBuilder) init() {
@@ -324,10 +351,8 @@ func (b *FilterSupportBuilder) Build() (*FilterSupport, error) {
 	if validator == nil {
 		validator = DefaultFilterSupportValidator
 	}
-	if validator != nil {
-		if err := validator.Validate(object); err != nil {
-			return nil, err
-		}
+	if err := validator.Validate(object); err != nil {
+		return nil, err
 	}
 	return object, nil
 }

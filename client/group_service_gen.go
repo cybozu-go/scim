@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"strings"
 
 	"github.com/cybozu-go/scim/resource"
 )
@@ -25,12 +26,34 @@ func (client *Client) Group() *GroupService {
 
 type GetGroupCall struct {
 	builder *resource.PartialResourceRepresentationRequestBuilder
+	object  *resource.PartialResourceRepresentationRequest
+	err     error
 	client  *Client
 	trace   io.Writer
 	id      string
 }
 
-func (svc *GroupService) GetGroup(id string) *GetGroupCall {
+func (call *GetGroupCall) payload() (*resource.PartialResourceRepresentationRequest, error) {
+	if object := call.object; object != nil {
+		return object, nil
+	}
+	return call.builder.Build()
+}
+
+func (call *GetGroupCall) FromJSON(data []byte) *GetGroupCall {
+	if call.err != nil {
+		return call
+	}
+	var in resource.PartialResourceRepresentationRequest
+	if err := json.Unmarshal(data, &in); err != nil {
+		call.err = fmt.Errorf("failed to decode data: %w", err)
+		return call
+	}
+	call.object = &in
+	return call
+}
+
+func (svc *GroupService) Get(id string) *GetGroupCall {
 	return &GetGroupCall{
 		builder: resource.NewPartialResourceRepresentationRequestBuilder(),
 		client:  svc.client,
@@ -58,16 +81,21 @@ func (call GetGroupCall) makeURL() string {
 }
 
 func (call *GetGroupCall) Do(ctx context.Context) (*resource.Group, error) {
-	payload, err := call.builder.Build()
+	if err := call.err; err != nil {
+		return nil, fmt.Errorf("failed to build request: %w", err)
+	}
+	payload, err := call.payload()
 	if err != nil {
 		return nil, fmt.Errorf(`failed to generate request payload for GetGroupCall: %w`, err)
 	}
 
 	trace := call.trace
+	if trace == nil {
+		trace = call.client.trace
+	}
 	u := call.makeURL()
 	if trace != nil {
-		fmt.Fprintf(trace, `trace: client sending call request to %q
-`, u)
+		fmt.Fprintf(trace, "trace: client sending call request to %q\n", u)
 	}
 
 	var vals url.Values
@@ -80,9 +108,7 @@ func (call *GetGroupCall) Do(ctx context.Context) (*resource.Group, error) {
 		for key, value := range m {
 			switch value := value.(type) {
 			case []string:
-				for _, x := range value {
-					vals.Add(key, x)
-				}
+				vals.Add(key, strings.Join(value, ","))
 			default:
 				vals.Add(key, fmt.Sprintf(`%s`, value))
 			}
@@ -126,11 +152,33 @@ func (call *GetGroupCall) Do(ctx context.Context) (*resource.Group, error) {
 
 type CreateGroupCall struct {
 	builder *resource.GroupBuilder
+	object  *resource.Group
+	err     error
 	client  *Client
 	trace   io.Writer
 }
 
-func (svc *GroupService) CreateGroup() *CreateGroupCall {
+func (call *CreateGroupCall) payload() (*resource.Group, error) {
+	if object := call.object; object != nil {
+		return object, nil
+	}
+	return call.builder.Build()
+}
+
+func (call *CreateGroupCall) FromJSON(data []byte) *CreateGroupCall {
+	if call.err != nil {
+		return call
+	}
+	var in resource.Group
+	if err := json.Unmarshal(data, &in); err != nil {
+		call.err = fmt.Errorf("failed to decode data: %w", err)
+		return call
+	}
+	call.object = &in
+	return call
+}
+
+func (svc *GroupService) Create() *CreateGroupCall {
 	return &CreateGroupCall{
 		builder: resource.NewGroupBuilder(),
 		client:  svc.client,
@@ -147,11 +195,12 @@ func (call *CreateGroupCall) ExternalID(v string) *CreateGroupCall {
 	return call
 }
 
-func (call *CreateGroupCall) Members(v ...*resource.User) *CreateGroupCall {
+func (call *CreateGroupCall) Members(v ...*resource.GroupMember) *CreateGroupCall {
 	call.builder.Members(v...)
 	return call
 }
 
+// Extension allows users to register an extension using the fully qualified URI
 func (call *CreateGroupCall) Extension(uri string, value interface{}) *CreateGroupCall {
 	call.builder.Extension(uri, value)
 	return call
@@ -172,16 +221,21 @@ func (call *CreateGroupCall) makeURL() string {
 }
 
 func (call *CreateGroupCall) Do(ctx context.Context) (*resource.Group, error) {
-	payload, err := call.builder.Build()
+	if err := call.err; err != nil {
+		return nil, fmt.Errorf("failed to build request: %w", err)
+	}
+	payload, err := call.payload()
 	if err != nil {
 		return nil, fmt.Errorf(`failed to generate request payload for CreateGroupCall: %w`, err)
 	}
 
 	trace := call.trace
+	if trace == nil {
+		trace = call.client.trace
+	}
 	u := call.makeURL()
 	if trace != nil {
-		fmt.Fprintf(trace, `trace: client sending call request to %q
-`, u)
+		fmt.Fprintf(trace, "trace: client sending call request to %q\n", u)
 	}
 
 	var body bytes.Buffer
@@ -226,12 +280,34 @@ func (call *CreateGroupCall) Do(ctx context.Context) (*resource.Group, error) {
 
 type ReplaceGroupCall struct {
 	builder *resource.GroupBuilder
+	object  *resource.Group
+	err     error
 	client  *Client
 	trace   io.Writer
 	id      string
 }
 
-func (svc *GroupService) ReplaceGroup(id string) *ReplaceGroupCall {
+func (call *ReplaceGroupCall) payload() (*resource.Group, error) {
+	if object := call.object; object != nil {
+		return object, nil
+	}
+	return call.builder.Build()
+}
+
+func (call *ReplaceGroupCall) FromJSON(data []byte) *ReplaceGroupCall {
+	if call.err != nil {
+		return call
+	}
+	var in resource.Group
+	if err := json.Unmarshal(data, &in); err != nil {
+		call.err = fmt.Errorf("failed to decode data: %w", err)
+		return call
+	}
+	call.object = &in
+	return call
+}
+
+func (svc *GroupService) Replace(id string) *ReplaceGroupCall {
 	return &ReplaceGroupCall{
 		builder: resource.NewGroupBuilder(),
 		client:  svc.client,
@@ -249,11 +325,12 @@ func (call *ReplaceGroupCall) ExternalID(v string) *ReplaceGroupCall {
 	return call
 }
 
-func (call *ReplaceGroupCall) Members(v ...*resource.User) *ReplaceGroupCall {
+func (call *ReplaceGroupCall) Members(v ...*resource.GroupMember) *ReplaceGroupCall {
 	call.builder.Members(v...)
 	return call
 }
 
+// Extension allows users to register an extension using the fully qualified URI
 func (call *ReplaceGroupCall) Extension(uri string, value interface{}) *ReplaceGroupCall {
 	call.builder.Extension(uri, value)
 	return call
@@ -274,16 +351,21 @@ func (call ReplaceGroupCall) makeURL() string {
 }
 
 func (call *ReplaceGroupCall) Do(ctx context.Context) (*resource.Group, error) {
-	payload, err := call.builder.Build()
+	if err := call.err; err != nil {
+		return nil, fmt.Errorf("failed to build request: %w", err)
+	}
+	payload, err := call.payload()
 	if err != nil {
 		return nil, fmt.Errorf(`failed to generate request payload for ReplaceGroupCall: %w`, err)
 	}
 
 	trace := call.trace
+	if trace == nil {
+		trace = call.client.trace
+	}
 	u := call.makeURL()
 	if trace != nil {
-		fmt.Fprintf(trace, `trace: client sending call request to %q
-`, u)
+		fmt.Fprintf(trace, "trace: client sending call request to %q\n", u)
 	}
 
 	var body bytes.Buffer
@@ -328,12 +410,34 @@ func (call *ReplaceGroupCall) Do(ctx context.Context) (*resource.Group, error) {
 
 type DeleteGroupCall struct {
 	builder *resource.GroupBuilder
+	object  *resource.Group
+	err     error
 	client  *Client
 	trace   io.Writer
 	id      string
 }
 
-func (svc *GroupService) DeleteGroup(id string) *DeleteGroupCall {
+func (call *DeleteGroupCall) payload() (*resource.Group, error) {
+	if object := call.object; object != nil {
+		return object, nil
+	}
+	return call.builder.Build()
+}
+
+func (call *DeleteGroupCall) FromJSON(data []byte) *DeleteGroupCall {
+	if call.err != nil {
+		return call
+	}
+	var in resource.Group
+	if err := json.Unmarshal(data, &in); err != nil {
+		call.err = fmt.Errorf("failed to decode data: %w", err)
+		return call
+	}
+	call.object = &in
+	return call
+}
+
+func (svc *GroupService) Delete(id string) *DeleteGroupCall {
 	return &DeleteGroupCall{
 		builder: resource.NewGroupBuilder(),
 		client:  svc.client,
@@ -356,7 +460,7 @@ func (call *DeleteGroupCall) ID(v string) *DeleteGroupCall {
 	return call
 }
 
-func (call *DeleteGroupCall) Members(v ...*resource.User) *DeleteGroupCall {
+func (call *DeleteGroupCall) Members(v ...*resource.GroupMember) *DeleteGroupCall {
 	call.builder.Members(v...)
 	return call
 }
@@ -376,16 +480,21 @@ func (call DeleteGroupCall) makeURL() string {
 }
 
 func (call *DeleteGroupCall) Do(ctx context.Context) error {
-	payload, err := call.builder.Build()
+	if err := call.err; err != nil {
+		return fmt.Errorf("failed to build request: %w", err)
+	}
+	payload, err := call.payload()
 	if err != nil {
 		return fmt.Errorf(`failed to generate request payload for DeleteGroupCall: %w`, err)
 	}
 
 	trace := call.trace
+	if trace == nil {
+		trace = call.client.trace
+	}
 	u := call.makeURL()
 	if trace != nil {
-		fmt.Fprintf(trace, `trace: client sending call request to %q
-`, u)
+		fmt.Fprintf(trace, "trace: client sending call request to %q\n", u)
 	}
 
 	var vals url.Values
@@ -398,9 +507,7 @@ func (call *DeleteGroupCall) Do(ctx context.Context) error {
 		for key, value := range m {
 			switch value := value.(type) {
 			case []string:
-				for _, x := range value {
-					vals.Add(key, x)
-				}
+				vals.Add(key, strings.Join(value, ","))
 			default:
 				vals.Add(key, fmt.Sprintf(`%s`, value))
 			}
@@ -435,4 +542,152 @@ func (call *DeleteGroupCall) Do(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+type SearchGroupCall struct {
+	builder *resource.SearchRequestBuilder
+	object  *resource.SearchRequest
+	err     error
+	client  *Client
+	trace   io.Writer
+}
+
+func (call *SearchGroupCall) payload() (*resource.SearchRequest, error) {
+	if object := call.object; object != nil {
+		return object, nil
+	}
+	return call.builder.Build()
+}
+
+func (call *SearchGroupCall) FromJSON(data []byte) *SearchGroupCall {
+	if call.err != nil {
+		return call
+	}
+	var in resource.SearchRequest
+	if err := json.Unmarshal(data, &in); err != nil {
+		call.err = fmt.Errorf("failed to decode data: %w", err)
+		return call
+	}
+	call.object = &in
+	return call
+}
+
+func (svc *GroupService) Search() *SearchGroupCall {
+	return &SearchGroupCall{
+		builder: resource.NewSearchRequestBuilder(),
+		client:  svc.client,
+	}
+}
+
+func (call *SearchGroupCall) Attributes(v ...string) *SearchGroupCall {
+	call.builder.Attributes(v...)
+	return call
+}
+
+func (call *SearchGroupCall) Count(v int) *SearchGroupCall {
+	call.builder.Count(v)
+	return call
+}
+
+func (call *SearchGroupCall) ExludedAttributes(v ...string) *SearchGroupCall {
+	call.builder.ExludedAttributes(v...)
+	return call
+}
+
+func (call *SearchGroupCall) Filter(v string) *SearchGroupCall {
+	call.builder.Filter(v)
+	return call
+}
+
+func (call *SearchGroupCall) SortBy(v string) *SearchGroupCall {
+	call.builder.SortBy(v)
+	return call
+}
+
+func (call *SearchGroupCall) SortOrder(v string) *SearchGroupCall {
+	call.builder.SortOrder(v)
+	return call
+}
+
+func (call *SearchGroupCall) StartIndex(v int) *SearchGroupCall {
+	call.builder.StartIndex(v)
+	return call
+}
+
+// Extension allows users to register an extension using the fully qualified URI
+func (call *SearchGroupCall) Extension(uri string, value interface{}) *SearchGroupCall {
+	call.builder.Extension(uri, value)
+	return call
+}
+
+func (call *SearchGroupCall) Validator(v resource.SearchRequestValidator) *SearchGroupCall {
+	call.builder.Validator(v)
+	return call
+}
+
+func (call *SearchGroupCall) Trace(w io.Writer) *SearchGroupCall {
+	call.trace = w
+	return call
+}
+
+func (call *SearchGroupCall) makeURL() string {
+	return call.client.baseURL + "/Groups/.search"
+}
+
+func (call *SearchGroupCall) Do(ctx context.Context) (*resource.ListResponse, error) {
+	if err := call.err; err != nil {
+		return nil, fmt.Errorf("failed to build request: %w", err)
+	}
+	payload, err := call.payload()
+	if err != nil {
+		return nil, fmt.Errorf(`failed to generate request payload for SearchGroupCall: %w`, err)
+	}
+
+	trace := call.trace
+	if trace == nil {
+		trace = call.client.trace
+	}
+	u := call.makeURL()
+	if trace != nil {
+		fmt.Fprintf(trace, "trace: client sending call request to %q\n", u)
+	}
+
+	var body bytes.Buffer
+	if err := json.NewEncoder(&body).Encode(payload); err != nil {
+		return nil, fmt.Errorf(`failed to encode call request: %w`, err)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, u, &body)
+	if err != nil {
+		return nil, fmt.Errorf(`failed to create new HTTP request: %w`, err)
+	}
+
+	req.Header.Set(`Content-Type`, `application/scim+json`)
+	req.Header.Set(`Accept`, `application/scim+json`)
+
+	if trace != nil {
+		buf, _ := httputil.DumpRequestOut(req, true)
+		fmt.Fprintf(trace, "%s\n", buf)
+	}
+
+	res, err := call.client.httpcl.Do(req)
+	if trace != nil {
+		buf, _ := httputil.DumpResponse(res, true)
+		fmt.Fprintf(trace, "%s\n", buf)
+	}
+	if err != nil {
+		return nil, fmt.Errorf(`failed to send request to %q: %w`, u, err)
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(`expected call response %d, got (%d)`, http.StatusOK, res.StatusCode)
+	}
+
+	var respayload resource.ListResponse
+	if err := json.NewDecoder(res.Body).Decode(&respayload); err != nil {
+		return nil, fmt.Errorf(`failed to decode call response: %w`, err)
+	}
+
+	return &respayload, nil
 }

@@ -9,6 +9,48 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestDateTime(t *testing.T) {
+	// Load the timezone that is not local
+	var tz *time.Location
+	v, err := time.LoadLocation(`Asia/Tokyo`)
+	require.NoError(t, err, `time.LoadLocation should succeed`)
+	tz = v
+
+	ref := time.Date(2022, 2, 22, 14, 22, 22, 987654321, time.UTC)
+	testcases := []struct {
+		Value    string
+		Expected time.Time
+		Error    bool
+	}{
+		{
+			Value:    ref.Format(`2006-01-02T15:04:05Z`),
+			Expected: ref.Truncate(time.Second),
+		},
+		{
+			Value:    ref.Format(`2006-01-02T15:04:05.9999999999Z`),
+			Expected: ref,
+		},
+		{
+			Value:    ref.In(tz).Format(`2006-01-02T15:04:05Z0700`),
+			Expected: ref.Truncate(time.Second).In(tz),
+		},
+		{
+			Value:    ref.In(tz).Format(`2006-01-02T15:04:05Z07:00`),
+			Expected: ref.Truncate(time.Second).In(tz),
+		},
+	}
+
+	for _, tc := range testcases {
+		tc := tc
+		t.Run(tc.Value, func(t *testing.T) {
+			parsed, err := resource.ParseDateTime(tc.Value)
+
+			require.NoError(t, err, `resource.ParseDateTime should succeed`)
+			require.Equal(t, tc.Expected.UTC(), parsed.UTC())
+		})
+	}
+}
+
 func TestUser(t *testing.T) {
 	var b resource.Builder
 
@@ -58,7 +100,7 @@ func TestUser(t *testing.T) {
 		require.True(t, ok, `u.Get("costCenter") should succeed`)
 		require.Equal(t, `4130`, cc)
 	})
-	t.Run("Name", func(t *testing.T) {
+	t.Run("Names", func(t *testing.T) {
 		names := u.Name()
 		require.Equal(t, `Ms. Barbara J Jensen, III`, names.Formatted())
 		require.Equal(t, `Jensen`, names.FamilyName())

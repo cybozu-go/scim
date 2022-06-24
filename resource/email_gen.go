@@ -9,10 +9,10 @@ import (
 )
 
 const (
-	emailDisplayJSONKey = "display"
-	emailPrimaryJSONKey = "primary"
-	emailTypeJSONKey    = "type"
-	emailValueJSONKey   = "value"
+	EmailDisplayKey = "display"
+	EmailPrimaryKey = "primary"
+	EmailTypeKey    = "type"
+	EmailValueKey   = "value"
 )
 
 type Email struct {
@@ -35,8 +35,17 @@ func (f EmailValidateFunc) Validate(v *Email) error {
 }
 
 var DefaultEmailValidator EmailValidator = EmailValidateFunc(func(v *Email) error {
+	if v.value == nil {
+		return fmt.Errorf(`required field "value" is missing in "Email"`)
+	}
 	return nil
 })
+
+func (v *Email) HasDisplay() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.display != nil
+}
 
 func (v *Email) Display() string {
 	v.mu.RLock()
@@ -45,6 +54,12 @@ func (v *Email) Display() string {
 		return ""
 	}
 	return *(v.display)
+}
+
+func (v *Email) HasPrimary() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.primary != nil
 }
 
 func (v *Email) Primary() bool {
@@ -56,6 +71,12 @@ func (v *Email) Primary() bool {
 	return *(v.primary)
 }
 
+func (v *Email) HasType() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.typ != nil
+}
+
 func (v *Email) Type() string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -63,6 +84,12 @@ func (v *Email) Type() string {
 		return ""
 	}
 	return *(v.typ)
+}
+
+func (v *Email) HasValue() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.value != nil
 }
 
 func (v *Email) Value() string {
@@ -129,22 +156,22 @@ func (v *Email) Get(name string, options ...GetOption) (interface{}, bool) {
 		}
 	}
 	switch name {
-	case emailDisplayJSONKey:
+	case EmailDisplayKey:
 		if v.display == nil {
 			return nil, false
 		}
 		return *(v.display), true
-	case emailPrimaryJSONKey:
+	case EmailPrimaryKey:
 		if v.primary == nil {
 			return nil, false
 		}
 		return *(v.primary), true
-	case emailTypeJSONKey:
+	case EmailTypeKey:
 		if v.typ == nil {
 			return nil, false
 		}
 		return *(v.typ), true
-	case emailValueJSONKey:
+	case EmailValueKey:
 		if v.value == nil {
 			return nil, false
 		}
@@ -176,7 +203,7 @@ func (v *Email) Set(name string, value interface{}) error {
 	v.mu.Lock()
 	defer v.mu.Unlock()
 	switch name {
-	case emailDisplayJSONKey:
+	case EmailDisplayKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -184,7 +211,7 @@ func (v *Email) Set(name string, value interface{}) error {
 		}
 		v.display = &tmp
 		return nil
-	case emailPrimaryJSONKey:
+	case EmailPrimaryKey:
 		var tmp bool
 		tmp, ok := value.(bool)
 		if !ok {
@@ -192,7 +219,7 @@ func (v *Email) Set(name string, value interface{}) error {
 		}
 		v.primary = &tmp
 		return nil
-	case emailTypeJSONKey:
+	case EmailTypeKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -200,7 +227,7 @@ func (v *Email) Set(name string, value interface{}) error {
 		}
 		v.typ = &tmp
 		return nil
-	case emailValueJSONKey:
+	case EmailValueKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -216,6 +243,17 @@ func (v *Email) Set(name string, value interface{}) error {
 		}
 		pp[name] = value
 		return nil
+	}
+}
+
+func (v *Email) Clone() *Email {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	return &Email{
+		display: v.display,
+		primary: v.primary,
+		typ:     v.typ,
+		value:   v.value,
 	}
 }
 
@@ -253,25 +291,25 @@ LOOP:
 			}
 		case string:
 			switch tok {
-			case emailDisplayJSONKey:
+			case EmailDisplayKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "display": %w`, err)
 				}
 				v.display = &x
-			case emailPrimaryJSONKey:
+			case EmailPrimaryKey:
 				var x bool
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "primary": %w`, err)
 				}
 				v.primary = &x
-			case emailTypeJSONKey:
+			case EmailTypeKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "type": %w`, err)
 				}
 				v.typ = &x
-			case emailValueJSONKey:
+			case EmailValueKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "value": %w`, err)
@@ -325,6 +363,12 @@ func NewEmailBuilder() *EmailBuilder {
 	var b EmailBuilder
 	b.init()
 	return &b
+}
+
+func (b *EmailBuilder) From(in *Email) *EmailBuilder {
+	b.once.Do(b.init)
+	b.object = in.Clone()
+	return b
 }
 
 func (b *EmailBuilder) init() {
@@ -412,10 +456,8 @@ func (b *EmailBuilder) Build() (*Email, error) {
 	if validator == nil {
 		validator = DefaultEmailValidator
 	}
-	if validator != nil {
-		if err := validator.Validate(object); err != nil {
-			return nil, err
-		}
+	if err := validator.Validate(object); err != nil {
+		return nil, err
 	}
 	return object, nil
 }

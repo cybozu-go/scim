@@ -9,9 +9,9 @@ import (
 )
 
 const (
-	bulkSupportMaxOperationsJSONKey  = "maxOperations"
-	bulkSupportMaxPayloadSizeJSONKey = "maxPayloadSize"
-	bulkSupportSupportedJSONKey      = "supported"
+	BulkSupportMaxOperationsKey  = "maxOperations"
+	BulkSupportMaxPayloadSizeKey = "maxPayloadSize"
+	BulkSupportSupportedKey      = "supported"
 )
 
 type BulkSupport struct {
@@ -34,16 +34,22 @@ func (f BulkSupportValidateFunc) Validate(v *BulkSupport) error {
 
 var DefaultBulkSupportValidator BulkSupportValidator = BulkSupportValidateFunc(func(v *BulkSupport) error {
 	if v.maxOperations == nil {
-		return fmt.Errorf(`required field "maxOperations" is missing`)
+		return fmt.Errorf(`required field "maxOperations" is missing in "BulkSupport"`)
 	}
 	if v.maxPayloadSize == nil {
-		return fmt.Errorf(`required field "maxPayloadSize" is missing`)
+		return fmt.Errorf(`required field "maxPayloadSize" is missing in "BulkSupport"`)
 	}
 	if v.supported == nil {
-		return fmt.Errorf(`required field "supported" is missing`)
+		return fmt.Errorf(`required field "supported" is missing in "BulkSupport"`)
 	}
 	return nil
 })
+
+func (v *BulkSupport) HasMaxOperations() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.maxOperations != nil
+}
 
 func (v *BulkSupport) MaxOperations() int {
 	v.mu.RLock()
@@ -54,6 +60,12 @@ func (v *BulkSupport) MaxOperations() int {
 	return *(v.maxOperations)
 }
 
+func (v *BulkSupport) HasMaxPayloadSize() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.maxPayloadSize != nil
+}
+
 func (v *BulkSupport) MaxPayloadSize() int {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -61,6 +73,12 @@ func (v *BulkSupport) MaxPayloadSize() int {
 		return 0
 	}
 	return *(v.maxPayloadSize)
+}
+
+func (v *BulkSupport) HasSupported() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.supported != nil
 }
 
 func (v *BulkSupport) Supported() bool {
@@ -124,17 +142,17 @@ func (v *BulkSupport) Get(name string, options ...GetOption) (interface{}, bool)
 		}
 	}
 	switch name {
-	case bulkSupportMaxOperationsJSONKey:
+	case BulkSupportMaxOperationsKey:
 		if v.maxOperations == nil {
 			return nil, false
 		}
 		return *(v.maxOperations), true
-	case bulkSupportMaxPayloadSizeJSONKey:
+	case BulkSupportMaxPayloadSizeKey:
 		if v.maxPayloadSize == nil {
 			return nil, false
 		}
 		return *(v.maxPayloadSize), true
-	case bulkSupportSupportedJSONKey:
+	case BulkSupportSupportedKey:
 		if v.supported == nil {
 			return nil, false
 		}
@@ -166,7 +184,7 @@ func (v *BulkSupport) Set(name string, value interface{}) error {
 	v.mu.Lock()
 	defer v.mu.Unlock()
 	switch name {
-	case bulkSupportMaxOperationsJSONKey:
+	case BulkSupportMaxOperationsKey:
 		var tmp int
 		tmp, ok := value.(int)
 		if !ok {
@@ -174,7 +192,7 @@ func (v *BulkSupport) Set(name string, value interface{}) error {
 		}
 		v.maxOperations = &tmp
 		return nil
-	case bulkSupportMaxPayloadSizeJSONKey:
+	case BulkSupportMaxPayloadSizeKey:
 		var tmp int
 		tmp, ok := value.(int)
 		if !ok {
@@ -182,7 +200,7 @@ func (v *BulkSupport) Set(name string, value interface{}) error {
 		}
 		v.maxPayloadSize = &tmp
 		return nil
-	case bulkSupportSupportedJSONKey:
+	case BulkSupportSupportedKey:
 		var tmp bool
 		tmp, ok := value.(bool)
 		if !ok {
@@ -198,6 +216,16 @@ func (v *BulkSupport) Set(name string, value interface{}) error {
 		}
 		pp[name] = value
 		return nil
+	}
+}
+
+func (v *BulkSupport) Clone() *BulkSupport {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	return &BulkSupport{
+		maxOperations:  v.maxOperations,
+		maxPayloadSize: v.maxPayloadSize,
+		supported:      v.supported,
 	}
 }
 
@@ -234,19 +262,19 @@ LOOP:
 			}
 		case string:
 			switch tok {
-			case bulkSupportMaxOperationsJSONKey:
+			case BulkSupportMaxOperationsKey:
 				var x int
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "maxOperations": %w`, err)
 				}
 				v.maxOperations = &x
-			case bulkSupportMaxPayloadSizeJSONKey:
+			case BulkSupportMaxPayloadSizeKey:
 				var x int
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "maxPayloadSize": %w`, err)
 				}
 				v.maxPayloadSize = &x
-			case bulkSupportSupportedJSONKey:
+			case BulkSupportSupportedKey:
 				var x bool
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "supported": %w`, err)
@@ -300,6 +328,12 @@ func NewBulkSupportBuilder() *BulkSupportBuilder {
 	var b BulkSupportBuilder
 	b.init()
 	return &b
+}
+
+func (b *BulkSupportBuilder) From(in *BulkSupport) *BulkSupportBuilder {
+	b.once.Do(b.init)
+	b.object = in.Clone()
+	return b
 }
 
 func (b *BulkSupportBuilder) init() {
@@ -374,10 +408,8 @@ func (b *BulkSupportBuilder) Build() (*BulkSupport, error) {
 	if validator == nil {
 		validator = DefaultBulkSupportValidator
 	}
-	if validator != nil {
-		if err := validator.Validate(object); err != nil {
-			return nil, err
-		}
+	if err := validator.Validate(object); err != nil {
+		return nil, err
 	}
 	return object, nil
 }

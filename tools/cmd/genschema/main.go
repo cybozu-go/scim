@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sort"
 
 	"github.com/cybozu-go/scim/resource"
 	"github.com/goccy/go-yaml"
@@ -43,8 +44,11 @@ func _main() error {
 		return err
 	}
 
-	var schemas []*resource.Schema
-	if err := json.Unmarshal(jsonSrc, &schemas); err != nil {
+	var def struct {
+		Common  []*resource.SchemaAttribute `json:"common"`
+		Schemas []*resource.Schema          `json:"schemas"`
+	}
+	if err := json.Unmarshal(jsonSrc, &def); err != nil {
 		return err
 	}
 
@@ -53,7 +57,7 @@ func _main() error {
 	o.L(`package schema`)
 
 	o.LL(`func init() {`)
-	for i, r := range schemas {
+	for i, r := range def.Schemas {
 		if i > 0 {
 			o.LL(`{`)
 		} else {
@@ -64,7 +68,15 @@ func _main() error {
 		o.L(`Name(%q).`, r.Name())
 		o.L(`Description(%q).`, r.Description())
 		o.L(`Attributes(`)
-		for _, attr := range r.Attributes() {
+
+		attrs := r.Attributes()
+		attrs = append(attrs, def.Common...)
+
+		sort.Slice(attrs, func(i, j int) bool {
+			return attrs[i].Name() < attrs[j].Name()
+		})
+
+		for _, attr := range attrs {
 			if err := generateAttr(o, attr); err != nil {
 				return fmt.Errorf(`failed to generate attribute: %w`, err)
 			}

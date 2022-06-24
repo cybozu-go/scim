@@ -47,24 +47,92 @@ objects:
       - name: password
         ent_notempty: true
         ent_sensitive: true
+      - name: photos
+        type: '[]*Photo'
       - name: emails
         type: '[]*Email'
         validator: validateEmails
       - name: phoneNumbers
-        type: '[]string'
+        type: '[]*PhoneNumber'
       - name: ims
         exported_name: IMS
-        type: '[]string'
+        type: '[]*IMS'
       - name: addresses
         type: '[]string'
       - name: groups
         type: '[]string'
       - name: entitlements
-        type: '[]string'
+        type: '[]*Entitlement'
       - name: roles
-        type: '[]string'
+        type: '[]*Role'
       - name: x509Certificates
-        type: '[]string'
+        type: '[]*Certificate'
+  - name: Photo
+    skipCommonFields: true
+    fields:
+    - name: typ
+      ent_name: type
+      exported_name: Type
+      json: type
+    - name: primary
+      type: bool
+    - name: display
+    - name: value
+  - name: IMS
+    skipCommonFields: true
+    fields:
+    - name: typ
+      ent_name: type
+      exported_name: Type
+      json: type
+    - name: primary
+      type: bool
+    - name: display
+    - name: value
+  - name: Role
+    skipCommonFields: true
+    fields:
+    - name: typ
+      ent_name: type
+      exported_name: Type
+      json: type
+    - name: primary
+      type: bool
+    - name: display
+    - name: value
+  - name: Entitlement
+    skipCommonFields: true
+    fields:
+    - name: typ
+      ent_name: type
+      exported_name: Type
+      json: type
+    - name: primary
+      type: bool
+    - name: display
+    - name: value
+  - name: Certificate
+    skipCommonFields: true
+    fields:
+    - name: typ
+      ent_name: type
+      exported_name: Type
+      json: type
+    - name: primary
+      type: bool
+    - name: display
+    - name: value
+  - name: PhoneNumber
+    skipCommonFields: true
+    fields:
+    - name: typ
+      ent_name: type
+      exported_name: Type
+      json: type
+    - name: primary
+      type: bool
+    - name: display
+    - name: value
   - name: Email
     skipCommonFields: true
     fields:

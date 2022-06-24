@@ -9,13 +9,13 @@ import (
 )
 
 const (
-	RoleDisplayKey = "display"
-	RolePrimaryKey = "primary"
-	RoleTypeKey    = "type"
-	RoleValueKey   = "value"
+	IMSDisplayKey = "display"
+	IMSPrimaryKey = "primary"
+	IMSTypeKey    = "type"
+	IMSValueKey   = "value"
 )
 
-type Role struct {
+type IMS struct {
 	display       *string
 	primary       *bool
 	typ           *string
@@ -24,27 +24,27 @@ type Role struct {
 	mu            sync.RWMutex
 }
 
-type RoleValidator interface {
-	Validate(*Role) error
+type IMSValidator interface {
+	Validate(*IMS) error
 }
 
-type RoleValidateFunc func(v *Role) error
+type IMSValidateFunc func(v *IMS) error
 
-func (f RoleValidateFunc) Validate(v *Role) error {
+func (f IMSValidateFunc) Validate(v *IMS) error {
 	return f(v)
 }
 
-var DefaultRoleValidator RoleValidator = RoleValidateFunc(func(v *Role) error {
+var DefaultIMSValidator IMSValidator = IMSValidateFunc(func(v *IMS) error {
 	return nil
 })
 
-func (v *Role) HasDisplay() bool {
+func (v *IMS) HasDisplay() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.display != nil
 }
 
-func (v *Role) Display() string {
+func (v *IMS) Display() string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	if v.display == nil {
@@ -53,13 +53,13 @@ func (v *Role) Display() string {
 	return *(v.display)
 }
 
-func (v *Role) HasPrimary() bool {
+func (v *IMS) HasPrimary() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.primary != nil
 }
 
-func (v *Role) Primary() bool {
+func (v *IMS) Primary() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	if v.primary == nil {
@@ -68,13 +68,13 @@ func (v *Role) Primary() bool {
 	return *(v.primary)
 }
 
-func (v *Role) HasType() bool {
+func (v *IMS) HasType() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.typ != nil
 }
 
-func (v *Role) Type() string {
+func (v *IMS) Type() string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	if v.typ == nil {
@@ -83,13 +83,13 @@ func (v *Role) Type() string {
 	return *(v.typ)
 }
 
-func (v *Role) HasValue() bool {
+func (v *IMS) HasValue() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.value != nil
 }
 
-func (v *Role) Value() string {
+func (v *IMS) Value() string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	if v.value == nil {
@@ -98,7 +98,7 @@ func (v *Role) Value() string {
 	return *(v.value)
 }
 
-func (v *Role) makePairs() []pair {
+func (v *IMS) makePairs() []pair {
 	pairs := make([]pair, 0, 4)
 	if v.display != nil {
 		pairs = append(pairs, pair{Key: "display", Value: *(v.display)})
@@ -121,7 +121,7 @@ func (v *Role) makePairs() []pair {
 	return pairs
 }
 
-func (v *Role) MarshalJSON() ([]byte, error) {
+func (v *IMS) MarshalJSON() ([]byte, error) {
 	pairs := v.makePairs()
 
 	var buf bytes.Buffer
@@ -140,7 +140,7 @@ func (v *Role) MarshalJSON() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func (v *Role) Get(name string, options ...GetOption) (interface{}, bool) {
+func (v *IMS) Get(name string, options ...GetOption) (interface{}, bool) {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 
@@ -153,22 +153,22 @@ func (v *Role) Get(name string, options ...GetOption) (interface{}, bool) {
 		}
 	}
 	switch name {
-	case RoleDisplayKey:
+	case IMSDisplayKey:
 		if v.display == nil {
 			return nil, false
 		}
 		return *(v.display), true
-	case RolePrimaryKey:
+	case IMSPrimaryKey:
 		if v.primary == nil {
 			return nil, false
 		}
 		return *(v.primary), true
-	case RoleTypeKey:
+	case IMSTypeKey:
 		if v.typ == nil {
 			return nil, false
 		}
 		return *(v.typ), true
-	case RoleValueKey:
+	case IMSValueKey:
 		if v.value == nil {
 			return nil, false
 		}
@@ -196,11 +196,11 @@ func (v *Role) Get(name string, options ...GetOption) (interface{}, bool) {
 	}
 }
 
-func (v *Role) Set(name string, value interface{}) error {
+func (v *IMS) Set(name string, value interface{}) error {
 	v.mu.Lock()
 	defer v.mu.Unlock()
 	switch name {
-	case RoleDisplayKey:
+	case IMSDisplayKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -208,7 +208,7 @@ func (v *Role) Set(name string, value interface{}) error {
 		}
 		v.display = &tmp
 		return nil
-	case RolePrimaryKey:
+	case IMSPrimaryKey:
 		var tmp bool
 		tmp, ok := value.(bool)
 		if !ok {
@@ -216,7 +216,7 @@ func (v *Role) Set(name string, value interface{}) error {
 		}
 		v.primary = &tmp
 		return nil
-	case RoleTypeKey:
+	case IMSTypeKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -224,7 +224,7 @@ func (v *Role) Set(name string, value interface{}) error {
 		}
 		v.typ = &tmp
 		return nil
-	case RoleValueKey:
+	case IMSValueKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -243,10 +243,10 @@ func (v *Role) Set(name string, value interface{}) error {
 	}
 }
 
-func (v *Role) Clone() *Role {
+func (v *IMS) Clone() *IMS {
 	v.mu.Lock()
 	defer v.mu.Unlock()
-	return &Role{
+	return &IMS{
 		display: v.display,
 		primary: v.primary,
 		typ:     v.typ,
@@ -254,7 +254,7 @@ func (v *Role) Clone() *Role {
 	}
 }
 
-func (v *Role) UnmarshalJSON(data []byte) error {
+func (v *IMS) UnmarshalJSON(data []byte) error {
 	v.display = nil
 	v.primary = nil
 	v.typ = nil
@@ -288,25 +288,25 @@ LOOP:
 			}
 		case string:
 			switch tok {
-			case RoleDisplayKey:
+			case IMSDisplayKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "display": %w`, err)
 				}
 				v.display = &x
-			case RolePrimaryKey:
+			case IMSPrimaryKey:
 				var x bool
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "primary": %w`, err)
 				}
 				v.primary = &x
-			case RoleTypeKey:
+			case IMSTypeKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "type": %w`, err)
 				}
 				v.typ = &x
-			case RoleValueKey:
+			case IMSValueKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "value": %w`, err)
@@ -337,44 +337,44 @@ LOOP:
 	return nil
 }
 
-func (v *Role) AsMap(dst map[string]interface{}) error {
+func (v *IMS) AsMap(dst map[string]interface{}) error {
 	for _, pair := range v.makePairs() {
 		dst[pair.Key] = pair.Value
 	}
 	return nil
 }
 
-type RoleBuilder struct {
+type IMSBuilder struct {
 	once      sync.Once
 	mu        sync.Mutex
 	err       error
-	validator RoleValidator
-	object    *Role
+	validator IMSValidator
+	object    *IMS
 }
 
-func (b *Builder) Role() *RoleBuilder {
-	return NewRoleBuilder()
+func (b *Builder) IMS() *IMSBuilder {
+	return NewIMSBuilder()
 }
 
-func NewRoleBuilder() *RoleBuilder {
-	var b RoleBuilder
+func NewIMSBuilder() *IMSBuilder {
+	var b IMSBuilder
 	b.init()
 	return &b
 }
 
-func (b *RoleBuilder) From(in *Role) *RoleBuilder {
+func (b *IMSBuilder) From(in *IMS) *IMSBuilder {
 	b.once.Do(b.init)
 	b.object = in.Clone()
 	return b
 }
 
-func (b *RoleBuilder) init() {
+func (b *IMSBuilder) init() {
 	b.err = nil
 	b.validator = nil
-	b.object = &Role{}
+	b.object = &IMS{}
 }
 
-func (b *RoleBuilder) Display(v string) *RoleBuilder {
+func (b *IMSBuilder) Display(v string) *IMSBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.once.Do(b.init)
@@ -387,7 +387,7 @@ func (b *RoleBuilder) Display(v string) *RoleBuilder {
 	return b
 }
 
-func (b *RoleBuilder) Primary(v bool) *RoleBuilder {
+func (b *IMSBuilder) Primary(v bool) *IMSBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.once.Do(b.init)
@@ -400,7 +400,7 @@ func (b *RoleBuilder) Primary(v bool) *RoleBuilder {
 	return b
 }
 
-func (b *RoleBuilder) Type(v string) *RoleBuilder {
+func (b *IMSBuilder) Type(v string) *IMSBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.once.Do(b.init)
@@ -413,7 +413,7 @@ func (b *RoleBuilder) Type(v string) *RoleBuilder {
 	return b
 }
 
-func (b *RoleBuilder) Value(v string) *RoleBuilder {
+func (b *IMSBuilder) Value(v string) *IMSBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.once.Do(b.init)
@@ -426,7 +426,7 @@ func (b *RoleBuilder) Value(v string) *RoleBuilder {
 	return b
 }
 
-func (b *RoleBuilder) Validator(v RoleValidator) *RoleBuilder {
+func (b *IMSBuilder) Validator(v IMSValidator) *IMSBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.once.Do(b.init)
@@ -437,7 +437,7 @@ func (b *RoleBuilder) Validator(v RoleValidator) *RoleBuilder {
 	return b
 }
 
-func (b *RoleBuilder) Build() (*Role, error) {
+func (b *IMSBuilder) Build() (*IMS, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	object := b.object
@@ -448,10 +448,10 @@ func (b *RoleBuilder) Build() (*Role, error) {
 		return nil, err
 	}
 	if object == nil {
-		return nil, fmt.Errorf("resource.RoleBuilder: object was not initialized")
+		return nil, fmt.Errorf("resource.IMSBuilder: object was not initialized")
 	}
 	if validator == nil {
-		validator = DefaultRoleValidator
+		validator = DefaultIMSValidator
 	}
 	if err := validator.Validate(object); err != nil {
 		return nil, err
@@ -459,7 +459,7 @@ func (b *RoleBuilder) Build() (*Role, error) {
 	return object, nil
 }
 
-func (b *RoleBuilder) MustBuild() *Role {
+func (b *IMSBuilder) MustBuild() *IMS {
 	object, err := b.Build()
 	if err != nil {
 		panic(err)

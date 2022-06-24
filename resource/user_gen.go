@@ -24,6 +24,7 @@ const (
 	UserNickNameKey          = "nickName"
 	UserPasswordKey          = "password"
 	UserPhoneNumbersKey      = "phoneNumbers"
+	UserPhotosKey            = "photos"
 	UserPreferredLanguageKey = "preferredLanguage"
 	UserProfileURLKey        = "profileUrl"
 	UserRolesKey             = "roles"
@@ -46,17 +47,18 @@ type User struct {
 	addresses         []string
 	displayName       *string
 	emails            []*Email
-	entitlements      []string
+	entitlements      []*Entitlement
 	externalID        *string
 	groups            []string
 	id                *string
-	ims               []string
+	ims               []*IMS
 	locale            *string
 	meta              *Meta
 	name              *Names
 	nickName          *string
 	password          *string
-	phoneNumbers      []string
+	phoneNumbers      []*PhoneNumber
+	photos            []*Photo
 	preferredLanguage *string
 	profileURL        *string
 	roles             []*Role
@@ -65,7 +67,7 @@ type User struct {
 	title             *string
 	userName          *string
 	userType          *string
-	x509Certificates  []string
+	x509Certificates  []*Certificate
 	privateParams     map[string]interface{}
 	mu                sync.RWMutex
 }
@@ -147,7 +149,7 @@ func (v *User) HasEntitlements() bool {
 	return v.entitlements != nil
 }
 
-func (v *User) Entitlements() []string {
+func (v *User) Entitlements() []*Entitlement {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.entitlements
@@ -201,7 +203,7 @@ func (v *User) HasIMS() bool {
 	return v.ims != nil
 }
 
-func (v *User) IMS() []string {
+func (v *User) IMS() []*IMS {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.ims
@@ -282,10 +284,22 @@ func (v *User) HasPhoneNumbers() bool {
 	return v.phoneNumbers != nil
 }
 
-func (v *User) PhoneNumbers() []string {
+func (v *User) PhoneNumbers() []*PhoneNumber {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.phoneNumbers
+}
+
+func (v *User) HasPhotos() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.photos != nil
+}
+
+func (v *User) Photos() []*Photo {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.photos
 }
 
 func (v *User) HasPreferredLanguage() bool {
@@ -408,14 +422,14 @@ func (v *User) HasX509Certificates() bool {
 	return v.x509Certificates != nil
 }
 
-func (v *User) X509Certificates() []string {
+func (v *User) X509Certificates() []*Certificate {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.x509Certificates
 }
 
 func (v *User) makePairs() []pair {
-	pairs := make([]pair, 0, 24)
+	pairs := make([]pair, 0, 25)
 	if v.active != nil {
 		pairs = append(pairs, pair{Key: "active", Value: *(v.active)})
 	}
@@ -460,6 +474,9 @@ func (v *User) makePairs() []pair {
 	}
 	if v.phoneNumbers != nil {
 		pairs = append(pairs, pair{Key: "phoneNumbers", Value: v.phoneNumbers})
+	}
+	if v.photos != nil {
+		pairs = append(pairs, pair{Key: "photos", Value: v.photos})
 	}
 	if v.preferredLanguage != nil {
 		pairs = append(pairs, pair{Key: "preferredLanguage", Value: *(v.preferredLanguage)})
@@ -604,6 +621,11 @@ func (v *User) Get(name string, options ...GetOption) (interface{}, bool) {
 			return nil, false
 		}
 		return v.phoneNumbers, true
+	case UserPhotosKey:
+		if v.photos == nil {
+			return nil, false
+		}
+		return v.photos, true
 	case UserPreferredLanguageKey:
 		if v.preferredLanguage == nil {
 			return nil, false
@@ -709,10 +731,10 @@ func (v *User) Set(name string, value interface{}) error {
 		v.emails = tmp
 		return nil
 	case UserEntitlementsKey:
-		var tmp []string
-		tmp, ok := value.([]string)
+		var tmp []*Entitlement
+		tmp, ok := value.([]*Entitlement)
 		if !ok {
-			return fmt.Errorf(`expected []string for field "entitlements", but got %T`, value)
+			return fmt.Errorf(`expected []*Entitlement for field "entitlements", but got %T`, value)
 		}
 		v.entitlements = tmp
 		return nil
@@ -741,10 +763,10 @@ func (v *User) Set(name string, value interface{}) error {
 		v.id = &tmp
 		return nil
 	case UserIMSKey:
-		var tmp []string
-		tmp, ok := value.([]string)
+		var tmp []*IMS
+		tmp, ok := value.([]*IMS)
 		if !ok {
-			return fmt.Errorf(`expected []string for field "ims", but got %T`, value)
+			return fmt.Errorf(`expected []*IMS for field "ims", but got %T`, value)
 		}
 		v.ims = tmp
 		return nil
@@ -789,12 +811,20 @@ func (v *User) Set(name string, value interface{}) error {
 		v.password = &tmp
 		return nil
 	case UserPhoneNumbersKey:
-		var tmp []string
-		tmp, ok := value.([]string)
+		var tmp []*PhoneNumber
+		tmp, ok := value.([]*PhoneNumber)
 		if !ok {
-			return fmt.Errorf(`expected []string for field "phoneNumbers", but got %T`, value)
+			return fmt.Errorf(`expected []*PhoneNumber for field "phoneNumbers", but got %T`, value)
 		}
 		v.phoneNumbers = tmp
+		return nil
+	case UserPhotosKey:
+		var tmp []*Photo
+		tmp, ok := value.([]*Photo)
+		if !ok {
+			return fmt.Errorf(`expected []*Photo for field "photos", but got %T`, value)
+		}
+		v.photos = tmp
 		return nil
 	case UserPreferredLanguageKey:
 		var tmp string
@@ -861,10 +891,10 @@ func (v *User) Set(name string, value interface{}) error {
 		v.userType = &tmp
 		return nil
 	case UserX509CertificatesKey:
-		var tmp []string
-		tmp, ok := value.([]string)
+		var tmp []*Certificate
+		tmp, ok := value.([]*Certificate)
 		if !ok {
-			return fmt.Errorf(`expected []string for field "x509Certificates", but got %T`, value)
+			return fmt.Errorf(`expected []*Certificate for field "x509Certificates", but got %T`, value)
 		}
 		v.x509Certificates = tmp
 		return nil
@@ -898,6 +928,7 @@ func (v *User) Clone() *User {
 		nickName:          v.nickName,
 		password:          v.password,
 		phoneNumbers:      v.phoneNumbers,
+		photos:            v.photos,
 		preferredLanguage: v.preferredLanguage,
 		profileURL:        v.profileURL,
 		roles:             v.roles,
@@ -926,6 +957,7 @@ func (v *User) UnmarshalJSON(data []byte) error {
 	v.nickName = nil
 	v.password = nil
 	v.phoneNumbers = nil
+	v.photos = nil
 	v.preferredLanguage = nil
 	v.profileURL = nil
 	v.roles = nil
@@ -989,7 +1021,7 @@ LOOP:
 				}
 				v.emails = x
 			case UserEntitlementsKey:
-				var x []string
+				var x []*Entitlement
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "entitlements": %w`, err)
 				}
@@ -1013,7 +1045,7 @@ LOOP:
 				}
 				v.id = &x
 			case UserIMSKey:
-				var x []string
+				var x []*IMS
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "ims": %w`, err)
 				}
@@ -1049,11 +1081,17 @@ LOOP:
 				}
 				v.password = &x
 			case UserPhoneNumbersKey:
-				var x []string
+				var x []*PhoneNumber
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "phoneNumbers": %w`, err)
 				}
 				v.phoneNumbers = x
+			case UserPhotosKey:
+				var x []*Photo
+				if err := dec.Decode(&x); err != nil {
+					return fmt.Errorf(`failed to decode value for key "photos": %w`, err)
+				}
+				v.photos = x
 			case UserPreferredLanguageKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
@@ -1103,7 +1141,7 @@ LOOP:
 				}
 				v.userType = &x
 			case UserX509CertificatesKey:
-				var x []string
+				var x []*Certificate
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "x509Certificates": %w`, err)
 				}
@@ -1225,7 +1263,7 @@ func (b *UserBuilder) Emails(v ...*Email) *UserBuilder {
 	return b
 }
 
-func (b *UserBuilder) Entitlements(v ...string) *UserBuilder {
+func (b *UserBuilder) Entitlements(v ...*Entitlement) *UserBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.once.Do(b.init)
@@ -1277,7 +1315,7 @@ func (b *UserBuilder) ID(v string) *UserBuilder {
 	return b
 }
 
-func (b *UserBuilder) IMS(v ...string) *UserBuilder {
+func (b *UserBuilder) IMS(v ...*IMS) *UserBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.once.Do(b.init)
@@ -1355,7 +1393,7 @@ func (b *UserBuilder) Password(v string) *UserBuilder {
 	return b
 }
 
-func (b *UserBuilder) PhoneNumbers(v ...string) *UserBuilder {
+func (b *UserBuilder) PhoneNumbers(v ...*PhoneNumber) *UserBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.once.Do(b.init)
@@ -1363,6 +1401,19 @@ func (b *UserBuilder) PhoneNumbers(v ...string) *UserBuilder {
 		return b
 	}
 	if err := b.object.Set("phoneNumbers", v); err != nil {
+		b.err = err
+	}
+	return b
+}
+
+func (b *UserBuilder) Photos(v ...*Photo) *UserBuilder {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	b.once.Do(b.init)
+	if b.err != nil {
+		return b
+	}
+	if err := b.object.Set("photos", v); err != nil {
 		b.err = err
 	}
 	return b
@@ -1472,7 +1523,7 @@ func (b *UserBuilder) UserType(v string) *UserBuilder {
 	return b
 }
 
-func (b *UserBuilder) X509Certificates(v ...string) *UserBuilder {
+func (b *UserBuilder) X509Certificates(v ...*Certificate) *UserBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.once.Do(b.init)

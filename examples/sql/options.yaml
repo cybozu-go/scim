@@ -1,0 +1,11 @@
+package_name: sql
+output: examples/sql/options_gen.go
+interfaces:
+  - name: Option
+options:
+  - ident: ColumnMapper
+    interface: Option
+    argument_type: ColumnMapper
+  - ident: Dialect
+    interface: Option
+    argument_type: string

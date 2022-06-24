@@ -210,7 +210,7 @@ func (call *CreateUserCall) Emails(v ...*resource.Email) *CreateUserCall {
 	return call
 }
 
-func (call *CreateUserCall) Entitlements(v ...string) *CreateUserCall {
+func (call *CreateUserCall) Entitlements(v ...*resource.Entitlement) *CreateUserCall {
 	call.builder.Entitlements(v...)
 	return call
 }
@@ -220,7 +220,7 @@ func (call *CreateUserCall) ExternalID(v string) *CreateUserCall {
 	return call
 }
 
-func (call *CreateUserCall) IMS(v ...string) *CreateUserCall {
+func (call *CreateUserCall) IMS(v ...*resource.IMS) *CreateUserCall {
 	call.builder.IMS(v...)
 	return call
 }
@@ -245,8 +245,13 @@ func (call *CreateUserCall) Password(v string) *CreateUserCall {
 	return call
 }
 
-func (call *CreateUserCall) PhoneNumbers(v ...string) *CreateUserCall {
+func (call *CreateUserCall) PhoneNumbers(v ...*resource.PhoneNumber) *CreateUserCall {
 	call.builder.PhoneNumbers(v...)
+	return call
+}
+
+func (call *CreateUserCall) Photos(v ...*resource.Photo) *CreateUserCall {
+	call.builder.Photos(v...)
 	return call
 }
 
@@ -285,7 +290,7 @@ func (call *CreateUserCall) UserType(v string) *CreateUserCall {
 	return call
 }
 
-func (call *CreateUserCall) X509Certificates(v ...string) *CreateUserCall {
+func (call *CreateUserCall) X509Certificates(v ...*resource.Certificate) *CreateUserCall {
 	call.builder.X509Certificates(v...)
 	return call
 }
@@ -427,7 +432,7 @@ func (call *ReplaceUserCall) Emails(v ...*resource.Email) *ReplaceUserCall {
 	return call
 }
 
-func (call *ReplaceUserCall) Entitlements(v ...string) *ReplaceUserCall {
+func (call *ReplaceUserCall) Entitlements(v ...*resource.Entitlement) *ReplaceUserCall {
 	call.builder.Entitlements(v...)
 	return call
 }
@@ -437,7 +442,7 @@ func (call *ReplaceUserCall) ExternalID(v string) *ReplaceUserCall {
 	return call
 }
 
-func (call *ReplaceUserCall) IMS(v ...string) *ReplaceUserCall {
+func (call *ReplaceUserCall) IMS(v ...*resource.IMS) *ReplaceUserCall {
 	call.builder.IMS(v...)
 	return call
 }
@@ -462,8 +467,13 @@ func (call *ReplaceUserCall) Password(v string) *ReplaceUserCall {
 	return call
 }
 
-func (call *ReplaceUserCall) PhoneNumbers(v ...string) *ReplaceUserCall {
+func (call *ReplaceUserCall) PhoneNumbers(v ...*resource.PhoneNumber) *ReplaceUserCall {
 	call.builder.PhoneNumbers(v...)
+	return call
+}
+
+func (call *ReplaceUserCall) Photos(v ...*resource.Photo) *ReplaceUserCall {
+	call.builder.Photos(v...)
 	return call
 }
 
@@ -502,7 +512,7 @@ func (call *ReplaceUserCall) UserType(v string) *ReplaceUserCall {
 	return call
 }
 
-func (call *ReplaceUserCall) X509Certificates(v ...string) *ReplaceUserCall {
+func (call *ReplaceUserCall) X509Certificates(v ...*resource.Certificate) *ReplaceUserCall {
 	call.builder.X509Certificates(v...)
 	return call
 }
@@ -642,7 +652,7 @@ func (call *DeleteUserCall) Emails(v ...*resource.Email) *DeleteUserCall {
 	return call
 }
 
-func (call *DeleteUserCall) Entitlements(v ...string) *DeleteUserCall {
+func (call *DeleteUserCall) Entitlements(v ...*resource.Entitlement) *DeleteUserCall {
 	call.builder.Entitlements(v...)
 	return call
 }
@@ -662,7 +672,7 @@ func (call *DeleteUserCall) ID(v string) *DeleteUserCall {
 	return call
 }
 
-func (call *DeleteUserCall) IMS(v ...string) *DeleteUserCall {
+func (call *DeleteUserCall) IMS(v ...*resource.IMS) *DeleteUserCall {
 	call.builder.IMS(v...)
 	return call
 }
@@ -692,8 +702,13 @@ func (call *DeleteUserCall) Password(v string) *DeleteUserCall {
 	return call
 }
 
-func (call *DeleteUserCall) PhoneNumbers(v ...string) *DeleteUserCall {
+func (call *DeleteUserCall) PhoneNumbers(v ...*resource.PhoneNumber) *DeleteUserCall {
 	call.builder.PhoneNumbers(v...)
+	return call
+}
+
+func (call *DeleteUserCall) Photos(v ...*resource.Photo) *DeleteUserCall {
+	call.builder.Photos(v...)
 	return call
 }
 
@@ -732,7 +747,7 @@ func (call *DeleteUserCall) UserType(v string) *DeleteUserCall {
 	return call
 }
 
-func (call *DeleteUserCall) X509Certificates(v ...string) *DeleteUserCall {
+func (call *DeleteUserCall) X509Certificates(v ...*resource.Certificate) *DeleteUserCall {
 	call.builder.X509Certificates(v...)
 	return call
 }

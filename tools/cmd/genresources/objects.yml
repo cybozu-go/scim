@@ -77,18 +77,6 @@ objects:
         json: type
       - name: primary
         type: bool
-  - name: Role
-    skipCommonFields: true
-    fields:
-      - name: value
-        required: true
-      - name: display
-      - name: typ
-        ent_name: type
-        exported_name: Type
-        json: type
-      - name: primary
-        type: bool
   - name: Names
     skipCommonFields: true
     fields:

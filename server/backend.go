@@ -148,6 +148,12 @@ func RetrieveGroupEndpoint(b RetrieveGroupBackend) http.Handler {
 			return
 		}
 
+		if meta := group.Meta(); meta != nil {
+			if v := meta.Version(); v != "" {
+				w.Header().Set(`ETag`, v)
+			}
+		}
+
 		w.WriteHeader(http.StatusOK)
 		_ = json.NewEncoder(w).Encode(group)
 	})
@@ -168,6 +174,12 @@ func CreateGroupEndpoint(b CreateGroupBackend) http.Handler {
 			log.Printf("%s", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
+		}
+
+		if meta := created.Meta(); meta != nil {
+			if v := meta.Version(); v != "" {
+				w.Header().Set(`ETag`, v)
+			}
 		}
 
 		w.Header().Set(ctKey, mimeSCIM)
@@ -250,6 +262,12 @@ func RetrieveUserEndpoint(b RetrieveUserBackend) http.Handler {
 			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Fprint(w, err.Error())
 			return
+		}
+
+		if meta := user.Meta(); meta != nil {
+			if v := meta.Version(); v != "" {
+				w.Header().Set(`ETag`, v)
+			}
 		}
 
 		w.WriteHeader(http.StatusOK)

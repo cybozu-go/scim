@@ -56,6 +56,7 @@ objects:
         type: '[]*PhoneNumber'
       - name: ims
         exported_name: IMS
+        unexported_name: ims
         type: '[]*IMS'
       - name: addresses
         type: '[]string'
@@ -80,6 +81,7 @@ objects:
     - name: value
   - name: IMS
     skipCommonFields: true
+    unexported_name: ims
     fields:
     - name: typ
       ent_name: type

@@ -154,6 +154,9 @@ func generateObject(object *codegen.Object) error {
 			o.L(`}`)
 		}
 	}
+	if v := object.String(`validation`); v != "" {
+		o.L(v)
+	}
 	o.L(`return nil`)
 	o.L(`})`)
 

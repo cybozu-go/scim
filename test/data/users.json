@@ -11,6 +11,11 @@
       {
         "value": "director"
       }
+    ],
+    "phoneNumbers": [
+      {
+        "value": "tel:+1-123-456-7890"
+      }
     ]
   },
   {

@@ -284,6 +284,7 @@ func UsersFetch(t *testing.T, cl *client.Client) func(*testing.T) {
 				require.Equal(t, createdUser.Emails(), u.Emails(), `Emails should match`)
 				require.NotNil(t, u.Meta(), `Meta should not be nil`)
 				require.Equal(t, `User`, u.Meta().ResourceType(), `meta.resource_type should match`)
+				require.NotEmpty(t, u.Meta().Version(), `meta.version should be populated`)
 				require.Nil(t, u.Name(), `Name should be nil`)
 			})
 		})
@@ -320,10 +321,14 @@ func UsersBasicCRUD(t *testing.T, cl *client.Client) func(*testing.T) {
 		require.NoError(t, err, `Create should succeed`)
 		require.Empty(t, createdUser.Password(), `user should not return password`)
 
+		etag := createdUser.Meta().Version()
+
 		t.Run("Fetch user", func(t *testing.T) {
-			_, err = cl.User().Get(createdUser.ID()).
+			u, err := cl.User().Get(createdUser.ID()).
 				Do(context.TODO())
 			require.NoError(t, err, `Get should succeed`)
+			require.NotNil(t, u.Meta(), `meta should be non-nil`)
+			require.Equal(t, etag, u.Meta().Version(), `versions should match`)
 		})
 		t.Run("Replace user", func(t *testing.T) {
 			u, err := cl.User().Replace(createdUser.ID()).
@@ -361,6 +366,7 @@ func UsersBasicCRUD(t *testing.T, cl *client.Client) func(*testing.T) {
 
 					// Sanity
 					require.Equal(t, createdUser.ID(), u.ID())
+					require.NotEqual(t, etag, u.Meta().Version(), `versions should NOT match`)
 
 					emails := u.Emails()
 					require.Len(t, emails, 1)
@@ -392,13 +398,16 @@ func GroupsBasicCRUD(t *testing.T, cl *client.Client) func(*testing.T) {
 		createdGroup, err := stockGroupCreateCall(cl).
 			Do(context.TODO())
 		require.NoError(t, err, `Create should succeed`)
-		_ = createdGroup
+
+		etag := createdGroup.Meta().Version()
 
 		t.Run("Fetch group", func(t *testing.T) {
-			group, err := cl.Group().Get(createdGroup.ID()).
+			g, err := cl.Group().Get(createdGroup.ID()).
 				Do(context.TODO())
 			require.NoError(t, err, `Get should succeed`)
-			require.Len(t, group.Members(), len(createdGroup.Members()), `there should be %d members`, len(createdGroup.Members()))
+			require.Len(t, g.Members(), len(createdGroup.Members()), `there should be %d members`, len(createdGroup.Members()))
+			require.NotNil(t, g.Meta(), `meta should be non-nil`)
+			require.Equal(t, etag, g.Meta().Version(), `versions should match`)
 		})
 		t.Run("Replace group", func(t *testing.T) {
 			u, err := cl.Group().Replace(createdGroup.ID()).

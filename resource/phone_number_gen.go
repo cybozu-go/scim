@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"sort"
 	"sync"
 )
@@ -35,6 +36,19 @@ func (f PhoneNumberValidateFunc) Validate(v *PhoneNumber) error {
 }
 
 var DefaultPhoneNumberValidator PhoneNumberValidator = PhoneNumberValidateFunc(func(v *PhoneNumber) error {
+	// This is a very simplified version of validating RFC3966.
+	// We just make sure that it's a valid URI, and that the schema
+	// is "tel"
+	if ptr := v.value; ptr != nil {
+		u, err := url.Parse(*ptr)
+		if err != nil {
+			return fmt.Errorf(`failed to parse phone number: %w`, err)
+		}
+		if u.Scheme != `tel` {
+			return fmt.Errorf(`phone number scheme must be "tel", got %s`, u.Scheme)
+		}
+	}
+
 	return nil
 })
 

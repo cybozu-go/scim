@@ -51,6 +51,40 @@ func TestDateTime(t *testing.T) {
 	}
 }
 
+func TestPhoneNumber(t *testing.T) {
+	testcases := []struct {
+		Value string
+		Error bool
+	}{
+		{
+			Value: `tel:+1-201-555-0123`,
+		},
+		{
+			Value: `denwa:+1-201-555-0123`,
+			Error: true,
+		},
+		{
+			Value: `+1-201-555-0123`,
+			Error: true,
+		},
+	}
+	for _, tc := range testcases {
+		tc := tc
+		t.Run(tc.Value, func(t *testing.T) {
+			var b resource.Builder
+			r, err := b.PhoneNumber().
+				Value(tc.Value).
+				Build()
+			_ = r
+			if tc.Error {
+				require.Error(t, err, `building phone number %q should fail`, tc.Value)
+			} else {
+				require.NoError(t, err, `building phone number %q should succeed`, tc.Value)
+			}
+		})
+	}
+}
+
 func TestUser(t *testing.T) {
 	var b resource.Builder
 

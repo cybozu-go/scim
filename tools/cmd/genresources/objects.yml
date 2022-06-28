@@ -126,6 +126,19 @@ objects:
     - name: value
   - name: PhoneNumber
     skipCommonFields: true
+    validation: |
+      // This is a very simplified version of validating RFC3966.
+      // We just make sure that it's a valid URI, and that the schema
+      // is "tel"
+      if ptr := v.value; ptr != nil {
+        u, err := url.Parse(*ptr)
+        if err != nil {
+          return fmt.Errorf(`failed to parse phone number: %%w`, err)
+        }
+        if u.Scheme != `tel` {
+          return fmt.Errorf(`phone number scheme must be "tel", got %%s`, u.Scheme)
+        }
+      }
     fields:
     - name: typ
       ent_name: type

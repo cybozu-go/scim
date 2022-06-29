@@ -199,6 +199,10 @@ func UsersSearch(t *testing.T, cl *client.Client) func(t *testing.T) {
 					Query:        `roles.value eq "actor" AND roles.value eq "director"`,
 					TotalResults: 0,
 				},
+				{
+					Query:        `phoneNumbers.value co "123-456-7890"`,
+					TotalResults: 1,
+				},
 			}
 
 			for _, tc := range testcases {

@@ -118,7 +118,6 @@ func stockUserCreateCall(cl *client.Client) *client.CreateUserCall {
 		PhoneNumbers(resource.NewPhoneNumberBuilder().
 			Value("tel:+1-999-9999-9999").
 			MustBuild())
-
 }
 
 func stockGroupCreateCall(cl *client.Client) *client.CreateGroupCall {

@@ -44,12 +44,12 @@ func init() {
 
 type User struct {
 	active            *bool
-	addresses         []string
+	addresses         []*Address
 	displayName       *string
 	emails            []*Email
 	entitlements      []*Entitlement
 	externalID        *string
-	groups            []string
+	groups            []*GroupMember
 	id                *string
 	ims               []*IMS
 	locale            *string
@@ -67,7 +67,7 @@ type User struct {
 	title             *string
 	userName          *string
 	userType          *string
-	x509Certificates  []*Certificate
+	x509Certificates  []*X509Certificate
 	privateParams     map[string]interface{}
 	mu                sync.RWMutex
 }
@@ -110,7 +110,7 @@ func (v *User) HasAddresses() bool {
 	return v.addresses != nil
 }
 
-func (v *User) Addresses() []string {
+func (v *User) Addresses() []*Address {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.addresses
@@ -176,7 +176,7 @@ func (v *User) HasGroups() bool {
 	return v.groups != nil
 }
 
-func (v *User) Groups() []string {
+func (v *User) Groups() []*GroupMember {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.groups
@@ -422,7 +422,7 @@ func (v *User) HasX509Certificates() bool {
 	return v.x509Certificates != nil
 }
 
-func (v *User) X509Certificates() []*Certificate {
+func (v *User) X509Certificates() []*X509Certificate {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.x509Certificates
@@ -707,10 +707,10 @@ func (v *User) Set(name string, value interface{}) error {
 		v.active = &tmp
 		return nil
 	case UserAddressesKey:
-		var tmp []string
-		tmp, ok := value.([]string)
+		var tmp []*Address
+		tmp, ok := value.([]*Address)
 		if !ok {
-			return fmt.Errorf(`expected []string for field "addresses", but got %T`, value)
+			return fmt.Errorf(`expected []*Address for field "addresses", but got %T`, value)
 		}
 		v.addresses = tmp
 		return nil
@@ -747,10 +747,10 @@ func (v *User) Set(name string, value interface{}) error {
 		v.externalID = &tmp
 		return nil
 	case UserGroupsKey:
-		var tmp []string
-		tmp, ok := value.([]string)
+		var tmp []*GroupMember
+		tmp, ok := value.([]*GroupMember)
 		if !ok {
-			return fmt.Errorf(`expected []string for field "groups", but got %T`, value)
+			return fmt.Errorf(`expected []*GroupMember for field "groups", but got %T`, value)
 		}
 		v.groups = tmp
 		return nil
@@ -891,10 +891,10 @@ func (v *User) Set(name string, value interface{}) error {
 		v.userType = &tmp
 		return nil
 	case UserX509CertificatesKey:
-		var tmp []*Certificate
-		tmp, ok := value.([]*Certificate)
+		var tmp []*X509Certificate
+		tmp, ok := value.([]*X509Certificate)
 		if !ok {
-			return fmt.Errorf(`expected []*Certificate for field "x509Certificates", but got %T`, value)
+			return fmt.Errorf(`expected []*X509Certificate for field "x509Certificates", but got %T`, value)
 		}
 		v.x509Certificates = tmp
 		return nil
@@ -1003,7 +1003,7 @@ LOOP:
 				}
 				v.active = &x
 			case UserAddressesKey:
-				var x []string
+				var x []*Address
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "addresses": %w`, err)
 				}
@@ -1033,7 +1033,7 @@ LOOP:
 				}
 				v.externalID = &x
 			case UserGroupsKey:
-				var x []string
+				var x []*GroupMember
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "groups": %w`, err)
 				}
@@ -1141,7 +1141,7 @@ LOOP:
 				}
 				v.userType = &x
 			case UserX509CertificatesKey:
-				var x []*Certificate
+				var x []*X509Certificate
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "x509Certificates": %w`, err)
 				}
@@ -1224,7 +1224,7 @@ func (b *UserBuilder) Active(v bool) *UserBuilder {
 	return b
 }
 
-func (b *UserBuilder) Addresses(v ...string) *UserBuilder {
+func (b *UserBuilder) Addresses(v ...*Address) *UserBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.once.Do(b.init)
@@ -1289,7 +1289,7 @@ func (b *UserBuilder) ExternalID(v string) *UserBuilder {
 	return b
 }
 
-func (b *UserBuilder) Groups(v ...string) *UserBuilder {
+func (b *UserBuilder) Groups(v ...*GroupMember) *UserBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.once.Do(b.init)
@@ -1523,7 +1523,7 @@ func (b *UserBuilder) UserType(v string) *UserBuilder {
 	return b
 }
 
-func (b *UserBuilder) X509Certificates(v ...*Certificate) *UserBuilder {
+func (b *UserBuilder) X509Certificates(v ...*X509Certificate) *UserBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.once.Do(b.init)

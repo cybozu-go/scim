@@ -22,6 +22,7 @@ objects:
       - name: version
   - name: User
     schema: "urn:ietf:params:scim:schemas:core:2.0:User"
+    ent_conversion_helper: userResourceFromEntHelper
     top_level: true
     fields:
       - name: userName
@@ -31,6 +32,8 @@ objects:
       - name: displayName
       - name: name
         type: '*Names'
+      - name: addresses
+        type: '[]*Address'
       - name: nickName
       - name: profileUrl
         unexported_name: profileURL
@@ -58,16 +61,16 @@ objects:
         exported_name: IMS
         unexported_name: ims
         type: '[]*IMS'
-      - name: addresses
-        type: '[]string'
       - name: groups
-        type: '[]string'
+        type: '[]*GroupMember'
       - name: entitlements
         type: '[]*Entitlement'
       - name: roles
         type: '[]*Role'
       - name: x509Certificates
-        type: '[]*Certificate'
+        exported_name: X509Certificates
+        unexported_name: x509Certificates
+        type: '[]*X509Certificate'
   - name: Photo
     skipCommonFields: true
     fields:
@@ -113,7 +116,7 @@ objects:
       type: bool
     - name: display
     - name: value
-  - name: Certificate
+  - name: X509Certificate
     skipCommonFields: true
     fields:
     - name: typ
@@ -382,3 +385,12 @@ objects:
       - name: schema
       - name: required
         type: bool
+  - name: Address
+    skipCommonFields: true
+    fields:
+      - name: formatted
+      - name: streetAddress
+      - name: locality
+      - name: region
+      - name: postalCode
+      - name: country

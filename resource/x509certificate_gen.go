@@ -9,13 +9,13 @@ import (
 )
 
 const (
-	CertificateDisplayKey = "display"
-	CertificatePrimaryKey = "primary"
-	CertificateTypeKey    = "type"
-	CertificateValueKey   = "value"
+	X509CertificateDisplayKey = "display"
+	X509CertificatePrimaryKey = "primary"
+	X509CertificateTypeKey    = "type"
+	X509CertificateValueKey   = "value"
 )
 
-type Certificate struct {
+type X509Certificate struct {
 	display       *string
 	primary       *bool
 	typ           *string
@@ -24,27 +24,27 @@ type Certificate struct {
 	mu            sync.RWMutex
 }
 
-type CertificateValidator interface {
-	Validate(*Certificate) error
+type X509CertificateValidator interface {
+	Validate(*X509Certificate) error
 }
 
-type CertificateValidateFunc func(v *Certificate) error
+type X509CertificateValidateFunc func(v *X509Certificate) error
 
-func (f CertificateValidateFunc) Validate(v *Certificate) error {
+func (f X509CertificateValidateFunc) Validate(v *X509Certificate) error {
 	return f(v)
 }
 
-var DefaultCertificateValidator CertificateValidator = CertificateValidateFunc(func(v *Certificate) error {
+var DefaultX509CertificateValidator X509CertificateValidator = X509CertificateValidateFunc(func(v *X509Certificate) error {
 	return nil
 })
 
-func (v *Certificate) HasDisplay() bool {
+func (v *X509Certificate) HasDisplay() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.display != nil
 }
 
-func (v *Certificate) Display() string {
+func (v *X509Certificate) Display() string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	if v.display == nil {
@@ -53,13 +53,13 @@ func (v *Certificate) Display() string {
 	return *(v.display)
 }
 
-func (v *Certificate) HasPrimary() bool {
+func (v *X509Certificate) HasPrimary() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.primary != nil
 }
 
-func (v *Certificate) Primary() bool {
+func (v *X509Certificate) Primary() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	if v.primary == nil {
@@ -68,13 +68,13 @@ func (v *Certificate) Primary() bool {
 	return *(v.primary)
 }
 
-func (v *Certificate) HasType() bool {
+func (v *X509Certificate) HasType() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.typ != nil
 }
 
-func (v *Certificate) Type() string {
+func (v *X509Certificate) Type() string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	if v.typ == nil {
@@ -83,13 +83,13 @@ func (v *Certificate) Type() string {
 	return *(v.typ)
 }
 
-func (v *Certificate) HasValue() bool {
+func (v *X509Certificate) HasValue() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.value != nil
 }
 
-func (v *Certificate) Value() string {
+func (v *X509Certificate) Value() string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	if v.value == nil {
@@ -98,7 +98,7 @@ func (v *Certificate) Value() string {
 	return *(v.value)
 }
 
-func (v *Certificate) makePairs() []pair {
+func (v *X509Certificate) makePairs() []pair {
 	pairs := make([]pair, 0, 4)
 	if v.display != nil {
 		pairs = append(pairs, pair{Key: "display", Value: *(v.display)})
@@ -121,7 +121,7 @@ func (v *Certificate) makePairs() []pair {
 	return pairs
 }
 
-func (v *Certificate) MarshalJSON() ([]byte, error) {
+func (v *X509Certificate) MarshalJSON() ([]byte, error) {
 	pairs := v.makePairs()
 
 	var buf bytes.Buffer
@@ -140,7 +140,7 @@ func (v *Certificate) MarshalJSON() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func (v *Certificate) Get(name string, options ...GetOption) (interface{}, bool) {
+func (v *X509Certificate) Get(name string, options ...GetOption) (interface{}, bool) {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 
@@ -153,22 +153,22 @@ func (v *Certificate) Get(name string, options ...GetOption) (interface{}, bool)
 		}
 	}
 	switch name {
-	case CertificateDisplayKey:
+	case X509CertificateDisplayKey:
 		if v.display == nil {
 			return nil, false
 		}
 		return *(v.display), true
-	case CertificatePrimaryKey:
+	case X509CertificatePrimaryKey:
 		if v.primary == nil {
 			return nil, false
 		}
 		return *(v.primary), true
-	case CertificateTypeKey:
+	case X509CertificateTypeKey:
 		if v.typ == nil {
 			return nil, false
 		}
 		return *(v.typ), true
-	case CertificateValueKey:
+	case X509CertificateValueKey:
 		if v.value == nil {
 			return nil, false
 		}
@@ -196,11 +196,11 @@ func (v *Certificate) Get(name string, options ...GetOption) (interface{}, bool)
 	}
 }
 
-func (v *Certificate) Set(name string, value interface{}) error {
+func (v *X509Certificate) Set(name string, value interface{}) error {
 	v.mu.Lock()
 	defer v.mu.Unlock()
 	switch name {
-	case CertificateDisplayKey:
+	case X509CertificateDisplayKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -208,7 +208,7 @@ func (v *Certificate) Set(name string, value interface{}) error {
 		}
 		v.display = &tmp
 		return nil
-	case CertificatePrimaryKey:
+	case X509CertificatePrimaryKey:
 		var tmp bool
 		tmp, ok := value.(bool)
 		if !ok {
@@ -216,7 +216,7 @@ func (v *Certificate) Set(name string, value interface{}) error {
 		}
 		v.primary = &tmp
 		return nil
-	case CertificateTypeKey:
+	case X509CertificateTypeKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -224,7 +224,7 @@ func (v *Certificate) Set(name string, value interface{}) error {
 		}
 		v.typ = &tmp
 		return nil
-	case CertificateValueKey:
+	case X509CertificateValueKey:
 		var tmp string
 		tmp, ok := value.(string)
 		if !ok {
@@ -243,10 +243,10 @@ func (v *Certificate) Set(name string, value interface{}) error {
 	}
 }
 
-func (v *Certificate) Clone() *Certificate {
+func (v *X509Certificate) Clone() *X509Certificate {
 	v.mu.Lock()
 	defer v.mu.Unlock()
-	return &Certificate{
+	return &X509Certificate{
 		display: v.display,
 		primary: v.primary,
 		typ:     v.typ,
@@ -254,7 +254,7 @@ func (v *Certificate) Clone() *Certificate {
 	}
 }
 
-func (v *Certificate) UnmarshalJSON(data []byte) error {
+func (v *X509Certificate) UnmarshalJSON(data []byte) error {
 	v.display = nil
 	v.primary = nil
 	v.typ = nil
@@ -288,25 +288,25 @@ LOOP:
 			}
 		case string:
 			switch tok {
-			case CertificateDisplayKey:
+			case X509CertificateDisplayKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "display": %w`, err)
 				}
 				v.display = &x
-			case CertificatePrimaryKey:
+			case X509CertificatePrimaryKey:
 				var x bool
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "primary": %w`, err)
 				}
 				v.primary = &x
-			case CertificateTypeKey:
+			case X509CertificateTypeKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "type": %w`, err)
 				}
 				v.typ = &x
-			case CertificateValueKey:
+			case X509CertificateValueKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "value": %w`, err)
@@ -337,44 +337,44 @@ LOOP:
 	return nil
 }
 
-func (v *Certificate) AsMap(dst map[string]interface{}) error {
+func (v *X509Certificate) AsMap(dst map[string]interface{}) error {
 	for _, pair := range v.makePairs() {
 		dst[pair.Key] = pair.Value
 	}
 	return nil
 }
 
-type CertificateBuilder struct {
+type X509CertificateBuilder struct {
 	once      sync.Once
 	mu        sync.Mutex
 	err       error
-	validator CertificateValidator
-	object    *Certificate
+	validator X509CertificateValidator
+	object    *X509Certificate
 }
 
-func (b *Builder) Certificate() *CertificateBuilder {
-	return NewCertificateBuilder()
+func (b *Builder) X509Certificate() *X509CertificateBuilder {
+	return NewX509CertificateBuilder()
 }
 
-func NewCertificateBuilder() *CertificateBuilder {
-	var b CertificateBuilder
+func NewX509CertificateBuilder() *X509CertificateBuilder {
+	var b X509CertificateBuilder
 	b.init()
 	return &b
 }
 
-func (b *CertificateBuilder) From(in *Certificate) *CertificateBuilder {
+func (b *X509CertificateBuilder) From(in *X509Certificate) *X509CertificateBuilder {
 	b.once.Do(b.init)
 	b.object = in.Clone()
 	return b
 }
 
-func (b *CertificateBuilder) init() {
+func (b *X509CertificateBuilder) init() {
 	b.err = nil
 	b.validator = nil
-	b.object = &Certificate{}
+	b.object = &X509Certificate{}
 }
 
-func (b *CertificateBuilder) Display(v string) *CertificateBuilder {
+func (b *X509CertificateBuilder) Display(v string) *X509CertificateBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.once.Do(b.init)
@@ -387,7 +387,7 @@ func (b *CertificateBuilder) Display(v string) *CertificateBuilder {
 	return b
 }
 
-func (b *CertificateBuilder) Primary(v bool) *CertificateBuilder {
+func (b *X509CertificateBuilder) Primary(v bool) *X509CertificateBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.once.Do(b.init)
@@ -400,7 +400,7 @@ func (b *CertificateBuilder) Primary(v bool) *CertificateBuilder {
 	return b
 }
 
-func (b *CertificateBuilder) Type(v string) *CertificateBuilder {
+func (b *X509CertificateBuilder) Type(v string) *X509CertificateBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.once.Do(b.init)
@@ -413,7 +413,7 @@ func (b *CertificateBuilder) Type(v string) *CertificateBuilder {
 	return b
 }
 
-func (b *CertificateBuilder) Value(v string) *CertificateBuilder {
+func (b *X509CertificateBuilder) Value(v string) *X509CertificateBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.once.Do(b.init)
@@ -426,7 +426,7 @@ func (b *CertificateBuilder) Value(v string) *CertificateBuilder {
 	return b
 }
 
-func (b *CertificateBuilder) Validator(v CertificateValidator) *CertificateBuilder {
+func (b *X509CertificateBuilder) Validator(v X509CertificateValidator) *X509CertificateBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.once.Do(b.init)
@@ -437,7 +437,7 @@ func (b *CertificateBuilder) Validator(v CertificateValidator) *CertificateBuild
 	return b
 }
 
-func (b *CertificateBuilder) Build() (*Certificate, error) {
+func (b *X509CertificateBuilder) Build() (*X509Certificate, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	object := b.object
@@ -448,10 +448,10 @@ func (b *CertificateBuilder) Build() (*Certificate, error) {
 		return nil, err
 	}
 	if object == nil {
-		return nil, fmt.Errorf("resource.CertificateBuilder: object was not initialized")
+		return nil, fmt.Errorf("resource.X509CertificateBuilder: object was not initialized")
 	}
 	if validator == nil {
-		validator = DefaultCertificateValidator
+		validator = DefaultX509CertificateValidator
 	}
 	if err := validator.Validate(object); err != nil {
 		return nil, err
@@ -459,7 +459,7 @@ func (b *CertificateBuilder) Build() (*Certificate, error) {
 	return object, nil
 }
 
-func (b *CertificateBuilder) MustBuild() *Certificate {
+func (b *X509CertificateBuilder) MustBuild() *X509Certificate {
 	object, err := b.Build()
 	if err != nil {
 		panic(err)

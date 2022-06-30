@@ -195,7 +195,7 @@ func (call *CreateUserCall) Active(v bool) *CreateUserCall {
 	return call
 }
 
-func (call *CreateUserCall) Addresses(v ...string) *CreateUserCall {
+func (call *CreateUserCall) Addresses(v ...*resource.Address) *CreateUserCall {
 	call.builder.Addresses(v...)
 	return call
 }
@@ -290,7 +290,7 @@ func (call *CreateUserCall) UserType(v string) *CreateUserCall {
 	return call
 }
 
-func (call *CreateUserCall) X509Certificates(v ...*resource.Certificate) *CreateUserCall {
+func (call *CreateUserCall) X509Certificates(v ...*resource.X509Certificate) *CreateUserCall {
 	call.builder.X509Certificates(v...)
 	return call
 }
@@ -417,7 +417,7 @@ func (call *ReplaceUserCall) Active(v bool) *ReplaceUserCall {
 	return call
 }
 
-func (call *ReplaceUserCall) Addresses(v ...string) *ReplaceUserCall {
+func (call *ReplaceUserCall) Addresses(v ...*resource.Address) *ReplaceUserCall {
 	call.builder.Addresses(v...)
 	return call
 }
@@ -512,7 +512,7 @@ func (call *ReplaceUserCall) UserType(v string) *ReplaceUserCall {
 	return call
 }
 
-func (call *ReplaceUserCall) X509Certificates(v ...*resource.Certificate) *ReplaceUserCall {
+func (call *ReplaceUserCall) X509Certificates(v ...*resource.X509Certificate) *ReplaceUserCall {
 	call.builder.X509Certificates(v...)
 	return call
 }
@@ -637,7 +637,7 @@ func (call *DeleteUserCall) Active(v bool) *DeleteUserCall {
 	return call
 }
 
-func (call *DeleteUserCall) Addresses(v ...string) *DeleteUserCall {
+func (call *DeleteUserCall) Addresses(v ...*resource.Address) *DeleteUserCall {
 	call.builder.Addresses(v...)
 	return call
 }
@@ -662,7 +662,7 @@ func (call *DeleteUserCall) ExternalID(v string) *DeleteUserCall {
 	return call
 }
 
-func (call *DeleteUserCall) Groups(v ...string) *DeleteUserCall {
+func (call *DeleteUserCall) Groups(v ...*resource.GroupMember) *DeleteUserCall {
 	call.builder.Groups(v...)
 	return call
 }
@@ -747,7 +747,7 @@ func (call *DeleteUserCall) UserType(v string) *DeleteUserCall {
 	return call
 }
 
-func (call *DeleteUserCall) X509Certificates(v ...*resource.Certificate) *DeleteUserCall {
+func (call *DeleteUserCall) X509Certificates(v ...*resource.X509Certificate) *DeleteUserCall {
 	call.builder.X509Certificates(v...)
 	return call
 }

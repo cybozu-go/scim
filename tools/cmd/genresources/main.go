@@ -39,6 +39,13 @@ func yaml2json(fn string) ([]byte, error) {
 	return json.Marshal(v)
 }
 
+func packageName(s string) string {
+	if strings.Contains(s, `509`) {
+		return `x509certificate`
+	}
+	return xstrings.Snake(s)
+}
+
 func _main() error {
 	codegen.RegisterZeroVal(`AuthenticationSchemeType`, `InvalidAuthenticationScheme`)
 	codegen.RegisterZeroVal(`Mutability`, `MutReadOnly`)
@@ -520,7 +527,7 @@ func generateObject(object *codegen.Object) error {
 	o.L(`}`)
 	o.L(`return object`)
 	o.L(`}`)
-	if err := o.WriteFile(xstrings.Snake(object.Name(false))+`_gen.go`, codegen.WithFormatCode(true)); err != nil {
+	if err := o.WriteFile(packageName(object.Name(false))+`_gen.go`, codegen.WithFormatCode(true)); err != nil {
 		if cfe, ok := err.(codegen.CodeFormatError); ok {
 			fmt.Fprint(os.Stderr, cfe.Source())
 		}

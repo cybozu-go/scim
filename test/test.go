@@ -111,6 +111,12 @@ func stockUserCreateCall(cl *client.Client) *client.CreateUserCall {
 			Formatted("Ms. Barbara J Jensen III").
 			FamilyName("Jensen").
 			GivenName("Barbara").
+			MustBuild()).
+		Roles(resource.NewRoleBuilder().
+			Value("Director of Human Resources").
+			MustBuild()).
+		PhoneNumbers(resource.NewPhoneNumberBuilder().
+			Value("tel:+1-999-9999-9999").
 			MustBuild())
 }
 
@@ -340,6 +346,9 @@ func UsersBasicCRUD(t *testing.T, cl *client.Client) func(*testing.T) {
 					Value("babs-new@jensen.org").
 					Primary(true).
 					MustBuild()).
+				PhoneNumbers(resource.NewPhoneNumberBuilder().
+					Value("tel:+91-111-1111-1111").
+					MustBuild()).
 				Do(context.TODO())
 			require.NoError(t, err, `ReplaceUser should succeed`)
 
@@ -379,6 +388,12 @@ func UsersBasicCRUD(t *testing.T, cl *client.Client) func(*testing.T) {
 						// am just expecting it be expanded in the future
 						require.Equal(t, `babs-new@jensen.org`, email.Value())
 						require.True(t, email.Primary())
+					}
+
+					phoneNumbers := u.PhoneNumbers()
+					require.Len(t, phoneNumbers, 1, `the number of phone numbers should match`)
+					for _, pn := range phoneNumbers {
+						require.Equal(t, `tel:+91-111-1111-1111`, pn.Value())
 					}
 				})
 			}

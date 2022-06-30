@@ -4,7 +4,9 @@ import (
 	"context"
 	"embed"
 	"encoding/json"
+	"fmt"
 	"io"
+	"net/http"
 	"net/http/httptest"
 	"os"
 	"strconv"
@@ -32,14 +34,46 @@ func init() {
 	}
 }
 
+type testClient struct {
+	httpcl *http.Client
+	token  string
+}
+
+func (c *testClient) Do(r *http.Request) (*http.Response, error) {
+	r.Header.Add(`Authorization`, fmt.Sprintf(`Bearer %s`, c.token))
+	return c.httpcl.Do(r)
+}
+
 func RunConformanceTests(t *testing.T, name string, backend interface{}) {
 	t.Run(name, func(t *testing.T) {
 		hh, err := server.NewServer(backend)
 		require.NoError(t, err, `server.NewServer should succeed`)
 
+		tok := "123456"
+		ohh := hh
+		hh = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			hdr := r.Header.Get(`Authorization`)
+			if hdr == "" {
+				w.WriteHeader(http.StatusForbidden)
+				return
+			}
+
+			got := strings.TrimPrefix(hdr, "Bearer ")
+			if got != tok {
+				w.WriteHeader(http.StatusForbidden)
+				return
+			}
+
+			ohh.ServeHTTP(w, r)
+		})
 		srv := httptest.NewServer(hh)
 
-		cl := client.New(srv.URL, client.WithClient(srv.Client()), client.WithTrace(TraceWriter))
+		httpcl := &testClient{
+			httpcl: srv.Client(),
+			token:  tok,
+		}
+
+		cl := client.New(srv.URL, client.WithClient(httpcl), client.WithTrace(TraceWriter))
 
 		t.Run("Prepare Fixtures", PrepareFixtures(t, cl))
 		t.Run("Users", func(t *testing.T) {

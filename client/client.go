@@ -8,11 +8,15 @@ import (
 	"strings"
 )
 
+type HTTPClient interface {
+	Do(*http.Request) (*http.Response, error)
+}
+
 // Client represents an object that acts on behalf of the user to
 // interact with the SCIM server
 type Client struct {
 	baseURL string
-	httpcl  *http.Client
+	httpcl  HTTPClient
 	trace   io.Writer
 }
 
@@ -22,13 +26,13 @@ type Client struct {
 // If you need to perform authentication, create an HTTP client that
 // handles the authentication, and pass it as an option
 func New(baseURL string, options ...NewOption) *Client {
-	httpcl := http.DefaultClient
+	var httpcl HTTPClient = http.DefaultClient
 	trace := io.Discard
 	//nolint:forcetypeassert
 	for _, option := range options {
 		switch option.Ident() {
 		case identClient{}:
-			httpcl = option.Value().(*http.Client)
+			httpcl = option.Value().(HTTPClient)
 		case identTrace{}:
 			trace = option.Value().(io.Writer)
 		}

@@ -11,7 +11,7 @@ interfaces:
 options:
   - ident: Client
     interface: NewOption
-    argument_type: '*http.Client'
+    argument_type: 'HTTPClient'
     comment: |
       WithClient specifies the http.Client instance to use.
   - ident: Trace

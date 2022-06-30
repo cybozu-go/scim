@@ -4,7 +4,6 @@ package client
 
 import (
 	"io"
-	"net/http"
 
 	"github.com/lestrrat-go/option"
 )
@@ -48,7 +47,7 @@ func (identTrace) String() string {
 }
 
 // WithClient specifies the http.Client instance to use.
-func WithClient(v *http.Client) NewOption {
+func WithClient(v HTTPClient) NewOption {
 	return &newOption{option.New(identClient{}, v)}
 }
 

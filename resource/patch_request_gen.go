@@ -9,88 +9,68 @@ import (
 )
 
 const (
-	GroupMemberRefKey   = "$ref"
-	GroupMemberTypeKey  = "type"
-	GroupMemberValueKey = "value"
+	PatchRequestOperationsKey = "operations"
+	PatchRequestSchemasKey    = "schemas"
 )
 
-type GroupMember struct {
-	ref           *string
-	typ           *string
-	value         *string
+const PatchRequestSchemaURI = "urn:ietf:params:scim:schemas:core:2.0:PatchOp"
+
+func init() {
+	RegisterExtension(PatchRequestSchemaURI, PatchRequest{})
+}
+
+type PatchRequest struct {
+	operations    []*PatchOperation
+	schemas       schemas
 	privateParams map[string]interface{}
 	mu            sync.RWMutex
 }
 
-type GroupMemberValidator interface {
-	Validate(*GroupMember) error
+type PatchRequestValidator interface {
+	Validate(*PatchRequest) error
 }
 
-type GroupMemberValidateFunc func(v *GroupMember) error
+type PatchRequestValidateFunc func(v *PatchRequest) error
 
-func (f GroupMemberValidateFunc) Validate(v *GroupMember) error {
+func (f PatchRequestValidateFunc) Validate(v *PatchRequest) error {
 	return f(v)
 }
 
-var DefaultGroupMemberValidator GroupMemberValidator = GroupMemberValidateFunc(func(v *GroupMember) error {
+var DefaultPatchRequestValidator PatchRequestValidator = PatchRequestValidateFunc(func(v *PatchRequest) error {
 	return nil
 })
 
-func (v *GroupMember) HasRef() bool {
+func (v *PatchRequest) HasOperations() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return v.ref != nil
+	return v.operations != nil
 }
 
-func (v *GroupMember) Ref() string {
+func (v *PatchRequest) Operations() []*PatchOperation {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	if v.ref == nil {
-		return ""
+	return v.operations
+}
+
+func (v *PatchRequest) HasSchemas() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return true
+}
+
+func (v *PatchRequest) Schemas() []string {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.schemas.List()
+}
+
+func (v *PatchRequest) makePairs() []pair {
+	pairs := make([]pair, 0, 2)
+	if v.operations != nil {
+		pairs = append(pairs, pair{Key: "operations", Value: v.operations})
 	}
-	return *(v.ref)
-}
-
-func (v *GroupMember) HasType() bool {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	return v.typ != nil
-}
-
-func (v *GroupMember) Type() string {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	if v.typ == nil {
-		return ""
-	}
-	return *(v.typ)
-}
-
-func (v *GroupMember) HasValue() bool {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	return v.value != nil
-}
-
-func (v *GroupMember) Value() string {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	if v.value == nil {
-		return ""
-	}
-	return *(v.value)
-}
-
-func (v *GroupMember) makePairs() []pair {
-	pairs := make([]pair, 0, 3)
-	if v.ref != nil {
-		pairs = append(pairs, pair{Key: "$ref", Value: *(v.ref)})
-	}
-	if v.typ != nil {
-		pairs = append(pairs, pair{Key: "type", Value: *(v.typ)})
-	}
-	if v.value != nil {
-		pairs = append(pairs, pair{Key: "value", Value: *(v.value)})
+	if v.schemas != nil {
+		pairs = append(pairs, pair{Key: "schemas", Value: v.schemas})
 	}
 	for k, v := range v.privateParams {
 		pairs = append(pairs, pair{Key: k, Value: v})
@@ -101,7 +81,7 @@ func (v *GroupMember) makePairs() []pair {
 	return pairs
 }
 
-func (v *GroupMember) MarshalJSON() ([]byte, error) {
+func (v *PatchRequest) MarshalJSON() ([]byte, error) {
 	pairs := v.makePairs()
 
 	var buf bytes.Buffer
@@ -120,7 +100,7 @@ func (v *GroupMember) MarshalJSON() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func (v *GroupMember) Get(name string, options ...GetOption) (interface{}, bool) {
+func (v *PatchRequest) Get(name string, options ...GetOption) (interface{}, bool) {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 
@@ -133,21 +113,16 @@ func (v *GroupMember) Get(name string, options ...GetOption) (interface{}, bool)
 		}
 	}
 	switch name {
-	case GroupMemberRefKey:
-		if v.ref == nil {
+	case PatchRequestOperationsKey:
+		if v.operations == nil {
 			return nil, false
 		}
-		return *(v.ref), true
-	case GroupMemberTypeKey:
-		if v.typ == nil {
+		return v.operations, true
+	case PatchRequestSchemasKey:
+		if v.schemas == nil {
 			return nil, false
 		}
-		return *(v.typ), true
-	case GroupMemberValueKey:
-		if v.value == nil {
-			return nil, false
-		}
-		return *(v.value), true
+		return v.schemas, true
 	default:
 		pp := v.privateParams
 		if pp == nil {
@@ -171,33 +146,25 @@ func (v *GroupMember) Get(name string, options ...GetOption) (interface{}, bool)
 	}
 }
 
-func (v *GroupMember) Set(name string, value interface{}) error {
+func (v *PatchRequest) Set(name string, value interface{}) error {
 	v.mu.Lock()
 	defer v.mu.Unlock()
 	switch name {
-	case GroupMemberRefKey:
-		var tmp string
-		tmp, ok := value.(string)
+	case PatchRequestOperationsKey:
+		var tmp []*PatchOperation
+		tmp, ok := value.([]*PatchOperation)
 		if !ok {
-			return fmt.Errorf(`expected string for field "$ref", but got %T`, value)
+			return fmt.Errorf(`expected []*PatchOperation for field "operations", but got %T`, value)
 		}
-		v.ref = &tmp
+		v.operations = tmp
 		return nil
-	case GroupMemberTypeKey:
-		var tmp string
-		tmp, ok := value.(string)
+	case PatchRequestSchemasKey:
+		var tmp schemas
+		tmp, ok := value.(schemas)
 		if !ok {
-			return fmt.Errorf(`expected string for field "type", but got %T`, value)
+			return fmt.Errorf(`expected schemas for field "schemas", but got %T`, value)
 		}
-		v.typ = &tmp
-		return nil
-	case GroupMemberValueKey:
-		var tmp string
-		tmp, ok := value.(string)
-		if !ok {
-			return fmt.Errorf(`expected string for field "value", but got %T`, value)
-		}
-		v.value = &tmp
+		v.schemas = tmp
 		return nil
 	default:
 		pp := v.privateParams
@@ -210,20 +177,18 @@ func (v *GroupMember) Set(name string, value interface{}) error {
 	}
 }
 
-func (v *GroupMember) Clone() *GroupMember {
+func (v *PatchRequest) Clone() *PatchRequest {
 	v.mu.Lock()
 	defer v.mu.Unlock()
-	return &GroupMember{
-		ref:   v.ref,
-		typ:   v.typ,
-		value: v.value,
+	return &PatchRequest{
+		operations: v.operations,
+		schemas:    v.schemas,
 	}
 }
 
-func (v *GroupMember) UnmarshalJSON(data []byte) error {
-	v.ref = nil
-	v.typ = nil
-	v.value = nil
+func (v *PatchRequest) UnmarshalJSON(data []byte) error {
+	v.operations = nil
+	v.schemas = nil
 	v.privateParams = nil
 	dec := json.NewDecoder(bytes.NewReader(data))
 	{ // first token
@@ -253,24 +218,18 @@ LOOP:
 			}
 		case string:
 			switch tok {
-			case GroupMemberRefKey:
-				var x string
+			case PatchRequestOperationsKey:
+				var x []*PatchOperation
 				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "$ref": %w`, err)
+					return fmt.Errorf(`failed to decode value for key "operations": %w`, err)
 				}
-				v.ref = &x
-			case GroupMemberTypeKey:
-				var x string
+				v.operations = x
+			case PatchRequestSchemasKey:
+				var x schemas
 				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "type": %w`, err)
+					return fmt.Errorf(`failed to decode value for key "schemas": %w`, err)
 				}
-				v.typ = &x
-			case GroupMemberValueKey:
-				var x string
-				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "value": %w`, err)
-				}
-				v.value = &x
+				v.schemas = x
 			default:
 				var x interface{}
 				if rx, ok := registry.Get(tok); ok {
@@ -296,83 +255,87 @@ LOOP:
 	return nil
 }
 
-func (v *GroupMember) AsMap(dst map[string]interface{}) error {
+func (v *PatchRequest) AsMap(dst map[string]interface{}) error {
 	for _, pair := range v.makePairs() {
 		dst[pair.Key] = pair.Value
 	}
 	return nil
 }
 
-type GroupMemberBuilder struct {
+type PatchRequestBuilder struct {
 	once      sync.Once
 	mu        sync.Mutex
 	err       error
-	validator GroupMemberValidator
-	object    *GroupMember
+	validator PatchRequestValidator
+	object    *PatchRequest
 }
 
-func (b *Builder) GroupMember() *GroupMemberBuilder {
-	return NewGroupMemberBuilder()
+func (b *Builder) PatchRequest() *PatchRequestBuilder {
+	return NewPatchRequestBuilder()
 }
 
-func NewGroupMemberBuilder() *GroupMemberBuilder {
-	var b GroupMemberBuilder
+func NewPatchRequestBuilder() *PatchRequestBuilder {
+	var b PatchRequestBuilder
 	b.init()
 	return &b
 }
 
-func (b *GroupMemberBuilder) From(in *GroupMember) *GroupMemberBuilder {
+func (b *PatchRequestBuilder) From(in *PatchRequest) *PatchRequestBuilder {
 	b.once.Do(b.init)
 	b.object = in.Clone()
 	return b
 }
 
-func (b *GroupMemberBuilder) init() {
+func (b *PatchRequestBuilder) init() {
 	b.err = nil
 	b.validator = nil
-	b.object = &GroupMember{}
+	b.object = &PatchRequest{}
+
+	b.object.schemas = make(schemas)
+	b.object.schemas.Add(PatchRequestSchemaURI)
 }
 
-func (b *GroupMemberBuilder) Ref(v string) *GroupMemberBuilder {
+func (b *PatchRequestBuilder) Operations(v ...*PatchOperation) *PatchRequestBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.once.Do(b.init)
 	if b.err != nil {
 		return b
 	}
-	if err := b.object.Set("$ref", v); err != nil {
+	if err := b.object.Set("operations", v); err != nil {
 		b.err = err
 	}
 	return b
 }
 
-func (b *GroupMemberBuilder) Type(v string) *GroupMemberBuilder {
+func (b *PatchRequestBuilder) Schemas(v ...string) *PatchRequestBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.once.Do(b.init)
 	if b.err != nil {
 		return b
 	}
-	if err := b.object.Set("type", v); err != nil {
-		b.err = err
+	for _, schema := range v {
+		b.object.schemas.Add(schema)
 	}
 	return b
 }
 
-func (b *GroupMemberBuilder) Value(v string) *GroupMemberBuilder {
+func (b *PatchRequestBuilder) Extension(uri string, value interface{}) *PatchRequestBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.once.Do(b.init)
 	if b.err != nil {
 		return b
 	}
-	if err := b.object.Set("value", v); err != nil {
+	b.object.schemas.Add(uri)
+	if err := b.object.Set(uri, value); err != nil {
 		b.err = err
 	}
 	return b
 }
 
-func (b *GroupMemberBuilder) Validator(v GroupMemberValidator) *GroupMemberBuilder {
+func (b *PatchRequestBuilder) Validator(v PatchRequestValidator) *PatchRequestBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.once.Do(b.init)
@@ -383,7 +346,7 @@ func (b *GroupMemberBuilder) Validator(v GroupMemberValidator) *GroupMemberBuild
 	return b
 }
 
-func (b *GroupMemberBuilder) Build() (*GroupMember, error) {
+func (b *PatchRequestBuilder) Build() (*PatchRequest, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	object := b.object
@@ -394,10 +357,10 @@ func (b *GroupMemberBuilder) Build() (*GroupMember, error) {
 		return nil, err
 	}
 	if object == nil {
-		return nil, fmt.Errorf("resource.GroupMemberBuilder: object was not initialized")
+		return nil, fmt.Errorf("resource.PatchRequestBuilder: object was not initialized")
 	}
 	if validator == nil {
-		validator = DefaultGroupMemberValidator
+		validator = DefaultPatchRequestValidator
 	}
 	if err := validator.Validate(object); err != nil {
 		return nil, err
@@ -405,7 +368,7 @@ func (b *GroupMemberBuilder) Build() (*GroupMember, error) {
 	return object, nil
 }
 
-func (b *GroupMemberBuilder) MustBuild() *GroupMember {
+func (b *PatchRequestBuilder) MustBuild() *PatchRequest {
 	object, err := b.Build()
 	if err != nil {
 		panic(err)

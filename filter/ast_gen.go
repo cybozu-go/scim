@@ -185,25 +185,32 @@ func (e *logExpr) RHS() Expr {
 type ValuePath interface {
 	Expr
 	ParentAttr() Expr
+	SubAttr() Expr
 	SubExpr() Expr
 }
 
 type valuePath struct {
 	parentAttr Expr
+	subAttr    Expr
 	subExpr    Expr
 }
 
 func (*valuePath) expression() {}
 
-func NewValuePath(parentAttr Expr, subExpr Expr) ValuePath {
+func NewValuePath(parentAttr Expr, subAttr Expr, subExpr Expr) ValuePath {
 	return &valuePath{
 		parentAttr: parentAttr,
+		subAttr:    subAttr,
 		subExpr:    subExpr,
 	}
 }
 
 func (e *valuePath) ParentAttr() Expr {
 	return e.parentAttr
+}
+
+func (e *valuePath) SubAttr() Expr {
+	return e.subAttr
 }
 
 func (e *valuePath) SubExpr() Expr {

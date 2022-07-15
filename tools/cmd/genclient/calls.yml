@@ -83,9 +83,25 @@ services:
       fields:
         - name: id
           required: true
-      #    - name: ModifyUserCall
-      #      http_method: http.MethodPatch
-      #      builder: resource.UserBuilder
+      allowedMutability:
+        - readWrite
+        - writeOnly
+    - name: PatchUserCall
+      description: |
+        Patch allows the user to patch parts of the user object
+      method_name: Patch
+      http_method: http.MethodPatch
+      resource: PatchRequest
+      response_type: resource.User
+      path: /Users
+      makeURLTemplate: |
+        func (call {{ .ObjectName }}) makeURL() string {
+          return call.client.baseURL + "{{ .Path }}/" + call.id
+        }
+      jsonPayload: true
+      fields:
+        - name: id
+          required: true
       allowedMutability:
         - readWrite
         - writeOnly
@@ -155,6 +171,25 @@ services:
       #    - name: ModifyGroupCall
       #      http_method: http.MethodPatch
       #      builder: resource.GroupBuilder
+    - name: PatchGroupCall
+      description: |
+        Patch allows the user to patch parts of the group object
+      method_name: Patch
+      http_method: http.MethodPatch
+      resource: PatchRequest
+      response_type: resource.Group
+      path: /Groups
+      makeURLTemplate: |
+        func (call {{ .ObjectName }}) makeURL() string {
+          return call.client.baseURL + "{{ .Path }}/" + call.id
+        }
+      jsonPayload: true
+      fields:
+        - name: id
+          required: true
+      allowedMutability:
+        - readWrite
+        - writeOnly
     - name: DeleteGroupCall
       method_name: Delete
       http_method: http.MethodDelete

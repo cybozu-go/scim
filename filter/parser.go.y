@@ -47,7 +47,7 @@ type token struct {
 %type<expr> attrName
 %type<expr> attrValue
 
-%token<tok> tIDENT tTRUE tFALSE tNULL tVALUE tNUMBER tPR tEQ tNE tCO tSW tEW tGT tGE tLT tLE tAND tOR tNOT tLPAREN tRPAREN tLBOXP tRBOXP tSP
+%token<tok> tIDENT tTRUE tFALSE tNULL tVALUE tNUMBER tPR tEQ tNE tCO tSW tEW tGT tGE tLT tLE tAND tOR tNOT tLPAREN tRPAREN tLBOXP tRBOXP tSP tDOT
 
 %left  tAND
 %left  tOR
@@ -121,10 +121,22 @@ expr //TODO: gt,ge,lt,le operators should take string and boolean
         {
                 $$ = NewParenExpr($1.lit.(string), $3)
         }
-        | attrName tLBOXP expr tRBOXP
+        | attrName tLBOXP expr tRBOXP tDOT attrName
         {
-                $$ = NewValuePath($1, $3)
+                $$ = NewValuePath($1, $6, $3)
         }
+        | attrName tLBOXP expr tRBOXP 
+        {
+                $$ = NewValuePath($1, nil, $3)
+        }
+	| attrName tDOT attrName
+	{
+		$$ = NewValuePath($1, $3, nil)
+	}
+	| attrName
+	{
+		$$ = NewValuePath($1, nil, nil)
+	}
 
 attrName
         : tIDENT 

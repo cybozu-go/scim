@@ -53,6 +53,7 @@ var keywords = map[string]int{
 	GreaterThanOrEqualToOp: tGE,
 	LessThanOp:             tLT,
 	LessThanOrEqualToOp:    tLE,
+	".":                    tDOT,
 	"(":                    tLPAREN,
 	")":                    tRPAREN,
 	"[":                    tLBOXP,
@@ -129,6 +130,10 @@ func (s *scanner) Scan() (tok int, lit interface{}, pos position, err error) {
 	case ch == ']':
 		tok = tRBOXP
 		lit = "]"
+		s.next()
+	case ch == '.':
+		tok = tDOT
+		lit = "."
 		s.next()
 	case ch == -1:
 		tok = tEOF

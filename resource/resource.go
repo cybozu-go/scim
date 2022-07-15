@@ -132,3 +132,12 @@ const (
 	ErrInvalidVers   ErrorType = `invalidVers`
 	ErrSensitive     ErrorType = `sensitive`
 )
+
+type PatchOperationType string
+
+const (
+	PatchInvalid PatchOperationType = ``
+	PatchAdd     PatchOperationType = `add`
+	PatchRemove  PatchOperationType = `remove`
+	PatchReplace PatchOperationType = `replace`
+)

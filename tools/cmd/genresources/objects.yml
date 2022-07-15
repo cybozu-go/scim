@@ -22,7 +22,6 @@ objects:
       - name: version
   - name: User
     schema: "urn:ietf:params:scim:schemas:core:2.0:User"
-    ent_conversion_helper: userResourceFromEntHelper
     top_level: true
     fields:
       - name: userName
@@ -206,7 +205,9 @@ objects:
       - name: value
       - name: ref
         json: '$ref'
-      - name: display
+      - name: typ
+        json: type
+        exported_name: Type
   - name: GenericSupport
     skipCommonFields: true
     fields:
@@ -394,3 +395,19 @@ objects:
       - name: region
       - name: postalCode
       - name: country
+  - name: PatchRequest
+    schema: "urn:ietf:params:scim:schemas:core:2.0:PatchOp"
+    skipCommonFields: true
+    top_level: true
+    fields:
+      - name: Operations
+        type: '[]*PatchOperation'
+  - name: PatchOperation
+    fields:
+      - name: op
+        type: PatchOperationType
+      - name: path
+      - name: value
+        type: json.RawMessage
+        skip_builder: true
+

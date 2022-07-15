@@ -625,6 +625,7 @@ func TestParse(t *testing.T) {
 			Filter: `foo[ham eq "spam"]`,
 			Expr: filter.NewValuePath(
 				filter.NewIdentifierExpr(`foo`),
+				nil,
 				filter.NewCompareExpr(
 					filter.NewIdentifierExpr(`ham`),
 					filter.EqualOp,
@@ -661,6 +662,7 @@ func TestParse(t *testing.T) {
 				filter.NotOp,
 				filter.NewValuePath(
 					filter.NewIdentifierExpr(`foo`),
+					nil,
 					filter.NewCompareExpr(
 						filter.NewIdentifierExpr(`ham`),
 						filter.EqualOp,
@@ -715,6 +717,18 @@ func TestParse(t *testing.T) {
 					filter.NewIdentifierExpr(`baz`),
 					filter.EqualOp,
 					filter.NewAttrValueExpr(`qux`),
+				),
+			),
+		},
+		{
+			Filter: `members[value eq "2819c223-7f76-453a-919d-413861904646"].displayName`,
+			Expr: filter.NewValuePath(
+				filter.NewIdentifierExpr(`members`),
+				filter.NewIdentifierExpr(`displayName`),
+				filter.NewCompareExpr(
+					filter.NewIdentifierExpr(`value`),
+					filter.EqualOp,
+					filter.NewAttrValueExpr(`2819c223-7f76-453a-919d-413861904646`),
 				),
 			),
 		},

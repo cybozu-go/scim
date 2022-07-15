@@ -42,6 +42,7 @@ const tRPAREN = 57366
 const tLBOXP = 57367
 const tRBOXP = 57368
 const tSP = 57369
+const tDOT = 57370
 
 var yyToknames = [...]string{
 	"$end",
@@ -71,6 +72,7 @@ var yyToknames = [...]string{
 	"tLBOXP",
 	"tRBOXP",
 	"tSP",
+	"tDOT",
 }
 
 var yyStatenames = [...]string{}
@@ -139,54 +141,55 @@ var yyExca = [...]int8{
 
 const yyPrivate = 57344
 
-const yyLast = 50
+const yyLast = 56
 
 var yyAct = [...]int8{
-	9, 10, 11, 12, 13, 14, 15, 16, 17, 18,
-	21, 7, 8, 7, 8, 19, 6, 41, 7, 8,
-	7, 8, 42, 2, 39, 8, 33, 32, 20, 31,
-	24, 22, 23, 3, 5, 4, 26, 27, 28, 29,
-	25, 1, 30, 38, 0, 40, 34, 35, 36, 37,
+	3, 9, 10, 11, 12, 13, 14, 15, 16, 17,
+	18, 45, 7, 8, 6, 2, 19, 22, 43, 20,
+	21, 40, 8, 23, 24, 7, 8, 7, 8, 44,
+	34, 41, 5, 4, 33, 39, 25, 32, 42, 7,
+	8, 27, 28, 29, 30, 26, 46, 6, 31, 1,
+	0, 0, 35, 36, 37, 38,
 }
 
 var yyPact = [...]int16{
-	12, -1000, -7, -10, 12, -13, -1000, 12, 12, -1000,
-	31, 31, 21, 19, 18, 31, 31, 31, 31, 12,
-	0, 12, 4, -1000, -1000, -1000, -1000, -1000, -1000, -1000,
-	-1000, -1000, -1000, -1000, -1000, -1000, -1000, -1000, -9, -1000,
-	-2, -1000, -1000,
+	10, -1000, 19, -9, 10, -6, -1000, 10, 10, -1000,
+	36, 36, 29, 26, 22, 36, 36, 36, 36, 10,
+	43, 7, 10, 1, -1000, -1000, -1000, -1000, -1000, -1000,
+	-1000, -1000, -1000, -1000, -1000, -1000, -1000, -1000, -1000, -8,
+	-1000, -1000, 5, -17, -1000, 43, -1000,
 }
 
 var yyPgo = [...]int8{
-	0, 41, 23, 33, 30,
+	0, 49, 15, 0, 36,
 }
 
 var yyR1 = [...]int8{
 	0, 1, 2, 2, 2, 2, 2, 2, 2, 2,
-	2, 2, 2, 2, 2, 2, 2, 3, 4, 4,
-	4, 4, 4,
+	2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+	3, 4, 4, 4, 4, 4,
 }
 
 var yyR2 = [...]int8{
 	0, 1, 2, 3, 3, 3, 3, 3, 3, 3,
-	3, 3, 3, 3, 3, 4, 4, 1, 1, 1,
-	1, 1, 1,
+	3, 3, 3, 3, 3, 4, 6, 4, 3, 1,
+	1, 1, 1, 1, 1, 1,
 }
 
 var yyChk = [...]int16{
 	-1000, -1, -2, -3, 23, 22, 4, 20, 21, 10,
 	11, 12, 13, 14, 15, 16, 17, 18, 19, 25,
-	-2, 23, -2, -2, -4, 9, 5, 6, 7, 8,
-	-4, 8, 8, 8, -4, -4, -4, -4, -2, 24,
-	-2, 26, 24,
+	28, -2, 23, -2, -2, -4, 9, 5, 6, 7,
+	8, -4, 8, 8, 8, -4, -4, -4, -4, -2,
+	-3, 24, -2, 26, 24, 28, -3,
 }
 
 var yyDef = [...]int8{
-	0, -2, 1, 0, 0, 0, 17, 0, 0, 2,
+	0, -2, 1, 19, 0, 0, 20, 0, 0, 2,
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 12, 13, 3, 18, 19, 20, 21, 22,
-	4, 5, 6, 7, 8, 9, 10, 11, 0, 14,
-	0, 16, 15,
+	0, 0, 0, 12, 13, 3, 21, 22, 23, 24,
+	25, 4, 5, 6, 7, 8, 9, 10, 11, 0,
+	18, 14, 0, 17, 15, 0, 16,
 }
 
 var yyTok1 = [...]int8{
@@ -196,7 +199,7 @@ var yyTok1 = [...]int8{
 var yyTok2 = [...]int8{
 	2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
 	12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
-	22, 23, 24, 25, 26, 27,
+	22, 23, 24, 25, 26, 27, 28,
 }
 
 var yyTok3 = [...]int8{
@@ -617,36 +620,51 @@ yydefault:
 			yyVAL.expr = NewParenExpr(yyDollar[1].tok.lit.(string), yyDollar[3].expr)
 		}
 	case 16:
-		yyDollar = yyS[yypt-4 : yypt+1]
+		yyDollar = yyS[yypt-6 : yypt+1]
 		{
-			yyVAL.expr = NewValuePath(yyDollar[1].expr, yyDollar[3].expr)
+			yyVAL.expr = NewValuePath(yyDollar[1].expr, yyDollar[6].expr, yyDollar[3].expr)
 		}
 	case 17:
-		yyDollar = yyS[yypt-1 : yypt+1]
+		yyDollar = yyS[yypt-4 : yypt+1]
 		{
-			yyVAL.expr = NewIdentifierExpr(yyDollar[1].tok.lit.(string))
+			yyVAL.expr = NewValuePath(yyDollar[1].expr, nil, yyDollar[3].expr)
 		}
 	case 18:
-		yyDollar = yyS[yypt-1 : yypt+1]
+		yyDollar = yyS[yypt-3 : yypt+1]
 		{
-			yyVAL.expr = NewNumberExpr(yyDollar[1].tok.lit.(int))
+			yyVAL.expr = NewValuePath(yyDollar[1].expr, yyDollar[3].expr, nil)
 		}
 	case 19:
 		yyDollar = yyS[yypt-1 : yypt+1]
 		{
-			yyVAL.expr = NewBoolExpr(true)
+			yyVAL.expr = NewValuePath(yyDollar[1].expr, nil, nil)
 		}
 	case 20:
 		yyDollar = yyS[yypt-1 : yypt+1]
 		{
-			yyVAL.expr = NewBoolExpr(false)
+			yyVAL.expr = NewIdentifierExpr(yyDollar[1].tok.lit.(string))
 		}
 	case 21:
 		yyDollar = yyS[yypt-1 : yypt+1]
 		{
-			yyVAL.expr = NewIdentifierExpr(yyDollar[1].tok.lit.(string))
+			yyVAL.expr = NewNumberExpr(yyDollar[1].tok.lit.(int))
 		}
 	case 22:
+		yyDollar = yyS[yypt-1 : yypt+1]
+		{
+			yyVAL.expr = NewBoolExpr(true)
+		}
+	case 23:
+		yyDollar = yyS[yypt-1 : yypt+1]
+		{
+			yyVAL.expr = NewBoolExpr(false)
+		}
+	case 24:
+		yyDollar = yyS[yypt-1 : yypt+1]
+		{
+			yyVAL.expr = NewIdentifierExpr(yyDollar[1].tok.lit.(string))
+		}
+	case 25:
 		yyDollar = yyS[yypt-1 : yypt+1]
 		{
 			yyVAL.expr = NewAttrValueExpr(yyDollar[1].tok.lit.(string))

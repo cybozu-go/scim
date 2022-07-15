@@ -38,11 +38,13 @@ objects:
       - name: Operator
       - name: RHS
         type: Expr
-  - name: ValuePath # valuePath = attrPath "[" valFilter "]"
+  - name: ValuePath # valuePath = attrPath "[" valFilter "]" ( "." subAttr )?
     fields:
       - name: ParentAttr
         type: Expr
       - name: SubExpr
+        type: Expr
+      - name: SubAttr
         type: Expr
   - name: NumberExpr
     fields:

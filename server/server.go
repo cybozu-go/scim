@@ -32,6 +32,10 @@ func NewServer(backend interface{}) (http.Handler, error) {
 		b.RetrieveGroup(RetrieveGroupEndpoint(v))
 	}
 
+	if v, ok := backend.(PatchGroupBackend); ok {
+		b.PatchGroup(PatchGroupEndpoint(v))
+	}
+
 	if v, ok := backend.(CreateUserBackend); ok {
 		b.CreateUser(CreateUserEndpoint(v))
 	}
@@ -46,6 +50,10 @@ func NewServer(backend interface{}) (http.Handler, error) {
 
 	if v, ok := backend.(RetrieveUserBackend); ok {
 		b.RetrieveUser(RetrieveUserEndpoint(v))
+	}
+
+	if v, ok := backend.(PatchUserBackend); ok {
+		b.PatchUser(PatchUserEndpoint(v))
 	}
 
 	if v, ok := backend.(SearchGroupBackend); ok {
@@ -192,6 +200,11 @@ func (b *Builder) RetrieveGroup(hh http.Handler) *Builder {
 	return b
 }
 
+func (b *Builder) PatchGroup(hh http.Handler) *Builder {
+	b.Handler(http.MethodPatch, `/Groups/{id}`, hh)
+	return b
+}
+
 func (b *Builder) CreateUser(hh http.Handler) *Builder {
 	b.Handler(http.MethodPost, `/Users`, hh)
 	return b
@@ -209,6 +222,11 @@ func (b *Builder) ReplaceUser(hh http.Handler) *Builder {
 
 func (b *Builder) RetrieveUser(hh http.Handler) *Builder {
 	b.Handler(http.MethodGet, `/Users/{id}`, hh)
+	return b
+}
+
+func (b *Builder) PatchUser(hh http.Handler) *Builder {
+	b.Handler(http.MethodPatch, `/Users/{id}`, hh)
 	return b
 }
 

@@ -518,6 +518,7 @@ func (call *PatchGroupCall) Do(ctx context.Context) (*resource.Group, error) {
 	defer res.Body.Close()
 
 	if res.StatusCode == http.StatusNoContent {
+		//nolint:nilnil
 		return nil, nil
 	}
 

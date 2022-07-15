@@ -705,6 +705,7 @@ func (call *PatchUserCall) Do(ctx context.Context) (*resource.User, error) {
 	defer res.Body.Close()
 
 	if res.StatusCode == http.StatusNoContent {
+		//nolint:nilnil
 		return nil, nil
 	}
 

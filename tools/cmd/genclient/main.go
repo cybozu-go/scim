@@ -478,6 +478,7 @@ func generateCall(o *codegen.Output, svc Service, call *codegen.Object, resource
 	// This is fugly, but for special cases we don't parse the result
 	if strings.HasPrefix(call.Name(true), "Patch") {
 		o.LL(`if res.StatusCode == http.StatusNoContent {`)
+		o.L(`//nolint:nilnil`)
 		o.L(`return %snil`, errPrefix) // we end up retrieving nil, nil
 		o.L(`}`)
 	}

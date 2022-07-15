@@ -524,7 +524,7 @@ func GroupsBasicCRUD(t *testing.T, cl *client.Client) func(*testing.T) {
 						MustBuild(),
 				).
 				Do(ctx)
-			require.NoError(t, err, `cl.Group().Patch() (add) should suceed`)
+			require.NoError(t, err, `cl.Group().Patch() (add) should succeed`)
 			require.Len(t, g.Members(), len(createdGroup.Members())+1)
 			g2, err := cl.Group().Patch(createdGroup.ID()).
 				Operations(
@@ -534,7 +534,7 @@ func GroupsBasicCRUD(t *testing.T, cl *client.Client) func(*testing.T) {
 						MustBuild(),
 				).
 				Do(ctx)
-			require.NoError(t, err, `cl.Group().Patch() (remove) should suceed`)
+			require.NoError(t, err, `cl.Group().Patch() (remove) should succeed`)
 			require.Len(t, g2.Members(), len(createdGroup.Members()))
 		})
 		t.Run("Replace group", func(t *testing.T) {

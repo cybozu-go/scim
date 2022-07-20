@@ -129,12 +129,12 @@ func (call *GetGroupCall) Do(ctx context.Context) (*resource.Group, error) {
 	}
 
 	res, err := call.client.httpcl.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf(`failed to send request to %q: %w`, u, err)
+	}
 	if trace != nil {
 		buf, _ := httputil.DumpResponse(res, true)
 		fmt.Fprintf(trace, "%s\n", buf)
-	}
-	if err != nil {
-		return nil, fmt.Errorf(`failed to send request to %q: %w`, u, err)
 	}
 	defer res.Body.Close()
 
@@ -257,12 +257,12 @@ func (call *CreateGroupCall) Do(ctx context.Context) (*resource.Group, error) {
 	}
 
 	res, err := call.client.httpcl.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf(`failed to send request to %q: %w`, u, err)
+	}
 	if trace != nil {
 		buf, _ := httputil.DumpResponse(res, true)
 		fmt.Fprintf(trace, "%s\n", buf)
-	}
-	if err != nil {
-		return nil, fmt.Errorf(`failed to send request to %q: %w`, u, err)
 	}
 	defer res.Body.Close()
 
@@ -387,14 +387,140 @@ func (call *ReplaceGroupCall) Do(ctx context.Context) (*resource.Group, error) {
 	}
 
 	res, err := call.client.httpcl.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf(`failed to send request to %q: %w`, u, err)
+	}
 	if trace != nil {
 		buf, _ := httputil.DumpResponse(res, true)
 		fmt.Fprintf(trace, "%s\n", buf)
 	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(`expected call response %d, got (%d)`, http.StatusOK, res.StatusCode)
+	}
+
+	var respayload resource.Group
+	if err := json.NewDecoder(res.Body).Decode(&respayload); err != nil {
+		return nil, fmt.Errorf(`failed to decode call response: %w`, err)
+	}
+
+	return &respayload, nil
+}
+
+type PatchGroupCall struct {
+	builder *resource.PatchRequestBuilder
+	object  *resource.PatchRequest
+	err     error
+	client  *Client
+	trace   io.Writer
+	id      string
+}
+
+func (call *PatchGroupCall) payload() (*resource.PatchRequest, error) {
+	if object := call.object; object != nil {
+		return object, nil
+	}
+	return call.builder.Build()
+}
+
+func (call *PatchGroupCall) FromJSON(data []byte) *PatchGroupCall {
+	if call.err != nil {
+		return call
+	}
+	var in resource.PatchRequest
+	if err := json.Unmarshal(data, &in); err != nil {
+		call.err = fmt.Errorf("failed to decode data: %w", err)
+		return call
+	}
+	call.object = &in
+	return call
+}
+
+// Patch allows the user to patch parts of the group object
+func (svc *GroupService) Patch(id string) *PatchGroupCall {
+	return &PatchGroupCall{
+		builder: resource.NewPatchRequestBuilder(),
+		client:  svc.client,
+		id:      id,
+	}
+}
+
+func (call *PatchGroupCall) Operations(v ...*resource.PatchOperation) *PatchGroupCall {
+	call.builder.Operations(v...)
+	return call
+}
+
+// Extension allows users to register an extension using the fully qualified URI
+func (call *PatchGroupCall) Extension(uri string, value interface{}) *PatchGroupCall {
+	call.builder.Extension(uri, value)
+	return call
+}
+
+func (call *PatchGroupCall) Validator(v resource.PatchRequestValidator) *PatchGroupCall {
+	call.builder.Validator(v)
+	return call
+}
+
+func (call *PatchGroupCall) Trace(w io.Writer) *PatchGroupCall {
+	call.trace = w
+	return call
+}
+
+func (call PatchGroupCall) makeURL() string {
+	return call.client.baseURL + "/Groups/" + call.id
+}
+
+func (call *PatchGroupCall) Do(ctx context.Context) (*resource.Group, error) {
+	if err := call.err; err != nil {
+		return nil, fmt.Errorf("failed to build request: %w", err)
+	}
+	payload, err := call.payload()
+	if err != nil {
+		return nil, fmt.Errorf(`failed to generate request payload for PatchGroupCall: %w`, err)
+	}
+
+	trace := call.trace
+	if trace == nil {
+		trace = call.client.trace
+	}
+	u := call.makeURL()
+	if trace != nil {
+		fmt.Fprintf(trace, "trace: client sending call request to %q\n", u)
+	}
+
+	var body bytes.Buffer
+	if err := json.NewEncoder(&body).Encode(payload); err != nil {
+		return nil, fmt.Errorf(`failed to encode call request: %w`, err)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPatch, u, &body)
+	if err != nil {
+		return nil, fmt.Errorf(`failed to create new HTTP request: %w`, err)
+	}
+
+	req.Header.Set(`Content-Type`, `application/scim+json`)
+	req.Header.Set(`Accept`, `application/scim+json`)
+
+	if trace != nil {
+		buf, _ := httputil.DumpRequestOut(req, true)
+		fmt.Fprintf(trace, "%s\n", buf)
+	}
+
+	res, err := call.client.httpcl.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf(`failed to send request to %q: %w`, u, err)
 	}
+	if trace != nil {
+		buf, _ := httputil.DumpResponse(res, true)
+		fmt.Fprintf(trace, "%s\n", buf)
+	}
 	defer res.Body.Close()
+
+	if res.StatusCode == http.StatusNoContent {
+		//nolint:nilnil
+		return nil, nil
+	}
 
 	if res.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf(`expected call response %d, got (%d)`, http.StatusOK, res.StatusCode)
@@ -528,12 +654,12 @@ func (call *DeleteGroupCall) Do(ctx context.Context) error {
 	}
 
 	res, err := call.client.httpcl.Do(req)
+	if err != nil {
+		return fmt.Errorf(`failed to send request to %q: %w`, u, err)
+	}
 	if trace != nil {
 		buf, _ := httputil.DumpResponse(res, true)
 		fmt.Fprintf(trace, "%s\n", buf)
-	}
-	if err != nil {
-		return fmt.Errorf(`failed to send request to %q: %w`, u, err)
 	}
 	defer res.Body.Close()
 
@@ -671,12 +797,12 @@ func (call *SearchGroupCall) Do(ctx context.Context) (*resource.ListResponse, er
 	}
 
 	res, err := call.client.httpcl.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf(`failed to send request to %q: %w`, u, err)
+	}
 	if trace != nil {
 		buf, _ := httputil.DumpResponse(res, true)
 		fmt.Fprintf(trace, "%s\n", buf)
-	}
-	if err != nil {
-		return nil, fmt.Errorf(`failed to send request to %q: %w`, u, err)
 	}
 	defer res.Body.Close()
 

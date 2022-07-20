@@ -466,14 +466,22 @@ func generateCall(o *codegen.Output, svc Service, call *codegen.Object, resource
 	o.L(`}`)
 
 	o.LL(`res, err := call.client.httpcl.Do(req)`)
+	o.L(`if err != nil {`)
+	o.L("return %sfmt.Errorf(`failed to send request to %%q: %%w`, u, err)", errPrefix)
+	o.L(`}`)
 	o.L(`if trace != nil {`)
 	o.L(`buf, _ := httputil.DumpResponse(res, true)`)
 	o.L(`fmt.Fprintf(trace, "%%s\n", buf)`)
 	o.L(`}`)
-	o.L(`if err != nil {`)
-	o.L("return %sfmt.Errorf(`failed to send request to %%q: %%w`, u, err)", errPrefix)
-	o.L(`}`)
 	o.L(`defer res.Body.Close()`)
+
+	// This is fugly, but for special cases we don't parse the result
+	if strings.HasPrefix(call.Name(true), "Patch") {
+		o.LL(`if res.StatusCode == http.StatusNoContent {`)
+		o.L(`//nolint:nilnil`)
+		o.L(`return %snil`, errPrefix) // we end up retrieving nil, nil
+		o.L(`}`)
+	}
 
 	successStatus := call.String(`successStatus`)
 	if successStatus == "" {

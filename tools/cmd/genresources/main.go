@@ -47,6 +47,7 @@ func packageName(s string) string {
 }
 
 func _main() error {
+	codegen.RegisterZeroVal(`PatchOperationType`, `PatchInvalid`)
 	codegen.RegisterZeroVal(`AuthenticationSchemeType`, `InvalidAuthenticationScheme`)
 	codegen.RegisterZeroVal(`Mutability`, `MutReadOnly`)
 	codegen.RegisterZeroVal(`Returned`, `ReturnedAlways`)
@@ -444,6 +445,9 @@ func generateObject(object *codegen.Object) error {
 	o.L(`}`)
 
 	for _, field := range object.Fields() {
+		if field.Bool(`skip_builder`) {
+			continue
+		}
 		// If the argument is a slice, the parameter type should be varg
 		if field.Name(false) == `schemas` {
 			o.LL(`func (b *%[1]sBuilder) %[2]s(v ...string) *%[1]sBuilder {`, object.Name(true), field.Name(true))

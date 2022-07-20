@@ -67,12 +67,12 @@ func (call *GetResourceTypesCall) Do(ctx context.Context) (*[]resource.ResourceT
 	}
 
 	res, err := call.client.httpcl.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf(`failed to send request to %q: %w`, u, err)
+	}
 	if trace != nil {
 		buf, _ := httputil.DumpResponse(res, true)
 		fmt.Fprintf(trace, "%s\n", buf)
-	}
-	if err != nil {
-		return nil, fmt.Errorf(`failed to send request to %q: %w`, u, err)
 	}
 	defer res.Body.Close()
 
@@ -134,12 +134,12 @@ func (call *GetServiceProviderConfigCall) Do(ctx context.Context) (**resource.Se
 	}
 
 	res, err := call.client.httpcl.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf(`failed to send request to %q: %w`, u, err)
+	}
 	if trace != nil {
 		buf, _ := httputil.DumpResponse(res, true)
 		fmt.Fprintf(trace, "%s\n", buf)
-	}
-	if err != nil {
-		return nil, fmt.Errorf(`failed to send request to %q: %w`, u, err)
 	}
 	defer res.Body.Close()
 
@@ -201,12 +201,12 @@ func (call *GetSchemas) Do(ctx context.Context) (**resource.ListResponse, error)
 	}
 
 	res, err := call.client.httpcl.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf(`failed to send request to %q: %w`, u, err)
+	}
 	if trace != nil {
 		buf, _ := httputil.DumpResponse(res, true)
 		fmt.Fprintf(trace, "%s\n", buf)
-	}
-	if err != nil {
-		return nil, fmt.Errorf(`failed to send request to %q: %w`, u, err)
 	}
 	defer res.Body.Close()
 
@@ -270,12 +270,12 @@ func (call *GetSchema) Do(ctx context.Context) (**resource.Schema, error) {
 	}
 
 	res, err := call.client.httpcl.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf(`failed to send request to %q: %w`, u, err)
+	}
 	if trace != nil {
 		buf, _ := httputil.DumpResponse(res, true)
 		fmt.Fprintf(trace, "%s\n", buf)
-	}
-	if err != nil {
-		return nil, fmt.Errorf(`failed to send request to %q: %w`, u, err)
 	}
 	defer res.Body.Close()
 

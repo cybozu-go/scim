@@ -374,6 +374,53 @@ func UsersBasicCRUD(t *testing.T, cl *client.Client) func(*testing.T) {
 			require.NotNil(t, u.Meta(), `meta should be non-nil`)
 			require.Equal(t, etag, u.Meta().Version(), `versions should match`)
 		})
+		t.Run("Patch user", func(t *testing.T) {
+			t.Run("add", func(t *testing.T) {
+				user, err := cl.User().Patch(createdUser.ID()).
+					Operations(
+						resource.NewPatchOperationBuilder().
+							Op(resource.PatchAdd).
+							Path(`title`).
+							Value(`patched title`).
+							MustBuild(),
+					).
+					Do(context.TODO())
+				require.NoError(t, err, `patch should succeed`)
+				require.Equal(t, `patched title`, user.Title())
+			})
+			t.Run("add complex", func(t *testing.T) {
+				for i := 0; i < 2; i++ {
+					user, err := cl.User().Patch(createdUser.ID()).
+						Operations(
+							resource.NewPatchOperationBuilder().
+								Op(resource.PatchAdd).
+								Path(`roles`).
+								Value(
+									resource.NewRoleBuilder().
+										Value("Director of Finance").
+										MustBuild(),
+								).
+								MustBuild(),
+						).
+						Do(context.TODO())
+					require.NoError(t, err, `patch should succeed`)
+					require.Len(t, user.Roles(), len(createdUser.Roles())+1) // third one shouldn't be added
+				}
+			})
+			t.Run("remove", func(t *testing.T) {
+				user, err := cl.User().Patch(createdUser.ID()).
+					Operations(
+						resource.NewPatchOperationBuilder().
+							Op(resource.PatchRemove).
+							Path(`title`).
+							MustBuild(),
+					).
+					Do(context.TODO())
+				require.NoError(t, err, `patch should succeed`)
+				require.NotNil(t, user, `user should be sent back`)
+				require.Equal(t, ``, user.Title())
+			})
+		})
 		t.Run("Replace user", func(t *testing.T) {
 			u, err := cl.User().Replace(createdUser.ID()).
 				Emails(resource.NewEmailBuilder().
@@ -447,31 +494,58 @@ func UsersBasicCRUD(t *testing.T, cl *client.Client) func(*testing.T) {
 
 func GroupsBasicCRUD(t *testing.T, cl *client.Client) func(*testing.T) {
 	return func(t *testing.T) {
+		ctx := context.TODO()
+
 		// Create a single Group, apply Fetch, Replace, Delete
-		createdGroup, err := stockGroupCreateCall(cl).
-			Do(context.TODO())
+		createdUser, err := stockUserCreateCall(cl).Do(ctx)
+		require.NoError(t, err, `Create should succeed`)
+		createdGroup, err := stockGroupCreateCall(cl).Do(ctx)
 		require.NoError(t, err, `Create should succeed`)
 
 		etag := createdGroup.Meta().Version()
 
 		t.Run("Fetch group", func(t *testing.T) {
-			g, err := cl.Group().Get(createdGroup.ID()).
-				Do(context.TODO())
+			g, err := cl.Group().Get(createdGroup.ID()).Do(ctx)
 			require.NoError(t, err, `Get should succeed`)
 			require.Len(t, g.Members(), len(createdGroup.Members()), `there should be %d members`, len(createdGroup.Members()))
 			require.NotNil(t, g.Meta(), `meta should be non-nil`)
 			require.Equal(t, etag, g.Meta().Version(), `versions should match`)
 		})
+		t.Run("Patch group", func(t *testing.T) {
+			g, err := cl.Group().Patch(createdGroup.ID()).
+				Operations(
+					resource.NewPatchOperationBuilder().
+						Op(resource.PatchAdd).
+						Path(`members`).
+						Value(resource.NewGroupMemberBuilder().
+							FromResource(createdUser).
+							MustBuild(),
+						).
+						MustBuild(),
+				).
+				Do(ctx)
+			require.NoError(t, err, `cl.Group().Patch() (add) should succeed`)
+			require.Len(t, g.Members(), len(createdGroup.Members())+1)
+			g2, err := cl.Group().Patch(createdGroup.ID()).
+				Operations(
+					resource.NewPatchOperationBuilder().
+						Op(resource.PatchRemove).
+						Path(fmt.Sprintf(`members[value eq %q]`, createdUser.ID())).
+						MustBuild(),
+				).
+				Do(ctx)
+			require.NoError(t, err, `cl.Group().Patch() (remove) should succeed`)
+			require.Len(t, g2.Members(), len(createdGroup.Members()))
+		})
 		t.Run("Replace group", func(t *testing.T) {
 			u, err := cl.Group().Replace(createdGroup.ID()).
 				DisplayName(createdGroup.DisplayName()).
 				Members((createdGroup.Members())[1:]...).
-				Do(context.TODO())
+				Do(ctx)
 			require.NoError(t, err, `Replace should succeed`)
 
 			// we need to validate the result from PUT and GET
-			fetched, err := cl.Group().Get(createdGroup.ID()).
-				Do(context.TODO())
+			fetched, err := cl.Group().Get(createdGroup.ID()).Do(ctx)
 			require.NoError(t, err, `Get should succeed`)
 
 			testcases := []struct {

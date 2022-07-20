@@ -1,47 +1,26 @@
-package filter
-
-type ExprStatement interface {
-	Expr
-	Expr() Expr
-}
-
-type exprStatement struct {
-	expr Expr
-}
-
-func (*exprStatement) expression() {}
-
-func NewExprStatement(expr Expr) ExprStatement {
-	return &exprStatement{
-		expr: expr,
-	}
-}
-
-func (e *exprStatement) Expr() Expr {
-	return e.expr
-}
+package expr
 
 type PresenceExpr interface {
-	Expr
-	Attr() Expr
+	Interface
+	Attr() Interface
 	Operator() string
 }
 
 type presenceExpr struct {
-	attr     Expr
+	attr     Interface
 	operator string
 }
 
 func (*presenceExpr) expression() {}
 
-func NewPresenceExpr(attr Expr, operator string) PresenceExpr {
+func NewPresenceExpr(attr Interface, operator string) PresenceExpr {
 	return &presenceExpr{
 		attr:     attr,
 		operator: operator,
 	}
 }
 
-func (e *presenceExpr) Attr() Expr {
+func (e *presenceExpr) Attr() Interface {
 	return e.attr
 }
 
@@ -50,21 +29,21 @@ func (e *presenceExpr) Operator() string {
 }
 
 type CompareExpr interface {
-	Expr
-	LHE() Expr
+	Interface
+	LHE() Interface
 	Operator() string
-	RHE() Expr
+	RHE() Interface
 }
 
 type compareExpr struct {
-	lhe      Expr
+	lhe      Interface
 	operator string
-	rhe      Expr
+	rhe      Interface
 }
 
 func (*compareExpr) expression() {}
 
-func NewCompareExpr(lhe Expr, operator string, rhe Expr) CompareExpr {
+func NewCompareExpr(lhe Interface, operator string, rhe Interface) CompareExpr {
 	return &compareExpr{
 		lhe:      lhe,
 		operator: operator,
@@ -72,7 +51,7 @@ func NewCompareExpr(lhe Expr, operator string, rhe Expr) CompareExpr {
 	}
 }
 
-func (e *compareExpr) LHE() Expr {
+func (e *compareExpr) LHE() Interface {
 	return e.lhe
 }
 
@@ -80,26 +59,26 @@ func (e *compareExpr) Operator() string {
 	return e.operator
 }
 
-func (e *compareExpr) RHE() Expr {
+func (e *compareExpr) RHE() Interface {
 	return e.rhe
 }
 
 type RegexExpr interface {
-	Expr
-	LHE() Expr
+	Interface
+	LHE() Interface
 	Operator() string
 	Value() interface{}
 }
 
 type regexExpr struct {
-	lhe      Expr
+	lhe      Interface
 	operator string
 	value    interface{}
 }
 
 func (*regexExpr) expression() {}
 
-func NewRegexExpr(lhe Expr, operator string, value interface{}) RegexExpr {
+func NewRegexExpr(lhe Interface, operator string, value interface{}) RegexExpr {
 	return &regexExpr{
 		lhe:      lhe,
 		operator: operator,
@@ -107,7 +86,7 @@ func NewRegexExpr(lhe Expr, operator string, value interface{}) RegexExpr {
 	}
 }
 
-func (e *regexExpr) LHE() Expr {
+func (e *regexExpr) LHE() Interface {
 	return e.lhe
 }
 
@@ -120,19 +99,19 @@ func (e *regexExpr) Value() interface{} {
 }
 
 type ParenExpr interface {
-	Expr
+	Interface
 	Operator() string
-	SubExpr() Expr
+	SubExpr() Interface
 }
 
 type parenExpr struct {
 	operator string
-	subExpr  Expr
+	subExpr  Interface
 }
 
 func (*parenExpr) expression() {}
 
-func NewParenExpr(operator string, subExpr Expr) ParenExpr {
+func NewParenExpr(operator string, subExpr Interface) ParenExpr {
 	return &parenExpr{
 		operator: operator,
 		subExpr:  subExpr,
@@ -143,26 +122,26 @@ func (e *parenExpr) Operator() string {
 	return e.operator
 }
 
-func (e *parenExpr) SubExpr() Expr {
+func (e *parenExpr) SubExpr() Interface {
 	return e.subExpr
 }
 
 type LogExpr interface {
-	Expr
-	LHE() Expr
+	Interface
+	LHE() Interface
 	Operator() string
-	RHS() Expr
+	RHS() Interface
 }
 
 type logExpr struct {
-	lhe      Expr
+	lhe      Interface
 	operator string
-	rhS      Expr
+	rhS      Interface
 }
 
 func (*logExpr) expression() {}
 
-func NewLogExpr(lhe Expr, operator string, rhS Expr) LogExpr {
+func NewLogExpr(lhe Interface, operator string, rhS Interface) LogExpr {
 	return &logExpr{
 		lhe:      lhe,
 		operator: operator,
@@ -170,7 +149,7 @@ func NewLogExpr(lhe Expr, operator string, rhS Expr) LogExpr {
 	}
 }
 
-func (e *logExpr) LHE() Expr {
+func (e *logExpr) LHE() Interface {
 	return e.lhe
 }
 
@@ -178,40 +157,47 @@ func (e *logExpr) Operator() string {
 	return e.operator
 }
 
-func (e *logExpr) RHS() Expr {
+func (e *logExpr) RHS() Interface {
 	return e.rhS
 }
 
 type ValuePath interface {
-	Expr
-	ParentAttr() Expr
-	SubExpr() Expr
+	Interface
+	ParentAttr() Interface
+	SubAttr() Interface
+	SubExpr() Interface
 }
 
 type valuePath struct {
-	parentAttr Expr
-	subExpr    Expr
+	parentAttr Interface
+	subAttr    Interface
+	subExpr    Interface
 }
 
 func (*valuePath) expression() {}
 
-func NewValuePath(parentAttr Expr, subExpr Expr) ValuePath {
+func NewValuePath(parentAttr Interface, subAttr Interface, subExpr Interface) ValuePath {
 	return &valuePath{
 		parentAttr: parentAttr,
+		subAttr:    subAttr,
 		subExpr:    subExpr,
 	}
 }
 
-func (e *valuePath) ParentAttr() Expr {
+func (e *valuePath) ParentAttr() Interface {
 	return e.parentAttr
 }
 
-func (e *valuePath) SubExpr() Expr {
+func (e *valuePath) SubAttr() Interface {
+	return e.subAttr
+}
+
+func (e *valuePath) SubExpr() Interface {
 	return e.subExpr
 }
 
 type NumberExpr interface {
-	Expr
+	Interface
 	Lit() int
 }
 
@@ -232,7 +218,7 @@ func (e *numberExpr) Lit() int {
 }
 
 type IdentifierExpr interface {
-	Expr
+	Interface
 	Lit() string
 }
 
@@ -253,7 +239,7 @@ func (e *identifierExpr) Lit() string {
 }
 
 type AttrValueExpr interface {
-	Expr
+	Interface
 	Lit() string
 }
 
@@ -274,7 +260,7 @@ func (e *attrValueExpr) Lit() string {
 }
 
 type BoolExpr interface {
-	Expr
+	Interface
 	Lit() bool
 }
 

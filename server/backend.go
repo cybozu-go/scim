@@ -29,6 +29,10 @@ type RetrieveGroupBackend interface {
 	RetrieveGroup(string, []string, []string) (*resource.Group, error)
 }
 
+type PatchGroupBackend interface {
+	PatchGroup(string, *resource.PatchRequest) (*resource.Group, error)
+}
+
 type CreateUserBackend interface {
 	CreateUser(*resource.User) (*resource.User, error)
 }
@@ -43,6 +47,10 @@ type ReplaceUserBackend interface {
 
 type RetrieveUserBackend interface {
 	RetrieveUser(string, []string, []string) (*resource.User, error)
+}
+
+type PatchUserBackend interface {
+	PatchUser(string, *resource.PatchRequest) (*resource.User, error)
 }
 
 type SearchBackend interface {
@@ -272,6 +280,92 @@ func RetrieveUserEndpoint(b RetrieveUserBackend) http.Handler {
 
 		w.WriteHeader(http.StatusOK)
 		_ = json.NewEncoder(w).Encode(user)
+	})
+}
+
+func PatchUserEndpoint(b PatchUserBackend) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		id := vars.Get(`id`)
+		if id == "" {
+			// TODO: log
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		defer r.Body.Close()
+		var preq resource.PatchRequest
+		if err := json.NewDecoder(r.Body).Decode(&preq); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprint(w, err.Error())
+			return
+		}
+
+		user, err := b.PatchUser(id, &preq)
+		if err != nil {
+			// TODO: distinguish between error and not found error
+			// TODO: log
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprint(w, err.Error())
+			return
+		}
+
+		if user == nil {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+
+		if meta := user.Meta(); meta != nil {
+			if v := meta.Version(); v != "" {
+				w.Header().Set(`ETag`, v)
+			}
+		}
+
+		w.WriteHeader(http.StatusOK)
+		_ = json.NewEncoder(w).Encode(user)
+	})
+}
+
+func PatchGroupEndpoint(b PatchGroupBackend) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		id := vars.Get(`id`)
+		if id == "" {
+			// TODO: log
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		defer r.Body.Close()
+		var preq resource.PatchRequest
+		if err := json.NewDecoder(r.Body).Decode(&preq); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprint(w, err.Error())
+			return
+		}
+
+		group, err := b.PatchGroup(id, &preq)
+		if err != nil {
+			// TODO: distinguish between error and not found error
+			// TODO: log
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprint(w, err.Error())
+			return
+		}
+
+		if group == nil {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+
+		if meta := group.Meta(); meta != nil {
+			if v := meta.Version(); v != "" {
+				w.Header().Set(`ETag`, v)
+			}
+		}
+
+		w.WriteHeader(http.StatusOK)
+		_ = json.NewEncoder(w).Encode(group)
 	})
 }
 

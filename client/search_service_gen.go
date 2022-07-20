@@ -143,12 +143,12 @@ func (call *SearchCall) Do(ctx context.Context) (*resource.ListResponse, error) 
 	}
 
 	res, err := call.client.httpcl.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf(`failed to send request to %q: %w`, u, err)
+	}
 	if trace != nil {
 		buf, _ := httputil.DumpResponse(res, true)
 		fmt.Fprintf(trace, "%s\n", buf)
-	}
-	if err != nil {
-		return nil, fmt.Errorf(`failed to send request to %q: %w`, u, err)
 	}
 	defer res.Body.Close()
 

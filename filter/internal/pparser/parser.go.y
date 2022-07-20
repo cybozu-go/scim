@@ -24,30 +24,36 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 %{
-package filter
+package pparser
 
-import "fmt"
+import (
+	"fmt"
 
-type token struct {
+	"github.com/cybozu-go/scim/filter/internal/expr"
+	"github.com/cybozu-go/scim/filter/internal/scanner"
+)
+
+type xtoken struct {
 	tok int
 	lit interface{}
-	pos position
+	pos expr.Position
 }
 
 %}
 
 %union{
-	filters Expr
-	expr	Expr
-	tok	token
+	filters expr.Interface
+	expr expr.Interface
+	tok	xtoken
 }
 
 %type<filters> filters
+%type<expr> valuePath
 %type<expr> expr
 %type<expr> attrName
 %type<expr> attrValue
 
-%token<tok> tIDENT tTRUE tFALSE tNULL tVALUE tNUMBER tPR tEQ tNE tCO tSW tEW tGT tGE tLT tLE tAND tOR tNOT tLPAREN tRPAREN tLBOXP tRBOXP tSP
+%token<tok> tIDENT tTRUE tFALSE tNULL tVALUE tNUMBER tPR tEQ tNE tCO tSW tEW tGT tGE tLT tLE tAND tOR tNOT tLPAREN tRPAREN tLBOXP tRBOXP tSP tDOT
 
 %left  tAND
 %left  tOR
@@ -56,7 +62,7 @@ type token struct {
 %%
 
 filters
-	: expr
+	: valuePath
 	{
 		$$ = $1
 		if l, ok := yylex.(*lexer); ok {
@@ -64,104 +70,119 @@ filters
 		}
 	}
 
+valuePath
+        : attrName tLBOXP expr tRBOXP tDOT attrName
+        {
+                $$ = expr.NewValuePath($1, $6, $3)
+        }
+        | attrName tLBOXP expr tRBOXP 
+        {
+                $$ = expr.NewValuePath($1, nil, $3)
+        }
+	| attrName tDOT attrName
+	{
+		$$ = expr.NewValuePath($1, $3, nil)
+	}
+	| attrName
+	{
+		$$ = expr.NewValuePath($1, nil, nil)
+	}
+
+
 expr //TODO: gt,ge,lt,le operators should take string and boolean
         : attrName tPR
         {
-                $$ = NewPresenceExpr($1, $2.lit.(string))
+                $$ = expr.NewPresenceExpr($1, $2.lit.(string))
         }
         | attrName tEQ attrValue
         {
-                $$ = NewCompareExpr($1, $2.lit.(string), $3)
+                $$ = expr.NewCompareExpr($1, $2.lit.(string), $3)
         }
         | attrName tNE attrValue
         {
-                $$ = NewCompareExpr($1, $2.lit.(string), $3)
+                $$ = expr.NewCompareExpr($1, $2.lit.(string), $3)
         }
         | attrName tCO tVALUE
         {
-                $$ = NewRegexExpr($1, $2.lit.(string), $3.lit)
+                $$ = expr.NewRegexExpr($1, $2.lit.(string), $3.lit)
         }
         | attrName tSW tVALUE
         {
-                $$ = NewRegexExpr($1, $2.lit.(string), $3.lit)
+                $$ = expr.NewRegexExpr($1, $2.lit.(string), $3.lit)
         }
         | attrName tEW tVALUE
         {
-                $$ = NewRegexExpr($1, $2.lit.(string), $3.lit)
+                $$ = expr.NewRegexExpr($1, $2.lit.(string), $3.lit)
         }
         | attrName tGT attrValue
         {
-                $$ = NewCompareExpr($1, $2.lit.(string), $3)
+                $$ = expr.NewCompareExpr($1, $2.lit.(string), $3)
         }
         | attrName tGE attrValue
         {
-                $$ = NewCompareExpr($1, $2.lit.(string), $3)
+                $$ = expr.NewCompareExpr($1, $2.lit.(string), $3)
         }
         | attrName tLT attrValue
         {
-                $$ = NewCompareExpr($1, $2.lit.(string), $3)
+                $$ = expr.NewCompareExpr($1, $2.lit.(string), $3)
         }
         | attrName tLE attrValue
         {
-                $$ = NewCompareExpr($1, $2.lit.(string), $3)
+                $$ = expr.NewCompareExpr($1, $2.lit.(string), $3)
         }
         | expr tAND expr
         {
-                $$ = NewLogExpr($1, $2.lit.(string), $3)
+                $$ = expr.NewLogExpr($1, $2.lit.(string), $3)
         }
         | expr tOR expr
         {
-                $$ = NewLogExpr($1, $2.lit.(string), $3)
+                $$ = expr.NewLogExpr($1, $2.lit.(string), $3)
         }
         | tLPAREN expr tRPAREN
         {
-                $$ = NewParenExpr("", $2)
+                $$ = expr.NewParenExpr("", $2)
         }
         | tNOT tLPAREN expr tRPAREN
         {
-                $$ = NewParenExpr($1.lit.(string), $3)
-        }
-        | attrName tLBOXP expr tRBOXP
-        {
-                $$ = NewValuePath($1, $3)
+                $$ = expr.NewParenExpr($1.lit.(string), $3)
         }
 
 attrName
         : tIDENT 
 	{
-		$$ = NewIdentifierExpr($1.lit.(string))
+		$$ = expr.NewIdentifierExpr($1.lit.(string))
         }
 
 attrValue
         : tNUMBER
 	{
-		$$ = NewNumberExpr($1.lit.(int))
+		$$ = expr.NewNumberExpr($1.lit.(int))
 	}
         | tTRUE
         {
-       		$$ = NewBoolExpr(true)
+       		$$ = expr.NewBoolExpr(true)
         }
         | tFALSE
         {
-       		$$ = NewBoolExpr(false)
+       		$$ = expr.NewBoolExpr(false)
         }
         | tNULL
         {
-       		$$ = NewIdentifierExpr($1.lit.(string))
+       		$$ = expr.NewIdentifierExpr($1.lit.(string))
         }        
         | tVALUE
 	{
-		$$ = NewAttrValueExpr($1.lit.(string))
+		$$ = expr.NewAttrValueExpr($1.lit.(string))
         }        
 
 %%
 
 type lexer struct {
-	s          *scanner
-	recentLit  interface{}
-	recentPos  position
-	expr       Expr
-	err        chan error
+	s         scanner.Scanner
+	recentLit interface{}
+	recentPos expr.Position
+	expr      expr.Interface
+	err       chan error
 }
 
 func (l *lexer) Lex(lval *yySymType) int {
@@ -173,7 +194,7 @@ func (l *lexer) Lex(lval *yySymType) int {
 	if tok == tEOF {
 		return 0
 	}
-	lval.tok = token{tok: tok, lit: lit, pos: pos}
+	lval.tok = xtoken{tok: tok, lit: lit, pos: pos}
 	l.recentLit = lit
 	l.recentPos = pos
 	return tok
@@ -200,10 +221,13 @@ func (l *lexer) emitError(err error) {
 	}
 }
 
-func parse(s *scanner) (Expr, error) {
+func Parse(src string) (expr.Interface, error) {
+	s := scanner.New(src, Dialect{})
 	l := lexer{s: s, err: make(chan error, 1)}
 	if yyParse(&l) != 0 {
 		return nil, <-l.err
 	}
 	return l.expr, nil
 }
+
+

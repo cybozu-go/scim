@@ -23,115 +23,104 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-package filter
+package scanner
 
 import (
 	"fmt"
 	"strconv"
 	"strings"
 	"unicode"
+
+	"github.com/cybozu-go/scim/filter/internal/expr"
+	"github.com/cybozu-go/scim/filter/internal/token"
 )
-
-const (
-	tEOF     = -1
-	tUNKNOWN = 0
-)
-
-var _ = tUNKNOWN // avoid unused error
-
-var keywords = map[string]int{
-	NotOp:                  tNOT,
-	AndOp:                  tAND,
-	OrOp:                   tOR,
-	PresenceOp:             tPR,
-	EqualOp:                tEQ,
-	NotEqualOp:             tNE,
-	ContainsOp:             tCO,
-	StartsWithOp:           tSW,
-	EndsWithOp:             tEW,
-	GreaterThanOp:          tGT,
-	GreaterThanOrEqualToOp: tGE,
-	LessThanOp:             tLT,
-	LessThanOrEqualToOp:    tLE,
-	"(":                    tLPAREN,
-	")":                    tRPAREN,
-	"[":                    tLBOXP,
-	"]":                    tRBOXP,
-	"true":                 tTRUE,
-	"false":                tFALSE,
-	"null":                 tNULL,
-}
 
 var caseInsensitiveKeywords map[string]struct{}
 
 func init() {
 	caseInsensitiveKeywords = make(map[string]struct{})
-	for _, k := range []string{NotOp, AndOp, OrOp, PresenceOp, EqualOp, NotEqualOp, ContainsOp, StartsWithOp, EndsWithOp, GreaterThanOp, GreaterThanOrEqualToOp, LessThanOp, LessThanOrEqualToOp} {
+	for _, k := range []string{token.NotOp, token.AndOp, token.OrOp, token.PresenceOp, token.EqualOp, token.NotEqualOp, token.ContainsOp, token.StartsWithOp, token.EndsWithOp, token.GreaterThanOp, token.GreaterThanOrEqualToOp, token.LessThanOp, token.LessThanOrEqualToOp} {
 		caseInsensitiveKeywords[strings.ToLower(k)] = struct{}{}
 	}
 }
 
-type position struct {
-	Line   int
-	Column int
+type Scanner interface {
+	Scan() (int, interface{}, expr.Position, error)
 }
 
 type scanner struct {
+	dialect  Dialect
 	src      []rune
 	offset   int
 	lineHead int
 	line     int
 }
 
-func newScanner(src string) *scanner {
-	return &scanner{src: []rune(src)}
+type Dialect interface {
+	// return token type for yacc parser
+	// return -1 if not found
+	TokenType(string) int
+
+	// return lower-cased version if case-insensitive
+	Normalize(string) string
+
+	// returns true if this is a keyword
+	IsKeyword(string) bool
+}
+
+func New(src string, d Dialect) Scanner {
+	return &scanner{
+		dialect: d,
+		src:     []rune(src),
+	}
 }
 
 //nolint:nonamedreturns
-func (s *scanner) Scan() (tok int, lit interface{}, pos position, err error) {
+func (s *scanner) Scan() (tok int, lit interface{}, pos expr.Position, err error) {
 	s.skipWhiteSpace()
 	pos = s.position()
 
 	switch ch := s.peek(); {
 	case unicode.IsLetter(ch) || ch == '"':
 		if ch == '"' {
-			tok, lit = tVALUE, s.scanAttrValue()
+			tok, lit = s.dialect.TokenType(token.Value), s.scanAttrValue()
 		} else {
 			ident := s.scanIdentifier()
-			// some operators need to be lower-cased
-			lcident := strings.ToLower(ident)
-			if _, ok := caseInsensitiveKeywords[lcident]; ok {
-				ident = lcident
-			}
-			lit = ident
-
-			if keyword, ok := keywords[ident]; ok {
-				tok = keyword
+			normalized := s.dialect.Normalize(ident)
+			if s.dialect.IsKeyword(normalized) {
+				tok = s.dialect.TokenType(normalized)
+				lit = normalized
 			} else {
-				tok = tIDENT
+				tok = s.dialect.TokenType(token.Ident)
+				lit = ident
 			}
 		}
 	case isDigit(ch):
 		i, _ := strconv.Atoi(s.scanNumber())
-		tok, lit = tNUMBER, i
+		tok = s.dialect.TokenType(token.Number)
+		lit = i
 	case ch == '(':
-		tok = tLPAREN
+		tok = s.dialect.TokenType(token.LParen)
 		lit = "("
 		s.next()
 	case ch == ')':
-		tok = tRPAREN
+		tok = s.dialect.TokenType(token.RParen)
 		lit = ")"
 		s.next()
 	case ch == '[':
-		tok = tLBOXP
+		tok = s.dialect.TokenType(token.LBracket)
 		lit = "["
 		s.next()
 	case ch == ']':
-		tok = tRBOXP
+		tok = s.dialect.TokenType(token.RBracket)
 		lit = "]"
 		s.next()
+	case ch == '.':
+		tok = s.dialect.TokenType(token.Dot)
+		lit = "."
+		s.next()
 	case ch == -1:
-		tok = tEOF
+		tok = s.dialect.TokenType(token.EOF)
 		s.next()
 	default:
 		err = fmt.Errorf(`scan error: line %d, column %d: %q`, pos.Line, pos.Column, ch)
@@ -172,8 +161,8 @@ func (s *scanner) reachEOF() bool {
 	return len(s.src) <= s.offset
 }
 
-func (s *scanner) position() position {
-	return position{Line: s.line + 1, Column: s.offset - s.lineHead + 1}
+func (s *scanner) position() expr.Position {
+	return expr.Position{Line: s.line + 1, Column: s.offset - s.lineHead + 1}
 }
 
 func (s *scanner) skipWhiteSpace() {

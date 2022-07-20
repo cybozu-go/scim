@@ -35,9 +35,10 @@ import (
 
 func TestParse(t *testing.T) {
 	testcases := []struct {
-		Filter string
-		Expr   filter.Expr
-		Error  bool
+		Filter  string
+		Expr    filter.Expr
+		Error   bool
+		Options []filter.ParseOption
 	}{
 		{
 			Filter: "foo bar baz",
@@ -625,6 +626,7 @@ func TestParse(t *testing.T) {
 			Filter: `foo[ham eq "spam"]`,
 			Expr: filter.NewValuePath(
 				filter.NewIdentifierExpr(`foo`),
+				nil,
 				filter.NewCompareExpr(
 					filter.NewIdentifierExpr(`ham`),
 					filter.EqualOp,
@@ -661,6 +663,7 @@ func TestParse(t *testing.T) {
 				filter.NotOp,
 				filter.NewValuePath(
 					filter.NewIdentifierExpr(`foo`),
+					nil,
 					filter.NewCompareExpr(
 						filter.NewIdentifierExpr(`ham`),
 						filter.EqualOp,
@@ -718,11 +721,26 @@ func TestParse(t *testing.T) {
 				),
 			),
 		},
+		{
+			Filter: `members[value eq "2819c223-7f76-453a-919d-413861904646"].displayName`,
+			Options: []filter.ParseOption{
+				filter.WithPatchExpression(true),
+			},
+			Expr: filter.NewValuePath(
+				filter.NewIdentifierExpr(`members`),
+				filter.NewIdentifierExpr(`displayName`),
+				filter.NewCompareExpr(
+					filter.NewIdentifierExpr(`value`),
+					filter.EqualOp,
+					filter.NewAttrValueExpr(`2819c223-7f76-453a-919d-413861904646`),
+				),
+			),
+		},
 	}
 	for _, tc := range testcases {
 		tc := tc
 		t.Run(tc.Filter, func(t *testing.T) {
-			expr, err := filter.Parse(tc.Filter)
+			expr, err := filter.Parse(tc.Filter, tc.Options...)
 			if tc.Error {
 				require.Error(t, err, `filter.Parse should fail`)
 			} else {

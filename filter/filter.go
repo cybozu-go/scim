@@ -21,7 +21,6 @@ type Expr = expr.Interface
 // allowing a single "valuePath" element to be present.
 func Parse(src string, options ...ParseOption) (Expr, error) {
 	parseFn := fparser.Parse
-	//nolint:forcetypeassert
 	for _, option := range options {
 		switch option.Ident() {
 		case identPatchExpression{}:

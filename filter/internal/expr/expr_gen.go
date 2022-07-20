@@ -1,26 +1,5 @@
 package expr
 
-type ExprStatement interface {
-	Interface
-	Expr() Interface
-}
-
-type exprStatement struct {
-	expr Interface
-}
-
-func (*exprStatement) expression() {}
-
-func NewExprStatement(expr Interface) ExprStatement {
-	return &exprStatement{
-		expr: expr,
-	}
-}
-
-func (e *exprStatement) Expr() Interface {
-	return e.expr
-}
-
 type PresenceExpr interface {
 	Interface
 	Attr() Interface

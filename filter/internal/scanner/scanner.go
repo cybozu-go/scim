@@ -68,7 +68,7 @@ type Dialect interface {
 	IsKeyword(string) bool
 }
 
-func New(src string, d Dialect) *scanner {
+func New(src string, d Dialect) Scanner {
 	return &scanner{
 		dialect: d,
 		src:     []rune(src),

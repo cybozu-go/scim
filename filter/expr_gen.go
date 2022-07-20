@@ -29,12 +29,6 @@ const (
 	Null                   = token.Null
 )
 
-type ExprStatement = expr.ExprStatement
-
-func NewExprStatement(e Expr) ExprStatement {
-	return expr.NewExprStatement(e)
-}
-
 type PresenceExpr = expr.PresenceExpr
 
 func NewPresenceExpr(attr Expr, operator string) PresenceExpr {

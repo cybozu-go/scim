@@ -5,7 +5,6 @@ import __yyfmt__ "fmt"
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/cybozu-go/scim/filter/internal/expr"
 	"github.com/cybozu-go/scim/filter/internal/scanner"
@@ -564,7 +563,6 @@ yydefault:
 	case 3:
 		yyDollar = yyS[yypt-4 : yypt+1]
 		{
-			log.Printf("attrName tLBOXP expr tRBOXP")
 			yyVAL.expr = expr.NewValuePath(yyDollar[1].expr, nil, yyDollar[3].expr)
 		}
 	case 4:
@@ -575,7 +573,6 @@ yydefault:
 	case 5:
 		yyDollar = yyS[yypt-1 : yypt+1]
 		{
-			log.Printf("HERE HERE attrName %q", yyDollar[1].expr)
 			yyVAL.expr = expr.NewValuePath(yyDollar[1].expr, nil, nil)
 		}
 	case 6:

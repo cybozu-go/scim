@@ -2,26 +2,26 @@ objects:
   - name: ExprStatement
     fields:
       - name: expr
-        type: Expr
+        type: Interface
   - name: PresenceExpr  # attrPath SP "pr"
     fields:
       - name: attr
-        type: Expr
+        type: Interface
       - name: operator
   - name: CompareExpr # attrPath SP compareOp SP compValue
     fields:
       - name: lhe
         exported_name: LHE
-        type: Expr
+        type: Interface
       - name: operator
       - name: rhe
         exported_name: RHE
-        type: Expr
+        type: Interface
   - name: RegexExpr
     fields:
       - name: lhe
         exported_name: LHE
-        type: Expr
+        type: Interface
       - name: Operator
       - name: Value
         type: interface{}
@@ -29,23 +29,23 @@ objects:
     fields:
       - name: Operator
       - name: SubExpr
-        type: Expr
+        type: Interface
   - name: LogExpr
     fields:
       - name: lhe
         exported_name: LHE
-        type: Expr
+        type: Interface
       - name: Operator
       - name: RHS
-        type: Expr
+        type: Interface
   - name: ValuePath # valuePath = attrPath "[" valFilter "]" ( "." subAttr )?
     fields:
       - name: ParentAttr
-        type: Expr
+        type: Interface
       - name: SubExpr
-        type: Expr
+        type: Interface
       - name: SubAttr
-        type: Expr
+        type: Interface
   - name: NumberExpr
     fields:
       - name: Lit

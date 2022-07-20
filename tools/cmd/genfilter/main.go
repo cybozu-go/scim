@@ -54,8 +54,12 @@ func _main() error {
 		object.Organize()
 	}
 
-	if err := generateAST(def.Objects); err != nil {
-		return fmt.Errorf(`failed to generate filter AST: %w`, err)
+	if err := generateExpr(def.Objects); err != nil {
+		return fmt.Errorf(`failed to generate filter expressions: %w`, err)
+	}
+
+	if err := generateAliases(def.Objects); err != nil {
+		return fmt.Errorf(`failed to generate filter aliases: %w`, err)
 	}
 
 	return nil
@@ -74,15 +78,15 @@ func IsIndirect(f codegen.Field) bool {
 	return strings.HasPrefix(s, `*`) || strings.HasPrefix(s, `[]`) || strings.HasSuffix(s, `List`)
 }
 
-func generateAST(objects []*codegen.Object) error {
+func generateExpr(objects []*codegen.Object) error {
 	var buf bytes.Buffer
 	o := codegen.NewOutput(&buf)
 
-	o.L(`package filter`)
+	o.L(`package expr`)
 
 	for _, object := range objects {
 		o.LL(`type %s interface {`, object.Name(true))
-		o.L(`Expr`)
+		o.L(`Interface`)
 		for _, field := range object.Fields() {
 			o.L(`%s() %s`, field.Name(true), field.Type())
 		}
@@ -117,7 +121,89 @@ func generateAST(objects []*codegen.Object) error {
 			o.L(`}`)
 		}
 	}
-	const fn = `ast_gen.go`
+	const fn = `internal/expr/expr_gen.go`
+	if err := o.WriteFile(fn, codegen.WithFormatCode(true)); err != nil {
+		if cfe, ok := err.(codegen.CodeFormatError); ok {
+			fmt.Fprint(os.Stderr, cfe.Source())
+		}
+		return fmt.Errorf(`failed to write to %s: %w`, fn, err)
+	}
+	return nil
+}
+
+func generateAliases(objects []*codegen.Object) error {
+	var buf bytes.Buffer
+	o := codegen.NewOutput(&buf)
+
+	o.L(`package filter`)
+
+	o.LL(`import (`)
+	o.L(`"github.com/cybozu-go/scim/filter/internal/expr"`)
+	o.L(`"github.com/cybozu-go/scim/filter/internal/token"`)
+	o.L(`)`)
+	tokens := []string{
+		`NotOp`,
+		`AndOp`,
+		`OrOp`,
+		`PresenceOp`,
+		`EqualOp`,
+		`NotEqualOp`,
+		`GreaterThanOp`,
+		`GreaterThanOrEqualToOp`,
+		`LessThanOp`,
+		`LessThanOrEqualToOp`,
+		`ContainsOp`,
+		`StartsWithOp`,
+		`EndsWithOp`,
+		`Dot`,
+		`LParen`,
+		`RParen`,
+		`LBracket`,
+		`RBracket`,
+		`True`,
+		`False`,
+		`Null`,
+	}
+
+	o.LL(`const (`)
+	for _, token := range tokens {
+		o.L(`%[1]s = token.%[1]s`, token)
+	}
+	o.L(`)`)
+
+	for _, object := range objects {
+		o.LL(`type %[1]s = expr.%[1]s`, object.Name(true))
+		o.LL(`func New%s(`, object.Name(true))
+		for i, field := range object.Fields() {
+			if i > 0 {
+				o.R(`,`)
+			}
+			arg := field.Name(false)
+			if arg == `expr` {
+				arg = `e`
+			}
+			typ := field.Type()
+			if typ == "Interface" {
+				typ = "Expr"
+			}
+			o.R(`%s %s`, arg, typ)
+		}
+		o.R(`) %s {`, object.Name(true))
+		o.L(`return expr.New%s(`, object.Name(true))
+		for i, field := range object.Fields() {
+			if i > 0 {
+				o.R(`,`)
+			}
+			arg := field.Name(false)
+			if arg == `expr` {
+				arg = `e`
+			}
+			o.R(`%s`, arg)
+		}
+		o.R(`)`)
+		o.L(`}`)
+	}
+	const fn = `expr_gen.go`
 	if err := o.WriteFile(fn, codegen.WithFormatCode(true)); err != nil {
 		if cfe, ok := err.(codegen.CodeFormatError); ok {
 			fmt.Fprint(os.Stderr, cfe.Source())

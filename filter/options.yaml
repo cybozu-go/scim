@@ -1,0 +1,14 @@
+package_name: filter
+output: filter/options_gen.go
+interfaces:
+  - name: ParseOption
+    comment: |
+      ParseOption describes an Option that can be passed to `Parse()`.
+options:
+  - ident: PatchExpression
+    interface: ParseOption
+    argument_type: bool
+    comment: |
+      WithPatchExpression specifies that the parser accept expressions
+      that can be used for PATCH `path` fields
+

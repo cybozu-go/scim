@@ -47,7 +47,7 @@ func ExampleClient_UserCreate() {
   //
 }
 ```
-source: [./examples/client_user_create_example_test.go](https://github.com/cybozy-go/scim/blob/main/./examples/client_user_create_example_test.go)
+source: [./examples/client_user_create_example_test.go](https://github.com/cybozu-go/scim/blob/main/./examples/client_user_create_example_test.go)
 <!-- END INCLUDE -->
 
 # TODO

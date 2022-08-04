@@ -137,7 +137,7 @@ func Example_ResourceExtension() {
   // {"id":"foo","schemas":["urn:ietf:params:scim:schemas:core:2.0:User","urn:ietf:params:scim:schemas:extension:enterprise:2.0:User"],"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User":{"costCenter":"foo","department":"foo","division":"foo","employeeNumber":"foo","organization":"foo"},"userName":"foo"}
 }
 ```
-source: [./examples/resource_extension_example_test.go](https://github.com/cybozy-go/scim/blob/main/./examples/resource_extension_example_test.go)
+source: [./examples/resource_extension_example_test.go](https://github.com/cybozu-go/scim/blob/main/./examples/resource_extension_example_test.go)
 <!-- END INCLUDE -->
 
 ## Client

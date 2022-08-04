@@ -30,6 +30,7 @@ objects:
         ent_unique: true
       - name: displayName
       - name: name
+        ent_name: names
         type: '*Names'
       - name: addresses
         type: '[]*Address'
@@ -207,6 +208,7 @@ objects:
         json: '$ref'
       - name: typ
         json: type
+        ent_name: type
         exported_name: Type
   - name: GenericSupport
     skipCommonFields: true

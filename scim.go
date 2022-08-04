@@ -5,3 +5,9 @@
 //go:generate go generate ./client
 
 package scim
+
+type ResourceNotFoundError struct{}
+
+func (ResourceNotFoundError) Error() string {
+	return "resource not found"
+}

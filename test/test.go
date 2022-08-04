@@ -3,6 +3,7 @@ package test
 import (
 	"context"
 	"embed"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -133,6 +134,18 @@ func PrepareFixtures(t *testing.T, cl *client.Client) func(t *testing.T) {
 }
 
 func stockUserCreateCall(cl *client.Client) *client.CreateUserCall {
+	f, err := datasrc.Open(`data/stick.png`)
+	if err != nil {
+		panic("could not open figure.png: " + err.Error())
+	}
+
+	stickFigure, err := io.ReadAll(f)
+	if err != nil {
+		panic("could not read figure.png: " + err.Error())
+	}
+
+	stickFigureHex := hex.EncodeToString(stickFigure)
+
 	return cl.User().Create().
 		UserName("bjensen").
 		ExternalID("bjensen").
@@ -151,7 +164,12 @@ func stockUserCreateCall(cl *client.Client) *client.CreateUserCall {
 			MustBuild()).
 		PhoneNumbers(resource.NewPhoneNumberBuilder().
 			Value("tel:+1-999-9999-9999").
-			MustBuild())
+			MustBuild()).
+		Photos(
+			resource.NewPhotoBuilder().
+				Value(`data:image/png;base64,` + stickFigureHex).
+				MustBuild(),
+		)
 }
 
 func stockGroupCreateCall(cl *client.Client) *client.CreateGroupCall {

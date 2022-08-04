@@ -3,12 +3,14 @@ package server
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"strings"
 
+	"github.com/cybozu-go/scim"
 	"github.com/cybozu-go/scim/resource"
 	"github.com/lestrrat-go/mux"
 )
@@ -265,6 +267,10 @@ func RetrieveUserEndpoint(b RetrieveUserBackend) http.Handler {
 		}
 		user, err := b.RetrieveUser(id, attrs, excluded)
 		if err != nil {
+			if errors.Is(err, scim.ResourceNotFoundError{}) {
+				w.WriteHeader(http.StatusNotFound)
+				return
+			}
 			// TODO: distinguish between error and not found error
 			// TODO: log
 			w.WriteHeader(http.StatusInternalServerError)

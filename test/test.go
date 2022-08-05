@@ -115,20 +115,53 @@ func PrepareFixtures(t *testing.T, cl *client.Client) func(t *testing.T) {
 			}
 		})
 		t.Run("Load Group fixtures", func(t *testing.T) {
+			var groups []*resource.Group
+
 			// Unfortunately we can't just automatically create Groups because it
 			// requires that we know the members' internal IDs
-			list, err := cl.User().Search().
-				Filter(`emails.value ew "zemeckis-crew.com"`).
-				Do(context.TODO())
-			require.NoError(t, err, `user search should succeed`)
-
-			createGroupCall := cl.Group().Create().
-				DisplayName(`Zemeckis Crew`)
-			for _, r := range list.Resources() {
-				createGroupCall.MemberFrom(r)
+			defs := []struct {
+				Name   string
+				Filter string
+			}{
+				{
+					Name:   `Zemeckis Crew`,
+					Filter: `emails.value ew "zemeckis-crew.com"`,
+				},
+				{
+					Name:   `Zemeckis Actors`,
+					Filter: `emails.value ew "zemeckis-actors.com"`,
+				},
 			}
-			_, err = createGroupCall.Do(context.TODO())
-			require.NoError(t, err, `group creation should succeed`)
+			for _, def := range defs {
+				def := def
+				t.Run(fmt.Sprintf("Create group %s", def.Name), func(t *testing.T) {
+					list, err := cl.User().Search().
+						Filter(def.Filter).
+						Do(context.TODO())
+					require.NoError(t, err, `user search should succeed`)
+
+					createGroupCall := cl.Group().Create().
+						DisplayName(def.Name)
+					for _, r := range list.Resources() {
+						createGroupCall.MemberFrom(r)
+					}
+					g, err := createGroupCall.Do(context.TODO())
+					require.NoError(t, err, `group creation should succeed`)
+					t.Logf(`Created group %q with %d members`, g.DisplayName(), len(list.Resources()))
+					groups = append(groups, g)
+				})
+			}
+
+			t.Run("Create group Everybody", func(t *testing.T) {
+				// Now create a group that contains everybody
+				createGroupCall := cl.Group().Create().
+					DisplayName("Everybody")
+				for _, g := range groups {
+					createGroupCall.MemberFrom(g)
+				}
+				_, err := createGroupCall.Do(context.TODO())
+				require.NoError(t, err, `group creation should succeed`)
+			})
 		})
 	}
 }
@@ -350,6 +383,42 @@ func UsersFetch(t *testing.T, cl *client.Client) func(*testing.T) {
 				require.Nil(t, u.Name(), `Name should be nil`)
 			})
 		})
+		t.Run("Fetch (search) user with indirect group memberships", func(t *testing.T) {
+			ctx := context.TODO()
+			res, err := cl.User().Search().
+				Filter(`displayName eq "Robert Zemeckis"`).
+				Do(context.TODO())
+			require.NoError(t, err, `cl.Search should succeed`)
+			require.Equal(t, 1, res.TotalResults(), `total results should be 1`)
+
+			for _, r := range res.Resources() {
+				u, ok := r.(*resource.User)
+				require.True(t, ok, `resources should be an instance of *resource.User`)
+				require.Len(t, u.Groups(), 2, `user should be a member of two groups`)
+
+				// we're not going to count the number of direct/indirect
+				// memberships, but we're just going to make sure that
+				// both exist in the list
+				var directs int
+				var indirects int
+				for _, gm := range u.Groups() {
+					g, err := cl.Group().Get(gm.Value()).Do(ctx)
+					require.NoError(t, err, `fetching group should succeed`)
+					t.Logf("user belongs to group %q (%s)", g.DisplayName(), gm.Type())
+					switch gm.Type() {
+					case `direct`:
+						directs++
+					case `indirect`:
+						indirects++
+					default:
+						require.Fail(t, `expected either "direct" or "indirect", got %q`, gm.Type())
+					}
+				}
+
+				require.True(t, directs > 0, `there should be more than 1 direct memberships`)
+				require.True(t, indirects > 0, `there should be more than 1 indirect memberships`)
+			}
+		})
 	}
 }
 
@@ -382,6 +451,10 @@ func UsersBasicCRUD(t *testing.T, cl *client.Client) func(*testing.T) {
 			Do(context.TODO())
 		require.NoError(t, err, `Create should succeed`)
 		require.Empty(t, createdUser.Password(), `user should not return password`)
+		require.True(t, len(createdUser.Photos()) > 0, `user should have some photos`)
+		for _, photo := range createdUser.Photos() {
+			require.Regexp(t, `^https://.+\.png$`, photo.Value(), `value should be a URL`)
+		}
 
 		etag := createdUser.Meta().Version()
 
@@ -689,7 +762,10 @@ func MixedSearch(t *testing.T, cl *client.Client) func(t *testing.T) {
 			Filter(`displayName co "Zemeckis"`).
 			Do(context.TODO())
 		require.NoError(t, err, `cl.Search should succeed`)
-		require.Equal(t, 2, res.TotalResults(), `total results should be 2`)
+
+		// user Robert Zemckis, groups Zemeckis crew and Zemeckis actors
+		const expectedCount = 3
+		require.Equal(t, expectedCount, res.TotalResults(), `total results should match`)
 
 		var groups int
 		var users int
@@ -707,7 +783,7 @@ func MixedSearch(t *testing.T, cl *client.Client) func(t *testing.T) {
 
 		require.Equal(t, 0, others, `there should be zero resources other than users/groups`)
 		require.Equal(t, 1, users, `there should 1 user`)
-		require.Equal(t, 1, groups, `there should 1 group`)
+		require.Equal(t, expectedCount-1, groups, `there should 1 group`)
 	}
 }
 

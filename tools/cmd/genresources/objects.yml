@@ -204,6 +204,7 @@ objects:
     skipCommonFields: true
     fields:
       - name: value
+      - name: display
       - name: ref
         json: '$ref'
       - name: typ

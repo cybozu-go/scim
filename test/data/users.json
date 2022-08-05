@@ -19,10 +19,24 @@
     ]
   },
   {
+    "userName": "eroth",
+    "displayName": "Eric Roth",
+    "emails": [
+      {
+        "value": "eroth@zemeckis-crew.com"
+      }
+    ],
+    "roles": [
+      {
+        "value": "screenwriter"
+      }
+    ]
+  },
+  {
     "userName": "fgump",
     "emails": [
       {
-        "value": "fgump@zemeckis-crew.com"
+        "value": "fgump@zemeckis-actors.com"
       }
     ],
     "name": {
@@ -39,7 +53,7 @@
     "userName": "jcurran",
     "emails": [
       {
-        "value": "jcurran@zemeckis-crew.com"
+        "value": "jcurran@zemeckis-actors.com"
       }
     ],
     "name": {
@@ -56,7 +70,7 @@
     "userName": "dtaylor",
     "emails": [
       {
-        "value": "dtaylor@zemeckis-crew.com"
+        "value": "dtaylor@zemeckis-actors.com"
       }
     ],
     "name": {
@@ -73,7 +87,7 @@
     "userName": "bubba",
     "emails": [
       {
-        "value": "bubba@zemeckis-crew.com"
+        "value": "bubba@zemeckis-actors.com"
       }
     ],
     "name": {

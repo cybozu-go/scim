@@ -9,12 +9,14 @@ import (
 )
 
 const (
-	GroupMemberRefKey   = "$ref"
-	GroupMemberTypeKey  = "type"
-	GroupMemberValueKey = "value"
+	GroupMemberDisplayKey = "display"
+	GroupMemberRefKey     = "$ref"
+	GroupMemberTypeKey    = "type"
+	GroupMemberValueKey   = "value"
 )
 
 type GroupMember struct {
+	display       *string
 	ref           *string
 	typ           *string
 	value         *string
@@ -35,6 +37,21 @@ func (f GroupMemberValidateFunc) Validate(v *GroupMember) error {
 var DefaultGroupMemberValidator GroupMemberValidator = GroupMemberValidateFunc(func(v *GroupMember) error {
 	return nil
 })
+
+func (v *GroupMember) HasDisplay() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.display != nil
+}
+
+func (v *GroupMember) Display() string {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	if v.display == nil {
+		return ""
+	}
+	return *(v.display)
+}
 
 func (v *GroupMember) HasRef() bool {
 	v.mu.RLock()
@@ -82,7 +99,10 @@ func (v *GroupMember) Value() string {
 }
 
 func (v *GroupMember) makePairs() []pair {
-	pairs := make([]pair, 0, 3)
+	pairs := make([]pair, 0, 4)
+	if v.display != nil {
+		pairs = append(pairs, pair{Key: "display", Value: *(v.display)})
+	}
 	if v.ref != nil {
 		pairs = append(pairs, pair{Key: "$ref", Value: *(v.ref)})
 	}
@@ -133,6 +153,11 @@ func (v *GroupMember) Get(name string, options ...GetOption) (interface{}, bool)
 		}
 	}
 	switch name {
+	case GroupMemberDisplayKey:
+		if v.display == nil {
+			return nil, false
+		}
+		return *(v.display), true
 	case GroupMemberRefKey:
 		if v.ref == nil {
 			return nil, false
@@ -175,6 +200,14 @@ func (v *GroupMember) Set(name string, value interface{}) error {
 	v.mu.Lock()
 	defer v.mu.Unlock()
 	switch name {
+	case GroupMemberDisplayKey:
+		var tmp string
+		tmp, ok := value.(string)
+		if !ok {
+			return fmt.Errorf(`expected string for field "display", but got %T`, value)
+		}
+		v.display = &tmp
+		return nil
 	case GroupMemberRefKey:
 		var tmp string
 		tmp, ok := value.(string)
@@ -214,13 +247,15 @@ func (v *GroupMember) Clone() *GroupMember {
 	v.mu.Lock()
 	defer v.mu.Unlock()
 	return &GroupMember{
-		ref:   v.ref,
-		typ:   v.typ,
-		value: v.value,
+		display: v.display,
+		ref:     v.ref,
+		typ:     v.typ,
+		value:   v.value,
 	}
 }
 
 func (v *GroupMember) UnmarshalJSON(data []byte) error {
+	v.display = nil
 	v.ref = nil
 	v.typ = nil
 	v.value = nil
@@ -253,6 +288,12 @@ LOOP:
 			}
 		case string:
 			switch tok {
+			case GroupMemberDisplayKey:
+				var x string
+				if err := dec.Decode(&x); err != nil {
+					return fmt.Errorf(`failed to decode value for key "display": %w`, err)
+				}
+				v.display = &x
 			case GroupMemberRefKey:
 				var x string
 				if err := dec.Decode(&x); err != nil {
@@ -331,6 +372,19 @@ func (b *GroupMemberBuilder) init() {
 	b.err = nil
 	b.validator = nil
 	b.object = &GroupMember{}
+}
+
+func (b *GroupMemberBuilder) Display(v string) *GroupMemberBuilder {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	b.once.Do(b.init)
+	if b.err != nil {
+		return b
+	}
+	if err := b.object.Set("display", v); err != nil {
+		b.err = err
+	}
+	return b
 }
 
 func (b *GroupMemberBuilder) Ref(v string) *GroupMemberBuilder {

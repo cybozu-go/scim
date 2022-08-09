@@ -9,6 +9,7 @@ import (
 	"time"
 )
 
+// JSON key names for Meta resource
 const (
 	MetaCreatedKey      = "created"
 	MetaLastModifiedKey = "lastModified"

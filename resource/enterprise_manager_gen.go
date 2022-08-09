@@ -8,6 +8,7 @@ import (
 	"sync"
 )
 
+// JSON key names for EnterpriseManager resource
 const (
 	EnterpriseManagerDisplayNameKey = "displayName"
 	EnterpriseManagerIDKey          = "id"

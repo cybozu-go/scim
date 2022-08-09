@@ -9,6 +9,7 @@ import (
 	"sync"
 )
 
+// JSON key names for PhoneNumber resource
 const (
 	PhoneNumberDisplayKey = "display"
 	PhoneNumberPrimaryKey = "primary"

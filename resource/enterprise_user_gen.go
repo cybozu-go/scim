@@ -8,6 +8,7 @@ import (
 	"sync"
 )
 
+// JSON key names for EnterpriseUser resource
 const (
 	EnterpriseUserCostCenterKey     = "costCenter"
 	EnterpriseUserDepartmentKey     = "department"

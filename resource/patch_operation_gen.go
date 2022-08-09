@@ -8,6 +8,7 @@ import (
 	"sync"
 )
 
+// JSON key names for PatchOperation resource
 const (
 	PatchOperationExternalIDKey = "externalId"
 	PatchOperationIDKey         = "id"

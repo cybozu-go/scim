@@ -8,6 +8,7 @@ import (
 	"sync"
 )
 
+// JSON key names for Group resource
 const (
 	GroupDisplayNameKey = "displayName"
 	GroupExternalIDKey  = "externalId"

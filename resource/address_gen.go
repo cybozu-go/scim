@@ -8,6 +8,7 @@ import (
 	"sync"
 )
 
+// JSON key names for Address resource
 const (
 	AddressCountryKey       = "country"
 	AddressFormattedKey     = "formatted"

@@ -8,6 +8,7 @@ import (
 	"sync"
 )
 
+// JSON key names for GroupMember resource
 const (
 	GroupMemberDisplayKey = "display"
 	GroupMemberRefKey     = "$ref"

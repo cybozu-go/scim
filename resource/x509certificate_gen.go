@@ -8,6 +8,7 @@ import (
 	"sync"
 )
 
+// JSON key names for X509Certificate resource
 const (
 	X509CertificateDisplayKey = "display"
 	X509CertificatePrimaryKey = "primary"

@@ -8,6 +8,7 @@ import (
 	"sync"
 )
 
+// JSON key names for ServiceProviderConfig resource
 const (
 	ServiceProviderConfigAuthenticationSchemesKey = "authenticationSchemes"
 	ServiceProviderConfigBulkKey                  = "bulk"

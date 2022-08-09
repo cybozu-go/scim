@@ -8,6 +8,7 @@ import (
 	"sync"
 )
 
+// JSON key names for Entitlement resource
 const (
 	EntitlementDisplayKey = "display"
 	EntitlementPrimaryKey = "primary"

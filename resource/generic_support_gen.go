@@ -8,6 +8,7 @@ import (
 	"sync"
 )
 
+// JSON key names for GenericSupport resource
 const (
 	GenericSupportSupportedKey = "supported"
 )

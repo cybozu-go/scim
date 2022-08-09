@@ -8,6 +8,7 @@ import (
 	"sync"
 )
 
+// JSON key names for BulkSupport resource
 const (
 	BulkSupportMaxOperationsKey  = "maxOperations"
 	BulkSupportMaxPayloadSizeKey = "maxPayloadSize"

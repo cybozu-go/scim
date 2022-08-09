@@ -8,6 +8,7 @@ import (
 	"sync"
 )
 
+// JSON key names for FilterSupport resource
 const (
 	FilterSupportMaxResultsKey = "maxResults"
 	FilterSupportSupportedKey  = "supported"

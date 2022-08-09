@@ -8,6 +8,7 @@ import (
 	"sync"
 )
 
+// JSON key names for Email resource
 const (
 	EmailDisplayKey = "display"
 	EmailPrimaryKey = "primary"

@@ -8,6 +8,7 @@ import (
 	"sync"
 )
 
+// JSON key names for AuthenticationScheme resource
 const (
 	AuthenticationSchemeDescriptionKey      = "description"
 	AuthenticationSchemeDocumentationURIKey = "documentationUri"

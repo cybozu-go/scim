@@ -8,6 +8,7 @@ import (
 	"sync"
 )
 
+// JSON key names for Role resource
 const (
 	RoleDisplayKey = "display"
 	RolePrimaryKey = "primary"

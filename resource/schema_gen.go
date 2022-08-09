@@ -8,6 +8,7 @@ import (
 	"sync"
 )
 
+// JSON key names for Schema resource
 const (
 	SchemaAttributesKey  = "attributes"
 	SchemaDescriptionKey = "description"

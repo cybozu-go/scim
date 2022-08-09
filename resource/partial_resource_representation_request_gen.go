@@ -8,6 +8,7 @@ import (
 	"sync"
 )
 
+// JSON key names for PartialResourceRepresentationRequest resource
 const (
 	PartialResourceRepresentationRequestAttributesKey         = "attributes"
 	PartialResourceRepresentationRequestExcludedAttributesKey = "excludedAttributes"

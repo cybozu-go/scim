@@ -8,6 +8,7 @@ import (
 	"sync"
 )
 
+// JSON key names for User resource
 const (
 	UserActiveKey            = "active"
 	UserAddressesKey         = "addresses"

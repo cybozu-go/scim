@@ -8,6 +8,7 @@ import (
 	"sync"
 )
 
+// JSON key names for ListResponse resource
 const (
 	ListResponseItemsPerPageKey = "itemsPerPage"
 	ListResponseResourcesKey    = "resources"

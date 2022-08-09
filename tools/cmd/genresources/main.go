@@ -120,8 +120,8 @@ func generateObject(object *codegen.Object) error {
 
 	o.L(`package resource`)
 
-	o.L(`// JSON key names for %s resource`, object.Name(true))
-	o.LL(`const (`)
+	o.Comment(fmt.Sprintf(`JSON key names for %s resource`, object.Name(true)))
+	o.L(`const (`)
 	for _, f := range object.Fields() {
 		o.L(`%s%sKey = %q`, object.Name(true), f.Name(true), f.JSON())
 	}

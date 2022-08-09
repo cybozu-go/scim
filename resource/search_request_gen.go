@@ -8,6 +8,7 @@ import (
 	"sync"
 )
 
+// JSON key names for SearchRequest resource
 const (
 	SearchRequestAttributesKey        = "attributes"
 	SearchRequestCountKey             = "count"

@@ -8,6 +8,7 @@ import (
 	"sync"
 )
 
+// JSON key names for SchemaAttribute resource
 const (
 	SchemaAttributeCanonicalValuesKey = "canonicalValues"
 	SchemaAttributeCaseExactKey       = "caseExact"

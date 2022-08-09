@@ -8,6 +8,7 @@ import (
 	"sync"
 )
 
+// JSON key names for PatchRequest resource
 const (
 	PatchRequestOperationsKey = "operations"
 	PatchRequestSchemasKey    = "schemas"

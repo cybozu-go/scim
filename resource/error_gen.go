@@ -8,6 +8,7 @@ import (
 	"sync"
 )
 
+// JSON key names for Error resource
 const (
 	ErrorDetailKey   = "detail"
 	ErrorScimTypeKey = "scimType"

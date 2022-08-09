@@ -8,6 +8,7 @@ import (
 	"sync"
 )
 
+// JSON key names for Names resource
 const (
 	NamesFamilyNameKey      = "familyName"
 	NamesFormattedKey       = "formatted"

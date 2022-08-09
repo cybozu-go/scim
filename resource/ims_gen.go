@@ -8,6 +8,7 @@ import (
 	"sync"
 )
 
+// JSON key names for IMS resource
 const (
 	IMSDisplayKey = "display"
 	IMSPrimaryKey = "primary"

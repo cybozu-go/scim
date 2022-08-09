@@ -8,6 +8,7 @@ import (
 	"sync"
 )
 
+// JSON key names for ResourceType resource
 const (
 	ResourceTypeDescriptionKey      = "description"
 	ResourceTypeEndpointKey         = "endpoint"

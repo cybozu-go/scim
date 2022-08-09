@@ -8,6 +8,7 @@ import (
 	"sync"
 )
 
+// JSON key names for SchemaExtension resource
 const (
 	SchemaExtensionRequiredKey = "required"
 	SchemaExtensionSchemaKey   = "schema"

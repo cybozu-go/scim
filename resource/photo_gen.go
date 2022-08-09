@@ -8,6 +8,7 @@ import (
 	"sync"
 )
 
+// JSON key names for Photo resource
 const (
 	PhotoDisplayKey = "display"
 	PhotoPrimaryKey = "primary"

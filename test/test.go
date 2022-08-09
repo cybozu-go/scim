@@ -37,7 +37,6 @@ func init() {
 			TraceWriter = os.Stdout
 		}
 	}
-
 }
 
 type testClient struct {

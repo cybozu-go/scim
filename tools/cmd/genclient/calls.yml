@@ -7,15 +7,15 @@ services:
       path: /ResourceTypes
     - name: GetServiceProviderConfigCall
       http_method: http.MethodGet
-      response_type: '*resource.ServiceProviderConfig'
+      response_type: resource.ServiceProviderConfig
       path: /ServiceProviderConfig
     - name: GetSchemas
       http_method: http.MethodGet
-      response_type: '*resource.ListResponse'
+      response_type: resource.ListResponse
       path: '/Schemas'
     - name: GetSchema
       http_method: http.MethodGet
-      response_type: '*resource.Schema'
+      response_type: resource.Schema
       path: '/Schemas'
       makeURLTemplate: |
         func (call {{ .ObjectName }}) makeURL() string {

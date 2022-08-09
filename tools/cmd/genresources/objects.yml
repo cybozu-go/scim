@@ -282,6 +282,7 @@ objects:
         required: true
         type: '*GenericSupport'
       - name: etag
+        exported_name: ETag
         required: true
         type: '*GenericSupport'
       - name: authenticationSchemes

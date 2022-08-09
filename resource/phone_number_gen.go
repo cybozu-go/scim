@@ -358,6 +358,7 @@ func (v *PhoneNumber) AsMap(dst map[string]interface{}) error {
 	return nil
 }
 
+// PhoneNumberBuilder creates a PhoneNumber resource
 type PhoneNumberBuilder struct {
 	once      sync.Once
 	mu        sync.Mutex

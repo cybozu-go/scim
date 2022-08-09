@@ -262,6 +262,7 @@ func (v *PatchRequest) AsMap(dst map[string]interface{}) error {
 	return nil
 }
 
+// PatchRequestBuilder creates a PatchRequest resource
 type PatchRequestBuilder struct {
 	once      sync.Once
 	mu        sync.Mutex

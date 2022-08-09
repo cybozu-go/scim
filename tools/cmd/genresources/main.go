@@ -120,6 +120,7 @@ func generateObject(object *codegen.Object) error {
 
 	o.L(`package resource`)
 
+	o.L(`// JSON key names for %s resource`, object.Name(true))
 	o.LL(`const (`)
 	for _, f := range object.Fields() {
 		o.L(`%s%sKey = %q`, object.Name(true), f.Name(true), f.JSON())
@@ -133,7 +134,12 @@ func generateObject(object *codegen.Object) error {
 		o.L(`}`)
 	}
 
-	o.LL(`type %s struct {`, object.Name(true))
+	if comment := object.Comment(); comment != "" {
+		o.Comment(comment)
+		o.L(`type %s struct {`, object.Name(true))
+	} else {
+		o.LL(`type %s struct {`, object.Name(true))
+	}
 	for _, field := range object.Fields() {
 		if IsIndirect(field) {
 			o.L("%s %s", field.Name(false), field.Type())
@@ -408,7 +414,8 @@ func generateObject(object *codegen.Object) error {
 	o.L(`return nil`)
 	o.L(`}`)
 
-	o.LL(`type %sBuilder struct {`, object.Name(true))
+	o.LL(`// %[1]sBuilder creates a %[1]s resource`, object.Name(true))
+	o.L(`type %sBuilder struct {`, object.Name(true))
 	o.L(`once sync.Once`)
 	o.L(`mu sync.Mutex`)
 	o.L(`err error`)

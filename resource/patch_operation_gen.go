@@ -423,6 +423,7 @@ func (v *PatchOperation) AsMap(dst map[string]interface{}) error {
 	return nil
 }
 
+// PatchOperationBuilder creates a PatchOperation resource
 type PatchOperationBuilder struct {
 	once      sync.Once
 	mu        sync.Mutex

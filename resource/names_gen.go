@@ -426,6 +426,7 @@ func (v *Names) AsMap(dst map[string]interface{}) error {
 	return nil
 }
 
+// NamesBuilder creates a Names resource
 type NamesBuilder struct {
 	once      sync.Once
 	mu        sync.Mutex

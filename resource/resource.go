@@ -57,8 +57,8 @@ func defaultUserValidate(v *User) error {
 
 // Builder is a centralized store for other type-specific builders,
 // which exists mainly for convenience. Its zero-value can be used
-// safely, but you could also use the `resource.NewBuilder()` function
-// to start a method calling chain.
+// safely, but you could also use the `resource.NewXXXXBuilder()` function
+// (where `XXXX` may be a resource type name) to start a method calling chain.
 type Builder struct{}
 
 // NewBuilder creates a new instance of the Builder object.

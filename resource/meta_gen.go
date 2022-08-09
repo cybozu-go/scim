@@ -17,6 +17,8 @@ const (
 	MetaVersionKey      = "version"
 )
 
+// Meta represents the `meta` field included in SCIM responses.
+// See https://datatracker.ietf.org/doc/html/rfc7643#section-3.1 for details
 type Meta struct {
 	created       *time.Time
 	lastModified  *time.Time
@@ -386,6 +388,7 @@ func (v *Meta) AsMap(dst map[string]interface{}) error {
 	return nil
 }
 
+// MetaBuilder creates a Meta resource
 type MetaBuilder struct {
 	once      sync.Once
 	mu        sync.Mutex

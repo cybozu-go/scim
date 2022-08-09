@@ -552,6 +552,7 @@ func (v *ServiceProviderConfig) AsMap(dst map[string]interface{}) error {
 	return nil
 }
 
+// ServiceProviderConfigBuilder creates a ServiceProviderConfig resource
 type ServiceProviderConfigBuilder struct {
 	once      sync.Once
 	mu        sync.Mutex

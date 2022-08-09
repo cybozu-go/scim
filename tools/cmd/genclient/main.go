@@ -129,17 +129,14 @@ func generateService(svc Service, resources map[string]*codegen.Object) error {
 	}
 	o.L(`)`)
 
-	if desc := svc.Description; desc != "" {
-		o.LL(`// %s`, strings.TrimSpace(desc))
-	} else {
-		o.R("\n")
-	}
+	o.Comment(svc.Description)
 	o.L(`type %s struct {`, svc.Name)
 	o.L(`client *Client`)
 	o.L(`}`)
 
 	if svc.Name != "SearchService" {
-		o.LL(`func (client *Client) %s() *%s {`, strings.TrimSuffix(svc.Name, `Service`), svc.Name)
+		o.Comment(fmt.Sprintf(`%s creates a new Service object to perform an operation`, strings.TrimSuffix(svc.Name, `Service`)))
+		o.L(`func (client *Client) %s() *%s {`, strings.TrimSuffix(svc.Name, `Service`), svc.Name)
 		o.L(`return &%s{`, svc.Name)
 		o.L(`client: client,`)
 		o.L(`}`)
@@ -167,7 +164,8 @@ func generateService(svc Service, resources map[string]*codegen.Object) error {
 func generateCall(o *codegen.Output, svc Service, call *codegen.Object, resources map[string]*codegen.Object) error {
 	rstype := call.String(`resource`)
 
-	o.LL(`type %s struct {`, call.Name(true))
+	o.Comment(fmt.Sprintf(`%s is an encapsulation of a SCIM operation.`, call.Name(true)))
+	o.L(`type %s struct {`, call.Name(true))
 	if rstype != "" {
 		o.L(`builder *resource.%sBuilder`, rstype)
 		o.L(`object *resource.%s`, rstype)

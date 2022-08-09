@@ -295,6 +295,7 @@ func (v *ListResponse) AsMap(dst map[string]interface{}) error {
 	return nil
 }
 
+// ListResponseBuilder creates a ListResponse resource
 type ListResponseBuilder struct {
 	once      sync.Once
 	mu        sync.Mutex

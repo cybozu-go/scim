@@ -256,6 +256,7 @@ func (v *PartialResourceRepresentationRequest) AsMap(dst map[string]interface{})
 	return nil
 }
 
+// PartialResourceRepresentationRequestBuilder creates a PartialResourceRepresentationRequest resource
 type PartialResourceRepresentationRequestBuilder struct {
 	once      sync.Once
 	mu        sync.Mutex

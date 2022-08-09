@@ -11,6 +11,9 @@ common:
     type: '*Meta'
 objects:
   - name: Meta
+    comment: |
+      Meta represents the `meta` field included in SCIM responses.
+      See https://datatracker.ietf.org/doc/html/rfc7643#section-3.1 for details
     skipCommonFields: true
     fields:
       - name: resourceType
@@ -21,6 +24,8 @@ objects:
       - name: location
       - name: version
   - name: User
+    comment: |
+      User represents a user SCIM resource.
     schema: "urn:ietf:params:scim:schemas:core:2.0:User"
     top_level: true
     fields:

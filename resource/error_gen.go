@@ -303,6 +303,7 @@ func (v *Error) AsMap(dst map[string]interface{}) error {
 	return nil
 }
 
+// ErrorBuilder creates a Error resource
 type ErrorBuilder struct {
 	once      sync.Once
 	mu        sync.Mutex

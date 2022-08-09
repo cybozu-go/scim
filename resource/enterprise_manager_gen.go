@@ -303,6 +303,7 @@ func (v *EnterpriseManager) AsMap(dst map[string]interface{}) error {
 	return nil
 }
 
+// EnterpriseManagerBuilder creates a EnterpriseManager resource
 type EnterpriseManagerBuilder struct {
 	once      sync.Once
 	mu        sync.Mutex

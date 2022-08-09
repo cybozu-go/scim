@@ -344,6 +344,7 @@ func (v *Photo) AsMap(dst map[string]interface{}) error {
 	return nil
 }
 
+// PhotoBuilder creates a Photo resource
 type PhotoBuilder struct {
 	once      sync.Once
 	mu        sync.Mutex

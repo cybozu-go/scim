@@ -11,7 +11,7 @@ echo "👉 Generating resources..."
 DIR=../tools/cmd/genresources
 
 pushd "$DIR" > /dev/null
-go build -o .genresources main.go
+GOWORK=off go build -o .genresources main.go
 popd > /dev/null
 
 EXE="${DIR}/.genresources"

@@ -262,6 +262,7 @@ func (v *SchemaExtension) AsMap(dst map[string]interface{}) error {
 	return nil
 }
 
+// SchemaExtensionBuilder creates a SchemaExtension resource
 type SchemaExtensionBuilder struct {
 	once      sync.Once
 	mu        sync.Mutex

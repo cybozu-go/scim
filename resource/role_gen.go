@@ -344,6 +344,7 @@ func (v *Role) AsMap(dst map[string]interface{}) error {
 	return nil
 }
 
+// RoleBuilder creates a Role resource
 type RoleBuilder struct {
 	once      sync.Once
 	mu        sync.Mutex

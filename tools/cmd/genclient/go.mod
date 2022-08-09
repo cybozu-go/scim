@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/cybozu-go/scim v0.0.0-20220601223238-a51592541d81
 	github.com/goccy/go-yaml v1.9.5
-	github.com/lestrrat-go/codegen v1.0.4
+	github.com/lestrrat-go/codegen v1.0.5-0.20220808235455-143ba8338dfe
 	github.com/lestrrat-go/xstrings v0.0.0-20210804220435-4dd8b234342b
 )
 

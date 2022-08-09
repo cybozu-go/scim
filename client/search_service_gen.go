@@ -16,6 +16,7 @@ type SearchService struct {
 	client *Client
 }
 
+// SearchCall is an encapsulation of a SCIM operation.
 type SearchCall struct {
 	builder *resource.SearchRequestBuilder
 	object  *resource.SearchRequest

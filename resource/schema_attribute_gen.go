@@ -701,6 +701,7 @@ func (v *SchemaAttribute) AsMap(dst map[string]interface{}) error {
 	return nil
 }
 
+// SchemaAttributeBuilder creates a SchemaAttribute resource
 type SchemaAttributeBuilder struct {
 	once      sync.Once
 	mu        sync.Mutex

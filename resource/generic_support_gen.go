@@ -224,6 +224,7 @@ func (v *GenericSupport) AsMap(dst map[string]interface{}) error {
 	return nil
 }
 
+// GenericSupportBuilder creates a GenericSupport resource
 type GenericSupportBuilder struct {
 	once      sync.Once
 	mu        sync.Mutex

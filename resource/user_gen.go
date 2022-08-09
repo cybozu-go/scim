@@ -42,6 +42,7 @@ func init() {
 	RegisterExtension(UserSchemaURI, User{})
 }
 
+// User represents a user SCIM resource.
 type User struct {
 	active            *bool
 	addresses         []*Address
@@ -1178,6 +1179,7 @@ func (v *User) AsMap(dst map[string]interface{}) error {
 	return nil
 }
 
+// UserBuilder creates a User resource
 type UserBuilder struct {
 	once      sync.Once
 	mu        sync.Mutex

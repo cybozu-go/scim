@@ -11,7 +11,7 @@ echo "👉 Generating client..."
 DIR=../tools/cmd/genclient
 
 pushd "$DIR" > /dev/null
-go build -o .genclient main.go
+GOWORK=off go build -o .genclient main.go
 popd > /dev/null
 
 EXE="${DIR}/.genclient"

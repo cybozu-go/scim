@@ -344,6 +344,7 @@ func (v *IMS) AsMap(dst map[string]interface{}) error {
 	return nil
 }
 
+// IMSBuilder creates a IMS resource
 type IMSBuilder struct {
 	once      sync.Once
 	mu        sync.Mutex

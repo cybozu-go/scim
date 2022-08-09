@@ -344,6 +344,7 @@ func (v *Schema) AsMap(dst map[string]interface{}) error {
 	return nil
 }
 
+// SchemaBuilder creates a Schema resource
 type SchemaBuilder struct {
 	once      sync.Once
 	mu        sync.Mutex

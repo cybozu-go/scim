@@ -467,6 +467,7 @@ func (v *EnterpriseUser) AsMap(dst map[string]interface{}) error {
 	return nil
 }
 
+// EnterpriseUserBuilder creates a EnterpriseUser resource
 type EnterpriseUserBuilder struct {
 	once      sync.Once
 	mu        sync.Mutex

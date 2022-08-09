@@ -426,6 +426,7 @@ func (v *Address) AsMap(dst map[string]interface{}) error {
 	return nil
 }
 
+// AddressBuilder creates a Address resource
 type AddressBuilder struct {
 	once      sync.Once
 	mu        sync.Mutex

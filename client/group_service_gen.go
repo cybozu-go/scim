@@ -18,12 +18,14 @@ type GroupService struct {
 	client *Client
 }
 
+// Group creates a new Service object to perform an operation
 func (client *Client) Group() *GroupService {
 	return &GroupService{
 		client: client,
 	}
 }
 
+// GetGroupCall is an encapsulation of a SCIM operation.
 type GetGroupCall struct {
 	builder *resource.PartialResourceRepresentationRequestBuilder
 	object  *resource.PartialResourceRepresentationRequest
@@ -150,6 +152,7 @@ func (call *GetGroupCall) Do(ctx context.Context) (*resource.Group, error) {
 	return &respayload, nil
 }
 
+// CreateGroupCall is an encapsulation of a SCIM operation.
 type CreateGroupCall struct {
 	builder *resource.GroupBuilder
 	object  *resource.Group
@@ -278,6 +281,7 @@ func (call *CreateGroupCall) Do(ctx context.Context) (*resource.Group, error) {
 	return &respayload, nil
 }
 
+// ReplaceGroupCall is an encapsulation of a SCIM operation.
 type ReplaceGroupCall struct {
 	builder *resource.GroupBuilder
 	object  *resource.Group
@@ -408,6 +412,7 @@ func (call *ReplaceGroupCall) Do(ctx context.Context) (*resource.Group, error) {
 	return &respayload, nil
 }
 
+// PatchGroupCall is an encapsulation of a SCIM operation.
 type PatchGroupCall struct {
 	builder *resource.PatchRequestBuilder
 	object  *resource.PatchRequest
@@ -534,6 +539,7 @@ func (call *PatchGroupCall) Do(ctx context.Context) (*resource.Group, error) {
 	return &respayload, nil
 }
 
+// DeleteGroupCall is an encapsulation of a SCIM operation.
 type DeleteGroupCall struct {
 	builder *resource.GroupBuilder
 	object  *resource.Group
@@ -670,6 +676,7 @@ func (call *DeleteGroupCall) Do(ctx context.Context) error {
 	return nil
 }
 
+// SearchGroupCall is an encapsulation of a SCIM operation.
 type SearchGroupCall struct {
 	builder *resource.SearchRequestBuilder
 	object  *resource.SearchRequest

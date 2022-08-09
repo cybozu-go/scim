@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/goccy/go-yaml v1.9.5
-	github.com/lestrrat-go/codegen v1.0.4
+	github.com/lestrrat-go/codegen v1.0.5-0.20220808233325-e4845b0fa9ea
 	github.com/lestrrat-go/xstrings v0.0.0-20210804220435-4dd8b234342b
 )
 

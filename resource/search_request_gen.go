@@ -505,6 +505,7 @@ func (v *SearchRequest) AsMap(dst map[string]interface{}) error {
 	return nil
 }
 
+// SearchRequestBuilder creates a SearchRequest resource
 type SearchRequestBuilder struct {
 	once      sync.Once
 	mu        sync.Mutex

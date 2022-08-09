@@ -15,12 +15,14 @@ type MetaService struct {
 	client *Client
 }
 
+// Meta creates a new Service object to perform an operation
 func (client *Client) Meta() *MetaService {
 	return &MetaService{
 		client: client,
 	}
 }
 
+// GetResourceTypesCall is an encapsulation of a SCIM operation.
 type GetResourceTypesCall struct {
 	err    error
 	client *Client
@@ -88,6 +90,7 @@ func (call *GetResourceTypesCall) Do(ctx context.Context) (*[]resource.ResourceT
 	return &respayload, nil
 }
 
+// GetServiceProviderConfigCall is an encapsulation of a SCIM operation.
 type GetServiceProviderConfigCall struct {
 	err    error
 	client *Client
@@ -155,6 +158,7 @@ func (call *GetServiceProviderConfigCall) Do(ctx context.Context) (**resource.Se
 	return &respayload, nil
 }
 
+// GetSchemas is an encapsulation of a SCIM operation.
 type GetSchemas struct {
 	err    error
 	client *Client
@@ -222,6 +226,7 @@ func (call *GetSchemas) Do(ctx context.Context) (**resource.ListResponse, error)
 	return &respayload, nil
 }
 
+// GetSchema is an encapsulation of a SCIM operation.
 type GetSchema struct {
 	err    error
 	client *Client

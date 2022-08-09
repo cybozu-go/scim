@@ -19,12 +19,14 @@ type UserService struct {
 	client *Client
 }
 
+// User creates a new Service object to perform an operation
 func (client *Client) User() *UserService {
 	return &UserService{
 		client: client,
 	}
 }
 
+// GetUserCall is an encapsulation of a SCIM operation.
 type GetUserCall struct {
 	builder *resource.PartialResourceRepresentationRequestBuilder
 	object  *resource.PartialResourceRepresentationRequest
@@ -153,6 +155,7 @@ func (call *GetUserCall) Do(ctx context.Context) (*resource.User, error) {
 	return &respayload, nil
 }
 
+// CreateUserCall is an encapsulation of a SCIM operation.
 type CreateUserCall struct {
 	builder *resource.UserBuilder
 	object  *resource.User
@@ -373,6 +376,7 @@ func (call *CreateUserCall) Do(ctx context.Context) (*resource.User, error) {
 	return &respayload, nil
 }
 
+// ReplaceUserCall is an encapsulation of a SCIM operation.
 type ReplaceUserCall struct {
 	builder *resource.UserBuilder
 	object  *resource.User
@@ -595,6 +599,7 @@ func (call *ReplaceUserCall) Do(ctx context.Context) (*resource.User, error) {
 	return &respayload, nil
 }
 
+// PatchUserCall is an encapsulation of a SCIM operation.
 type PatchUserCall struct {
 	builder *resource.PatchRequestBuilder
 	object  *resource.PatchRequest
@@ -721,6 +726,7 @@ func (call *PatchUserCall) Do(ctx context.Context) (*resource.User, error) {
 	return &respayload, nil
 }
 
+// DeleteUserCall is an encapsulation of a SCIM operation.
 type DeleteUserCall struct {
 	builder *resource.UserBuilder
 	object  *resource.User
@@ -952,6 +958,7 @@ func (call *DeleteUserCall) Do(ctx context.Context) error {
 	return nil
 }
 
+// SearchUserCall is an encapsulation of a SCIM operation.
 type SearchUserCall struct {
 	builder *resource.SearchRequestBuilder
 	object  *resource.SearchRequest

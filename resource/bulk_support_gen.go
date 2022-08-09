@@ -312,6 +312,7 @@ func (v *BulkSupport) AsMap(dst map[string]interface{}) error {
 	return nil
 }
 
+// BulkSupportBuilder creates a BulkSupport resource
 type BulkSupportBuilder struct {
 	once      sync.Once
 	mu        sync.Mutex

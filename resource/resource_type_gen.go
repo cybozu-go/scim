@@ -473,6 +473,7 @@ func (v *ResourceType) AsMap(dst map[string]interface{}) error {
 	return nil
 }
 
+// ResourceTypeBuilder creates a ResourceType resource
 type ResourceTypeBuilder struct {
 	once      sync.Once
 	mu        sync.Mutex

@@ -347,6 +347,7 @@ func (v *Email) AsMap(dst map[string]interface{}) error {
 	return nil
 }
 
+// EmailBuilder creates a Email resource
 type EmailBuilder struct {
 	once      sync.Once
 	mu        sync.Mutex

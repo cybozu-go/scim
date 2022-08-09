@@ -344,6 +344,7 @@ func (v *GroupMember) AsMap(dst map[string]interface{}) error {
 	return nil
 }
 
+// GroupMemberBuilder creates a GroupMember resource
 type GroupMemberBuilder struct {
 	once      sync.Once
 	mu        sync.Mutex

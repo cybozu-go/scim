@@ -344,6 +344,7 @@ func (v *X509Certificate) AsMap(dst map[string]interface{}) error {
 	return nil
 }
 
+// X509CertificateBuilder creates a X509Certificate resource
 type X509CertificateBuilder struct {
 	once      sync.Once
 	mu        sync.Mutex

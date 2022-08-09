@@ -344,6 +344,7 @@ func (v *Entitlement) AsMap(dst map[string]interface{}) error {
 	return nil
 }
 
+// EntitlementBuilder creates a Entitlement resource
 type EntitlementBuilder struct {
 	once      sync.Once
 	mu        sync.Mutex

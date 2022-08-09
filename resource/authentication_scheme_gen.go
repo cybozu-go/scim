@@ -394,6 +394,7 @@ func (v *AuthenticationScheme) AsMap(dst map[string]interface{}) error {
 	return nil
 }
 
+// AuthenticationSchemeBuilder creates a AuthenticationScheme resource
 type AuthenticationSchemeBuilder struct {
 	once      sync.Once
 	mu        sync.Mutex

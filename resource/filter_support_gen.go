@@ -268,6 +268,7 @@ func (v *FilterSupport) AsMap(dst map[string]interface{}) error {
 	return nil
 }
 
+// FilterSupportBuilder creates a FilterSupport resource
 type FilterSupportBuilder struct {
 	once      sync.Once
 	mu        sync.Mutex

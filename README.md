@@ -1,5 +1,6 @@
 scim
 ====
+[![Go Reference](https://pkg.go.dev/badge/github.com/cybozu-go/scim.svg)](https://pkg.go.dev/github.com/cybozu-go/scim)
 
 SCIM tools for Go (Work In Progress)
 

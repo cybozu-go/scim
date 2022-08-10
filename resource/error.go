@@ -6,5 +6,5 @@ import "fmt"
 func (e *Error) Error() string {
 	e.mu.RLock()
 	defer e.mu.RUnlock()
-	return fmt.Sprintf(`scim error: status="%d", detail=%q (%s)`, e.status, e.detail, e.scimType)
+	return fmt.Sprintf(`scim error: status="%d", detail=%q (%s)`, e.Status(), e.Detail(), e.ScimType())
 }

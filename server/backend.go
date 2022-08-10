@@ -4,13 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"strings"
 
-	"github.com/cybozu-go/scim"
 	"github.com/cybozu-go/scim/resource"
 	"github.com/lestrrat-go/mux"
 )
@@ -83,19 +80,49 @@ type RetrieveSchemaBackend interface {
 	RetrieveSchema(string) (*resource.Schema, error)
 }
 
+// WriteSCIMError creates a resource.Error from the given input and
+// writes to the response writer
+func WriteSCIMError(w http.ResponseWriter, st int, msg string) {
+	// log.Printf("%d: %s", st, msg)
+	w.WriteHeader(st)
+	serr := resource.NewErrorBuilder().
+		Status(st).
+		Detail(msg).
+		ScimType(resource.ErrUnknown).
+		MustBuild()
+
+	// Try one more time in vein to write the error of Encode?
+	// Look, I've explicitly stated to ignore errors, you linters
+	// should just let me be, OK?
+	//nolint:errchkjson
+	_ = json.NewEncoder(w).Encode(serr)
+}
+
+func WriteError(w http.ResponseWriter, err error) {
+	var serr *resource.Error
+	if errors.As(err, &serr) {
+		w.WriteHeader(serr.Status())
+		// Look, I've explicitly stated to ignore errors, you linters
+		// should just let me be, OK?
+		//nolint:errchkjson
+		_ = json.NewEncoder(w).Encode(serr)
+		return
+	}
+
+	WriteSCIMError(w, http.StatusInternalServerError, err.Error())
+}
+
 func DeleteGroupEndpoint(b DeleteGroupBackend) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		id := vars.Get(`id`)
 		if id == "" {
-			// TODO: log
-			w.WriteHeader(http.StatusBadRequest)
+			WriteSCIMError(w, http.StatusBadRequest, `missing ID`)
 			return
 		}
 
 		if err := b.DeleteGroup(id); err != nil {
-			// TODO: log
-			w.WriteHeader(http.StatusInternalServerError)
+			WriteError(w, err)
 			return
 		}
 		w.WriteHeader(http.StatusNoContent)
@@ -107,22 +134,19 @@ func ReplaceGroupEndpoint(b ReplaceGroupBackend) http.Handler {
 		vars := mux.Vars(r)
 		id := vars.Get(`id`)
 		if id == "" {
-			// TODO: log
-			w.WriteHeader(http.StatusBadRequest)
+			WriteSCIMError(w, http.StatusBadRequest, `missing ID`)
 			return
 		}
 
 		var group resource.Group
 		if err := json.NewDecoder(r.Body).Decode(&group); err != nil {
-			// TODO: log
-			w.WriteHeader(http.StatusBadRequest)
+			WriteSCIMError(w, http.StatusBadRequest, `failed to parse payload`)
 			return
 		}
 
 		replaced, err := b.ReplaceGroup(id, &group)
 		if err != nil {
-			// TODO: log
-			w.WriteHeader(http.StatusInternalServerError)
+			WriteError(w, err)
 			return
 		}
 		w.WriteHeader(http.StatusOK)
@@ -135,8 +159,7 @@ func RetrieveGroupEndpoint(b RetrieveGroupBackend) http.Handler {
 		vars := mux.Vars(r)
 		id := vars.Get(`id`)
 		if id == "" {
-			// TODO: log
-			w.WriteHeader(http.StatusBadRequest)
+			WriteSCIMError(w, http.StatusBadRequest, `missing ID`)
 			return
 		}
 
@@ -151,10 +174,7 @@ func RetrieveGroupEndpoint(b RetrieveGroupBackend) http.Handler {
 		}
 		group, err := b.RetrieveGroup(id, attrs, excluded)
 		if err != nil {
-			// TODO: distinguish between error and not found error
-			// TODO: log
-			log.Printf("%s", err)
-			w.WriteHeader(http.StatusInternalServerError)
+			WriteError(w, err)
 			return
 		}
 
@@ -173,16 +193,13 @@ func CreateGroupEndpoint(b CreateGroupBackend) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var group resource.Group
 		if err := json.NewDecoder(r.Body).Decode(&group); err != nil {
-			// TODO: log
-			w.WriteHeader(http.StatusBadRequest)
+			WriteSCIMError(w, http.StatusBadRequest, `failed to parse payload`)
 			return
 		}
 
 		created, err := b.CreateGroup(&group)
 		if err != nil {
-			// TODO: log
-			log.Printf("%s", err)
-			w.WriteHeader(http.StatusInternalServerError)
+			WriteError(w, err)
 			return
 		}
 
@@ -203,14 +220,12 @@ func DeleteUserEndpoint(b DeleteUserBackend) http.Handler {
 		vars := mux.Vars(r)
 		id := vars.Get(`id`)
 		if id == "" {
-			// TODO: log
-			w.WriteHeader(http.StatusBadRequest)
+			WriteSCIMError(w, http.StatusBadRequest, `missing ID`)
 			return
 		}
 
 		if err := b.DeleteUser(id); err != nil {
-			// TODO: log
-			w.WriteHeader(http.StatusInternalServerError)
+			WriteError(w, err)
 			return
 		}
 		w.WriteHeader(http.StatusNoContent)
@@ -222,23 +237,19 @@ func ReplaceUserEndpoint(b ReplaceUserBackend) http.Handler {
 		vars := mux.Vars(r)
 		id := vars.Get(`id`)
 		if id == "" {
-			// TODO: log
-			w.WriteHeader(http.StatusBadRequest)
+			WriteSCIMError(w, http.StatusBadRequest, `missing ID`)
 			return
 		}
 
 		var user resource.User
 		if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-			// TODO: log
-			w.WriteHeader(http.StatusBadRequest)
+			WriteSCIMError(w, http.StatusBadRequest, `failed to parse payload`)
 			return
 		}
 
 		newUser, err := b.ReplaceUser(id, &user)
 		if err != nil {
-			err = fmt.Errorf(`replace user operation failed: %w`, err)
-			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprint(w, err.Error())
+			WriteError(w, err)
 			return
 		}
 		w.WriteHeader(http.StatusOK)
@@ -251,8 +262,7 @@ func RetrieveUserEndpoint(b RetrieveUserBackend) http.Handler {
 		vars := mux.Vars(r)
 		id := vars.Get(`id`)
 		if id == "" {
-			// TODO: log
-			w.WriteHeader(http.StatusBadRequest)
+			WriteSCIMError(w, http.StatusBadRequest, `missing ID`)
 			return
 		}
 
@@ -267,14 +277,7 @@ func RetrieveUserEndpoint(b RetrieveUserBackend) http.Handler {
 		}
 		user, err := b.RetrieveUser(id, attrs, excluded)
 		if err != nil {
-			if errors.Is(err, scim.ResourceNotFoundError{}) {
-				w.WriteHeader(http.StatusNotFound)
-				return
-			}
-			// TODO: distinguish between error and not found error
-			// TODO: log
-			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprint(w, err.Error())
+			WriteError(w, err)
 			return
 		}
 
@@ -294,25 +297,20 @@ func PatchUserEndpoint(b PatchUserBackend) http.Handler {
 		vars := mux.Vars(r)
 		id := vars.Get(`id`)
 		if id == "" {
-			// TODO: log
-			w.WriteHeader(http.StatusBadRequest)
+			WriteSCIMError(w, http.StatusBadRequest, `missing ID`)
 			return
 		}
 
 		defer r.Body.Close()
 		var preq resource.PatchRequest
 		if err := json.NewDecoder(r.Body).Decode(&preq); err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprint(w, err.Error())
+			WriteSCIMError(w, http.StatusBadRequest, `failed to parse payload`)
 			return
 		}
 
 		user, err := b.PatchUser(id, &preq)
 		if err != nil {
-			// TODO: distinguish between error and not found error
-			// TODO: log
-			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprint(w, err.Error())
+			WriteError(w, err)
 			return
 		}
 
@@ -337,25 +335,20 @@ func PatchGroupEndpoint(b PatchGroupBackend) http.Handler {
 		vars := mux.Vars(r)
 		id := vars.Get(`id`)
 		if id == "" {
-			// TODO: log
-			w.WriteHeader(http.StatusBadRequest)
+			WriteSCIMError(w, http.StatusBadRequest, `missing ID`)
 			return
 		}
 
 		defer r.Body.Close()
 		var preq resource.PatchRequest
 		if err := json.NewDecoder(r.Body).Decode(&preq); err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprint(w, err.Error())
+			WriteSCIMError(w, http.StatusBadRequest, `failed to parse payload`)
 			return
 		}
 
 		group, err := b.PatchGroup(id, &preq)
 		if err != nil {
-			// TODO: distinguish between error and not found error
-			// TODO: log
-			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprint(w, err.Error())
+			WriteError(w, err)
 			return
 		}
 
@@ -379,16 +372,13 @@ func CreateUserEndpoint(b CreateUserBackend) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var user resource.User
 		if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-			// TODO: log
-			w.WriteHeader(http.StatusBadRequest)
+			WriteSCIMError(w, http.StatusBadRequest, `failed to parse payload`)
 			return
 		}
 
 		created, err := b.CreateUser(&user)
 		if err != nil {
-			log.Printf("%s", err)
-			// TODO: log
-			w.WriteHeader(http.StatusInternalServerError)
+			WriteError(w, err)
 			return
 		}
 
@@ -404,23 +394,19 @@ func SearchEndpoint(b SearchBackend) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var q resource.SearchRequest
 		if err := json.NewDecoder(r.Body).Decode(&q); err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			// TODO: log
+			WriteSCIMError(w, http.StatusBadRequest, `failed to parse payload`)
 			return
 		}
 
 		lr, err := b.Search(&q)
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			// TODO: log
-			fmt.Fprint(w, err.Error())
+			WriteError(w, err)
 			return
 		}
 
 		var buf bytes.Buffer
 		if err := json.NewEncoder(&buf).Encode(lr); err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			// TODO: log
+			WriteSCIMError(w, http.StatusBadRequest, `failed to encode response`)
 			return
 		}
 
@@ -435,23 +421,19 @@ func SearchUserEndpoint(b SearchUserBackend) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var q resource.SearchRequest
 		if err := json.NewDecoder(r.Body).Decode(&q); err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			// TODO: log
+			WriteSCIMError(w, http.StatusBadRequest, `failed to parse payload`)
 			return
 		}
 
 		lr, err := b.SearchUser(&q)
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			// TODO: log
-			fmt.Fprint(w, err.Error())
+			WriteError(w, err)
 			return
 		}
 
 		var buf bytes.Buffer
 		if err := json.NewEncoder(&buf).Encode(lr); err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			// TODO: log
+			WriteSCIMError(w, http.StatusBadRequest, `failed to encode response`)
 			return
 		}
 
@@ -466,23 +448,19 @@ func SearchGroupEndpoint(b SearchGroupBackend) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var q resource.SearchRequest
 		if err := json.NewDecoder(r.Body).Decode(&q); err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			// TODO: log
+			WriteSCIMError(w, http.StatusBadRequest, `failed to parse payload`)
 			return
 		}
 
 		lr, err := b.SearchGroup(&q)
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			// TODO: log
-			fmt.Fprint(w, err.Error())
+			WriteError(w, err)
 			return
 		}
 
 		var buf bytes.Buffer
 		if err := json.NewEncoder(&buf).Encode(lr); err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			// TODO: log
+			WriteSCIMError(w, http.StatusBadRequest, `failed to encode response`)
 			return
 		}
 
@@ -497,8 +475,7 @@ func RetrieveServiceProviderConfigEndpoint(b RetrieveServiceProviderConfigBacken
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		scp, err := b.RetrieveServiceProviderConfig()
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprint(w, err.Error())
+			WriteError(w, err)
 			return
 		}
 
@@ -506,8 +483,7 @@ func RetrieveServiceProviderConfigEndpoint(b RetrieveServiceProviderConfigBacken
 		enc := json.NewEncoder(&buf)
 		enc.SetIndent("", "  ")
 		if err := enc.Encode(scp); err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			// TODO: log
+			WriteSCIMError(w, http.StatusBadRequest, `failed to encode response`)
 			return
 		}
 
@@ -522,8 +498,7 @@ func RetrieveResourceTypesEndpoint(b RetrieveResourceTypesBackend) http.Handler 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		rts, err := b.RetrieveResourceTypes()
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprint(w, err.Error())
+			WriteError(w, err)
 			return
 		}
 
@@ -531,8 +506,7 @@ func RetrieveResourceTypesEndpoint(b RetrieveResourceTypesBackend) http.Handler 
 		enc := json.NewEncoder(&buf)
 		enc.SetIndent("", "  ")
 		if err := enc.Encode(rts); err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			// TODO: log
+			WriteSCIMError(w, http.StatusBadRequest, `failed to encode response`)
 			return
 		}
 
@@ -547,8 +521,7 @@ func ListSchemasEndpoint(b ListSchemasBackend) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		schemas, err := b.ListSchemas()
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprint(w, err.Error())
+			WriteError(w, err)
 			return
 		}
 
@@ -556,8 +529,7 @@ func ListSchemasEndpoint(b ListSchemasBackend) http.Handler {
 		enc := json.NewEncoder(&buf)
 		enc.SetIndent("", "  ")
 		if err := enc.Encode(schemas); err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			// TODO: log
+			WriteSCIMError(w, http.StatusBadRequest, `failed to encode response`)
 			return
 		}
 
@@ -573,15 +545,13 @@ func RetrieveSchemaEndpoint(b RetrieveSchemaBackend) http.Handler {
 		vars := mux.Vars(r)
 		id := vars.Get(`id`)
 		if id == "" {
-			w.WriteHeader(http.StatusBadRequest)
+			WriteSCIMError(w, http.StatusBadRequest, `missing ID`)
 			return
 		}
 
 		schema, err := b.RetrieveSchema(id)
 		if err != nil {
-			// The only error that can happen here right now
-			// is that the schema was not found
-			w.WriteHeader(http.StatusNotFound)
+			WriteError(w, err)
 			return
 		}
 
@@ -589,8 +559,7 @@ func RetrieveSchemaEndpoint(b RetrieveSchemaBackend) http.Handler {
 		enc := json.NewEncoder(&buf)
 		enc.SetIndent("", "  ")
 		if err := enc.Encode(schema); err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			// TODO: log
+			WriteSCIMError(w, http.StatusBadRequest, `failed to encode response`)
 			return
 		}
 

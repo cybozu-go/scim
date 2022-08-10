@@ -144,7 +144,12 @@ func (call *GetUserCall) Do(ctx context.Context) (*resource.User, error) {
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf(`expected call response %d, got (%d)`, http.StatusOK, res.StatusCode)
+		var serr resource.Error
+		var resBody bytes.Buffer
+		if err := json.NewDecoder(io.TeeReader(res.Body, &resBody)).Decode(&serr); err != nil {
+			return nil, fmt.Errorf("expected %d (got %d): %s", http.StatusOK, res.StatusCode, resBody.String())
+		}
+		return nil, &serr
 	}
 
 	var respayload resource.User
@@ -365,7 +370,12 @@ func (call *CreateUserCall) Do(ctx context.Context) (*resource.User, error) {
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusCreated {
-		return nil, fmt.Errorf(`expected call response %d, got (%d)`, http.StatusCreated, res.StatusCode)
+		var serr resource.Error
+		var resBody bytes.Buffer
+		if err := json.NewDecoder(io.TeeReader(res.Body, &resBody)).Decode(&serr); err != nil {
+			return nil, fmt.Errorf("expected %d (got %d): %s", http.StatusCreated, res.StatusCode, resBody.String())
+		}
+		return nil, &serr
 	}
 
 	var respayload resource.User
@@ -588,7 +598,12 @@ func (call *ReplaceUserCall) Do(ctx context.Context) (*resource.User, error) {
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf(`expected call response %d, got (%d)`, http.StatusOK, res.StatusCode)
+		var serr resource.Error
+		var resBody bytes.Buffer
+		if err := json.NewDecoder(io.TeeReader(res.Body, &resBody)).Decode(&serr); err != nil {
+			return nil, fmt.Errorf("expected %d (got %d): %s", http.StatusOK, res.StatusCode, resBody.String())
+		}
+		return nil, &serr
 	}
 
 	var respayload resource.User
@@ -715,7 +730,12 @@ func (call *PatchUserCall) Do(ctx context.Context) (*resource.User, error) {
 	}
 
 	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf(`expected call response %d, got (%d)`, http.StatusOK, res.StatusCode)
+		var serr resource.Error
+		var resBody bytes.Buffer
+		if err := json.NewDecoder(io.TeeReader(res.Body, &resBody)).Decode(&serr); err != nil {
+			return nil, fmt.Errorf("expected %d (got %d): %s", http.StatusOK, res.StatusCode, resBody.String())
+		}
+		return nil, &serr
 	}
 
 	var respayload resource.User
@@ -952,7 +972,12 @@ func (call *DeleteUserCall) Do(ctx context.Context) error {
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusNoContent {
-		return fmt.Errorf(`expected call response %d, got (%d)`, http.StatusNoContent, res.StatusCode)
+		var serr resource.Error
+		var resBody bytes.Buffer
+		if err := json.NewDecoder(io.TeeReader(res.Body, &resBody)).Decode(&serr); err != nil {
+			return fmt.Errorf("expected %d (got %d): %s", http.StatusNoContent, res.StatusCode, resBody.String())
+		}
+		return &serr
 	}
 
 	return nil
@@ -1096,7 +1121,12 @@ func (call *SearchUserCall) Do(ctx context.Context) (*resource.ListResponse, err
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf(`expected call response %d, got (%d)`, http.StatusOK, res.StatusCode)
+		var serr resource.Error
+		var resBody bytes.Buffer
+		if err := json.NewDecoder(io.TeeReader(res.Body, &resBody)).Decode(&serr); err != nil {
+			return nil, fmt.Errorf("expected %d (got %d): %s", http.StatusOK, res.StatusCode, resBody.String())
+		}
+		return nil, &serr
 	}
 
 	var respayload resource.ListResponse

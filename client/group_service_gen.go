@@ -141,7 +141,12 @@ func (call *GetGroupCall) Do(ctx context.Context) (*resource.Group, error) {
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf(`expected call response %d, got (%d)`, http.StatusOK, res.StatusCode)
+		var serr resource.Error
+		var resBody bytes.Buffer
+		if err := json.NewDecoder(io.TeeReader(res.Body, &resBody)).Decode(&serr); err != nil {
+			return nil, fmt.Errorf("expected %d (got %d): %s", http.StatusOK, res.StatusCode, resBody.String())
+		}
+		return nil, &serr
 	}
 
 	var respayload resource.Group
@@ -270,7 +275,12 @@ func (call *CreateGroupCall) Do(ctx context.Context) (*resource.Group, error) {
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusCreated {
-		return nil, fmt.Errorf(`expected call response %d, got (%d)`, http.StatusCreated, res.StatusCode)
+		var serr resource.Error
+		var resBody bytes.Buffer
+		if err := json.NewDecoder(io.TeeReader(res.Body, &resBody)).Decode(&serr); err != nil {
+			return nil, fmt.Errorf("expected %d (got %d): %s", http.StatusCreated, res.StatusCode, resBody.String())
+		}
+		return nil, &serr
 	}
 
 	var respayload resource.Group
@@ -401,7 +411,12 @@ func (call *ReplaceGroupCall) Do(ctx context.Context) (*resource.Group, error) {
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf(`expected call response %d, got (%d)`, http.StatusOK, res.StatusCode)
+		var serr resource.Error
+		var resBody bytes.Buffer
+		if err := json.NewDecoder(io.TeeReader(res.Body, &resBody)).Decode(&serr); err != nil {
+			return nil, fmt.Errorf("expected %d (got %d): %s", http.StatusOK, res.StatusCode, resBody.String())
+		}
+		return nil, &serr
 	}
 
 	var respayload resource.Group
@@ -528,7 +543,12 @@ func (call *PatchGroupCall) Do(ctx context.Context) (*resource.Group, error) {
 	}
 
 	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf(`expected call response %d, got (%d)`, http.StatusOK, res.StatusCode)
+		var serr resource.Error
+		var resBody bytes.Buffer
+		if err := json.NewDecoder(io.TeeReader(res.Body, &resBody)).Decode(&serr); err != nil {
+			return nil, fmt.Errorf("expected %d (got %d): %s", http.StatusOK, res.StatusCode, resBody.String())
+		}
+		return nil, &serr
 	}
 
 	var respayload resource.Group
@@ -670,7 +690,12 @@ func (call *DeleteGroupCall) Do(ctx context.Context) error {
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusNoContent {
-		return fmt.Errorf(`expected call response %d, got (%d)`, http.StatusNoContent, res.StatusCode)
+		var serr resource.Error
+		var resBody bytes.Buffer
+		if err := json.NewDecoder(io.TeeReader(res.Body, &resBody)).Decode(&serr); err != nil {
+			return fmt.Errorf("expected %d (got %d): %s", http.StatusNoContent, res.StatusCode, resBody.String())
+		}
+		return &serr
 	}
 
 	return nil
@@ -814,7 +839,12 @@ func (call *SearchGroupCall) Do(ctx context.Context) (*resource.ListResponse, er
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf(`expected call response %d, got (%d)`, http.StatusOK, res.StatusCode)
+		var serr resource.Error
+		var resBody bytes.Buffer
+		if err := json.NewDecoder(io.TeeReader(res.Body, &resBody)).Decode(&serr); err != nil {
+			return nil, fmt.Errorf("expected %d (got %d): %s", http.StatusOK, res.StatusCode, resBody.String())
+		}
+		return nil, &serr
 	}
 
 	var respayload resource.ListResponse

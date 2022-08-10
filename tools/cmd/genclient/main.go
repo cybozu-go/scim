@@ -486,7 +486,16 @@ func generateCall(o *codegen.Output, svc Service, call *codegen.Object, resource
 		successStatus = `http.StatusOK`
 	}
 	o.LL(`if res.StatusCode != %s {`, successStatus)
-	o.L("return %sfmt.Errorf(`expected call response %%d, got (%%d)`, %s, res.StatusCode)", errPrefix, successStatus)
+	// First, attempt to decode the body into a resource.Error type
+	o.L(`var serr resource.Error`)
+	o.L(`var resBody bytes.Buffer`)
+	o.L(`if err := json.NewDecoder(io.TeeReader(res.Body, &resBody)).Decode(&serr); err != nil {`)
+	// If unmarshaling into an error type is not possible, then
+	// ...well, return the payload as part of the error so the
+	// user gets some hints
+	o.L(`return %sfmt.Errorf("expected %%d (got %%d): %%s", %s, res.StatusCode, resBody.String())`, errPrefix, successStatus)
+	o.L(`}`)
+	o.L("return %s&serr", errPrefix)
 	o.L(`}`)
 
 	if resType == "none" {

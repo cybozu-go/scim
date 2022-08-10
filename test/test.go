@@ -5,6 +5,7 @@ import (
 	"embed"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -474,39 +475,161 @@ func UsersBasicCRUD(t *testing.T, cl *client.Client) func(*testing.T) {
 				t.Skip("Skipping test because Patch operations are not supported on this server.")
 			}
 
-			t.Run("add", func(t *testing.T) {
-				user, err := cl.User().Patch(createdUser.ID()).
-					Operations(
-						resource.NewPatchOperationBuilder().
-							Op(resource.PatchAdd).
-							Path(`title`).
-							Value(`patched title`).
-							MustBuild(),
-					).
-					Do(context.TODO())
-				require.NoError(t, err, `patch should succeed`)
-				require.Equal(t, `patched title`, user.Title())
-			})
-			t.Run("add complex", func(t *testing.T) {
-				for i := 0; i < 2; i++ {
-					user, err := cl.User().Patch(createdUser.ID()).
+			// Copied from RFC7644:
+			// The result of the add operation depends upon what the target location
+			// indicated by "path" references:
+			//
+			// >>> NOT IMPLEMENTED <<<
+			// o  If omitted, the target location is assumed to be the resource
+			//    itself.  The "value" parameter contains a set of attributes to be
+			//    added to the resource.
+			//
+			// o  If the target location does not exist, the attribute and value are
+			//    added.
+			//
+			// o  If the target location specifies a complex attribute, a set of
+			//    sub-attributes SHALL be specified in the "value" parameter.
+			//
+			// o  If the target location specifies a multi-valued attribute, a new
+			//    value is added to the attribute.
+			//
+			// o  If the target location specifies a single-valued attribute, the
+			//    existing value is replaced.
+			//
+			// o  If the target location specifies an attribute that does not exist
+			//    (has no value), the attribute is added with the new value.
+			//
+			// o  If the target location exists, the value is replaced.
+			//
+			// o  If the target location already contains the value specified, no
+			//    changes SHOULD be made to the resource, and a success response
+			//    SHOULD be returned.  Unless other operations change the resource,
+			//    this operation SHALL NOT change the modify timestamp of the
+			//    resource.
+			t.Run("Add", func(t *testing.T) {
+				t.Run("Empty single-valued attribute", func(t *testing.T) {
+					require.Empty(t, createdUser.Title())
+					patched, err := cl.User().Patch(createdUser.ID()).
 						Operations(
 							resource.NewPatchOperationBuilder().
 								Op(resource.PatchAdd).
-								Path(`roles`).
+								Path(`title`).
+								Value(`added title`).
+								MustBuild(),
+						).
+						Do(context.TODO())
+					require.NoError(t, err, `patch should succeed`)
+					require.Equal(t, `added title`, patched.Title())
+				})
+				t.Run("Existing single-valued attribute", func(t *testing.T) {
+					// This is confusing, but SCIM PATCH `add` operation _REPLACES_
+					// a value when the target value is a single valued element
+					patched, err := cl.User().Patch(createdUser.ID()).
+						Operations(
+							resource.NewPatchOperationBuilder().
+								Op(resource.PatchAdd).
+								Path(`title`).
+								Value(`patched title`).
+								MustBuild(),
+						).
+						Do(context.TODO())
+					require.NoError(t, err, `patch should succeed`)
+					require.Equal(t, `patched title`, patched.Title())
+				})
+			})
+			t.Run("Add complex", func(t *testing.T) {
+				addDirectorOfFinance := func(expected int) func(*testing.T) {
+					return func(t *testing.T) {
+						// This adds to the initially empty field
+						require.Empty(t, createdUser.IMS())
+						patched, err := cl.User().Patch(createdUser.ID()).
+							Operations(
+								resource.NewPatchOperationBuilder().
+									Op(resource.PatchAdd).
+									Path(`ims`).
+									Value(
+										resource.NewIMSBuilder().
+											Value("babs919587").
+											Type("ICQ").
+											MustBuild(),
+									).
+									MustBuild(),
+							).
+							Do(context.TODO())
+						require.NoError(t, err, `patch should succeed`)
+						require.Len(t, patched.IMS(), expected)
+					}
+				}
+				t.Run("Empty multi-valued field", addDirectorOfFinance(1))
+				t.Run("Non-empty multi-valued field", func(t *testing.T) {
+					// This should result in one more item in the field
+					patched, err := cl.User().Patch(createdUser.ID()).
+						Operations(
+							resource.NewPatchOperationBuilder().
+								Op(resource.PatchAdd).
+								Path(`ims`).
 								Value(
-									resource.NewRoleBuilder().
-										Value("Director of Finance").
+									resource.NewIMSBuilder().
+										Value("bjensen@hotmail.com").
+										Type("Skype").
 										MustBuild(),
 								).
 								MustBuild(),
 						).
 						Do(context.TODO())
 					require.NoError(t, err, `patch should succeed`)
-					require.Len(t, user.Roles(), len(createdUser.Roles())+1) // third one shouldn't be added
-				}
+					require.Len(t, patched.IMS(), 2)
+				})
+				// Duplicate items should not be added
+				t.Run("Duplicate item on multi-valued field", addDirectorOfFinance(2))
 			})
-			t.Run("remove", func(t *testing.T) {
+			// The "remove" operation removes the value at the target location
+			// specified by the required attribute "path".  The operation performs
+			// the following functions, depending on the target location specified
+			// by "path":
+			//
+			// o  If "path" is unspecified, the operation fails with HTTP status
+			//    code 400 and a "scimType" error code of "noTarget".
+			//
+			// o  If the target location is a single-value attribute, the attribute
+			//    and its associated value is removed, and the attribute SHALL be
+			//    considered unassigned.
+			//
+			// o  If the target location is a multi-valued attribute and no filter
+			//    is specified, the attribute and all values are removed, and the
+			//    attribute SHALL be considered unassigned.
+			//
+			// o  If the target location is a multi-valued attribute and a complex
+			//    filter is specified comparing a "value", the values matched by the
+			//    filter are removed.  If no other values remain after removal of
+			//    the selected values, the multi-valued attribute SHALL be
+			//    considered unassigned.
+			//
+			// o  If the target location is a complex multi-valued attribute and a
+			//    complex filter is specified based on the attribute's
+			//    sub-attributes, the matching records are removed.  Sub-attributes
+			//    whose values have been removed SHALL be considered unassigned.  If
+			//    the complex multi-valued attribute has no remaining records, the
+			//    attribute SHALL be considered unassigned.
+			//
+			// If an attribute is removed or becomes unassigned and is defined as a
+			// required attribute or a read-only attribute, the server SHALL return
+			// an HTTP response status code and a JSON detail error response as
+			// defined in Section 3.12, with a "scimType" error code of "mutability".
+			t.Run("Remove", func(t *testing.T) {
+				t.Run("Empty path", func(t *testing.T) {
+					_, err := cl.User().Patch(createdUser.ID()).
+						Operations(
+							resource.NewPatchOperationBuilder().
+								Op(resource.PatchRemove).
+								Path(``).
+								MustBuild(),
+						).
+						Do(context.TODO())
+					var serr *resource.Error
+					require.True(t, errors.As(err, &serr), `error should be a resource.Error type`)
+					require.Equal(t, resource.ErrNoTarget, serr.ScimType())
+				})
 				user, err := cl.User().Patch(createdUser.ID()).
 					Operations(
 						resource.NewPatchOperationBuilder().
@@ -532,6 +655,26 @@ func UsersBasicCRUD(t *testing.T, cl *client.Client) func(*testing.T) {
 					MustBuild()).
 				Do(context.TODO())
 			require.NoError(t, err, `ReplaceUser should succeed`)
+
+			// Note: this implementation may differ from server to server.
+			// In this version we assume that while the `userName` is read-write,
+			// it cannot be empty. Thus, we assume that even when you replace an existing
+			// user object with another version that does not have a valid `userName`
+			// field, the old value should still persist
+			require.Equal(t, replaced.UserName(), createdUser.UserName())
+
+			// We explicitly asked to persist these fields
+			require.Equal(t, replaced.ExternalID(), createdUser.ExternalID())
+
+			// We cleared these fields
+			require.Empty(t, replaced.DisplayName())
+			require.Empty(t, replaced.Name())
+			require.Empty(t, replaced.Roles())
+			require.Empty(t, replaced.Photos())
+
+			// These fields were explicitly set to a different value
+			require.NotEqual(t, replaced.Emails(), createdUser.Emails())
+			require.NotEqual(t, replaced.PhoneNumbers(), createdUser.PhoneNumbers())
 
 			// we need to validate the result from PUT and GET
 			fetched, err := cl.User().Get(createdUser.ID()).
@@ -618,7 +761,7 @@ func GroupsBasicCRUD(t *testing.T, cl *client.Client) func(*testing.T) {
 			require.Equal(t, etag, g.Meta().Version(), `versions should match`)
 		})
 		t.Run("Patch group", func(t *testing.T) {
-			if supportsPatch {
+			if !supportsPatch {
 				t.Skip("Skipping because Patch operations are not supported on this server")
 			}
 			g, err := cl.Group().Patch(createdGroup.ID()).
@@ -847,7 +990,7 @@ func ServiceProviderConfig(t *testing.T, cl *client.Client) func(t *testing.T) {
 				}
 				return "N/A"
 			}
-			t.Logf("server capabilities:")
+			t.Logf("Server capabilities:")
 			t.Logf("  Bulk operations : %s", boolToSupported(c.Bulk().Supported()))
 			t.Logf("  Change password : %s", boolToSupported(c.ChangePassword().Supported()))
 			t.Logf("  ETags           : %s", boolToSupported(c.ETag().Supported()))

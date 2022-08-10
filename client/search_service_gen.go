@@ -154,7 +154,12 @@ func (call *SearchCall) Do(ctx context.Context) (*resource.ListResponse, error) 
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf(`expected call response %d, got (%d)`, http.StatusOK, res.StatusCode)
+		var serr resource.Error
+		var resBody bytes.Buffer
+		if err := json.NewDecoder(io.TeeReader(res.Body, &resBody)).Decode(&serr); err != nil {
+			return nil, fmt.Errorf("expected %d (got %d): %s", http.StatusOK, res.StatusCode, resBody.String())
+		}
+		return nil, &serr
 	}
 
 	var respayload resource.ListResponse

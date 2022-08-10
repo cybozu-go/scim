@@ -92,6 +92,9 @@ func WriteSCIMError(w http.ResponseWriter, st int, msg string) {
 		MustBuild()
 
 	// Try one more time in vein to write the error of Encode?
+	// Look, I've explicitly stated to ignore errors, you linters
+	// should just let me be, OK?
+	//nolint:errchkjson
 	_ = json.NewEncoder(w).Encode(serr)
 }
 
@@ -99,6 +102,9 @@ func WriteError(w http.ResponseWriter, err error) {
 	var serr *resource.Error
 	if errors.As(err, &serr) {
 		w.WriteHeader(serr.Status())
+		// Look, I've explicitly stated to ignore errors, you linters
+		// should just let me be, OK?
+		//nolint:errchkjson
 		_ = json.NewEncoder(w).Encode(serr)
 		return
 	}

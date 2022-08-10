@@ -112,7 +112,7 @@ func (call *GetServiceProviderConfigCall) makeURL() string {
 	return call.client.baseURL + "/ServiceProviderConfig"
 }
 
-func (call *GetServiceProviderConfigCall) Do(ctx context.Context) (**resource.ServiceProviderConfig, error) {
+func (call *GetServiceProviderConfigCall) Do(ctx context.Context) (*resource.ServiceProviderConfig, error) {
 	if err := call.err; err != nil {
 		return nil, fmt.Errorf("failed to build request: %w", err)
 	}
@@ -150,7 +150,7 @@ func (call *GetServiceProviderConfigCall) Do(ctx context.Context) (**resource.Se
 		return nil, fmt.Errorf(`expected call response %d, got (%d)`, http.StatusOK, res.StatusCode)
 	}
 
-	var respayload *resource.ServiceProviderConfig
+	var respayload resource.ServiceProviderConfig
 	if err := json.NewDecoder(res.Body).Decode(&respayload); err != nil {
 		return nil, fmt.Errorf(`failed to decode call response: %w`, err)
 	}
@@ -180,7 +180,7 @@ func (call *GetSchemas) makeURL() string {
 	return call.client.baseURL + "/Schemas"
 }
 
-func (call *GetSchemas) Do(ctx context.Context) (**resource.ListResponse, error) {
+func (call *GetSchemas) Do(ctx context.Context) (*resource.ListResponse, error) {
 	if err := call.err; err != nil {
 		return nil, fmt.Errorf("failed to build request: %w", err)
 	}
@@ -218,7 +218,7 @@ func (call *GetSchemas) Do(ctx context.Context) (**resource.ListResponse, error)
 		return nil, fmt.Errorf(`expected call response %d, got (%d)`, http.StatusOK, res.StatusCode)
 	}
 
-	var respayload *resource.ListResponse
+	var respayload resource.ListResponse
 	if err := json.NewDecoder(res.Body).Decode(&respayload); err != nil {
 		return nil, fmt.Errorf(`failed to decode call response: %w`, err)
 	}
@@ -250,7 +250,7 @@ func (call GetSchema) makeURL() string {
 	return call.client.baseURL + "/Schemas/" + call.id
 }
 
-func (call *GetSchema) Do(ctx context.Context) (**resource.Schema, error) {
+func (call *GetSchema) Do(ctx context.Context) (*resource.Schema, error) {
 	if err := call.err; err != nil {
 		return nil, fmt.Errorf("failed to build request: %w", err)
 	}
@@ -288,7 +288,7 @@ func (call *GetSchema) Do(ctx context.Context) (**resource.Schema, error) {
 		return nil, fmt.Errorf(`expected call response %d, got (%d)`, http.StatusOK, res.StatusCode)
 	}
 
-	var respayload *resource.Schema
+	var respayload resource.Schema
 	if err := json.NewDecoder(res.Body).Decode(&respayload); err != nil {
 		return nil, fmt.Errorf(`failed to decode call response: %w`, err)
 	}

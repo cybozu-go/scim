@@ -14,7 +14,7 @@ const (
 	ServiceProviderConfigBulkKey                  = "bulk"
 	ServiceProviderConfigChangePasswordKey        = "changePassword"
 	ServiceProviderConfigDocumentationURIKey      = "documentationUri"
-	ServiceProviderConfigEtagKey                  = "etag"
+	ServiceProviderConfigETagKey                  = "etag"
 	ServiceProviderConfigFilterKey                = "filter"
 	ServiceProviderConfigPatchKey                 = "patch"
 	ServiceProviderConfigSchemasKey               = "schemas"
@@ -127,13 +127,13 @@ func (v *ServiceProviderConfig) DocumentationURI() string {
 	return *(v.documentationURI)
 }
 
-func (v *ServiceProviderConfig) HasEtag() bool {
+func (v *ServiceProviderConfig) HasETag() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.etag != nil
 }
 
-func (v *ServiceProviderConfig) Etag() *GenericSupport {
+func (v *ServiceProviderConfig) ETag() *GenericSupport {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.etag
@@ -277,7 +277,7 @@ func (v *ServiceProviderConfig) Get(name string, options ...GetOption) (interfac
 			return nil, false
 		}
 		return *(v.documentationURI), true
-	case ServiceProviderConfigEtagKey:
+	case ServiceProviderConfigETagKey:
 		if v.etag == nil {
 			return nil, false
 		}
@@ -361,7 +361,7 @@ func (v *ServiceProviderConfig) Set(name string, value interface{}) error {
 		}
 		v.documentationURI = &tmp
 		return nil
-	case ServiceProviderConfigEtagKey:
+	case ServiceProviderConfigETagKey:
 		var tmp *GenericSupport
 		tmp, ok := value.(*GenericSupport)
 		if !ok {
@@ -491,7 +491,7 @@ LOOP:
 					return fmt.Errorf(`failed to decode value for key "documentationUri": %w`, err)
 				}
 				v.documentationURI = &x
-			case ServiceProviderConfigEtagKey:
+			case ServiceProviderConfigETagKey:
 				var x *GenericSupport
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "etag": %w`, err)
@@ -639,7 +639,7 @@ func (b *ServiceProviderConfigBuilder) DocumentationURI(v string) *ServiceProvid
 	return b
 }
 
-func (b *ServiceProviderConfigBuilder) Etag(v *GenericSupport) *ServiceProviderConfigBuilder {
+func (b *ServiceProviderConfigBuilder) ETag(v *GenericSupport) *ServiceProviderConfigBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.once.Do(b.init)

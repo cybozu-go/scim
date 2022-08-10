@@ -26,6 +26,10 @@ var datasrc embed.FS
 
 var TraceWriter = io.Discard
 
+// Global switches to control which features to test
+// var supportsBulk bool  // current UNUSED
+var supportsPatch bool
+
 func init() {
 	v, err := strconv.ParseBool(os.Getenv(`SCIM_TRACE`))
 	if err == nil {
@@ -76,6 +80,11 @@ func RunConformanceTests(t *testing.T, name string, backend interface{}) {
 
 		cl := client.New(srv.URL, client.WithClient(httpcl), client.WithTrace(TraceWriter))
 
+		t.Run(`Meta`, func(t *testing.T) {
+			t.Run(`ServiceProviderConfig`, ServiceProviderConfig(t, cl))
+			t.Run("ResourceTypes", ResourceTypes(t, cl))
+			t.Run("Schemas", Schemas(t, cl))
+		})
 		t.Run("Prepare Fixtures", PrepareFixtures(t, cl))
 		t.Run("Users", func(t *testing.T) {
 			t.Run("Basic CRUD", UsersBasicCRUD(t, cl))
@@ -87,11 +96,6 @@ func RunConformanceTests(t *testing.T, name string, backend interface{}) {
 			t.Run("Search", GroupsSearch(t, cl))
 		})
 		t.Run("Mixed Search", MixedSearch(t, cl))
-		t.Run("Meta", func(t *testing.T) {
-			t.Run("ServiceProviderConfig", ServiceProviderConfig(t, cl))
-			t.Run("ResourceTypes", ResourceTypes(t, cl))
-			t.Run("Schemas", Schemas(t, cl))
-		})
 	})
 }
 
@@ -466,6 +470,10 @@ func UsersBasicCRUD(t *testing.T, cl *client.Client) func(*testing.T) {
 			require.Equal(t, etag, u.Meta().Version(), `versions should match`)
 		})
 		t.Run("Patch user", func(t *testing.T) {
+			if !supportsPatch {
+				t.Skip("Skipping test because Patch operations are not supported on this server.")
+			}
+
 			t.Run("add", func(t *testing.T) {
 				user, err := cl.User().Patch(createdUser.ID()).
 					Operations(
@@ -513,7 +521,8 @@ func UsersBasicCRUD(t *testing.T, cl *client.Client) func(*testing.T) {
 			})
 		})
 		t.Run("Replace user", func(t *testing.T) {
-			u, err := cl.User().Replace(createdUser.ID()).
+			replaced, err := cl.User().Replace(createdUser.ID()).
+				ExternalID(createdUser.ExternalID()).
 				Emails(resource.NewEmailBuilder().
 					Value("babs-new@jensen.org").
 					Primary(true).
@@ -529,13 +538,19 @@ func UsersBasicCRUD(t *testing.T, cl *client.Client) func(*testing.T) {
 				Do(context.TODO())
 			require.NoError(t, err, `Get should succeed`)
 
+			// First off, u and fetched should be the same object
+			require.Equal(t, replaced, fetched)
+
+			// Just making sure that the versions are updated
+			require.NotEqual(t, createdUser.Meta().Version(), replaced.Meta().Version())
+
 			testcases := []struct {
 				Name string
 				User *resource.User
 			}{
 				{
 					Name: "Result from issuing replace",
-					User: u,
+					User: replaced,
 				},
 				{
 					Name: "Result from fetch after replace",
@@ -603,6 +618,9 @@ func GroupsBasicCRUD(t *testing.T, cl *client.Client) func(*testing.T) {
 			require.Equal(t, etag, g.Meta().Version(), `versions should match`)
 		})
 		t.Run("Patch group", func(t *testing.T) {
+			if supportsPatch {
+				t.Skip("Skipping because Patch operations are not supported on this server")
+			}
 			g, err := cl.Group().Patch(createdGroup.ID()).
 				Operations(
 					resource.NewPatchOperationBuilder().
@@ -787,15 +805,6 @@ func MixedSearch(t *testing.T, cl *client.Client) func(t *testing.T) {
 	}
 }
 
-func ServiceProviderConfig(t *testing.T, cl *client.Client) func(t *testing.T) {
-	return func(t *testing.T) {
-		spc, err := cl.Meta().GetServiceProviderConfig().
-			Do(context.TODO())
-		require.NoError(t, err, `cl.GetServiceProviderConfig should succeed`)
-		_ = spc // TODO: perform more checks
-	}
-}
-
 func ResourceTypes(t *testing.T, cl *client.Client) func(t *testing.T) {
 	return func(t *testing.T) {
 		spc, err := cl.Meta().GetResourceTypes().
@@ -820,6 +829,33 @@ func Schemas(t *testing.T, cl *client.Client) func(t *testing.T) {
 				require.NoError(t, err, `cl.GetSchemas should succeed`)
 				_ = s
 			}
+		})
+	}
+}
+
+func ServiceProviderConfig(t *testing.T, cl *client.Client) func(t *testing.T) {
+	return func(t *testing.T) {
+		t.Run(`Get /ServiceProviderConfig`, func(t *testing.T) {
+			ctx := context.TODO()
+
+			c, err := cl.Meta().GetServiceProviderConfig().Do(ctx)
+			require.NoError(t, err, `GetServiceProviderConfig should succeed`)
+
+			boolToSupported := func(b bool) string {
+				if b {
+					return "SUPPORTED"
+				}
+				return "N/A"
+			}
+			t.Logf("server capabilities:")
+			t.Logf("  Bulk operations : %s", boolToSupported(c.Bulk().Supported()))
+			t.Logf("  Change password : %s", boolToSupported(c.ChangePassword().Supported()))
+			t.Logf("  ETags           : %s", boolToSupported(c.ETag().Supported()))
+			t.Logf("  Filters         : %s", boolToSupported(c.Filter().Supported()))
+			t.Logf("  Patch operations: %s", boolToSupported(c.Patch().Supported()))
+			t.Logf("  Sorting         : %s", boolToSupported(c.Sort().Supported()))
+
+			supportsPatch = c.Patch().Supported()
 		})
 	}
 }

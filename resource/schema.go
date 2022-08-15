@@ -7,17 +7,17 @@ package resource
 //
 // Sub-attributes can also be specified by concatenating
 // the field names with a dot ('.'), for example `members.value`
-func (s *Schema) AttributeByName(name string) (*SchemaAttribute, bool) {
+func (v *Schema) AttributeByName(name string) (*SchemaAttribute, bool) {
 	// resources are basically immutable, so we can safely cache this result
-	s.attrByNameInitOnce.Do(s.populateAttrByName)
+	v.attrByNameInitOnce.Do(v.populateAttrByName)
 
-	attr, ok := s.attrByName[name]
+	attr, ok := v.attrByName[name]
 	return attr, ok
 }
 
-func (s *Schema) populateAttrByName() {
-	s.attrByName = make(map[string]*SchemaAttribute)
-	for _, attr := range s.Attributes() {
-		s.attrByName[attr.Name()] = attr
+func (v *Schema) populateAttrByName() {
+	v.attrByName = make(map[string]*SchemaAttribute)
+	for _, attr := range v.Attributes() {
+		v.attrByName[attr.Name()] = attr
 	}
 }

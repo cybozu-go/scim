@@ -147,6 +147,12 @@ func generateObject(object *codegen.Object) error {
 			o.L("%s *%s", field.Name(false), field.Type())
 		}
 	}
+	// This is only used in Schema resource
+	if object.Name(true) == `Schema` {
+		o.L(`attrByNameInitOnce sync.Once`)
+		o.L(`attrByName map[string]*SchemaAttribute`)
+	}
+
 	o.L(`privateParams map[string]interface{}`)
 	o.L(`mu sync.RWMutex`)
 	o.L(`}`)
@@ -193,7 +199,7 @@ func generateObject(object *codegen.Object) error {
 		}
 		o.L(`}`)
 
-		o.LL(`func (v *%s) %s() %s {`, object.Name(true), field.Name(true), rt)
+		o.LL(`func (v *%s) %s() %s {`, object.Name(true), field.GetterMethod(true), rt)
 		o.L(`v.mu.RLock()`)
 		o.L(`defer v.mu.RUnlock()`)
 		// schemas is a special case
@@ -457,11 +463,11 @@ func generateObject(object *codegen.Object) error {
 		}
 		// If the argument is a slice, the parameter type should be varg
 		if field.Name(false) == `schemas` {
-			o.LL(`func (b *%[1]sBuilder) %[2]s(v ...string) *%[1]sBuilder {`, object.Name(true), field.Name(true))
+			o.LL(`func (b *%[1]sBuilder) %[2]s(v ...string) *%[1]sBuilder {`, object.Name(true), field.GetterMethod(true))
 		} else if IsSlice(field) {
-			o.LL(`func (b *%[1]sBuilder) %[2]s(v ...%[3]s) *%[1]sBuilder {`, object.Name(true), field.Name(true), strings.TrimPrefix(field.Type(), `[]`))
+			o.LL(`func (b *%[1]sBuilder) %[2]s(v ...%[3]s) *%[1]sBuilder {`, object.Name(true), field.GetterMethod(true), strings.TrimPrefix(field.Type(), `[]`))
 		} else {
-			o.LL(`func (b *%[1]sBuilder) %[2]s(v %[3]s) *%[1]sBuilder {`, object.Name(true), field.Name(true), field.Type())
+			o.LL(`func (b *%[1]sBuilder) %[2]s(v %[3]s) *%[1]sBuilder {`, object.Name(true), field.GetterMethod(true), field.Type())
 		}
 		o.L(`b.mu.Lock()`)
 		o.L(`defer b.mu.Unlock()`)

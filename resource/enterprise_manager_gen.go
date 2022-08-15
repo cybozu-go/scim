@@ -73,7 +73,7 @@ func (v *EnterpriseManager) HasReference() bool {
 	return v.ref != nil
 }
 
-func (v *EnterpriseManager) Reference() string {
+func (v *EnterpriseManager) Ref() string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	if v.ref == nil {
@@ -361,7 +361,7 @@ func (b *EnterpriseManagerBuilder) ID(v string) *EnterpriseManagerBuilder {
 	return b
 }
 
-func (b *EnterpriseManagerBuilder) Reference(v string) *EnterpriseManagerBuilder {
+func (b *EnterpriseManagerBuilder) Ref(v string) *EnterpriseManagerBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.once.Do(b.init)

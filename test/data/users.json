@@ -47,6 +47,11 @@
       {
         "value": "actor"
       }
+    ],
+    "entitlements": [
+      {
+        "value": "allow-run-until-stop"
+      }
     ]
   },
   {

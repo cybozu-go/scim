@@ -204,7 +204,7 @@ func (v *SchemaAttribute) HasSubAttributes() bool {
 	return v.subAttributes != nil
 }
 
-func (v *SchemaAttribute) SubAttributes() []*SchemaAttribute {
+func (v *SchemaAttribute) Attributes() []*SchemaAttribute {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.subAttributes
@@ -863,7 +863,7 @@ func (b *SchemaAttributeBuilder) Returned(v Returned) *SchemaAttributeBuilder {
 	return b
 }
 
-func (b *SchemaAttributeBuilder) SubAttributes(v ...*SchemaAttribute) *SchemaAttributeBuilder {
+func (b *SchemaAttributeBuilder) Attributes(v ...*SchemaAttribute) *SchemaAttributeBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.once.Do(b.init)

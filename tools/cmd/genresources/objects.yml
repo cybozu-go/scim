@@ -44,6 +44,7 @@ objects:
         unexported_name: profileURL
         exported_name: ProfileURL
         validator: validateProfileURL
+        getter: ProfileURL
         json: profileUrl
       - name: title
       - name: userType
@@ -66,6 +67,7 @@ objects:
         exported_name: IMS
         unexported_name: ims
         type: '[]*IMS'
+        getter: IMS
       - name: groups
         type: '[]*GroupMember'
       - name: entitlements
@@ -83,6 +85,7 @@ objects:
       ent_name: type
       exported_name: Type
       json: type
+      getter: Type
     - name: primary
       type: bool
     - name: display
@@ -95,6 +98,7 @@ objects:
       ent_name: type
       exported_name: Type
       json: type
+      getter: Type
     - name: primary
       type: bool
     - name: display
@@ -106,6 +110,7 @@ objects:
       ent_name: type
       exported_name: Type
       json: type
+      getter: Type
     - name: primary
       type: bool
     - name: display
@@ -117,6 +122,7 @@ objects:
       ent_name: type
       exported_name: Type
       json: type
+      getter: Type
     - name: primary
       type: bool
     - name: display
@@ -128,6 +134,7 @@ objects:
       ent_name: type
       exported_name: Type
       json: type
+      getter: Type
     - name: primary
       type: bool
     - name: display
@@ -152,6 +159,7 @@ objects:
       ent_name: type
       exported_name: Type
       json: type
+      getter: Type
     - name: primary
       type: bool
     - name: display
@@ -166,6 +174,7 @@ objects:
         ent_name: type
         exported_name: Type
         json: type
+        getter: Type
       - name: primary
         type: bool
   - name: Names
@@ -216,6 +225,7 @@ objects:
         json: type
         ent_name: type
         exported_name: Type
+        getter: Type
   - name: GenericSupport
     skipCommonFields: true
     fields:
@@ -249,6 +259,7 @@ objects:
       - name: typ
         json: type
         exported_name: Type
+        getter: Type
         type: AuthenticationSchemeType
         required: true
       - name: name
@@ -282,6 +293,7 @@ objects:
         required: true
         type: '*GenericSupport'
       - name: etag
+        getter: ETag
         exported_name: ETag
         required: true
         type: '*GenericSupport'
@@ -346,10 +358,12 @@ objects:
       - name: typ
         json: type
         exported_name: Type
+        getter: Type
       - name: fallbackType
         type: '*SchemaAttribute'
       - name: subAttributes
         type: '[]*SchemaAttribute'
+        getter: Attributes
       - name: multiValued
         type: bool
       - name: description

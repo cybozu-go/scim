@@ -18,7 +18,7 @@ common:
     mutability: "readWrite"
     returned: "default"
     uniqueness: "none"
-  - name: "meta"
+  - name: "meta" # This exists for completeness, but I'm not sure if it should
     type: "complex"
     multiValued: false
     description: "A complex attribute containing resource metadata. All \"meta\" sub-attributes are assigned by the service provider (have a \"mutability\" of \"readOnly\"), and all of these sub-attributes have a \"returned\" characteristic of \"default\".  This attribute SHALL be ignored when provided by clients."
@@ -36,6 +36,14 @@ common:
         mutability: "readOnly"
         returned: "always"
         uniquness: "none"
+      - name: "created"
+        type: "string"
+        description: "The \"DateTime\" that the resource was added to the service provider"
+        required: false
+        caseExact: false
+        mutability: "readOnly"
+        returned: "default" # Is this right?
+        uniqueness: "none"
 schemas:
   - id: urn:ietf:params:scim:schemas:core:2.0:User
     name: User

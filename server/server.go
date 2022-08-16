@@ -14,6 +14,14 @@ import (
 var ctKey = `Content-Type`
 var mimeSCIM = `application/scim+json`
 
+func MustNewServer(backend interface{}) http.Handler {
+	h, err := NewServer(backend)
+	if err != nil {
+		panic(err)
+	}
+	return h
+}
+
 func NewServer(backend interface{}) (http.Handler, error) {
 	var b Builder
 

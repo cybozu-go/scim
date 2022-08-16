@@ -3,21 +3,19 @@ package examples_test
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"net/http/httptest"
 
-	"github.com/cybozu-go/scim/client"
+	"github.com/cybozu-go/scim/server"
 )
 
 func ExampleClient_UserCreate() {
-	// TODO: setup a toy SCIM server
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusCreated)
-		fmt.Fprintf(w, `{}`)
-	}))
+	srv := httptest.NewServer(server.MustNewServer(NewMockBackend()))
 	defer srv.Close()
 
-	cl := client.New(srv.URL)
+	// Create a SCIM client: this is wrapped in another function call
+	// to accomodate for debug tracing, but you can replace it with
+	// a client.New() call
+	cl := NewClient(srv.URL)
 
 	user, err := cl.User().Create().
 		DisplayName(`Daisuke Maki`).

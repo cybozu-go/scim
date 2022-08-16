@@ -1,7 +1,7 @@
 //go:generate ./tools/cmd/genoptions.sh
 //go:generate go generate ./filter
 //go:generate go generate ./resource
-//go:generate go generate ./sample
+//go:generate go generate ./schema
 //go:generate go generate ./client
 
 // Package scim contains SCIM resource definitions, SCIM client implementation, and
@@ -50,9 +50,3 @@
 //    customClient := ... // *http.Client object, or anything that satisfies client.HTTPClient
 //    cl := client.New(url, client.WithClient(customClient))
 package scim
-
-type ResourceNotFoundError struct{}
-
-func (ResourceNotFoundError) Error() string {
-	return "resource not found"
-}

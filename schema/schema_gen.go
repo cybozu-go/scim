@@ -32,7 +32,7 @@ func init() {
 					Mutability(resource.MutReadWrite).
 					Returned(resource.ReturnedDefault).
 					Uniqueness(resource.UniqNone).
-					SubAttributes(
+					Attributes(
 						resource.NewSchemaAttributeBuilder().
 							Name("formatted").
 							Type("string").
@@ -142,7 +142,7 @@ func init() {
 					Mutability(resource.MutReadWrite).
 					Returned(resource.ReturnedDefault).
 					Uniqueness(resource.UniqNone).
-					SubAttributes(
+					Attributes(
 						resource.NewSchemaAttributeBuilder().
 							Name("value").
 							Type("string").
@@ -204,7 +204,7 @@ func init() {
 					Mutability(resource.MutReadWrite).
 					Returned(resource.ReturnedDefault).
 					Uniqueness(resource.UniqNone).
-					SubAttributes(
+					Attributes(
 						resource.NewSchemaAttributeBuilder().
 							Name("value").
 							Type("string").
@@ -278,7 +278,7 @@ func init() {
 					Mutability(resource.MutReadOnly).
 					Returned(resource.ReturnedDefault).
 					Uniqueness(resource.UniqNone).
-					SubAttributes(
+					Attributes(
 						resource.NewSchemaAttributeBuilder().
 							Name("value").
 							Type("string").
@@ -352,7 +352,7 @@ func init() {
 					Mutability(resource.MutReadWrite).
 					Returned(resource.ReturnedDefault).
 					Uniqueness(resource.UniqNone).
-					SubAttributes(
+					Attributes(
 						resource.NewSchemaAttributeBuilder().
 							Name("value").
 							Type("string").
@@ -426,7 +426,7 @@ func init() {
 					Mutability(resource.MutReadOnly).
 					Returned(resource.ReturnedDefault).
 					Uniqueness(resource.UniqNone).
-					SubAttributes(
+					Attributes(
 						resource.NewSchemaAttributeBuilder().
 							Name("resourceType").
 							Type("string").
@@ -437,6 +437,18 @@ func init() {
 							Required(true).
 							Mutability(resource.MutReadOnly).
 							Returned(resource.ReturnedAlways).
+							Uniqueness(resource.UniqNone).
+							MustBuild(),
+						resource.NewSchemaAttributeBuilder().
+							Name("created").
+							Type("string").
+							MultiValued(false).
+							Description("The \"DateTime\" that the resource was added to the service provider").
+							Required(false).
+							CaseExact(false).
+							Required(false).
+							Mutability(resource.MutReadOnly).
+							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
 							MustBuild(),
 					).
@@ -452,7 +464,7 @@ func init() {
 					Mutability(resource.MutReadWrite).
 					Returned(resource.ReturnedDefault).
 					Uniqueness(resource.UniqNone).
-					SubAttributes(
+					Attributes(
 						resource.NewSchemaAttributeBuilder().
 							Name("formatted").
 							Type("string").
@@ -562,7 +574,7 @@ func init() {
 					Mutability(resource.MutReadWrite).
 					Returned(resource.ReturnedDefault).
 					Uniqueness(resource.UniqNone).
-					SubAttributes(
+					Attributes(
 						resource.NewSchemaAttributeBuilder().
 							Name("value").
 							Type("string").
@@ -624,7 +636,7 @@ func init() {
 					Mutability(resource.MutReadWrite).
 					Returned(resource.ReturnedDefault).
 					Uniqueness(resource.UniqNone).
-					SubAttributes(
+					Attributes(
 						resource.NewSchemaAttributeBuilder().
 							Name("value").
 							Type("reference").
@@ -710,7 +722,7 @@ func init() {
 					Mutability(resource.MutReadWrite).
 					Returned(resource.ReturnedDefault).
 					Uniqueness(resource.UniqNone).
-					SubAttributes(
+					Attributes(
 						resource.NewSchemaAttributeBuilder().
 							Name("value").
 							Type("string").
@@ -820,7 +832,7 @@ func init() {
 					Mutability(resource.MutReadWrite).
 					Returned(resource.ReturnedDefault).
 					Uniqueness(resource.UniqNone).
-					SubAttributes(
+					Attributes(
 						resource.NewSchemaAttributeBuilder().
 							Name("value").
 							Type("binary").
@@ -931,7 +943,7 @@ func init() {
 					Mutability(resource.MutReadWrite).
 					Returned(resource.ReturnedDefault).
 					Uniqueness(resource.UniqNone).
-					SubAttributes(
+					Attributes(
 						resource.NewSchemaAttributeBuilder().
 							Name("value").
 							Type("string").
@@ -981,7 +993,7 @@ func init() {
 					Mutability(resource.MutReadOnly).
 					Returned(resource.ReturnedDefault).
 					Uniqueness(resource.UniqNone).
-					SubAttributes(
+					Attributes(
 						resource.NewSchemaAttributeBuilder().
 							Name("resourceType").
 							Type("string").
@@ -992,6 +1004,18 @@ func init() {
 							Required(true).
 							Mutability(resource.MutReadOnly).
 							Returned(resource.ReturnedAlways).
+							Uniqueness(resource.UniqNone).
+							MustBuild(),
+						resource.NewSchemaAttributeBuilder().
+							Name("created").
+							Type("string").
+							MultiValued(false).
+							Description("The \"DateTime\" that the resource was added to the service provider").
+							Required(false).
+							CaseExact(false).
+							Required(false).
+							Mutability(resource.MutReadOnly).
+							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
 							MustBuild(),
 					).
@@ -1092,7 +1116,7 @@ func init() {
 					Mutability(resource.MutReadWrite).
 					Returned(resource.ReturnedDefault).
 					Uniqueness(resource.UniqNone).
-					SubAttributes(
+					Attributes(
 						resource.NewSchemaAttributeBuilder().
 							Name("value").
 							Type("string").
@@ -1142,7 +1166,7 @@ func init() {
 					Mutability(resource.MutReadOnly).
 					Returned(resource.ReturnedDefault).
 					Uniqueness(resource.UniqNone).
-					SubAttributes(
+					Attributes(
 						resource.NewSchemaAttributeBuilder().
 							Name("resourceType").
 							Type("string").
@@ -1153,6 +1177,18 @@ func init() {
 							Required(true).
 							Mutability(resource.MutReadOnly).
 							Returned(resource.ReturnedAlways).
+							Uniqueness(resource.UniqNone).
+							MustBuild(),
+						resource.NewSchemaAttributeBuilder().
+							Name("created").
+							Type("string").
+							MultiValued(false).
+							Description("The \"DateTime\" that the resource was added to the service provider").
+							Required(false).
+							CaseExact(false).
+							Required(false).
+							Mutability(resource.MutReadOnly).
+							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
 							MustBuild(),
 					).

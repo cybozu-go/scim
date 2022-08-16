@@ -17,12 +17,14 @@ const (
 )
 
 type Schema struct {
-	attributes    []*SchemaAttribute
-	description   *string
-	id            *string
-	name          *string
-	privateParams map[string]interface{}
-	mu            sync.RWMutex
+	attributes         []*SchemaAttribute
+	description        *string
+	id                 *string
+	name               *string
+	attrByNameInitOnce sync.Once
+	attrByName         map[string]*SchemaAttribute
+	privateParams      map[string]interface{}
+	mu                 sync.RWMutex
 }
 
 type SchemaValidator interface {

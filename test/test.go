@@ -299,6 +299,14 @@ func UsersSearch(t *testing.T, cl *client.Client) func(t *testing.T) {
 					Query:        `phoneNumbers.value co "123-456-7890"`,
 					TotalResults: 1,
 				},
+				{
+					Query:        `userName sw "fg"`,
+					TotalResults: 1,
+				},
+				{
+					Query:        `roles.value sw "act"`,
+					TotalResults: 4,
+				},
 			}
 
 			for _, tc := range testcases {
@@ -630,17 +638,19 @@ func UsersBasicCRUD(t *testing.T, cl *client.Client) func(*testing.T) {
 					require.True(t, errors.As(err, &serr), `error should be a resource.Error type`)
 					require.Equal(t, resource.ErrNoTarget, serr.ScimType())
 				})
-				user, err := cl.User().Patch(createdUser.ID()).
-					Operations(
-						resource.NewPatchOperationBuilder().
-							Op(resource.PatchRemove).
-							Path(`title`).
-							MustBuild(),
-					).
-					Do(context.TODO())
-				require.NoError(t, err, `patch should succeed`)
-				require.NotNil(t, user, `user should be sent back`)
-				require.Equal(t, ``, user.Title())
+				t.Run("Single-value attribute", func(t *testing.T) {
+					user, err := cl.User().Patch(createdUser.ID()).
+						Operations(
+							resource.NewPatchOperationBuilder().
+								Op(resource.PatchRemove).
+								Path(`title`).
+								MustBuild(),
+						).
+						Do(context.TODO())
+					require.NoError(t, err, `patch should succeed`)
+					require.NotNil(t, user, `user should be sent back`)
+					require.Equal(t, ``, user.Title())
+				})
 			})
 		})
 		t.Run("Replace user", func(t *testing.T) {

@@ -155,9 +155,9 @@ func generateAttr(o *codegen.Output, attr *resource.SchemaAttribute) error {
 	}
 	o.L(`Uniqueness(%s).`, uniq)
 
-	subattrs := attr.SubAttributes()
+	subattrs := attr.Attributes()
 	if len(subattrs) > 0 {
-		o.L(`SubAttributes(`)
+		o.L(`Attributes(`)
 		for _, subattr := range subattrs {
 			if err := generateAttr(o, subattr); err != nil {
 				return err

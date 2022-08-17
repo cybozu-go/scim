@@ -1,6 +1,7 @@
 package examples_test
 
 import (
+	"context"
 	"os"
 	"strconv"
 
@@ -30,7 +31,7 @@ func NewMockBackend() *MockBackend {
 	}
 }
 
-func (s *MockBackend) CreateUser(in *resource.User) (*resource.User, error) {
+func (s *MockBackend) CreateUser(_ context.Context, in *resource.User) (*resource.User, error) {
 	id := uuid.New().String()
 
 	var b resource.Builder

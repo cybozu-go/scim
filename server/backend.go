@@ -2,6 +2,7 @@ package server
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"io"
@@ -13,71 +14,71 @@ import (
 )
 
 type CreateGroupBackend interface {
-	CreateGroup(*resource.Group) (*resource.Group, error)
+	CreateGroup(context.Context, *resource.Group) (*resource.Group, error)
 }
 
 type DeleteGroupBackend interface {
-	DeleteGroup(id string) error
+	DeleteGroup(context.Context, string) error
 }
 
 type ReplaceGroupBackend interface {
-	ReplaceGroup(string, *resource.Group) (*resource.Group, error)
+	ReplaceGroup(context.Context, string, *resource.Group) (*resource.Group, error)
 }
 
 type RetrieveGroupBackend interface {
-	RetrieveGroup(string, []string, []string) (*resource.Group, error)
+	RetrieveGroup(context.Context, string, []string, []string) (*resource.Group, error)
 }
 
 type PatchGroupBackend interface {
-	PatchGroup(string, *resource.PatchRequest) (*resource.Group, error)
+	PatchGroup(context.Context, string, *resource.PatchRequest) (*resource.Group, error)
 }
 
 type CreateUserBackend interface {
-	CreateUser(*resource.User) (*resource.User, error)
+	CreateUser(context.Context, *resource.User) (*resource.User, error)
 }
 
 type DeleteUserBackend interface {
-	DeleteUser(id string) error
+	DeleteUser(context.Context, string) error
 }
 
 type ReplaceUserBackend interface {
-	ReplaceUser(id string, user *resource.User) (*resource.User, error)
+	ReplaceUser(context.Context, string, *resource.User) (*resource.User, error)
 }
 
 type RetrieveUserBackend interface {
-	RetrieveUser(string, []string, []string) (*resource.User, error)
+	RetrieveUser(context.Context, string, []string, []string) (*resource.User, error)
 }
 
 type PatchUserBackend interface {
-	PatchUser(string, *resource.PatchRequest) (*resource.User, error)
+	PatchUser(context.Context, string, *resource.PatchRequest) (*resource.User, error)
 }
 
 type SearchBackend interface {
-	Search(*resource.SearchRequest) (*resource.ListResponse, error)
+	Search(context.Context, *resource.SearchRequest) (*resource.ListResponse, error)
 }
 
 type SearchUserBackend interface {
-	SearchUser(*resource.SearchRequest) (*resource.ListResponse, error)
+	SearchUser(context.Context, *resource.SearchRequest) (*resource.ListResponse, error)
 }
 
 type SearchGroupBackend interface {
-	SearchGroup(*resource.SearchRequest) (*resource.ListResponse, error)
+	SearchGroup(context.Context, *resource.SearchRequest) (*resource.ListResponse, error)
 }
 
 type RetrieveServiceProviderConfigBackend interface {
-	RetrieveServiceProviderConfig() (*resource.ServiceProviderConfig, error)
+	RetrieveServiceProviderConfig(context.Context) (*resource.ServiceProviderConfig, error)
 }
 
 type RetrieveResourceTypesBackend interface {
-	RetrieveResourceTypes() ([]*resource.ResourceType, error)
+	RetrieveResourceTypes(context.Context) ([]*resource.ResourceType, error)
 }
 
 type ListSchemasBackend interface {
-	ListSchemas() (*resource.ListResponse, error)
+	ListSchemas(context.Context) (*resource.ListResponse, error)
 }
 
 type RetrieveSchemaBackend interface {
-	RetrieveSchema(string) (*resource.Schema, error)
+	RetrieveSchema(context.Context, string) (*resource.Schema, error)
 }
 
 // WriteSCIMError creates a resource.Error from the given input and
@@ -121,7 +122,7 @@ func DeleteGroupEndpoint(b DeleteGroupBackend) http.Handler {
 			return
 		}
 
-		if err := b.DeleteGroup(id); err != nil {
+		if err := b.DeleteGroup(r.Context(), id); err != nil {
 			WriteError(w, err)
 			return
 		}
@@ -144,7 +145,7 @@ func ReplaceGroupEndpoint(b ReplaceGroupBackend) http.Handler {
 			return
 		}
 
-		replaced, err := b.ReplaceGroup(id, &group)
+		replaced, err := b.ReplaceGroup(r.Context(), id, &group)
 		if err != nil {
 			WriteError(w, err)
 			return
@@ -172,7 +173,7 @@ func RetrieveGroupEndpoint(b RetrieveGroupBackend) http.Handler {
 		if v := r.URL.Query().Get(`excludedAttributes`); v != "" {
 			excluded = strings.Split(v, ",")
 		}
-		group, err := b.RetrieveGroup(id, attrs, excluded)
+		group, err := b.RetrieveGroup(r.Context(), id, attrs, excluded)
 		if err != nil {
 			WriteError(w, err)
 			return
@@ -197,7 +198,7 @@ func CreateGroupEndpoint(b CreateGroupBackend) http.Handler {
 			return
 		}
 
-		created, err := b.CreateGroup(&group)
+		created, err := b.CreateGroup(r.Context(), &group)
 		if err != nil {
 			WriteError(w, err)
 			return
@@ -224,7 +225,7 @@ func DeleteUserEndpoint(b DeleteUserBackend) http.Handler {
 			return
 		}
 
-		if err := b.DeleteUser(id); err != nil {
+		if err := b.DeleteUser(r.Context(), id); err != nil {
 			WriteError(w, err)
 			return
 		}
@@ -247,7 +248,7 @@ func ReplaceUserEndpoint(b ReplaceUserBackend) http.Handler {
 			return
 		}
 
-		newUser, err := b.ReplaceUser(id, &user)
+		newUser, err := b.ReplaceUser(r.Context(), id, &user)
 		if err != nil {
 			WriteError(w, err)
 			return
@@ -275,7 +276,7 @@ func RetrieveUserEndpoint(b RetrieveUserBackend) http.Handler {
 		if v := r.URL.Query().Get(`excludedAttributes`); v != "" {
 			excluded = strings.Split(v, ",")
 		}
-		user, err := b.RetrieveUser(id, attrs, excluded)
+		user, err := b.RetrieveUser(r.Context(), id, attrs, excluded)
 		if err != nil {
 			WriteError(w, err)
 			return
@@ -308,7 +309,7 @@ func PatchUserEndpoint(b PatchUserBackend) http.Handler {
 			return
 		}
 
-		user, err := b.PatchUser(id, &preq)
+		user, err := b.PatchUser(r.Context(), id, &preq)
 		if err != nil {
 			WriteError(w, err)
 			return
@@ -346,7 +347,7 @@ func PatchGroupEndpoint(b PatchGroupBackend) http.Handler {
 			return
 		}
 
-		group, err := b.PatchGroup(id, &preq)
+		group, err := b.PatchGroup(r.Context(), id, &preq)
 		if err != nil {
 			WriteError(w, err)
 			return
@@ -376,7 +377,7 @@ func CreateUserEndpoint(b CreateUserBackend) http.Handler {
 			return
 		}
 
-		created, err := b.CreateUser(&user)
+		created, err := b.CreateUser(r.Context(), &user)
 		if err != nil {
 			WriteError(w, err)
 			return
@@ -398,7 +399,7 @@ func SearchEndpoint(b SearchBackend) http.Handler {
 			return
 		}
 
-		lr, err := b.Search(&q)
+		lr, err := b.Search(r.Context(), &q)
 		if err != nil {
 			WriteError(w, err)
 			return
@@ -425,7 +426,7 @@ func SearchUserEndpoint(b SearchUserBackend) http.Handler {
 			return
 		}
 
-		lr, err := b.SearchUser(&q)
+		lr, err := b.SearchUser(r.Context(), &q)
 		if err != nil {
 			WriteError(w, err)
 			return
@@ -452,7 +453,7 @@ func SearchGroupEndpoint(b SearchGroupBackend) http.Handler {
 			return
 		}
 
-		lr, err := b.SearchGroup(&q)
+		lr, err := b.SearchGroup(r.Context(), &q)
 		if err != nil {
 			WriteError(w, err)
 			return
@@ -473,7 +474,7 @@ func SearchGroupEndpoint(b SearchGroupBackend) http.Handler {
 
 func RetrieveServiceProviderConfigEndpoint(b RetrieveServiceProviderConfigBackend) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		scp, err := b.RetrieveServiceProviderConfig()
+		scp, err := b.RetrieveServiceProviderConfig(r.Context())
 		if err != nil {
 			WriteError(w, err)
 			return
@@ -496,7 +497,7 @@ func RetrieveServiceProviderConfigEndpoint(b RetrieveServiceProviderConfigBacken
 
 func RetrieveResourceTypesEndpoint(b RetrieveResourceTypesBackend) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		rts, err := b.RetrieveResourceTypes()
+		rts, err := b.RetrieveResourceTypes(r.Context())
 		if err != nil {
 			WriteError(w, err)
 			return
@@ -519,7 +520,7 @@ func RetrieveResourceTypesEndpoint(b RetrieveResourceTypesBackend) http.Handler 
 
 func ListSchemasEndpoint(b ListSchemasBackend) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		schemas, err := b.ListSchemas()
+		schemas, err := b.ListSchemas(r.Context())
 		if err != nil {
 			WriteError(w, err)
 			return
@@ -549,7 +550,7 @@ func RetrieveSchemaEndpoint(b RetrieveSchemaBackend) http.Handler {
 			return
 		}
 
-		schema, err := b.RetrieveSchema(id)
+		schema, err := b.RetrieveSchema(r.Context(), id)
 		if err != nil {
 			WriteError(w, err)
 			return

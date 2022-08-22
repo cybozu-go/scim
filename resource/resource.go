@@ -82,13 +82,14 @@ const (
 type DataType string
 
 const (
-	String    DataType = "string"
-	Boolean   DataType = "boolean"
-	Decimal   DataType = "decimal"
-	Integer   DataType = "integer"
-	DateTime  DataType = "dateTime"
-	Reference DataType = "reference"
-	Complex   DataType = "complex"
+	InvalidDataType DataType = "__INVALID__"
+	String          DataType = "string"
+	Boolean         DataType = "boolean"
+	Decimal         DataType = "decimal"
+	Integer         DataType = "integer"
+	DateTime        DataType = "dateTime"
+	Reference       DataType = "reference"
+	Complex         DataType = "complex"
 )
 
 type Mutability string

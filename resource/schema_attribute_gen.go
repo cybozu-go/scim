@@ -37,7 +37,7 @@ type SchemaAttribute struct {
 	required        *bool
 	returned        *Returned
 	subAttributes   []*SchemaAttribute
-	typ             *string
+	typ             *DataType
 	uniqueness      *Uniqueness
 	privateParams   map[string]interface{}
 	mu              sync.RWMutex
@@ -216,11 +216,11 @@ func (v *SchemaAttribute) HasType() bool {
 	return v.typ != nil
 }
 
-func (v *SchemaAttribute) Type() string {
+func (v *SchemaAttribute) Type() DataType {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	if v.typ == nil {
-		return ""
+		return InvalidDataType
 	}
 	return *(v.typ)
 }
@@ -503,10 +503,10 @@ func (v *SchemaAttribute) Set(name string, value interface{}) error {
 		v.subAttributes = tmp
 		return nil
 	case SchemaAttributeTypeKey:
-		var tmp string
-		tmp, ok := value.(string)
+		var tmp DataType
+		tmp, ok := value.(DataType)
 		if !ok {
-			return fmt.Errorf(`expected string for field "type", but got %T`, value)
+			return fmt.Errorf(`expected DataType for field "type", but got %T`, value)
 		}
 		v.typ = &tmp
 		return nil
@@ -659,7 +659,7 @@ LOOP:
 				}
 				v.subAttributes = x
 			case SchemaAttributeTypeKey:
-				var x string
+				var x DataType
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "type": %w`, err)
 				}
@@ -876,7 +876,7 @@ func (b *SchemaAttributeBuilder) Attributes(v ...*SchemaAttribute) *SchemaAttrib
 	return b
 }
 
-func (b *SchemaAttributeBuilder) Type(v string) *SchemaAttributeBuilder {
+func (b *SchemaAttributeBuilder) Type(v DataType) *SchemaAttributeBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.once.Do(b.init)

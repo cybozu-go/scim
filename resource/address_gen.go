@@ -16,6 +16,7 @@ const (
 	AddressPostalCodeKey    = "postalCode"
 	AddressRegionKey        = "region"
 	AddressStreetAddressKey = "streetAddress"
+	AddressTypeKey          = "type"
 )
 
 type Address struct {
@@ -25,6 +26,7 @@ type Address struct {
 	postalCode    *string
 	region        *string
 	streetAddress *string
+	typ           *string
 	privateParams map[string]interface{}
 	mu            sync.RWMutex
 }
@@ -133,8 +135,23 @@ func (v *Address) StreetAddress() string {
 	return *(v.streetAddress)
 }
 
+func (v *Address) HasType() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.typ != nil
+}
+
+func (v *Address) Type() string {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	if v.typ == nil {
+		return ""
+	}
+	return *(v.typ)
+}
+
 func (v *Address) makePairs() []pair {
-	pairs := make([]pair, 0, 6)
+	pairs := make([]pair, 0, 7)
 	if v.country != nil {
 		pairs = append(pairs, pair{Key: "country", Value: *(v.country)})
 	}
@@ -152,6 +169,9 @@ func (v *Address) makePairs() []pair {
 	}
 	if v.streetAddress != nil {
 		pairs = append(pairs, pair{Key: "streetAddress", Value: *(v.streetAddress)})
+	}
+	if v.typ != nil {
+		pairs = append(pairs, pair{Key: "type", Value: *(v.typ)})
 	}
 	for k, v := range v.privateParams {
 		pairs = append(pairs, pair{Key: k, Value: v})
@@ -224,6 +244,11 @@ func (v *Address) Get(name string, options ...GetOption) (interface{}, bool) {
 			return nil, false
 		}
 		return *(v.streetAddress), true
+	case AddressTypeKey:
+		if v.typ == nil {
+			return nil, false
+		}
+		return *(v.typ), true
 	default:
 		pp := v.privateParams
 		if pp == nil {
@@ -299,6 +324,14 @@ func (v *Address) Set(name string, value interface{}) error {
 		}
 		v.streetAddress = &tmp
 		return nil
+	case AddressTypeKey:
+		var tmp string
+		tmp, ok := value.(string)
+		if !ok {
+			return fmt.Errorf(`expected string for field "type", but got %T`, value)
+		}
+		v.typ = &tmp
+		return nil
 	default:
 		pp := v.privateParams
 		if pp == nil {
@@ -320,6 +353,7 @@ func (v *Address) Clone() *Address {
 		postalCode:    v.postalCode,
 		region:        v.region,
 		streetAddress: v.streetAddress,
+		typ:           v.typ,
 	}
 }
 
@@ -330,6 +364,7 @@ func (v *Address) UnmarshalJSON(data []byte) error {
 	v.postalCode = nil
 	v.region = nil
 	v.streetAddress = nil
+	v.typ = nil
 	v.privateParams = nil
 	dec := json.NewDecoder(bytes.NewReader(data))
 	{ // first token
@@ -395,6 +430,12 @@ LOOP:
 					return fmt.Errorf(`failed to decode value for key "streetAddress": %w`, err)
 				}
 				v.streetAddress = &x
+			case AddressTypeKey:
+				var x string
+				if err := dec.Decode(&x); err != nil {
+					return fmt.Errorf(`failed to decode value for key "type": %w`, err)
+				}
+				v.typ = &x
 			default:
 				var x interface{}
 				if rx, ok := registry.Get(tok); ok {
@@ -531,6 +572,19 @@ func (b *AddressBuilder) StreetAddress(v string) *AddressBuilder {
 		return b
 	}
 	if err := b.object.Set("streetAddress", v); err != nil {
+		b.err = err
+	}
+	return b
+}
+
+func (b *AddressBuilder) Type(v string) *AddressBuilder {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	b.once.Do(b.init)
+	if b.err != nil {
+		return b
+	}
+	if err := b.object.Set("type", v); err != nil {
 		b.err = err
 	}
 	return b

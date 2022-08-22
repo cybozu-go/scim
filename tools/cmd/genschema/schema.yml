@@ -682,7 +682,7 @@ schemas:
       caseExact: false
       subAttributes:
       - name: value
-        type: binary
+        type: string
         multiValued: false
         description: The value of an X.509 certificate.
         required: false

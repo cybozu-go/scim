@@ -800,6 +800,8 @@ func GroupsBasicCRUD(t *testing.T, cl *client.Client) func(*testing.T) {
 			require.Len(t, g2.Members(), len(createdGroup.Members()))
 		})
 		t.Run("Replace group", func(t *testing.T) {
+			require.True(t, len(createdGroup.Members()) > 1, `more than 1 members required for this test to proceed`) // and avoid a panic
+
 			u, err := cl.Group().Replace(createdGroup.ID()).
 				DisplayName(createdGroup.DisplayName()).
 				Members((createdGroup.Members())[1:]...).

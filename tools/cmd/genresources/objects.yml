@@ -359,6 +359,7 @@ objects:
         json: type
         exported_name: Type
         getter: Type
+        type: DataType
       - name: fallbackType
         type: '*SchemaAttribute'
       - name: subAttributes
@@ -418,6 +419,10 @@ objects:
       - name: region
       - name: postalCode
       - name: country
+      - name: typ
+        json: type
+        exported_name: Type
+        getter: Type
   - name: PatchRequest
     schema: "urn:ietf:params:scim:schemas:core:2.0:PatchOp"
     skipCommonFields: true

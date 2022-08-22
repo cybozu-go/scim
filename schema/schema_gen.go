@@ -835,7 +835,7 @@ func init() {
 					Attributes(
 						resource.NewSchemaAttributeBuilder().
 							Name("value").
-							Type("binary").
+							Type("string").
 							MultiValued(false).
 							Description("The value of an X.509 certificate.").
 							Required(false).

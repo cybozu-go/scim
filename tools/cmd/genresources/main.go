@@ -47,6 +47,7 @@ func packageName(s string) string {
 }
 
 func _main() error {
+	codegen.RegisterZeroVal(`DataType`, `InvalidDataType`)
 	codegen.RegisterZeroVal(`PatchOperationType`, `PatchInvalid`)
 	codegen.RegisterZeroVal(`AuthenticationSchemeType`, `InvalidAuthenticationScheme`)
 	codegen.RegisterZeroVal(`Mutability`, `MutReadOnly`)

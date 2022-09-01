@@ -407,7 +407,12 @@ func UsersFetch(t *testing.T, cl *client.Client) func(*testing.T) {
 			for _, r := range res.Resources() {
 				u, ok := r.(*resource.User)
 				require.True(t, ok, `resources should be an instance of *resource.User`)
-				require.Len(t, u.Groups(), 2, `user should be a member of two groups`)
+				if !assert.Len(t, u.Groups(), 2, `user should be a member of two groups`) {
+					for i, gm := range u.Groups() {
+						t.Logf("%0d: %s", i, gm.Value())
+					}
+					return
+				}
 
 				// we're not going to count the number of direct/indirect
 				// memberships, but we're just going to make sure that
@@ -466,7 +471,7 @@ func UsersBasicCRUD(t *testing.T, cl *client.Client) func(*testing.T) {
 		require.Empty(t, createdUser.Password(), `user should not return password`)
 		require.True(t, len(createdUser.Photos()) > 0, `user should have some photos`)
 		for _, photo := range createdUser.Photos() {
-			require.Regexp(t, `^https://.+\.png$`, photo.Value(), `value should be a URL`)
+			require.Regexp(t, `^https://.+\.png$`, photo.Value(), `value should be a URL: got %s`, photo.Value())
 		}
 
 		etag := createdUser.Meta().Version()
@@ -671,16 +676,16 @@ func UsersBasicCRUD(t *testing.T, cl *client.Client) func(*testing.T) {
 			// it cannot be empty. Thus, we assume that even when you replace an existing
 			// user object with another version that does not have a valid `userName`
 			// field, the old value should still persist
-			require.Equal(t, replaced.UserName(), createdUser.UserName())
+			require.Equal(t, replaced.UserName(), createdUser.UserName(), `UserName should match`)
 
 			// We explicitly asked to persist these fields
-			require.Equal(t, replaced.ExternalID(), createdUser.ExternalID())
+			require.Equal(t, replaced.ExternalID(), createdUser.ExternalID(), `ExternalID should match`)
 
 			// We cleared these fields
-			require.Empty(t, replaced.DisplayName())
-			require.Empty(t, replaced.Name())
-			require.Empty(t, replaced.Roles())
-			require.Empty(t, replaced.Photos())
+			require.Empty(t, replaced.DisplayName(), `DisplayName should be empty`)
+			require.Empty(t, replaced.Name(), `Name should be empty`)
+			require.Empty(t, replaced.Roles(), `Roles should be empty`)
+			require.Empty(t, replaced.Photos(), `Photos should be empty`)
 
 			// These fields were explicitly set to a different value
 			require.NotEqual(t, replaced.Emails(), createdUser.Emails())
@@ -695,7 +700,7 @@ func UsersBasicCRUD(t *testing.T, cl *client.Client) func(*testing.T) {
 			require.Equal(t, replaced, fetched)
 
 			// Just making sure that the versions are updated
-			require.NotEqual(t, createdUser.Meta().Version(), replaced.Meta().Version())
+			require.NotEqual(t, createdUser.Meta().Version(), replaced.Meta().Version(), "meta.version should NOT match")
 
 			testcases := []struct {
 				Name string

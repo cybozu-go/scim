@@ -6,17 +6,8 @@ import (
 	"fmt"
 	"sort"
 	"sync"
-)
 
-// JSON key names for ResourceType resource
-const (
-	ResourceTypeDescriptionKey      = "description"
-	ResourceTypeEndpointKey         = "endpoint"
-	ResourceTypeIDKey               = "id"
-	ResourceTypeNameKey             = "name"
-	ResourceTypeSchemaKey           = "schema"
-	ResourceTypeSchemaExtensionsKey = "schemaExtensions"
-	ResourceTypeSchemasKey          = "schemas"
+	"github.com/lestrrat-go/blackmagic"
 )
 
 const ResourceTypeSchemaURI = "urn:ietf:params:scim:schemas:core:2.0:ResourceType"
@@ -26,50 +17,133 @@ func init() {
 }
 
 type ResourceType struct {
-	description      *string
-	endpoint         *string
-	id               *string
-	name             *string
-	schema           *string
-	schemaExtensions []*SchemaExtension
-	schemas          schemas
-	privateParams    map[string]interface{}
-	mu               sync.RWMutex
+	mu              sync.RWMutex
+	description     *string
+	endpoint        *string
+	id              *string
+	name            *string
+	schema          *string
+	schemaExtension []*SchemaExtension
+	schemas         *schemas
+	extra           map[string]interface{}
 }
 
-type ResourceTypeValidator interface {
-	Validate(*ResourceType) error
-}
+// These constants are used when the JSON field name is used.
+// Their use is not strictly required, but certain linters
+// complain about repeated constants, and therefore internally
+// this used throughout
+const (
+	ResourceTypeDescriptionKey     = "description"
+	ResourceTypeEndpointKey        = "endpoint"
+	ResourceTypeIDKey              = "id"
+	ResourceTypeNameKey            = "name"
+	ResourceTypeSchemaKey          = "schema"
+	ResourceTypeSchemaExtensionKey = "schemaExtension"
+	ResourceTypeSchemasKey         = "schemas"
+)
 
-type ResourceTypeValidateFunc func(v *ResourceType) error
-
-func (f ResourceTypeValidateFunc) Validate(v *ResourceType) error {
-	return f(v)
-}
-
-var DefaultResourceTypeValidator ResourceTypeValidator = ResourceTypeValidateFunc(func(v *ResourceType) error {
-	if v.endpoint == nil {
-		return fmt.Errorf(`required field "endpoint" is missing in "ResourceType"`)
+// Get retrieves the value associated with a key
+func (v *ResourceType) Get(key string, dst interface{}) error {
+	switch key {
+	case ResourceTypeDescriptionKey:
+		if val := v.description; val != nil {
+			return blackmagic.AssignIfCompatible(dst, *val)
+		}
+	case ResourceTypeEndpointKey:
+		if val := v.endpoint; val != nil {
+			return blackmagic.AssignIfCompatible(dst, *val)
+		}
+	case ResourceTypeIDKey:
+		if val := v.id; val != nil {
+			return blackmagic.AssignIfCompatible(dst, *val)
+		}
+	case ResourceTypeNameKey:
+		if val := v.name; val != nil {
+			return blackmagic.AssignIfCompatible(dst, *val)
+		}
+	case ResourceTypeSchemaKey:
+		if val := v.schema; val != nil {
+			return blackmagic.AssignIfCompatible(dst, *val)
+		}
+	case ResourceTypeSchemaExtensionKey:
+		if val := v.schemaExtension; val != nil {
+			return blackmagic.AssignIfCompatible(dst, val)
+		}
+	case ResourceTypeSchemasKey:
+		if val := v.schemas; val != nil {
+			return blackmagic.AssignIfCompatible(dst, *val)
+		}
+	default:
+		if v.extra != nil {
+			val, ok := v.extra[key]
+			if ok {
+				return blackmagic.AssignIfCompatible(dst, val)
+			}
+		}
 	}
-	if v.schema == nil {
-		return fmt.Errorf(`required field "schema" is missing in "ResourceType"`)
+	return fmt.Errorf(`no such key %q`, key)
+}
+
+// Set sets the value of the specified field. The name must be a JSON
+// field name, not the Go name
+func (v *ResourceType) Set(key string, value interface{}) error {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	switch key {
+	case ResourceTypeDescriptionKey:
+		converted, ok := value.(string)
+		if !ok {
+			return fmt.Errorf(`expected value of type string for field description, got %T`, value)
+		}
+		v.description = &converted
+	case ResourceTypeEndpointKey:
+		converted, ok := value.(string)
+		if !ok {
+			return fmt.Errorf(`expected value of type string for field endpoint, got %T`, value)
+		}
+		v.endpoint = &converted
+	case ResourceTypeIDKey:
+		converted, ok := value.(string)
+		if !ok {
+			return fmt.Errorf(`expected value of type string for field id, got %T`, value)
+		}
+		v.id = &converted
+	case ResourceTypeNameKey:
+		converted, ok := value.(string)
+		if !ok {
+			return fmt.Errorf(`expected value of type string for field name, got %T`, value)
+		}
+		v.name = &converted
+	case ResourceTypeSchemaKey:
+		converted, ok := value.(string)
+		if !ok {
+			return fmt.Errorf(`expected value of type string for field schema, got %T`, value)
+		}
+		v.schema = &converted
+	case ResourceTypeSchemaExtensionKey:
+		converted, ok := value.([]*SchemaExtension)
+		if !ok {
+			return fmt.Errorf(`expected value of type []*SchemaExtension for field schemaExtension, got %T`, value)
+		}
+		v.schemaExtension = converted
+	case ResourceTypeSchemasKey:
+		converted, ok := value.(schemas)
+		if !ok {
+			return fmt.Errorf(`expected value of type schemas for field schemas, got %T`, value)
+		}
+		v.schemas = &converted
+	default:
+		if v.extra == nil {
+			v.extra = make(map[string]interface{})
+		}
+		v.extra[key] = value
 	}
 	return nil
-})
-
+}
 func (v *ResourceType) HasDescription() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.description != nil
-}
-
-func (v *ResourceType) Description() string {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	if v.description == nil {
-		return ""
-	}
-	return *(v.description)
 }
 
 func (v *ResourceType) HasEndpoint() bool {
@@ -78,28 +152,10 @@ func (v *ResourceType) HasEndpoint() bool {
 	return v.endpoint != nil
 }
 
-func (v *ResourceType) Endpoint() string {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	if v.endpoint == nil {
-		return ""
-	}
-	return *(v.endpoint)
-}
-
 func (v *ResourceType) HasID() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.id != nil
-}
-
-func (v *ResourceType) ID() string {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	if v.id == nil {
-		return ""
-	}
-	return *(v.id)
 }
 
 func (v *ResourceType) HasName() bool {
@@ -108,86 +164,152 @@ func (v *ResourceType) HasName() bool {
 	return v.name != nil
 }
 
-func (v *ResourceType) Name() string {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	if v.name == nil {
-		return ""
-	}
-	return *(v.name)
-}
-
 func (v *ResourceType) HasSchema() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.schema != nil
 }
 
-func (v *ResourceType) Schema() string {
+func (v *ResourceType) HasSchemaExtension() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	if v.schema == nil {
-		return ""
-	}
-	return *(v.schema)
-}
-
-func (v *ResourceType) HasSchemaExtensions() bool {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	return v.schemaExtensions != nil
-}
-
-func (v *ResourceType) SchemaExtensions() []*SchemaExtension {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	return v.schemaExtensions
+	return v.schemaExtension != nil
 }
 
 func (v *ResourceType) HasSchemas() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return true
+	return v.schemas != nil
+}
+
+func (v *ResourceType) Description() string {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	if val := v.description; val != nil {
+		return *val
+	}
+	return ""
+}
+
+func (v *ResourceType) Endpoint() string {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	if val := v.endpoint; val != nil {
+		return *val
+	}
+	return ""
+}
+
+func (v *ResourceType) ID() string {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	if val := v.id; val != nil {
+		return *val
+	}
+	return ""
+}
+
+func (v *ResourceType) Name() string {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	if val := v.name; val != nil {
+		return *val
+	}
+	return ""
+}
+
+func (v *ResourceType) Schema() string {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	if val := v.schema; val != nil {
+		return *val
+	}
+	return ""
+}
+
+func (v *ResourceType) SchemaExtension() []*SchemaExtension {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	if val := v.schemaExtension; val != nil {
+		return val
+	}
+	return nil
 }
 
 func (v *ResourceType) Schemas() []string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return v.schemas.List()
+	if val := v.schemas; val != nil {
+		return val.Get()
+	}
+	return nil
 }
 
-func (v *ResourceType) makePairs() []pair {
-	pairs := make([]pair, 0, 7)
-	if v.description != nil {
-		pairs = append(pairs, pair{Key: "description", Value: *(v.description)})
+// Remove removes the value associated with a key
+func (v *ResourceType) Remove(key string) error {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+
+	switch key {
+	case ResourceTypeDescriptionKey:
+		v.description = nil
+	case ResourceTypeEndpointKey:
+		v.endpoint = nil
+	case ResourceTypeIDKey:
+		v.id = nil
+	case ResourceTypeNameKey:
+		v.name = nil
+	case ResourceTypeSchemaKey:
+		v.schema = nil
+	case ResourceTypeSchemaExtensionKey:
+		v.schemaExtension = nil
+	case ResourceTypeSchemasKey:
+		v.schemas = nil
+	default:
+		delete(v.extra, key)
 	}
-	if v.endpoint != nil {
-		pairs = append(pairs, pair{Key: "endpoint", Value: *(v.endpoint)})
+
+	return nil
+}
+
+func (v *ResourceType) makePairs() []*fieldPair {
+	pairs := make([]*fieldPair, 0, 7)
+	if val := v.description; val != nil {
+		pairs = append(pairs, &fieldPair{Name: ResourceTypeDescriptionKey, Value: *val})
 	}
-	if v.id != nil {
-		pairs = append(pairs, pair{Key: "id", Value: *(v.id)})
+	if val := v.endpoint; val != nil {
+		pairs = append(pairs, &fieldPair{Name: ResourceTypeEndpointKey, Value: *val})
 	}
-	if v.name != nil {
-		pairs = append(pairs, pair{Key: "name", Value: *(v.name)})
+	if val := v.id; val != nil {
+		pairs = append(pairs, &fieldPair{Name: ResourceTypeIDKey, Value: *val})
 	}
-	if v.schema != nil {
-		pairs = append(pairs, pair{Key: "schema", Value: *(v.schema)})
+	if val := v.name; val != nil {
+		pairs = append(pairs, &fieldPair{Name: ResourceTypeNameKey, Value: *val})
 	}
-	if v.schemaExtensions != nil {
-		pairs = append(pairs, pair{Key: "schemaExtensions", Value: v.schemaExtensions})
+	if val := v.schema; val != nil {
+		pairs = append(pairs, &fieldPair{Name: ResourceTypeSchemaKey, Value: *val})
 	}
-	if v.schemas != nil {
-		pairs = append(pairs, pair{Key: "schemas", Value: v.schemas})
+	if val := v.schemaExtension; len(val) > 0 {
+		pairs = append(pairs, &fieldPair{Name: ResourceTypeSchemaExtensionKey, Value: val})
 	}
-	for k, v := range v.privateParams {
-		pairs = append(pairs, pair{Key: k, Value: v})
+	if val := v.schemas; val != nil {
+		pairs = append(pairs, &fieldPair{Name: ResourceTypeSchemasKey, Value: *val})
 	}
+
+	for key, val := range v.extra {
+		pairs = append(pairs, &fieldPair{Name: key, Value: val})
+	}
+
 	sort.Slice(pairs, func(i, j int) bool {
-		return pairs[i].Key < pairs[j].Key
+		return pairs[i].Name < pairs[j].Name
 	})
 	return pairs
 }
 
+// MarshalJSON serializes ResourceType into JSON.
+// All pre-declared fields are included as long as a value is
+// assigned to them, as well as all extra fields. All of these
+// fields are sorted in alphabetical order.
 func (v *ResourceType) MarshalJSON() ([]byte, error) {
 	pairs := v.makePairs()
 
@@ -196,454 +318,172 @@ func (v *ResourceType) MarshalJSON() ([]byte, error) {
 	buf.WriteByte('{')
 	for i, pair := range pairs {
 		if i > 0 {
-			buf.WriteRune(',')
+			buf.WriteByte(',')
 		}
-		fmt.Fprintf(&buf, "%q:", pair.Key)
-		if err := enc.Encode(pair.Value); err != nil {
-			return nil, fmt.Errorf("failed to encode value for key %q: %w", pair.Key, err)
-		}
+		enc.Encode(pair.Name)
+		buf.WriteByte(':')
+		enc.Encode(pair.Value)
 	}
 	buf.WriteByte('}')
 	return buf.Bytes(), nil
 }
 
-func (v *ResourceType) Get(name string, options ...GetOption) (interface{}, bool) {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-
-	var ext string
-	//nolint:forcetypeassert
-	for _, option := range options {
-		switch option.Ident() {
-		case identExtension{}:
-			ext = option.Value().(string)
-		}
-	}
-	switch name {
-	case ResourceTypeDescriptionKey:
-		if v.description == nil {
-			return nil, false
-		}
-		return *(v.description), true
-	case ResourceTypeEndpointKey:
-		if v.endpoint == nil {
-			return nil, false
-		}
-		return *(v.endpoint), true
-	case ResourceTypeIDKey:
-		if v.id == nil {
-			return nil, false
-		}
-		return *(v.id), true
-	case ResourceTypeNameKey:
-		if v.name == nil {
-			return nil, false
-		}
-		return *(v.name), true
-	case ResourceTypeSchemaKey:
-		if v.schema == nil {
-			return nil, false
-		}
-		return *(v.schema), true
-	case ResourceTypeSchemaExtensionsKey:
-		if v.schemaExtensions == nil {
-			return nil, false
-		}
-		return v.schemaExtensions, true
-	case ResourceTypeSchemasKey:
-		if v.schemas == nil {
-			return nil, false
-		}
-		return v.schemas, true
-	default:
-		pp := v.privateParams
-		if pp == nil {
-			return nil, false
-		}
-		if ext == "" {
-			ret, ok := pp[name]
-			return ret, ok
-		}
-		obj, ok := pp[ext]
-		if !ok {
-			return nil, false
-		}
-		getter, ok := obj.(interface {
-			Get(string, ...GetOption) (interface{}, bool)
-		})
-		if !ok {
-			return nil, false
-		}
-		return getter.Get(name)
-	}
-}
-
-func (v *ResourceType) Set(name string, value interface{}) error {
-	v.mu.Lock()
-	defer v.mu.Unlock()
-	switch name {
-	case ResourceTypeDescriptionKey:
-		var tmp string
-		tmp, ok := value.(string)
-		if !ok {
-			return fmt.Errorf(`expected string for field "description", but got %T`, value)
-		}
-		v.description = &tmp
-		return nil
-	case ResourceTypeEndpointKey:
-		var tmp string
-		tmp, ok := value.(string)
-		if !ok {
-			return fmt.Errorf(`expected string for field "endpoint", but got %T`, value)
-		}
-		v.endpoint = &tmp
-		return nil
-	case ResourceTypeIDKey:
-		var tmp string
-		tmp, ok := value.(string)
-		if !ok {
-			return fmt.Errorf(`expected string for field "id", but got %T`, value)
-		}
-		v.id = &tmp
-		return nil
-	case ResourceTypeNameKey:
-		var tmp string
-		tmp, ok := value.(string)
-		if !ok {
-			return fmt.Errorf(`expected string for field "name", but got %T`, value)
-		}
-		v.name = &tmp
-		return nil
-	case ResourceTypeSchemaKey:
-		var tmp string
-		tmp, ok := value.(string)
-		if !ok {
-			return fmt.Errorf(`expected string for field "schema", but got %T`, value)
-		}
-		v.schema = &tmp
-		return nil
-	case ResourceTypeSchemaExtensionsKey:
-		var tmp []*SchemaExtension
-		tmp, ok := value.([]*SchemaExtension)
-		if !ok {
-			return fmt.Errorf(`expected []*SchemaExtension for field "schemaExtensions", but got %T`, value)
-		}
-		v.schemaExtensions = tmp
-		return nil
-	case ResourceTypeSchemasKey:
-		var tmp schemas
-		tmp, ok := value.(schemas)
-		if !ok {
-			return fmt.Errorf(`expected schemas for field "schemas", but got %T`, value)
-		}
-		v.schemas = tmp
-		return nil
-	default:
-		pp := v.privateParams
-		if pp == nil {
-			pp = make(map[string]interface{})
-			v.privateParams = pp
-		}
-		pp[name] = value
-		return nil
-	}
-}
-
-func (v *ResourceType) Clone() *ResourceType {
-	v.mu.Lock()
-	defer v.mu.Unlock()
-	return &ResourceType{
-		description:      v.description,
-		endpoint:         v.endpoint,
-		id:               v.id,
-		name:             v.name,
-		schema:           v.schema,
-		schemaExtensions: v.schemaExtensions,
-		schemas:          v.schemas,
-	}
-}
-
+// UnmarshalJSON deserializes a piece of JSON data into ResourceType.
+//
+// Pre-defined fields must be deserializable via "encoding/json" to their
+// respective Go types, otherwise an error is returned.
+//
+// Extra fields are stored in a special "extra" storage, which can only
+// be accessed via `Get()` and `Set()` methods.
 func (v *ResourceType) UnmarshalJSON(data []byte) error {
+	v.mu.Lock()
+	defer v.mu.Unlock()
 	v.description = nil
 	v.endpoint = nil
 	v.id = nil
 	v.name = nil
 	v.schema = nil
-	v.schemaExtensions = nil
+	v.schemaExtension = nil
 	v.schemas = nil
-	v.privateParams = nil
+
 	dec := json.NewDecoder(bytes.NewReader(data))
-	{ // first token
-		tok, err := dec.Token()
-		if err != nil {
-			return fmt.Errorf("failed to read next token: %s", err)
-		}
-		tok, ok := tok.(json.Delim)
-		if !ok {
-			return fmt.Errorf("expected first token to be '{', got %c", tok)
-		}
-	}
-	var privateParams map[string]interface{}
 
 LOOP:
 	for {
 		tok, err := dec.Token()
 		if err != nil {
-			return fmt.Errorf("failed to read next token: %s", err)
+			return fmt.Errorf(`error reading JSON token: %w`, err)
 		}
 		switch tok := tok.(type) {
 		case json.Delim:
-			if tok == '}' {
+			if tok == '}' { // end of object
 				break LOOP
-			} else {
-				return fmt.Errorf("unexpected token %c found", tok)
+			}
+			// we should only get into this clause at the very beginning, and just once
+			if tok != '{' {
+				return fmt.Errorf(`expected '{', but got '%c'`, tok)
 			}
 		case string:
 			switch tok {
 			case ResourceTypeDescriptionKey:
-				var x string
-				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "description": %w`, err)
+				var val string
+				if err := dec.Decode(&val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, ResourceTypeDescriptionKey, err)
 				}
-				v.description = &x
+				v.description = &val
 			case ResourceTypeEndpointKey:
-				var x string
-				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "endpoint": %w`, err)
+				var val string
+				if err := dec.Decode(&val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, ResourceTypeEndpointKey, err)
 				}
-				v.endpoint = &x
+				v.endpoint = &val
 			case ResourceTypeIDKey:
-				var x string
-				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "id": %w`, err)
+				var val string
+				if err := dec.Decode(&val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, ResourceTypeIDKey, err)
 				}
-				v.id = &x
+				v.id = &val
 			case ResourceTypeNameKey:
-				var x string
-				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "name": %w`, err)
+				var val string
+				if err := dec.Decode(&val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, ResourceTypeNameKey, err)
 				}
-				v.name = &x
+				v.name = &val
 			case ResourceTypeSchemaKey:
-				var x string
-				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "schema": %w`, err)
+				var val string
+				if err := dec.Decode(&val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, ResourceTypeSchemaKey, err)
 				}
-				v.schema = &x
-			case ResourceTypeSchemaExtensionsKey:
-				var x []*SchemaExtension
-				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "schemaExtensions": %w`, err)
+				v.schema = &val
+			case ResourceTypeSchemaExtensionKey:
+				var val []*SchemaExtension
+				if err := dec.Decode(&val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, ResourceTypeSchemaExtensionKey, err)
 				}
-				v.schemaExtensions = x
+				v.schemaExtension = val
 			case ResourceTypeSchemasKey:
-				var x schemas
-				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "schemas": %w`, err)
+				var val schemas
+				if err := dec.Decode(&val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, ResourceTypeSchemasKey, err)
 				}
-				v.schemas = x
+				v.schemas = &val
 			default:
-				var x interface{}
-				if rx, ok := registry.Get(tok); ok {
-					x = rx
-					if err := dec.Decode(x); err != nil {
-						return fmt.Errorf(`failed to decode value for key %q: %w`, tok, err)
-					}
-				} else {
-					if err := dec.Decode(&x); err != nil {
-						return fmt.Errorf(`failed to decode value for key %q: %w`, tok, err)
-					}
+				var val interface{}
+				if err := dec.Decode(&val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, tok, err)
 				}
-				if privateParams == nil {
-					privateParams = make(map[string]interface{})
+				if v.extra == nil {
+					v.extra = make(map[string]interface{})
 				}
-				privateParams[tok] = x
+				v.extra[tok] = val
 			}
 		}
 	}
-	if privateParams != nil {
-		v.privateParams = privateParams
-	}
 	return nil
 }
 
-func (v *ResourceType) AsMap(dst map[string]interface{}) error {
-	for _, pair := range v.makePairs() {
-		dst[pair.Key] = pair.Value
-	}
-	return nil
-}
-
-// ResourceTypeBuilder creates a ResourceType resource
 type ResourceTypeBuilder struct {
-	once      sync.Once
-	mu        sync.Mutex
-	err       error
-	validator ResourceTypeValidator
-	object    *ResourceType
+	mu     sync.Mutex
+	err    error
+	once   sync.Once
+	object *ResourceType
 }
 
-func (b *Builder) ResourceType() *ResourceTypeBuilder {
-	return NewResourceTypeBuilder()
-}
-
+// NewResourceTypeBuilder creates a new ResourceTypeBuilder instance.
+// ResourceTypeBuilder is safe to be used uninitialized as well.
 func NewResourceTypeBuilder() *ResourceTypeBuilder {
-	var b ResourceTypeBuilder
-	b.init()
-	return &b
+	return &ResourceTypeBuilder{}
 }
 
-func (b *ResourceTypeBuilder) From(in *ResourceType) *ResourceTypeBuilder {
-	b.once.Do(b.init)
-	b.object = in.Clone()
-	return b
-}
-
-func (b *ResourceTypeBuilder) init() {
+func (b *ResourceTypeBuilder) initialize() {
 	b.err = nil
-	b.validator = nil
 	b.object = &ResourceType{}
-
-	b.object.schemas = make(schemas)
-	b.object.schemas.Add(ResourceTypeSchemaURI)
 }
-
-func (b *ResourceTypeBuilder) Description(v string) *ResourceTypeBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	if err := b.object.Set("description", v); err != nil {
-		b.err = err
-	}
+func (b *ResourceTypeBuilder) Description(in string) *ResourceTypeBuilder {
+	b.once.Do(b.initialize)
+	_ = b.object.Set(ResourceTypeDescriptionKey, in)
 	return b
 }
-
-func (b *ResourceTypeBuilder) Endpoint(v string) *ResourceTypeBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	if err := b.object.Set("endpoint", v); err != nil {
-		b.err = err
-	}
+func (b *ResourceTypeBuilder) Endpoint(in string) *ResourceTypeBuilder {
+	b.once.Do(b.initialize)
+	_ = b.object.Set(ResourceTypeEndpointKey, in)
 	return b
 }
-
-func (b *ResourceTypeBuilder) ID(v string) *ResourceTypeBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	if err := b.object.Set("id", v); err != nil {
-		b.err = err
-	}
+func (b *ResourceTypeBuilder) ID(in string) *ResourceTypeBuilder {
+	b.once.Do(b.initialize)
+	_ = b.object.Set(ResourceTypeIDKey, in)
 	return b
 }
-
-func (b *ResourceTypeBuilder) Name(v string) *ResourceTypeBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	if err := b.object.Set("name", v); err != nil {
-		b.err = err
-	}
+func (b *ResourceTypeBuilder) Name(in string) *ResourceTypeBuilder {
+	b.once.Do(b.initialize)
+	_ = b.object.Set(ResourceTypeNameKey, in)
 	return b
 }
-
-func (b *ResourceTypeBuilder) Schema(v string) *ResourceTypeBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	if err := b.object.Set("schema", v); err != nil {
-		b.err = err
-	}
+func (b *ResourceTypeBuilder) Schema(in string) *ResourceTypeBuilder {
+	b.once.Do(b.initialize)
+	_ = b.object.Set(ResourceTypeSchemaKey, in)
 	return b
 }
-
-func (b *ResourceTypeBuilder) SchemaExtensions(v ...*SchemaExtension) *ResourceTypeBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	if err := b.object.Set("schemaExtensions", v); err != nil {
-		b.err = err
-	}
+func (b *ResourceTypeBuilder) SchemaExtension(in ...*SchemaExtension) *ResourceTypeBuilder {
+	b.once.Do(b.initialize)
+	_ = b.object.Set(ResourceTypeSchemaExtensionKey, in)
 	return b
 }
-
-func (b *ResourceTypeBuilder) Schemas(v ...string) *ResourceTypeBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	for _, schema := range v {
-		b.object.schemas.Add(schema)
-	}
-	return b
-}
-
-func (b *ResourceTypeBuilder) Extension(uri string, value interface{}) *ResourceTypeBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	b.object.schemas.Add(uri)
-	if err := b.object.Set(uri, value); err != nil {
-		b.err = err
-	}
-	return b
-}
-
-func (b *ResourceTypeBuilder) Validator(v ResourceTypeValidator) *ResourceTypeBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	b.validator = v
+func (b *ResourceTypeBuilder) Schemas(in ...string) *ResourceTypeBuilder {
+	b.once.Do(b.initialize)
+	_ = b.object.Set(ResourceTypeSchemasKey, in)
 	return b
 }
 
 func (b *ResourceTypeBuilder) Build() (*ResourceType, error) {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	object := b.object
-	validator := b.validator
 	err := b.err
-	b.once = sync.Once{}
 	if err != nil {
 		return nil, err
 	}
-	if object == nil {
-		return nil, fmt.Errorf("resource.ResourceTypeBuilder: object was not initialized")
-	}
-	if validator == nil {
-		validator = DefaultResourceTypeValidator
-	}
-	if err := validator.Validate(object); err != nil {
-		return nil, err
-	}
-	return object, nil
+	obj := b.object
+	b.once = sync.Once{}
+	b.once.Do(b.initialize)
+	return obj, nil
 }
 
 func (b *ResourceTypeBuilder) MustBuild() *ResourceType {
@@ -652,4 +492,35 @@ func (b *ResourceTypeBuilder) MustBuild() *ResourceType {
 		panic(err)
 	}
 	return object
+}
+
+func (v *ResourceType) AsMap(dst map[string]interface{}) error {
+	for _, pair := range v.makePairs() {
+		dst[pair.Name] = pair.Value
+	}
+	return nil
+}
+
+// GetExtension takes into account extension uri, and fetches
+// the specified attribute from the extension object
+func (v *ResourceType) GetExtension(name, uri string, dst interface{}) error {
+	if uri == "" {
+		return v.Get(name, dst)
+	}
+	var ext interface{}
+	if err := v.Get(uri, ext); err != nil {
+		return fmt.Errorf(`failed to fetch extension %q: %w`, uri, err)
+	}
+
+	getter, ok := ext.(interface {
+		Get(string, interface{}) error
+	})
+	if !ok {
+		return fmt.Errorf(`extension does not implement Get(string, interface{}) error`)
+	}
+	return getter.Get(name, dst)
+}
+
+func (b *Builder) ResourceType() *ResourceTypeBuilder {
+	return &ResourceTypeBuilder{}
 }

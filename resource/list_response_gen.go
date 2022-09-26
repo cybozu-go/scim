@@ -6,15 +6,8 @@ import (
 	"fmt"
 	"sort"
 	"sync"
-)
 
-// JSON key names for ListResponse resource
-const (
-	ListResponseItemsPerPageKey = "itemsPerPage"
-	ListResponseResourcesKey    = "resources"
-	ListResponseSchemasKey      = "schemas"
-	ListResponseStartIndexKey   = "startIndex"
-	ListResponseTotalResultsKey = "totalResults"
+	"github.com/lestrrat-go/blackmagic"
 )
 
 const ListResponseSchemaURI = "urn:ietf:params:scim:api:messages:2.0:ListResponse"
@@ -24,42 +17,109 @@ func init() {
 }
 
 type ListResponse struct {
-	itemsPerPage  *int
-	resources     []interface{}
-	schemas       schemas
-	startIndex    *int
-	totalResults  *int
-	privateParams map[string]interface{}
-	mu            sync.RWMutex
+	mu           sync.RWMutex
+	itemsPerPage *int
+	resources    []interface{}
+	startIndex   *int
+	totalResults *int
+	schemas      *schemas
+	extra        map[string]interface{}
 }
 
-type ListResponseValidator interface {
-	Validate(*ListResponse) error
+// These constants are used when the JSON field name is used.
+// Their use is not strictly required, but certain linters
+// complain about repeated constants, and therefore internally
+// this used throughout
+const (
+	ListResponseItemsPerPageKey = "itemsPerPage"
+	ListResponseResourcesKey    = "resources"
+	ListResponseStartIndexKey   = "startIndex"
+	ListResponseTotalResultsKey = "totalResults"
+	ListResponseSchemasKey      = "schemas"
+)
+
+// Get retrieves the value associated with a key
+func (v *ListResponse) Get(key string, dst interface{}) error {
+	switch key {
+	case ListResponseItemsPerPageKey:
+		if val := v.itemsPerPage; val != nil {
+			return blackmagic.AssignIfCompatible(dst, *val)
+		}
+	case ListResponseResourcesKey:
+		if val := v.resources; val != nil {
+			return blackmagic.AssignIfCompatible(dst, val)
+		}
+	case ListResponseStartIndexKey:
+		if val := v.startIndex; val != nil {
+			return blackmagic.AssignIfCompatible(dst, *val)
+		}
+	case ListResponseTotalResultsKey:
+		if val := v.totalResults; val != nil {
+			return blackmagic.AssignIfCompatible(dst, *val)
+		}
+	case ListResponseSchemasKey:
+		if val := v.schemas; val != nil {
+			return blackmagic.AssignIfCompatible(dst, *val)
+		}
+	default:
+		if v.extra != nil {
+			val, ok := v.extra[key]
+			if ok {
+				return blackmagic.AssignIfCompatible(dst, val)
+			}
+		}
+	}
+	return fmt.Errorf(`no such key %q`, key)
 }
 
-type ListResponseValidateFunc func(v *ListResponse) error
-
-func (f ListResponseValidateFunc) Validate(v *ListResponse) error {
-	return f(v)
-}
-
-var DefaultListResponseValidator ListResponseValidator = ListResponseValidateFunc(func(v *ListResponse) error {
+// Set sets the value of the specified field. The name must be a JSON
+// field name, not the Go name
+func (v *ListResponse) Set(key string, value interface{}) error {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	switch key {
+	case ListResponseItemsPerPageKey:
+		converted, ok := value.(int)
+		if !ok {
+			return fmt.Errorf(`expected value of type int for field itemsPerPage, got %T`, value)
+		}
+		v.itemsPerPage = &converted
+	case ListResponseResourcesKey:
+		converted, ok := value.([]interface{})
+		if !ok {
+			return fmt.Errorf(`expected value of type []interface {} for field resources, got %T`, value)
+		}
+		v.resources = converted
+	case ListResponseStartIndexKey:
+		converted, ok := value.(int)
+		if !ok {
+			return fmt.Errorf(`expected value of type int for field startIndex, got %T`, value)
+		}
+		v.startIndex = &converted
+	case ListResponseTotalResultsKey:
+		converted, ok := value.(int)
+		if !ok {
+			return fmt.Errorf(`expected value of type int for field totalResults, got %T`, value)
+		}
+		v.totalResults = &converted
+	case ListResponseSchemasKey:
+		converted, ok := value.(schemas)
+		if !ok {
+			return fmt.Errorf(`expected value of type schemas for field schemas, got %T`, value)
+		}
+		v.schemas = &converted
+	default:
+		if v.extra == nil {
+			v.extra = make(map[string]interface{})
+		}
+		v.extra[key] = value
+	}
 	return nil
-})
-
+}
 func (v *ListResponse) HasItemsPerPage() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.itemsPerPage != nil
-}
-
-func (v *ListResponse) ItemsPerPage() int {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	if v.itemsPerPage == nil {
-		return 0
-	}
-	return *(v.itemsPerPage)
 }
 
 func (v *ListResponse) HasResources() bool {
@@ -68,37 +128,10 @@ func (v *ListResponse) HasResources() bool {
 	return v.resources != nil
 }
 
-func (v *ListResponse) Resources() []interface{} {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	return v.resources
-}
-
-func (v *ListResponse) HasSchemas() bool {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	return true
-}
-
-func (v *ListResponse) Schemas() []string {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	return v.schemas.List()
-}
-
 func (v *ListResponse) HasStartIndex() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.startIndex != nil
-}
-
-func (v *ListResponse) StartIndex() int {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	if v.startIndex == nil {
-		return 0
-	}
-	return *(v.startIndex)
 }
 
 func (v *ListResponse) HasTotalResults() bool {
@@ -107,41 +140,112 @@ func (v *ListResponse) HasTotalResults() bool {
 	return v.totalResults != nil
 }
 
+func (v *ListResponse) HasSchemas() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.schemas != nil
+}
+
+func (v *ListResponse) ItemsPerPage() int {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	if val := v.itemsPerPage; val != nil {
+		return *val
+	}
+	return 0
+}
+
+func (v *ListResponse) Resources() []interface{} {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	if val := v.resources; val != nil {
+		return val
+	}
+	return []interface{}(nil)
+}
+
+func (v *ListResponse) StartIndex() int {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	if val := v.startIndex; val != nil {
+		return *val
+	}
+	return 0
+}
+
 func (v *ListResponse) TotalResults() int {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	if v.totalResults == nil {
-		return 0
+	if val := v.totalResults; val != nil {
+		return *val
 	}
-	return *(v.totalResults)
+	return 0
 }
 
-func (v *ListResponse) makePairs() []pair {
-	pairs := make([]pair, 0, 5)
-	if v.itemsPerPage != nil {
-		pairs = append(pairs, pair{Key: "itemsPerPage", Value: *(v.itemsPerPage)})
+func (v *ListResponse) Schemas() []string {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	if val := v.schemas; val != nil {
+		return val.Get()
 	}
-	if v.resources != nil {
-		pairs = append(pairs, pair{Key: "resources", Value: v.resources})
+	return nil
+}
+
+// Remove removes the value associated with a key
+func (v *ListResponse) Remove(key string) error {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+
+	switch key {
+	case ListResponseItemsPerPageKey:
+		v.itemsPerPage = nil
+	case ListResponseResourcesKey:
+		v.resources = nil
+	case ListResponseStartIndexKey:
+		v.startIndex = nil
+	case ListResponseTotalResultsKey:
+		v.totalResults = nil
+	case ListResponseSchemasKey:
+		v.schemas = nil
+	default:
+		delete(v.extra, key)
 	}
-	if v.schemas != nil {
-		pairs = append(pairs, pair{Key: "schemas", Value: v.schemas})
+
+	return nil
+}
+
+func (v *ListResponse) makePairs() []*fieldPair {
+	pairs := make([]*fieldPair, 0, 5)
+	if val := v.itemsPerPage; val != nil {
+		pairs = append(pairs, &fieldPair{Name: ListResponseItemsPerPageKey, Value: *val})
 	}
-	if v.startIndex != nil {
-		pairs = append(pairs, pair{Key: "startIndex", Value: *(v.startIndex)})
+	if val := v.resources; len(val) > 0 {
+		pairs = append(pairs, &fieldPair{Name: ListResponseResourcesKey, Value: val})
 	}
-	if v.totalResults != nil {
-		pairs = append(pairs, pair{Key: "totalResults", Value: *(v.totalResults)})
+	if val := v.startIndex; val != nil {
+		pairs = append(pairs, &fieldPair{Name: ListResponseStartIndexKey, Value: *val})
 	}
-	for k, v := range v.privateParams {
-		pairs = append(pairs, pair{Key: k, Value: v})
+	if val := v.totalResults; val != nil {
+		pairs = append(pairs, &fieldPair{Name: ListResponseTotalResultsKey, Value: *val})
 	}
+	if val := v.schemas; val != nil {
+		pairs = append(pairs, &fieldPair{Name: ListResponseSchemasKey, Value: *val})
+	}
+
+	for key, val := range v.extra {
+		pairs = append(pairs, &fieldPair{Name: key, Value: val})
+	}
+
 	sort.Slice(pairs, func(i, j int) bool {
-		return pairs[i].Key < pairs[j].Key
+		return pairs[i].Name < pairs[j].Name
 	})
 	return pairs
 }
 
+// MarshalJSON serializes ListResponse into JSON.
+// All pre-declared fields are included as long as a value is
+// assigned to them, as well as all extra fields. All of these
+// fields are sorted in alphabetical order.
 func (v *ListResponse) MarshalJSON() ([]byte, error) {
 	pairs := v.makePairs()
 
@@ -150,293 +254,68 @@ func (v *ListResponse) MarshalJSON() ([]byte, error) {
 	buf.WriteByte('{')
 	for i, pair := range pairs {
 		if i > 0 {
-			buf.WriteRune(',')
+			buf.WriteByte(',')
 		}
-		fmt.Fprintf(&buf, "%q:", pair.Key)
-		if err := enc.Encode(pair.Value); err != nil {
-			return nil, fmt.Errorf("failed to encode value for key %q: %w", pair.Key, err)
-		}
+		enc.Encode(pair.Name)
+		buf.WriteByte(':')
+		enc.Encode(pair.Value)
 	}
 	buf.WriteByte('}')
 	return buf.Bytes(), nil
 }
 
-func (v *ListResponse) Get(name string, options ...GetOption) (interface{}, bool) {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-
-	var ext string
-	//nolint:forcetypeassert
-	for _, option := range options {
-		switch option.Ident() {
-		case identExtension{}:
-			ext = option.Value().(string)
-		}
-	}
-	switch name {
-	case ListResponseItemsPerPageKey:
-		if v.itemsPerPage == nil {
-			return nil, false
-		}
-		return *(v.itemsPerPage), true
-	case ListResponseResourcesKey:
-		if v.resources == nil {
-			return nil, false
-		}
-		return v.resources, true
-	case ListResponseSchemasKey:
-		if v.schemas == nil {
-			return nil, false
-		}
-		return v.schemas, true
-	case ListResponseStartIndexKey:
-		if v.startIndex == nil {
-			return nil, false
-		}
-		return *(v.startIndex), true
-	case ListResponseTotalResultsKey:
-		if v.totalResults == nil {
-			return nil, false
-		}
-		return *(v.totalResults), true
-	default:
-		pp := v.privateParams
-		if pp == nil {
-			return nil, false
-		}
-		if ext == "" {
-			ret, ok := pp[name]
-			return ret, ok
-		}
-		obj, ok := pp[ext]
-		if !ok {
-			return nil, false
-		}
-		getter, ok := obj.(interface {
-			Get(string, ...GetOption) (interface{}, bool)
-		})
-		if !ok {
-			return nil, false
-		}
-		return getter.Get(name)
-	}
-}
-
-func (v *ListResponse) Set(name string, value interface{}) error {
-	v.mu.Lock()
-	defer v.mu.Unlock()
-	switch name {
-	case ListResponseItemsPerPageKey:
-		var tmp int
-		tmp, ok := value.(int)
-		if !ok {
-			return fmt.Errorf(`expected int for field "itemsPerPage", but got %T`, value)
-		}
-		v.itemsPerPage = &tmp
-		return nil
-	case ListResponseResourcesKey:
-		var tmp []interface{}
-		tmp, ok := value.([]interface{})
-		if !ok {
-			return fmt.Errorf(`expected []interface{} for field "resources", but got %T`, value)
-		}
-		v.resources = tmp
-		return nil
-	case ListResponseSchemasKey:
-		var tmp schemas
-		tmp, ok := value.(schemas)
-		if !ok {
-			return fmt.Errorf(`expected schemas for field "schemas", but got %T`, value)
-		}
-		v.schemas = tmp
-		return nil
-	case ListResponseStartIndexKey:
-		var tmp int
-		tmp, ok := value.(int)
-		if !ok {
-			return fmt.Errorf(`expected int for field "startIndex", but got %T`, value)
-		}
-		v.startIndex = &tmp
-		return nil
-	case ListResponseTotalResultsKey:
-		var tmp int
-		tmp, ok := value.(int)
-		if !ok {
-			return fmt.Errorf(`expected int for field "totalResults", but got %T`, value)
-		}
-		v.totalResults = &tmp
-		return nil
-	default:
-		pp := v.privateParams
-		if pp == nil {
-			pp = make(map[string]interface{})
-			v.privateParams = pp
-		}
-		pp[name] = value
-		return nil
-	}
-}
-
-func (v *ListResponse) Clone() *ListResponse {
-	v.mu.Lock()
-	defer v.mu.Unlock()
-	return &ListResponse{
-		itemsPerPage: v.itemsPerPage,
-		resources:    v.resources,
-		schemas:      v.schemas,
-		startIndex:   v.startIndex,
-		totalResults: v.totalResults,
-	}
-}
-
-func (v *ListResponse) AsMap(dst map[string]interface{}) error {
-	for _, pair := range v.makePairs() {
-		dst[pair.Key] = pair.Value
-	}
-	return nil
-}
-
-// ListResponseBuilder creates a ListResponse resource
 type ListResponseBuilder struct {
-	once      sync.Once
-	mu        sync.Mutex
-	err       error
-	validator ListResponseValidator
-	object    *ListResponse
+	mu     sync.Mutex
+	err    error
+	once   sync.Once
+	object *ListResponse
 }
 
-func (b *Builder) ListResponse() *ListResponseBuilder {
-	return NewListResponseBuilder()
-}
-
+// NewListResponseBuilder creates a new ListResponseBuilder instance.
+// ListResponseBuilder is safe to be used uninitialized as well.
 func NewListResponseBuilder() *ListResponseBuilder {
-	var b ListResponseBuilder
-	b.init()
-	return &b
+	return &ListResponseBuilder{}
 }
 
-func (b *ListResponseBuilder) From(in *ListResponse) *ListResponseBuilder {
-	b.once.Do(b.init)
-	b.object = in.Clone()
-	return b
-}
-
-func (b *ListResponseBuilder) init() {
+func (b *ListResponseBuilder) initialize() {
 	b.err = nil
-	b.validator = nil
 	b.object = &ListResponse{}
 }
-
-func (b *ListResponseBuilder) ItemsPerPage(v int) *ListResponseBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	if err := b.object.Set("itemsPerPage", v); err != nil {
-		b.err = err
-	}
+func (b *ListResponseBuilder) ItemsPerPage(in int) *ListResponseBuilder {
+	b.once.Do(b.initialize)
+	_ = b.object.Set(ListResponseItemsPerPageKey, in)
 	return b
 }
-
-func (b *ListResponseBuilder) Resources(v ...interface{}) *ListResponseBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	if err := b.object.Set("resources", v); err != nil {
-		b.err = err
-	}
+func (b *ListResponseBuilder) Resources(in []interface{}) *ListResponseBuilder {
+	b.once.Do(b.initialize)
+	_ = b.object.Set(ListResponseResourcesKey, in)
 	return b
 }
-
-func (b *ListResponseBuilder) Schemas(v ...string) *ListResponseBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	for _, schema := range v {
-		b.object.schemas.Add(schema)
-	}
+func (b *ListResponseBuilder) StartIndex(in int) *ListResponseBuilder {
+	b.once.Do(b.initialize)
+	_ = b.object.Set(ListResponseStartIndexKey, in)
 	return b
 }
-
-func (b *ListResponseBuilder) StartIndex(v int) *ListResponseBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	if err := b.object.Set("startIndex", v); err != nil {
-		b.err = err
-	}
+func (b *ListResponseBuilder) TotalResults(in int) *ListResponseBuilder {
+	b.once.Do(b.initialize)
+	_ = b.object.Set(ListResponseTotalResultsKey, in)
 	return b
 }
-
-func (b *ListResponseBuilder) TotalResults(v int) *ListResponseBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	if err := b.object.Set("totalResults", v); err != nil {
-		b.err = err
-	}
-	return b
-}
-
-func (b *ListResponseBuilder) Extension(uri string, value interface{}) *ListResponseBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	b.object.schemas.Add(uri)
-	if err := b.object.Set(uri, value); err != nil {
-		b.err = err
-	}
-	return b
-}
-
-func (b *ListResponseBuilder) Validator(v ListResponseValidator) *ListResponseBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	b.validator = v
+func (b *ListResponseBuilder) Schemas(in ...string) *ListResponseBuilder {
+	b.once.Do(b.initialize)
+	_ = b.object.Set(ListResponseSchemasKey, in)
 	return b
 }
 
 func (b *ListResponseBuilder) Build() (*ListResponse, error) {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	object := b.object
-	validator := b.validator
 	err := b.err
-	b.once = sync.Once{}
 	if err != nil {
 		return nil, err
 	}
-	if object == nil {
-		return nil, fmt.Errorf("resource.ListResponseBuilder: object was not initialized")
-	}
-	if validator == nil {
-		validator = DefaultListResponseValidator
-	}
-	if err := validator.Validate(object); err != nil {
-		return nil, err
-	}
-	return object, nil
+	obj := b.object
+	b.once = sync.Once{}
+	b.once.Do(b.initialize)
+	return obj, nil
 }
 
 func (b *ListResponseBuilder) MustBuild() *ListResponse {
@@ -445,4 +324,35 @@ func (b *ListResponseBuilder) MustBuild() *ListResponse {
 		panic(err)
 	}
 	return object
+}
+
+func (v *ListResponse) AsMap(dst map[string]interface{}) error {
+	for _, pair := range v.makePairs() {
+		dst[pair.Name] = pair.Value
+	}
+	return nil
+}
+
+// GetExtension takes into account extension uri, and fetches
+// the specified attribute from the extension object
+func (v *ListResponse) GetExtension(name, uri string, dst interface{}) error {
+	if uri == "" {
+		return v.Get(name, dst)
+	}
+	var ext interface{}
+	if err := v.Get(uri, ext); err != nil {
+		return fmt.Errorf(`failed to fetch extension %q: %w`, uri, err)
+	}
+
+	getter, ok := ext.(interface {
+		Get(string, interface{}) error
+	})
+	if !ok {
+		return fmt.Errorf(`extension does not implement Get(string, interface{}) error`)
+	}
+	return getter.Get(name, dst)
+}
+
+func (b *Builder) ListResponse() *ListResponseBuilder {
+	return &ListResponseBuilder{}
 }

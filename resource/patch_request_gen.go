@@ -6,82 +6,150 @@ import (
 	"fmt"
 	"sort"
 	"sync"
+
+	"github.com/lestrrat-go/blackmagic"
 )
 
-// JSON key names for PatchRequest resource
-const (
-	PatchRequestOperationsKey = "operations"
-	PatchRequestSchemasKey    = "schemas"
-)
-
-const PatchRequestSchemaURI = "urn:ietf:params:scim:schemas:core:2.0:PatchOp"
+const PatchRequestSchemaURI = "urn:ietf:params:scim:api:messages:2.0:PatchOp"
 
 func init() {
 	RegisterExtension(PatchRequestSchemaURI, PatchRequest{})
 }
 
 type PatchRequest struct {
-	operations    []*PatchOperation
-	schemas       schemas
-	privateParams map[string]interface{}
-	mu            sync.RWMutex
+	mu         sync.RWMutex
+	operations []*PatchOperation
+	schemas    *schemas
+	extra      map[string]interface{}
 }
 
-type PatchRequestValidator interface {
-	Validate(*PatchRequest) error
+// These constants are used when the JSON field name is used.
+// Their use is not strictly required, but certain linters
+// complain about repeated constants, and therefore internally
+// this used throughout
+const (
+	PatchRequestOperationsKey = "operations"
+	PatchRequestSchemasKey    = "schemas"
+)
+
+// Get retrieves the value associated with a key
+func (v *PatchRequest) Get(key string, dst interface{}) error {
+	switch key {
+	case PatchRequestOperationsKey:
+		if val := v.operations; val != nil {
+			return blackmagic.AssignIfCompatible(dst, val)
+		}
+	case PatchRequestSchemasKey:
+		if val := v.schemas; val != nil {
+			return blackmagic.AssignIfCompatible(dst, *val)
+		}
+	default:
+		if v.extra != nil {
+			val, ok := v.extra[key]
+			if ok {
+				return blackmagic.AssignIfCompatible(dst, val)
+			}
+		}
+	}
+	return fmt.Errorf(`no such key %q`, key)
 }
 
-type PatchRequestValidateFunc func(v *PatchRequest) error
-
-func (f PatchRequestValidateFunc) Validate(v *PatchRequest) error {
-	return f(v)
-}
-
-var DefaultPatchRequestValidator PatchRequestValidator = PatchRequestValidateFunc(func(v *PatchRequest) error {
+// Set sets the value of the specified field. The name must be a JSON
+// field name, not the Go name
+func (v *PatchRequest) Set(key string, value interface{}) error {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	switch key {
+	case PatchRequestOperationsKey:
+		converted, ok := value.([]*PatchOperation)
+		if !ok {
+			return fmt.Errorf(`expected value of type []*PatchOperation for field operations, got %T`, value)
+		}
+		v.operations = converted
+	case PatchRequestSchemasKey:
+		converted, ok := value.(schemas)
+		if !ok {
+			return fmt.Errorf(`expected value of type schemas for field schemas, got %T`, value)
+		}
+		v.schemas = &converted
+	default:
+		if v.extra == nil {
+			v.extra = make(map[string]interface{})
+		}
+		v.extra[key] = value
+	}
 	return nil
-})
-
+}
 func (v *PatchRequest) HasOperations() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.operations != nil
 }
 
-func (v *PatchRequest) Operations() []*PatchOperation {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	return v.operations
-}
-
 func (v *PatchRequest) HasSchemas() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return true
+	return v.schemas != nil
+}
+
+func (v *PatchRequest) Operations() []*PatchOperation {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	if val := v.operations; val != nil {
+		return val
+	}
+	return nil
 }
 
 func (v *PatchRequest) Schemas() []string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return v.schemas.List()
+	if val := v.schemas; val != nil {
+		return val.Get()
+	}
+	return nil
 }
 
-func (v *PatchRequest) makePairs() []pair {
-	pairs := make([]pair, 0, 2)
-	if v.operations != nil {
-		pairs = append(pairs, pair{Key: "operations", Value: v.operations})
+// Remove removes the value associated with a key
+func (v *PatchRequest) Remove(key string) error {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+
+	switch key {
+	case PatchRequestOperationsKey:
+		v.operations = nil
+	case PatchRequestSchemasKey:
+		v.schemas = nil
+	default:
+		delete(v.extra, key)
 	}
-	if v.schemas != nil {
-		pairs = append(pairs, pair{Key: "schemas", Value: v.schemas})
+
+	return nil
+}
+
+func (v *PatchRequest) makePairs() []*fieldPair {
+	pairs := make([]*fieldPair, 0, 2)
+	if val := v.operations; len(val) > 0 {
+		pairs = append(pairs, &fieldPair{Name: PatchRequestOperationsKey, Value: val})
 	}
-	for k, v := range v.privateParams {
-		pairs = append(pairs, pair{Key: k, Value: v})
+	if val := v.schemas; val != nil {
+		pairs = append(pairs, &fieldPair{Name: PatchRequestSchemasKey, Value: *val})
 	}
+
+	for key, val := range v.extra {
+		pairs = append(pairs, &fieldPair{Name: key, Value: val})
+	}
+
 	sort.Slice(pairs, func(i, j int) bool {
-		return pairs[i].Key < pairs[j].Key
+		return pairs[i].Name < pairs[j].Name
 	})
 	return pairs
 }
 
+// MarshalJSON serializes PatchRequest into JSON.
+// All pre-declared fields are included as long as a value is
+// assigned to them, as well as all extra fields. All of these
+// fields are sorted in alphabetical order.
 func (v *PatchRequest) MarshalJSON() ([]byte, error) {
 	pairs := v.makePairs()
 
@@ -90,284 +158,112 @@ func (v *PatchRequest) MarshalJSON() ([]byte, error) {
 	buf.WriteByte('{')
 	for i, pair := range pairs {
 		if i > 0 {
-			buf.WriteRune(',')
+			buf.WriteByte(',')
 		}
-		fmt.Fprintf(&buf, "%q:", pair.Key)
-		if err := enc.Encode(pair.Value); err != nil {
-			return nil, fmt.Errorf("failed to encode value for key %q: %w", pair.Key, err)
-		}
+		enc.Encode(pair.Name)
+		buf.WriteByte(':')
+		enc.Encode(pair.Value)
 	}
 	buf.WriteByte('}')
 	return buf.Bytes(), nil
 }
 
-func (v *PatchRequest) Get(name string, options ...GetOption) (interface{}, bool) {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-
-	var ext string
-	//nolint:forcetypeassert
-	for _, option := range options {
-		switch option.Ident() {
-		case identExtension{}:
-			ext = option.Value().(string)
-		}
-	}
-	switch name {
-	case PatchRequestOperationsKey:
-		if v.operations == nil {
-			return nil, false
-		}
-		return v.operations, true
-	case PatchRequestSchemasKey:
-		if v.schemas == nil {
-			return nil, false
-		}
-		return v.schemas, true
-	default:
-		pp := v.privateParams
-		if pp == nil {
-			return nil, false
-		}
-		if ext == "" {
-			ret, ok := pp[name]
-			return ret, ok
-		}
-		obj, ok := pp[ext]
-		if !ok {
-			return nil, false
-		}
-		getter, ok := obj.(interface {
-			Get(string, ...GetOption) (interface{}, bool)
-		})
-		if !ok {
-			return nil, false
-		}
-		return getter.Get(name)
-	}
-}
-
-func (v *PatchRequest) Set(name string, value interface{}) error {
-	v.mu.Lock()
-	defer v.mu.Unlock()
-	switch name {
-	case PatchRequestOperationsKey:
-		var tmp []*PatchOperation
-		tmp, ok := value.([]*PatchOperation)
-		if !ok {
-			return fmt.Errorf(`expected []*PatchOperation for field "operations", but got %T`, value)
-		}
-		v.operations = tmp
-		return nil
-	case PatchRequestSchemasKey:
-		var tmp schemas
-		tmp, ok := value.(schemas)
-		if !ok {
-			return fmt.Errorf(`expected schemas for field "schemas", but got %T`, value)
-		}
-		v.schemas = tmp
-		return nil
-	default:
-		pp := v.privateParams
-		if pp == nil {
-			pp = make(map[string]interface{})
-			v.privateParams = pp
-		}
-		pp[name] = value
-		return nil
-	}
-}
-
-func (v *PatchRequest) Clone() *PatchRequest {
-	v.mu.Lock()
-	defer v.mu.Unlock()
-	return &PatchRequest{
-		operations: v.operations,
-		schemas:    v.schemas,
-	}
-}
-
+// UnmarshalJSON deserializes a piece of JSON data into PatchRequest.
+//
+// Pre-defined fields must be deserializable via "encoding/json" to their
+// respective Go types, otherwise an error is returned.
+//
+// Extra fields are stored in a special "extra" storage, which can only
+// be accessed via `Get()` and `Set()` methods.
 func (v *PatchRequest) UnmarshalJSON(data []byte) error {
+	v.mu.Lock()
+	defer v.mu.Unlock()
 	v.operations = nil
 	v.schemas = nil
-	v.privateParams = nil
+
 	dec := json.NewDecoder(bytes.NewReader(data))
-	{ // first token
-		tok, err := dec.Token()
-		if err != nil {
-			return fmt.Errorf("failed to read next token: %s", err)
-		}
-		tok, ok := tok.(json.Delim)
-		if !ok {
-			return fmt.Errorf("expected first token to be '{', got %c", tok)
-		}
-	}
-	var privateParams map[string]interface{}
 
 LOOP:
 	for {
 		tok, err := dec.Token()
 		if err != nil {
-			return fmt.Errorf("failed to read next token: %s", err)
+			return fmt.Errorf(`error reading JSON token: %w`, err)
 		}
 		switch tok := tok.(type) {
 		case json.Delim:
-			if tok == '}' {
+			if tok == '}' { // end of object
 				break LOOP
-			} else {
-				return fmt.Errorf("unexpected token %c found", tok)
+			}
+			// we should only get into this clause at the very beginning, and just once
+			if tok != '{' {
+				return fmt.Errorf(`expected '{', but got '%c'`, tok)
 			}
 		case string:
 			switch tok {
 			case PatchRequestOperationsKey:
-				var x []*PatchOperation
-				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "operations": %w`, err)
+				var val []*PatchOperation
+				if err := dec.Decode(&val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, PatchRequestOperationsKey, err)
 				}
-				v.operations = x
+				v.operations = val
 			case PatchRequestSchemasKey:
-				var x schemas
-				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "schemas": %w`, err)
+				var val schemas
+				if err := dec.Decode(&val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, PatchRequestSchemasKey, err)
 				}
-				v.schemas = x
+				v.schemas = &val
 			default:
-				var x interface{}
-				if rx, ok := registry.Get(tok); ok {
-					x = rx
-					if err := dec.Decode(x); err != nil {
-						return fmt.Errorf(`failed to decode value for key %q: %w`, tok, err)
-					}
-				} else {
-					if err := dec.Decode(&x); err != nil {
-						return fmt.Errorf(`failed to decode value for key %q: %w`, tok, err)
-					}
+				var val interface{}
+				if err := dec.Decode(&val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, tok, err)
 				}
-				if privateParams == nil {
-					privateParams = make(map[string]interface{})
+				if v.extra == nil {
+					v.extra = make(map[string]interface{})
 				}
-				privateParams[tok] = x
+				v.extra[tok] = val
 			}
 		}
 	}
-	if privateParams != nil {
-		v.privateParams = privateParams
-	}
 	return nil
 }
 
-func (v *PatchRequest) AsMap(dst map[string]interface{}) error {
-	for _, pair := range v.makePairs() {
-		dst[pair.Key] = pair.Value
-	}
-	return nil
-}
-
-// PatchRequestBuilder creates a PatchRequest resource
 type PatchRequestBuilder struct {
-	once      sync.Once
-	mu        sync.Mutex
-	err       error
-	validator PatchRequestValidator
-	object    *PatchRequest
+	mu     sync.Mutex
+	err    error
+	once   sync.Once
+	object *PatchRequest
 }
 
-func (b *Builder) PatchRequest() *PatchRequestBuilder {
-	return NewPatchRequestBuilder()
-}
-
+// NewPatchRequestBuilder creates a new PatchRequestBuilder instance.
+// PatchRequestBuilder is safe to be used uninitialized as well.
 func NewPatchRequestBuilder() *PatchRequestBuilder {
-	var b PatchRequestBuilder
-	b.init()
-	return &b
+	return &PatchRequestBuilder{}
 }
 
-func (b *PatchRequestBuilder) From(in *PatchRequest) *PatchRequestBuilder {
-	b.once.Do(b.init)
-	b.object = in.Clone()
-	return b
-}
-
-func (b *PatchRequestBuilder) init() {
+func (b *PatchRequestBuilder) initialize() {
 	b.err = nil
-	b.validator = nil
 	b.object = &PatchRequest{}
-
-	b.object.schemas = make(schemas)
-	b.object.schemas.Add(PatchRequestSchemaURI)
 }
-
-func (b *PatchRequestBuilder) Operations(v ...*PatchOperation) *PatchRequestBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	if err := b.object.Set("operations", v); err != nil {
-		b.err = err
-	}
+func (b *PatchRequestBuilder) Operations(in ...*PatchOperation) *PatchRequestBuilder {
+	b.once.Do(b.initialize)
+	_ = b.object.Set(PatchRequestOperationsKey, in)
 	return b
 }
-
-func (b *PatchRequestBuilder) Schemas(v ...string) *PatchRequestBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	for _, schema := range v {
-		b.object.schemas.Add(schema)
-	}
-	return b
-}
-
-func (b *PatchRequestBuilder) Extension(uri string, value interface{}) *PatchRequestBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	b.object.schemas.Add(uri)
-	if err := b.object.Set(uri, value); err != nil {
-		b.err = err
-	}
-	return b
-}
-
-func (b *PatchRequestBuilder) Validator(v PatchRequestValidator) *PatchRequestBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	b.validator = v
+func (b *PatchRequestBuilder) Schemas(in ...string) *PatchRequestBuilder {
+	b.once.Do(b.initialize)
+	_ = b.object.Set(PatchRequestSchemasKey, in)
 	return b
 }
 
 func (b *PatchRequestBuilder) Build() (*PatchRequest, error) {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	object := b.object
-	validator := b.validator
 	err := b.err
-	b.once = sync.Once{}
 	if err != nil {
 		return nil, err
 	}
-	if object == nil {
-		return nil, fmt.Errorf("resource.PatchRequestBuilder: object was not initialized")
-	}
-	if validator == nil {
-		validator = DefaultPatchRequestValidator
-	}
-	if err := validator.Validate(object); err != nil {
-		return nil, err
-	}
-	return object, nil
+	obj := b.object
+	b.once = sync.Once{}
+	b.once.Do(b.initialize)
+	return obj, nil
 }
 
 func (b *PatchRequestBuilder) MustBuild() *PatchRequest {
@@ -376,4 +272,35 @@ func (b *PatchRequestBuilder) MustBuild() *PatchRequest {
 		panic(err)
 	}
 	return object
+}
+
+func (v *PatchRequest) AsMap(dst map[string]interface{}) error {
+	for _, pair := range v.makePairs() {
+		dst[pair.Name] = pair.Value
+	}
+	return nil
+}
+
+// GetExtension takes into account extension uri, and fetches
+// the specified attribute from the extension object
+func (v *PatchRequest) GetExtension(name, uri string, dst interface{}) error {
+	if uri == "" {
+		return v.Get(name, dst)
+	}
+	var ext interface{}
+	if err := v.Get(uri, ext); err != nil {
+		return fmt.Errorf(`failed to fetch extension %q: %w`, uri, err)
+	}
+
+	getter, ok := ext.(interface {
+		Get(string, interface{}) error
+	})
+	if !ok {
+		return fmt.Errorf(`extension does not implement Get(string, interface{}) error`)
+	}
+	return getter.Get(name, dst)
+}
+
+func (b *Builder) PatchRequest() *PatchRequestBuilder {
+	return &PatchRequestBuilder{}
 }

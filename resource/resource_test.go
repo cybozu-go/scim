@@ -127,11 +127,12 @@ func TestUser(t *testing.T) {
 	require.Equal(t, `bjensen@example.com`, u.UserName(), `values should match`)
 
 	t.Run("EnterpriseUser", func(t *testing.T) {
-		en, ok := u.Get(`employeeNumber`, resource.WithExtension(resource.EnterpriseUserSchemaURI))
-		require.True(t, ok, `u.Get("employeeNumber") should succeed`)
+		var en string
+		require.NoError(t, u.GetExtension(`employeeNumber`, resource.EnterpriseUserSchemaURI, &en), `u.GetExtension should succeed`)
 		require.Equal(t, `701984`, en)
-		cc, ok := u.Get(`costCenter`, resource.WithExtension(resource.EnterpriseUserSchemaURI))
-		require.True(t, ok, `u.Get("costCenter") should succeed`)
+
+		var cc string
+		require.NoError(t, u.GetExtension(`costCenter`, resource.EnterpriseUserSchemaURI, &cc), `u.GetExtension should succeed`)
 		require.Equal(t, `4130`, cc)
 	})
 	t.Run("Names", func(t *testing.T) {

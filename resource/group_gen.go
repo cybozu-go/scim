@@ -6,16 +6,8 @@ import (
 	"fmt"
 	"sort"
 	"sync"
-)
 
-// JSON key names for Group resource
-const (
-	GroupDisplayNameKey = "displayName"
-	GroupExternalIDKey  = "externalId"
-	GroupIDKey          = "id"
-	GroupMembersKey     = "members"
-	GroupMetaKey        = "meta"
-	GroupSchemasKey     = "schemas"
+	"github.com/lestrrat-go/blackmagic"
 )
 
 const GroupSchemaURI = "urn:ietf:params:scim:schemas:core:2.0:Group"
@@ -25,58 +17,127 @@ func init() {
 }
 
 type Group struct {
-	displayName   *string
-	externalID    *string
-	id            *string
-	members       []*GroupMember
-	meta          *Meta
-	schemas       schemas
-	privateParams map[string]interface{}
-	mu            sync.RWMutex
+	mu          sync.RWMutex
+	displayName *string
+	externalId  *string
+	id          *string
+	members     []*GroupMember
+	schemas     *schemas
+	meta        *Meta
+	extra       map[string]interface{}
 }
 
-type GroupValidator interface {
-	Validate(*Group) error
+// These constants are used when the JSON field name is used.
+// Their use is not strictly required, but certain linters
+// complain about repeated constants, and therefore internally
+// this used throughout
+const (
+	GroupDisplayNameKey = "displayName"
+	GroupExternalIDKey  = "externalId"
+	GroupIDKey          = "id"
+	GroupMembersKey     = "members"
+	GroupSchemasKey     = "schemas"
+	GroupMetaKey        = "meta"
+)
+
+// Get retrieves the value associated with a key
+func (v *Group) Get(key string, dst interface{}) error {
+	switch key {
+	case GroupDisplayNameKey:
+		if val := v.displayName; val != nil {
+			return blackmagic.AssignIfCompatible(dst, *val)
+		}
+	case GroupExternalIDKey:
+		if val := v.externalId; val != nil {
+			return blackmagic.AssignIfCompatible(dst, *val)
+		}
+	case GroupIDKey:
+		if val := v.id; val != nil {
+			return blackmagic.AssignIfCompatible(dst, *val)
+		}
+	case GroupMembersKey:
+		if val := v.members; val != nil {
+			return blackmagic.AssignIfCompatible(dst, val)
+		}
+	case GroupSchemasKey:
+		if val := v.schemas; val != nil {
+			return blackmagic.AssignIfCompatible(dst, *val)
+		}
+	case GroupMetaKey:
+		if val := v.meta; val != nil {
+			return blackmagic.AssignIfCompatible(dst, val)
+		}
+	default:
+		if v.extra != nil {
+			val, ok := v.extra[key]
+			if ok {
+				return blackmagic.AssignIfCompatible(dst, val)
+			}
+		}
+	}
+	return fmt.Errorf(`no such key %q`, key)
 }
 
-type GroupValidateFunc func(v *Group) error
-
-func (f GroupValidateFunc) Validate(v *Group) error {
-	return f(v)
-}
-
-var DefaultGroupValidator GroupValidator = GroupValidateFunc(func(v *Group) error {
+// Set sets the value of the specified field. The name must be a JSON
+// field name, not the Go name
+func (v *Group) Set(key string, value interface{}) error {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	switch key {
+	case GroupDisplayNameKey:
+		converted, ok := value.(string)
+		if !ok {
+			return fmt.Errorf(`expected value of type string for field displayName, got %T`, value)
+		}
+		v.displayName = &converted
+	case GroupExternalIDKey:
+		converted, ok := value.(string)
+		if !ok {
+			return fmt.Errorf(`expected value of type string for field externalId, got %T`, value)
+		}
+		v.externalId = &converted
+	case GroupIDKey:
+		converted, ok := value.(string)
+		if !ok {
+			return fmt.Errorf(`expected value of type string for field id, got %T`, value)
+		}
+		v.id = &converted
+	case GroupMembersKey:
+		converted, ok := value.([]*GroupMember)
+		if !ok {
+			return fmt.Errorf(`expected value of type []*GroupMember for field members, got %T`, value)
+		}
+		v.members = converted
+	case GroupSchemasKey:
+		converted, ok := value.(schemas)
+		if !ok {
+			return fmt.Errorf(`expected value of type schemas for field schemas, got %T`, value)
+		}
+		v.schemas = &converted
+	case GroupMetaKey:
+		converted, ok := value.(*Meta)
+		if !ok {
+			return fmt.Errorf(`expected value of type *Meta for field meta, got %T`, value)
+		}
+		v.meta = converted
+	default:
+		if v.extra == nil {
+			v.extra = make(map[string]interface{})
+		}
+		v.extra[key] = value
+	}
 	return nil
-})
-
+}
 func (v *Group) HasDisplayName() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.displayName != nil
 }
 
-func (v *Group) DisplayName() string {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	if v.displayName == nil {
-		return ""
-	}
-	return *(v.displayName)
-}
-
 func (v *Group) HasExternalID() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return v.externalID != nil
-}
-
-func (v *Group) ExternalID() string {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	if v.externalID == nil {
-		return ""
-	}
-	return *(v.externalID)
+	return v.externalId != nil
 }
 
 func (v *Group) HasID() bool {
@@ -85,25 +146,16 @@ func (v *Group) HasID() bool {
 	return v.id != nil
 }
 
-func (v *Group) ID() string {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	if v.id == nil {
-		return ""
-	}
-	return *(v.id)
-}
-
 func (v *Group) HasMembers() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.members != nil
 }
 
-func (v *Group) Members() []*GroupMember {
+func (v *Group) HasSchemas() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return v.members
+	return v.schemas != nil
 }
 
 func (v *Group) HasMeta() bool {
@@ -112,53 +164,120 @@ func (v *Group) HasMeta() bool {
 	return v.meta != nil
 }
 
-func (v *Group) Meta() *Meta {
+func (v *Group) DisplayName() string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return v.meta
+	if val := v.displayName; val != nil {
+		return *val
+	}
+	return ""
 }
 
-func (v *Group) HasSchemas() bool {
+func (v *Group) ExternalID() string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return true
+	if val := v.externalId; val != nil {
+		return *val
+	}
+	return ""
+}
+
+func (v *Group) ID() string {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	if val := v.id; val != nil {
+		return *val
+	}
+	return ""
+}
+
+func (v *Group) Members() []*GroupMember {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	if val := v.members; val != nil {
+		return val
+	}
+	return nil
 }
 
 func (v *Group) Schemas() []string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return v.schemas.List()
+	if val := v.schemas; val != nil {
+		return val.Get()
+	}
+	return nil
 }
 
-func (v *Group) makePairs() []pair {
-	pairs := make([]pair, 0, 6)
-	if v.displayName != nil {
-		pairs = append(pairs, pair{Key: "displayName", Value: *(v.displayName)})
+func (v *Group) Meta() *Meta {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	if val := v.meta; val != nil {
+		return val
 	}
-	if v.externalID != nil {
-		pairs = append(pairs, pair{Key: "externalId", Value: *(v.externalID)})
+	return nil
+}
+
+// Remove removes the value associated with a key
+func (v *Group) Remove(key string) error {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+
+	switch key {
+	case GroupDisplayNameKey:
+		v.displayName = nil
+	case GroupExternalIDKey:
+		v.externalId = nil
+	case GroupIDKey:
+		v.id = nil
+	case GroupMembersKey:
+		v.members = nil
+	case GroupSchemasKey:
+		v.schemas = nil
+	case GroupMetaKey:
+		v.meta = nil
+	default:
+		delete(v.extra, key)
 	}
-	if v.id != nil {
-		pairs = append(pairs, pair{Key: "id", Value: *(v.id)})
+
+	return nil
+}
+
+func (v *Group) makePairs() []*fieldPair {
+	pairs := make([]*fieldPair, 0, 6)
+	if val := v.displayName; val != nil {
+		pairs = append(pairs, &fieldPair{Name: GroupDisplayNameKey, Value: *val})
 	}
-	if v.members != nil {
-		pairs = append(pairs, pair{Key: "members", Value: v.members})
+	if val := v.externalId; val != nil {
+		pairs = append(pairs, &fieldPair{Name: GroupExternalIDKey, Value: *val})
 	}
-	if v.meta != nil {
-		pairs = append(pairs, pair{Key: "meta", Value: v.meta})
+	if val := v.id; val != nil {
+		pairs = append(pairs, &fieldPair{Name: GroupIDKey, Value: *val})
 	}
-	if v.schemas != nil {
-		pairs = append(pairs, pair{Key: "schemas", Value: v.schemas})
+	if val := v.members; len(val) > 0 {
+		pairs = append(pairs, &fieldPair{Name: GroupMembersKey, Value: val})
 	}
-	for k, v := range v.privateParams {
-		pairs = append(pairs, pair{Key: k, Value: v})
+	if val := v.schemas; val != nil {
+		pairs = append(pairs, &fieldPair{Name: GroupSchemasKey, Value: *val})
 	}
+	if val := v.meta; val != nil {
+		pairs = append(pairs, &fieldPair{Name: GroupMetaKey, Value: val})
+	}
+
+	for key, val := range v.extra {
+		pairs = append(pairs, &fieldPair{Name: key, Value: val})
+	}
+
 	sort.Slice(pairs, func(i, j int) bool {
-		return pairs[i].Key < pairs[j].Key
+		return pairs[i].Name < pairs[j].Name
 	})
 	return pairs
 }
 
+// MarshalJSON serializes Group into JSON.
+// All pre-declared fields are included as long as a value is
+// assigned to them, as well as all extra fields. All of these
+// fields are sorted in alphabetical order.
 func (v *Group) MarshalJSON() ([]byte, error) {
 	pairs := v.makePairs()
 
@@ -167,420 +286,160 @@ func (v *Group) MarshalJSON() ([]byte, error) {
 	buf.WriteByte('{')
 	for i, pair := range pairs {
 		if i > 0 {
-			buf.WriteRune(',')
+			buf.WriteByte(',')
 		}
-		fmt.Fprintf(&buf, "%q:", pair.Key)
-		if err := enc.Encode(pair.Value); err != nil {
-			return nil, fmt.Errorf("failed to encode value for key %q: %w", pair.Key, err)
-		}
+		enc.Encode(pair.Name)
+		buf.WriteByte(':')
+		enc.Encode(pair.Value)
 	}
 	buf.WriteByte('}')
 	return buf.Bytes(), nil
 }
 
-func (v *Group) Get(name string, options ...GetOption) (interface{}, bool) {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-
-	var ext string
-	//nolint:forcetypeassert
-	for _, option := range options {
-		switch option.Ident() {
-		case identExtension{}:
-			ext = option.Value().(string)
-		}
-	}
-	switch name {
-	case GroupDisplayNameKey:
-		if v.displayName == nil {
-			return nil, false
-		}
-		return *(v.displayName), true
-	case GroupExternalIDKey:
-		if v.externalID == nil {
-			return nil, false
-		}
-		return *(v.externalID), true
-	case GroupIDKey:
-		if v.id == nil {
-			return nil, false
-		}
-		return *(v.id), true
-	case GroupMembersKey:
-		if v.members == nil {
-			return nil, false
-		}
-		return v.members, true
-	case GroupMetaKey:
-		if v.meta == nil {
-			return nil, false
-		}
-		return v.meta, true
-	case GroupSchemasKey:
-		if v.schemas == nil {
-			return nil, false
-		}
-		return v.schemas, true
-	default:
-		pp := v.privateParams
-		if pp == nil {
-			return nil, false
-		}
-		if ext == "" {
-			ret, ok := pp[name]
-			return ret, ok
-		}
-		obj, ok := pp[ext]
-		if !ok {
-			return nil, false
-		}
-		getter, ok := obj.(interface {
-			Get(string, ...GetOption) (interface{}, bool)
-		})
-		if !ok {
-			return nil, false
-		}
-		return getter.Get(name)
-	}
-}
-
-func (v *Group) Set(name string, value interface{}) error {
-	v.mu.Lock()
-	defer v.mu.Unlock()
-	switch name {
-	case GroupDisplayNameKey:
-		var tmp string
-		tmp, ok := value.(string)
-		if !ok {
-			return fmt.Errorf(`expected string for field "displayName", but got %T`, value)
-		}
-		v.displayName = &tmp
-		return nil
-	case GroupExternalIDKey:
-		var tmp string
-		tmp, ok := value.(string)
-		if !ok {
-			return fmt.Errorf(`expected string for field "externalId", but got %T`, value)
-		}
-		v.externalID = &tmp
-		return nil
-	case GroupIDKey:
-		var tmp string
-		tmp, ok := value.(string)
-		if !ok {
-			return fmt.Errorf(`expected string for field "id", but got %T`, value)
-		}
-		v.id = &tmp
-		return nil
-	case GroupMembersKey:
-		var tmp []*GroupMember
-		tmp, ok := value.([]*GroupMember)
-		if !ok {
-			return fmt.Errorf(`expected []*GroupMember for field "members", but got %T`, value)
-		}
-		v.members = tmp
-		return nil
-	case GroupMetaKey:
-		var tmp *Meta
-		tmp, ok := value.(*Meta)
-		if !ok {
-			return fmt.Errorf(`expected *Meta for field "meta", but got %T`, value)
-		}
-		v.meta = tmp
-		return nil
-	case GroupSchemasKey:
-		var tmp schemas
-		tmp, ok := value.(schemas)
-		if !ok {
-			return fmt.Errorf(`expected schemas for field "schemas", but got %T`, value)
-		}
-		v.schemas = tmp
-		return nil
-	default:
-		pp := v.privateParams
-		if pp == nil {
-			pp = make(map[string]interface{})
-			v.privateParams = pp
-		}
-		pp[name] = value
-		return nil
-	}
-}
-
-func (v *Group) Clone() *Group {
-	v.mu.Lock()
-	defer v.mu.Unlock()
-	return &Group{
-		displayName: v.displayName,
-		externalID:  v.externalID,
-		id:          v.id,
-		members:     v.members,
-		meta:        v.meta,
-		schemas:     v.schemas,
-	}
-}
-
+// UnmarshalJSON deserializes a piece of JSON data into Group.
+//
+// Pre-defined fields must be deserializable via "encoding/json" to their
+// respective Go types, otherwise an error is returned.
+//
+// Extra fields are stored in a special "extra" storage, which can only
+// be accessed via `Get()` and `Set()` methods.
 func (v *Group) UnmarshalJSON(data []byte) error {
+	v.mu.Lock()
+	defer v.mu.Unlock()
 	v.displayName = nil
-	v.externalID = nil
+	v.externalId = nil
 	v.id = nil
 	v.members = nil
-	v.meta = nil
 	v.schemas = nil
-	v.privateParams = nil
+	v.meta = nil
+
 	dec := json.NewDecoder(bytes.NewReader(data))
-	{ // first token
-		tok, err := dec.Token()
-		if err != nil {
-			return fmt.Errorf("failed to read next token: %s", err)
-		}
-		tok, ok := tok.(json.Delim)
-		if !ok {
-			return fmt.Errorf("expected first token to be '{', got %c", tok)
-		}
-	}
-	var privateParams map[string]interface{}
 
 LOOP:
 	for {
 		tok, err := dec.Token()
 		if err != nil {
-			return fmt.Errorf("failed to read next token: %s", err)
+			return fmt.Errorf(`error reading JSON token: %w`, err)
 		}
 		switch tok := tok.(type) {
 		case json.Delim:
-			if tok == '}' {
+			if tok == '}' { // end of object
 				break LOOP
-			} else {
-				return fmt.Errorf("unexpected token %c found", tok)
+			}
+			// we should only get into this clause at the very beginning, and just once
+			if tok != '{' {
+				return fmt.Errorf(`expected '{', but got '%c'`, tok)
 			}
 		case string:
 			switch tok {
 			case GroupDisplayNameKey:
-				var x string
-				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "displayName": %w`, err)
+				var val string
+				if err := dec.Decode(&val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, GroupDisplayNameKey, err)
 				}
-				v.displayName = &x
+				v.displayName = &val
 			case GroupExternalIDKey:
-				var x string
-				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "externalId": %w`, err)
+				var val string
+				if err := dec.Decode(&val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, GroupExternalIDKey, err)
 				}
-				v.externalID = &x
+				v.externalId = &val
 			case GroupIDKey:
-				var x string
-				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "id": %w`, err)
+				var val string
+				if err := dec.Decode(&val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, GroupIDKey, err)
 				}
-				v.id = &x
+				v.id = &val
 			case GroupMembersKey:
-				var x []*GroupMember
-				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "members": %w`, err)
+				var val []*GroupMember
+				if err := dec.Decode(&val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, GroupMembersKey, err)
 				}
-				v.members = x
-			case GroupMetaKey:
-				var x *Meta
-				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "meta": %w`, err)
-				}
-				v.meta = x
+				v.members = val
 			case GroupSchemasKey:
-				var x schemas
-				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "schemas": %w`, err)
+				var val schemas
+				if err := dec.Decode(&val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, GroupSchemasKey, err)
 				}
-				v.schemas = x
+				v.schemas = &val
+			case GroupMetaKey:
+				var val *Meta
+				if err := dec.Decode(&val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, GroupMetaKey, err)
+				}
+				v.meta = val
 			default:
-				var x interface{}
-				if rx, ok := registry.Get(tok); ok {
-					x = rx
-					if err := dec.Decode(x); err != nil {
-						return fmt.Errorf(`failed to decode value for key %q: %w`, tok, err)
-					}
-				} else {
-					if err := dec.Decode(&x); err != nil {
-						return fmt.Errorf(`failed to decode value for key %q: %w`, tok, err)
-					}
+				var val interface{}
+				if err := dec.Decode(&val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, tok, err)
 				}
-				if privateParams == nil {
-					privateParams = make(map[string]interface{})
+				if v.extra == nil {
+					v.extra = make(map[string]interface{})
 				}
-				privateParams[tok] = x
+				v.extra[tok] = val
 			}
 		}
 	}
-	if privateParams != nil {
-		v.privateParams = privateParams
-	}
 	return nil
 }
 
-func (v *Group) AsMap(dst map[string]interface{}) error {
-	for _, pair := range v.makePairs() {
-		dst[pair.Key] = pair.Value
-	}
-	return nil
-}
-
-// GroupBuilder creates a Group resource
 type GroupBuilder struct {
-	once      sync.Once
-	mu        sync.Mutex
-	err       error
-	validator GroupValidator
-	object    *Group
+	mu     sync.Mutex
+	err    error
+	once   sync.Once
+	object *Group
 }
 
-func (b *Builder) Group() *GroupBuilder {
-	return NewGroupBuilder()
-}
-
+// NewGroupBuilder creates a new GroupBuilder instance.
+// GroupBuilder is safe to be used uninitialized as well.
 func NewGroupBuilder() *GroupBuilder {
-	var b GroupBuilder
-	b.init()
-	return &b
+	return &GroupBuilder{}
 }
 
-func (b *GroupBuilder) From(in *Group) *GroupBuilder {
-	b.once.Do(b.init)
-	b.object = in.Clone()
-	return b
-}
-
-func (b *GroupBuilder) init() {
+func (b *GroupBuilder) initialize() {
 	b.err = nil
-	b.validator = nil
 	b.object = &Group{}
-
-	b.object.schemas = make(schemas)
-	b.object.schemas.Add(GroupSchemaURI)
 }
-
-func (b *GroupBuilder) DisplayName(v string) *GroupBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	if err := b.object.Set("displayName", v); err != nil {
-		b.err = err
-	}
+func (b *GroupBuilder) DisplayName(in string) *GroupBuilder {
+	b.once.Do(b.initialize)
+	_ = b.object.Set(GroupDisplayNameKey, in)
 	return b
 }
-
-func (b *GroupBuilder) ExternalID(v string) *GroupBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	if err := b.object.Set("externalId", v); err != nil {
-		b.err = err
-	}
+func (b *GroupBuilder) ExternalID(in string) *GroupBuilder {
+	b.once.Do(b.initialize)
+	_ = b.object.Set(GroupExternalIDKey, in)
 	return b
 }
-
-func (b *GroupBuilder) ID(v string) *GroupBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	if err := b.object.Set("id", v); err != nil {
-		b.err = err
-	}
+func (b *GroupBuilder) ID(in string) *GroupBuilder {
+	b.once.Do(b.initialize)
+	_ = b.object.Set(GroupIDKey, in)
 	return b
 }
-
-func (b *GroupBuilder) Members(v ...*GroupMember) *GroupBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	if err := b.object.Set("members", v); err != nil {
-		b.err = err
-	}
+func (b *GroupBuilder) Members(in ...*GroupMember) *GroupBuilder {
+	b.once.Do(b.initialize)
+	_ = b.object.Set(GroupMembersKey, in)
 	return b
 }
-
-func (b *GroupBuilder) Meta(v *Meta) *GroupBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	if err := b.object.Set("meta", v); err != nil {
-		b.err = err
-	}
+func (b *GroupBuilder) Schemas(in ...string) *GroupBuilder {
+	b.once.Do(b.initialize)
+	_ = b.object.Set(GroupSchemasKey, in)
 	return b
 }
-
-func (b *GroupBuilder) Schemas(v ...string) *GroupBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	for _, schema := range v {
-		b.object.schemas.Add(schema)
-	}
-	return b
-}
-
-func (b *GroupBuilder) Extension(uri string, value interface{}) *GroupBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	b.object.schemas.Add(uri)
-	if err := b.object.Set(uri, value); err != nil {
-		b.err = err
-	}
-	return b
-}
-
-func (b *GroupBuilder) Validator(v GroupValidator) *GroupBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	b.validator = v
+func (b *GroupBuilder) Meta(in *Meta) *GroupBuilder {
+	b.once.Do(b.initialize)
+	_ = b.object.Set(GroupMetaKey, in)
 	return b
 }
 
 func (b *GroupBuilder) Build() (*Group, error) {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	object := b.object
-	validator := b.validator
 	err := b.err
-	b.once = sync.Once{}
 	if err != nil {
 		return nil, err
 	}
-	if object == nil {
-		return nil, fmt.Errorf("resource.GroupBuilder: object was not initialized")
-	}
-	if validator == nil {
-		validator = DefaultGroupValidator
-	}
-	if err := validator.Validate(object); err != nil {
-		return nil, err
-	}
-	return object, nil
+	obj := b.object
+	b.once = sync.Once{}
+	b.once.Do(b.initialize)
+	return obj, nil
 }
 
 func (b *GroupBuilder) MustBuild() *Group {
@@ -589,4 +448,53 @@ func (b *GroupBuilder) MustBuild() *Group {
 		panic(err)
 	}
 	return object
+}
+
+func (b *GroupBuilder) Extension(uri string, value interface{}) *GroupBuilder {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	b.once.Do(b.initialize)
+	if b.err != nil {
+		return b
+	}
+	if b.object.schemas == nil {
+		b.object.schemas = &schemas{}
+		b.object.schemas.Add(GroupSchemaURI)
+	}
+	b.object.schemas.Add(uri)
+	if err := b.object.Set(uri, value); err != nil {
+		b.err = err
+	}
+	return b
+}
+
+func (v *Group) AsMap(dst map[string]interface{}) error {
+	for _, pair := range v.makePairs() {
+		dst[pair.Name] = pair.Value
+	}
+	return nil
+}
+
+// GetExtension takes into account extension uri, and fetches
+// the specified attribute from the extension object
+func (v *Group) GetExtension(name, uri string, dst interface{}) error {
+	if uri == "" {
+		return v.Get(name, dst)
+	}
+	var ext interface{}
+	if err := v.Get(uri, ext); err != nil {
+		return fmt.Errorf(`failed to fetch extension %q: %w`, uri, err)
+	}
+
+	getter, ok := ext.(interface {
+		Get(string, interface{}) error
+	})
+	if !ok {
+		return fmt.Errorf(`extension does not implement Get(string, interface{}) error`)
+	}
+	return getter.Get(name, dst)
+}
+
+func (b *Builder) Group() *GroupBuilder {
+	return &GroupBuilder{}
 }

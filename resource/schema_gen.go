@@ -6,9 +6,25 @@ import (
 	"fmt"
 	"sort"
 	"sync"
+
+	"github.com/lestrrat-go/blackmagic"
 )
 
-// JSON key names for Schema resource
+// Schema represents a Schema resource as defined in the SCIM RFC
+type Schema struct {
+	mu                 sync.RWMutex
+	attributes         []*SchemaAttribute
+	description        *string
+	id                 *string
+	name               *string
+	attrByNameInitOnce *sync.Once
+	extra              map[string]interface{}
+}
+
+// These constants are used when the JSON field name is used.
+// Their use is not strictly required, but certain linters
+// complain about repeated constants, and therefore internally
+// this used throughout
 const (
 	SchemaAttributesKey  = "attributes"
 	SchemaDescriptionKey = "description"
@@ -16,44 +32,78 @@ const (
 	SchemaNameKey        = "name"
 )
 
-type Schema struct {
-	attributes         []*SchemaAttribute
-	description        *string
-	id                 *string
-	name               *string
-	attrByNameInitOnce sync.Once
-	attrByName         map[string]*SchemaAttribute
-	privateParams      map[string]interface{}
-	mu                 sync.RWMutex
+// Get retrieves the value associated with a key
+func (v *Schema) Get(key string, dst interface{}) error {
+	switch key {
+	case SchemaAttributesKey:
+		if val := v.attributes; val != nil {
+			return blackmagic.AssignIfCompatible(dst, val)
+		}
+	case SchemaDescriptionKey:
+		if val := v.description; val != nil {
+			return blackmagic.AssignIfCompatible(dst, *val)
+		}
+	case SchemaIDKey:
+		if val := v.id; val != nil {
+			return blackmagic.AssignIfCompatible(dst, *val)
+		}
+	case SchemaNameKey:
+		if val := v.name; val != nil {
+			return blackmagic.AssignIfCompatible(dst, *val)
+		}
+	default:
+		if v.extra != nil {
+			val, ok := v.extra[key]
+			if ok {
+				return blackmagic.AssignIfCompatible(dst, val)
+			}
+		}
+	}
+	return fmt.Errorf(`no such key %q`, key)
 }
 
-type SchemaValidator interface {
-	Validate(*Schema) error
-}
-
-type SchemaValidateFunc func(v *Schema) error
-
-func (f SchemaValidateFunc) Validate(v *Schema) error {
-	return f(v)
-}
-
-var DefaultSchemaValidator SchemaValidator = SchemaValidateFunc(func(v *Schema) error {
-	if v.id == nil {
-		return fmt.Errorf(`required field "id" is missing in "Schema"`)
+// Set sets the value of the specified field. The name must be a JSON
+// field name, not the Go name
+func (v *Schema) Set(key string, value interface{}) error {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	switch key {
+	case SchemaAttributesKey:
+		converted, ok := value.([]*SchemaAttribute)
+		if !ok {
+			return fmt.Errorf(`expected value of type []*SchemaAttribute for field attributes, got %T`, value)
+		}
+		v.attributes = converted
+	case SchemaDescriptionKey:
+		converted, ok := value.(string)
+		if !ok {
+			return fmt.Errorf(`expected value of type string for field description, got %T`, value)
+		}
+		v.description = &converted
+	case SchemaIDKey:
+		converted, ok := value.(string)
+		if !ok {
+			return fmt.Errorf(`expected value of type string for field id, got %T`, value)
+		}
+		v.id = &converted
+	case SchemaNameKey:
+		converted, ok := value.(string)
+		if !ok {
+			return fmt.Errorf(`expected value of type string for field name, got %T`, value)
+		}
+		v.name = &converted
+	default:
+		if v.extra == nil {
+			v.extra = make(map[string]interface{})
+		}
+		v.extra[key] = value
 	}
 	return nil
-})
-
+}
 func (v *Schema) HasAttributes() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.attributes != nil
-}
-
-func (v *Schema) Attributes() []*SchemaAttribute {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	return v.attributes
 }
 
 func (v *Schema) HasDescription() bool {
@@ -62,28 +112,10 @@ func (v *Schema) HasDescription() bool {
 	return v.description != nil
 }
 
-func (v *Schema) Description() string {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	if v.description == nil {
-		return ""
-	}
-	return *(v.description)
-}
-
 func (v *Schema) HasID() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.id != nil
-}
-
-func (v *Schema) ID() string {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	if v.id == nil {
-		return ""
-	}
-	return *(v.id)
 }
 
 func (v *Schema) HasName() bool {
@@ -92,38 +124,92 @@ func (v *Schema) HasName() bool {
 	return v.name != nil
 }
 
+func (v *Schema) Attributes() []*SchemaAttribute {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	if val := v.attributes; val != nil {
+		return val
+	}
+	return nil
+}
+
+func (v *Schema) Description() string {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	if val := v.description; val != nil {
+		return *val
+	}
+	return ""
+}
+
+func (v *Schema) ID() string {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	if val := v.id; val != nil {
+		return *val
+	}
+	return ""
+}
+
 func (v *Schema) Name() string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	if v.name == nil {
-		return ""
+	if val := v.name; val != nil {
+		return *val
 	}
-	return *(v.name)
+	return ""
 }
 
-func (v *Schema) makePairs() []pair {
-	pairs := make([]pair, 0, 4)
-	if v.attributes != nil {
-		pairs = append(pairs, pair{Key: "attributes", Value: v.attributes})
+// Remove removes the value associated with a key
+func (v *Schema) Remove(key string) error {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+
+	switch key {
+	case SchemaAttributesKey:
+		v.attributes = nil
+	case SchemaDescriptionKey:
+		v.description = nil
+	case SchemaIDKey:
+		v.id = nil
+	case SchemaNameKey:
+		v.name = nil
+	default:
+		delete(v.extra, key)
 	}
-	if v.description != nil {
-		pairs = append(pairs, pair{Key: "description", Value: *(v.description)})
+
+	return nil
+}
+
+func (v *Schema) makePairs() []*fieldPair {
+	pairs := make([]*fieldPair, 0, 5)
+	if val := v.attributes; len(val) > 0 {
+		pairs = append(pairs, &fieldPair{Name: SchemaAttributesKey, Value: val})
 	}
-	if v.id != nil {
-		pairs = append(pairs, pair{Key: "id", Value: *(v.id)})
+	if val := v.description; val != nil {
+		pairs = append(pairs, &fieldPair{Name: SchemaDescriptionKey, Value: *val})
 	}
-	if v.name != nil {
-		pairs = append(pairs, pair{Key: "name", Value: *(v.name)})
+	if val := v.id; val != nil {
+		pairs = append(pairs, &fieldPair{Name: SchemaIDKey, Value: *val})
 	}
-	for k, v := range v.privateParams {
-		pairs = append(pairs, pair{Key: k, Value: v})
+	if val := v.name; val != nil {
+		pairs = append(pairs, &fieldPair{Name: SchemaNameKey, Value: *val})
 	}
+
+	for key, val := range v.extra {
+		pairs = append(pairs, &fieldPair{Name: key, Value: val})
+	}
+
 	sort.Slice(pairs, func(i, j int) bool {
-		return pairs[i].Key < pairs[j].Key
+		return pairs[i].Name < pairs[j].Name
 	})
 	return pairs
 }
 
+// MarshalJSON serializes Schema into JSON.
+// All pre-declared fields are included as long as a value is
+// assigned to them, as well as all extra fields. All of these
+// fields are sorted in alphabetical order.
 func (v *Schema) MarshalJSON() ([]byte, error) {
 	pairs := v.makePairs()
 
@@ -132,335 +218,136 @@ func (v *Schema) MarshalJSON() ([]byte, error) {
 	buf.WriteByte('{')
 	for i, pair := range pairs {
 		if i > 0 {
-			buf.WriteRune(',')
+			buf.WriteByte(',')
 		}
-		fmt.Fprintf(&buf, "%q:", pair.Key)
-		if err := enc.Encode(pair.Value); err != nil {
-			return nil, fmt.Errorf("failed to encode value for key %q: %w", pair.Key, err)
-		}
+		enc.Encode(pair.Name)
+		buf.WriteByte(':')
+		enc.Encode(pair.Value)
 	}
 	buf.WriteByte('}')
 	return buf.Bytes(), nil
 }
 
-func (v *Schema) Get(name string, options ...GetOption) (interface{}, bool) {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-
-	var ext string
-	//nolint:forcetypeassert
-	for _, option := range options {
-		switch option.Ident() {
-		case identExtension{}:
-			ext = option.Value().(string)
-		}
-	}
-	switch name {
-	case SchemaAttributesKey:
-		if v.attributes == nil {
-			return nil, false
-		}
-		return v.attributes, true
-	case SchemaDescriptionKey:
-		if v.description == nil {
-			return nil, false
-		}
-		return *(v.description), true
-	case SchemaIDKey:
-		if v.id == nil {
-			return nil, false
-		}
-		return *(v.id), true
-	case SchemaNameKey:
-		if v.name == nil {
-			return nil, false
-		}
-		return *(v.name), true
-	default:
-		pp := v.privateParams
-		if pp == nil {
-			return nil, false
-		}
-		if ext == "" {
-			ret, ok := pp[name]
-			return ret, ok
-		}
-		obj, ok := pp[ext]
-		if !ok {
-			return nil, false
-		}
-		getter, ok := obj.(interface {
-			Get(string, ...GetOption) (interface{}, bool)
-		})
-		if !ok {
-			return nil, false
-		}
-		return getter.Get(name)
-	}
-}
-
-func (v *Schema) Set(name string, value interface{}) error {
-	v.mu.Lock()
-	defer v.mu.Unlock()
-	switch name {
-	case SchemaAttributesKey:
-		var tmp []*SchemaAttribute
-		tmp, ok := value.([]*SchemaAttribute)
-		if !ok {
-			return fmt.Errorf(`expected []*SchemaAttribute for field "attributes", but got %T`, value)
-		}
-		v.attributes = tmp
-		return nil
-	case SchemaDescriptionKey:
-		var tmp string
-		tmp, ok := value.(string)
-		if !ok {
-			return fmt.Errorf(`expected string for field "description", but got %T`, value)
-		}
-		v.description = &tmp
-		return nil
-	case SchemaIDKey:
-		var tmp string
-		tmp, ok := value.(string)
-		if !ok {
-			return fmt.Errorf(`expected string for field "id", but got %T`, value)
-		}
-		v.id = &tmp
-		return nil
-	case SchemaNameKey:
-		var tmp string
-		tmp, ok := value.(string)
-		if !ok {
-			return fmt.Errorf(`expected string for field "name", but got %T`, value)
-		}
-		v.name = &tmp
-		return nil
-	default:
-		pp := v.privateParams
-		if pp == nil {
-			pp = make(map[string]interface{})
-			v.privateParams = pp
-		}
-		pp[name] = value
-		return nil
-	}
-}
-
-func (v *Schema) Clone() *Schema {
-	v.mu.Lock()
-	defer v.mu.Unlock()
-	return &Schema{
-		attributes:  v.attributes,
-		description: v.description,
-		id:          v.id,
-		name:        v.name,
-	}
-}
-
+// UnmarshalJSON deserializes a piece of JSON data into Schema.
+//
+// Pre-defined fields must be deserializable via "encoding/json" to their
+// respective Go types, otherwise an error is returned.
+//
+// Extra fields are stored in a special "extra" storage, which can only
+// be accessed via `Get()` and `Set()` methods.
 func (v *Schema) UnmarshalJSON(data []byte) error {
+	v.mu.Lock()
+	defer v.mu.Unlock()
 	v.attributes = nil
 	v.description = nil
 	v.id = nil
 	v.name = nil
-	v.privateParams = nil
+
 	dec := json.NewDecoder(bytes.NewReader(data))
-	{ // first token
-		tok, err := dec.Token()
-		if err != nil {
-			return fmt.Errorf("failed to read next token: %s", err)
-		}
-		tok, ok := tok.(json.Delim)
-		if !ok {
-			return fmt.Errorf("expected first token to be '{', got %c", tok)
-		}
-	}
-	var privateParams map[string]interface{}
 
 LOOP:
 	for {
 		tok, err := dec.Token()
 		if err != nil {
-			return fmt.Errorf("failed to read next token: %s", err)
+			return fmt.Errorf(`error reading JSON token: %w`, err)
 		}
 		switch tok := tok.(type) {
 		case json.Delim:
-			if tok == '}' {
+			if tok == '}' { // end of object
 				break LOOP
-			} else {
-				return fmt.Errorf("unexpected token %c found", tok)
+			}
+			// we should only get into this clause at the very beginning, and just once
+			if tok != '{' {
+				return fmt.Errorf(`expected '{', but got '%c'`, tok)
 			}
 		case string:
 			switch tok {
 			case SchemaAttributesKey:
-				var x []*SchemaAttribute
-				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "attributes": %w`, err)
+				var val []*SchemaAttribute
+				if err := dec.Decode(&val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, SchemaAttributesKey, err)
 				}
-				v.attributes = x
+				v.attributes = val
 			case SchemaDescriptionKey:
-				var x string
-				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "description": %w`, err)
+				var val string
+				if err := dec.Decode(&val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, SchemaDescriptionKey, err)
 				}
-				v.description = &x
+				v.description = &val
 			case SchemaIDKey:
-				var x string
-				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "id": %w`, err)
+				var val string
+				if err := dec.Decode(&val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, SchemaIDKey, err)
 				}
-				v.id = &x
+				v.id = &val
 			case SchemaNameKey:
-				var x string
-				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "name": %w`, err)
+				var val string
+				if err := dec.Decode(&val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, SchemaNameKey, err)
 				}
-				v.name = &x
+				v.name = &val
 			default:
-				var x interface{}
-				if rx, ok := registry.Get(tok); ok {
-					x = rx
-					if err := dec.Decode(x); err != nil {
-						return fmt.Errorf(`failed to decode value for key %q: %w`, tok, err)
-					}
-				} else {
-					if err := dec.Decode(&x); err != nil {
-						return fmt.Errorf(`failed to decode value for key %q: %w`, tok, err)
-					}
+				var val interface{}
+				if err := dec.Decode(&val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, tok, err)
 				}
-				if privateParams == nil {
-					privateParams = make(map[string]interface{})
+				if v.extra == nil {
+					v.extra = make(map[string]interface{})
 				}
-				privateParams[tok] = x
+				v.extra[tok] = val
 			}
 		}
 	}
-	if privateParams != nil {
-		v.privateParams = privateParams
-	}
 	return nil
 }
 
-func (v *Schema) AsMap(dst map[string]interface{}) error {
-	for _, pair := range v.makePairs() {
-		dst[pair.Key] = pair.Value
-	}
-	return nil
-}
-
-// SchemaBuilder creates a Schema resource
 type SchemaBuilder struct {
-	once      sync.Once
-	mu        sync.Mutex
-	err       error
-	validator SchemaValidator
-	object    *Schema
+	mu     sync.Mutex
+	err    error
+	once   sync.Once
+	object *Schema
 }
 
-func (b *Builder) Schema() *SchemaBuilder {
-	return NewSchemaBuilder()
-}
-
+// NewSchemaBuilder creates a new SchemaBuilder instance.
+// SchemaBuilder is safe to be used uninitialized as well.
 func NewSchemaBuilder() *SchemaBuilder {
-	var b SchemaBuilder
-	b.init()
-	return &b
+	return &SchemaBuilder{}
 }
 
-func (b *SchemaBuilder) From(in *Schema) *SchemaBuilder {
-	b.once.Do(b.init)
-	b.object = in.Clone()
-	return b
-}
-
-func (b *SchemaBuilder) init() {
+func (b *SchemaBuilder) initialize() {
 	b.err = nil
-	b.validator = nil
 	b.object = &Schema{}
 }
-
-func (b *SchemaBuilder) Attributes(v ...*SchemaAttribute) *SchemaBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	if err := b.object.Set("attributes", v); err != nil {
-		b.err = err
-	}
+func (b *SchemaBuilder) Attributes(in ...*SchemaAttribute) *SchemaBuilder {
+	b.once.Do(b.initialize)
+	_ = b.object.Set(SchemaAttributesKey, in)
 	return b
 }
-
-func (b *SchemaBuilder) Description(v string) *SchemaBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	if err := b.object.Set("description", v); err != nil {
-		b.err = err
-	}
+func (b *SchemaBuilder) Description(in string) *SchemaBuilder {
+	b.once.Do(b.initialize)
+	_ = b.object.Set(SchemaDescriptionKey, in)
 	return b
 }
-
-func (b *SchemaBuilder) ID(v string) *SchemaBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	if err := b.object.Set("id", v); err != nil {
-		b.err = err
-	}
+func (b *SchemaBuilder) ID(in string) *SchemaBuilder {
+	b.once.Do(b.initialize)
+	_ = b.object.Set(SchemaIDKey, in)
 	return b
 }
-
-func (b *SchemaBuilder) Name(v string) *SchemaBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	if err := b.object.Set("name", v); err != nil {
-		b.err = err
-	}
-	return b
-}
-
-func (b *SchemaBuilder) Validator(v SchemaValidator) *SchemaBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	b.validator = v
+func (b *SchemaBuilder) Name(in string) *SchemaBuilder {
+	b.once.Do(b.initialize)
+	_ = b.object.Set(SchemaNameKey, in)
 	return b
 }
 
 func (b *SchemaBuilder) Build() (*Schema, error) {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	object := b.object
-	validator := b.validator
 	err := b.err
-	b.once = sync.Once{}
 	if err != nil {
 		return nil, err
 	}
-	if object == nil {
-		return nil, fmt.Errorf("resource.SchemaBuilder: object was not initialized")
-	}
-	if validator == nil {
-		validator = DefaultSchemaValidator
-	}
-	if err := validator.Validate(object); err != nil {
-		return nil, err
-	}
-	return object, nil
+	obj := b.object
+	b.once = sync.Once{}
+	b.once.Do(b.initialize)
+	return obj, nil
 }
 
 func (b *SchemaBuilder) MustBuild() *Schema {
@@ -469,4 +356,35 @@ func (b *SchemaBuilder) MustBuild() *Schema {
 		panic(err)
 	}
 	return object
+}
+
+func (v *Schema) AsMap(dst map[string]interface{}) error {
+	for _, pair := range v.makePairs() {
+		dst[pair.Name] = pair.Value
+	}
+	return nil
+}
+
+// GetExtension takes into account extension uri, and fetches
+// the specified attribute from the extension object
+func (v *Schema) GetExtension(name, uri string, dst interface{}) error {
+	if uri == "" {
+		return v.Get(name, dst)
+	}
+	var ext interface{}
+	if err := v.Get(uri, ext); err != nil {
+		return fmt.Errorf(`failed to fetch extension %q: %w`, uri, err)
+	}
+
+	getter, ok := ext.(interface {
+		Get(string, interface{}) error
+	})
+	if !ok {
+		return fmt.Errorf(`extension does not implement Get(string, interface{}) error`)
+	}
+	return getter.Get(name, dst)
+}
+
+func (b *Builder) Schema() *SchemaBuilder {
+	return &SchemaBuilder{}
 }

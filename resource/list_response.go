@@ -12,7 +12,7 @@ func (v *ListResponse) UnmarshalJSON(data []byte) error {
 	v.schemas = nil
 	v.startIndex = nil
 	v.totalResults = nil
-	v.privateParams = nil
+	v.extra = nil
 	dec := json.NewDecoder(bytes.NewReader(data))
 	{ // first token
 		tok, err := dec.Token()
@@ -24,7 +24,7 @@ func (v *ListResponse) UnmarshalJSON(data []byte) error {
 			return fmt.Errorf("expected first token to be '{', got %c", tok)
 		}
 	}
-	var privateParams map[string]interface{}
+	var extra map[string]interface{}
 
 LOOP:
 	for {
@@ -89,7 +89,7 @@ LOOP:
 				if err := dec.Decode(&x); err != nil {
 					return fmt.Errorf(`failed to decode value for key "schemas": %w`, err)
 				}
-				v.schemas = x
+				v.schemas = &x
 			case ListResponseStartIndexKey:
 				var x int
 				if err := dec.Decode(&x); err != nil {
@@ -114,15 +114,15 @@ LOOP:
 						return fmt.Errorf(`failed to decode value for key %q: %w`, tok, err)
 					}
 				}
-				if privateParams == nil {
-					privateParams = make(map[string]interface{})
+				if extra == nil {
+					extra = make(map[string]interface{})
 				}
-				privateParams[tok] = x
+				extra[tok] = x
 			}
 		}
 	}
-	if privateParams != nil {
-		v.privateParams = privateParams
+	if extra != nil {
+		v.extra = extra
 	}
 	return nil
 }

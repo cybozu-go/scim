@@ -6,63 +6,168 @@ import (
 	"fmt"
 	"sort"
 	"sync"
+
+	"github.com/lestrrat-go/blackmagic"
 )
 
-// JSON key names for SearchRequest resource
-const (
-	SearchRequestAttributesKey        = "attributes"
-	SearchRequestCountKey             = "count"
-	SearchRequestExludedAttributesKey = "exludedAttributes"
-	SearchRequestFilterKey            = "filter"
-	SearchRequestSchemasKey           = "schemas"
-	SearchRequestSortByKey            = "sortBy"
-	SearchRequestSortOrderKey         = "sortOrder"
-	SearchRequestStartIndexKey        = "startIndex"
-)
-
-const SearchRequestSchemaURI = "urn:ietf:params:scim:api:messages:2.0:SearchRequest"
+const SearchRequestSchemaURI = "urn:ietf:params:scim:schemas:core:2.0:SearchRequest"
 
 func init() {
 	RegisterExtension(SearchRequestSchemaURI, SearchRequest{})
 }
 
 type SearchRequest struct {
+	mu                sync.RWMutex
 	attributes        []string
 	count             *int
-	exludedAttributes []string
+	excludeAttributes []string
 	filter            *string
-	schemas           schemas
+	schema            *string
+	schemas           *schemas
 	sortBy            *string
 	sortOrder         *string
 	startIndex        *int
-	privateParams     map[string]interface{}
-	mu                sync.RWMutex
+	extra             map[string]interface{}
 }
 
-type SearchRequestValidator interface {
-	Validate(*SearchRequest) error
+// These constants are used when the JSON field name is used.
+// Their use is not strictly required, but certain linters
+// complain about repeated constants, and therefore internally
+// this used throughout
+const (
+	SearchRequestAttributesKey        = "attributes"
+	SearchRequestCountKey             = "count"
+	SearchRequestExcludeAttributesKey = "excludeAttributes"
+	SearchRequestFilterKey            = "filter"
+	SearchRequestSchemaKey            = "schema"
+	SearchRequestSchemasKey           = "schemas"
+	SearchRequestSortByKey            = "sortBy"
+	SearchRequestSortOrderKey         = "sortOrder"
+	SearchRequestStartIndexKey        = "startIndex"
+)
+
+// Get retrieves the value associated with a key
+func (v *SearchRequest) Get(key string, dst interface{}) error {
+	switch key {
+	case SearchRequestAttributesKey:
+		if val := v.attributes; val != nil {
+			return blackmagic.AssignIfCompatible(dst, val)
+		}
+	case SearchRequestCountKey:
+		if val := v.count; val != nil {
+			return blackmagic.AssignIfCompatible(dst, *val)
+		}
+	case SearchRequestExcludeAttributesKey:
+		if val := v.excludeAttributes; val != nil {
+			return blackmagic.AssignIfCompatible(dst, val)
+		}
+	case SearchRequestFilterKey:
+		if val := v.filter; val != nil {
+			return blackmagic.AssignIfCompatible(dst, *val)
+		}
+	case SearchRequestSchemaKey:
+		if val := v.schema; val != nil {
+			return blackmagic.AssignIfCompatible(dst, *val)
+		}
+	case SearchRequestSchemasKey:
+		if val := v.schemas; val != nil {
+			return blackmagic.AssignIfCompatible(dst, *val)
+		}
+	case SearchRequestSortByKey:
+		if val := v.sortBy; val != nil {
+			return blackmagic.AssignIfCompatible(dst, *val)
+		}
+	case SearchRequestSortOrderKey:
+		if val := v.sortOrder; val != nil {
+			return blackmagic.AssignIfCompatible(dst, *val)
+		}
+	case SearchRequestStartIndexKey:
+		if val := v.startIndex; val != nil {
+			return blackmagic.AssignIfCompatible(dst, *val)
+		}
+	default:
+		if v.extra != nil {
+			val, ok := v.extra[key]
+			if ok {
+				return blackmagic.AssignIfCompatible(dst, val)
+			}
+		}
+	}
+	return fmt.Errorf(`no such key %q`, key)
 }
 
-type SearchRequestValidateFunc func(v *SearchRequest) error
-
-func (f SearchRequestValidateFunc) Validate(v *SearchRequest) error {
-	return f(v)
-}
-
-var DefaultSearchRequestValidator SearchRequestValidator = SearchRequestValidateFunc(func(v *SearchRequest) error {
+// Set sets the value of the specified field. The name must be a JSON
+// field name, not the Go name
+func (v *SearchRequest) Set(key string, value interface{}) error {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	switch key {
+	case SearchRequestAttributesKey:
+		converted, ok := value.([]string)
+		if !ok {
+			return fmt.Errorf(`expected value of type []string for field attributes, got %T`, value)
+		}
+		v.attributes = converted
+	case SearchRequestCountKey:
+		converted, ok := value.(int)
+		if !ok {
+			return fmt.Errorf(`expected value of type int for field count, got %T`, value)
+		}
+		v.count = &converted
+	case SearchRequestExcludeAttributesKey:
+		converted, ok := value.([]string)
+		if !ok {
+			return fmt.Errorf(`expected value of type []string for field excludeAttributes, got %T`, value)
+		}
+		v.excludeAttributes = converted
+	case SearchRequestFilterKey:
+		converted, ok := value.(string)
+		if !ok {
+			return fmt.Errorf(`expected value of type string for field filter, got %T`, value)
+		}
+		v.filter = &converted
+	case SearchRequestSchemaKey:
+		converted, ok := value.(string)
+		if !ok {
+			return fmt.Errorf(`expected value of type string for field schema, got %T`, value)
+		}
+		v.schema = &converted
+	case SearchRequestSchemasKey:
+		converted, ok := value.(schemas)
+		if !ok {
+			return fmt.Errorf(`expected value of type schemas for field schemas, got %T`, value)
+		}
+		v.schemas = &converted
+	case SearchRequestSortByKey:
+		converted, ok := value.(string)
+		if !ok {
+			return fmt.Errorf(`expected value of type string for field sortBy, got %T`, value)
+		}
+		v.sortBy = &converted
+	case SearchRequestSortOrderKey:
+		converted, ok := value.(string)
+		if !ok {
+			return fmt.Errorf(`expected value of type string for field sortOrder, got %T`, value)
+		}
+		v.sortOrder = &converted
+	case SearchRequestStartIndexKey:
+		converted, ok := value.(int)
+		if !ok {
+			return fmt.Errorf(`expected value of type int for field startIndex, got %T`, value)
+		}
+		v.startIndex = &converted
+	default:
+		if v.extra == nil {
+			v.extra = make(map[string]interface{})
+		}
+		v.extra[key] = value
+	}
 	return nil
-})
-
+}
 func (v *SearchRequest) HasAttributes() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.attributes != nil
-}
-
-func (v *SearchRequest) Attributes() []string {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	return v.attributes
 }
 
 func (v *SearchRequest) HasCount() bool {
@@ -71,25 +176,10 @@ func (v *SearchRequest) HasCount() bool {
 	return v.count != nil
 }
 
-func (v *SearchRequest) Count() int {
+func (v *SearchRequest) HasExcludeAttributes() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	if v.count == nil {
-		return 0
-	}
-	return *(v.count)
-}
-
-func (v *SearchRequest) HasExludedAttributes() bool {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	return v.exludedAttributes != nil
-}
-
-func (v *SearchRequest) ExludedAttributes() []string {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	return v.exludedAttributes
+	return v.excludeAttributes != nil
 }
 
 func (v *SearchRequest) HasFilter() bool {
@@ -98,25 +188,16 @@ func (v *SearchRequest) HasFilter() bool {
 	return v.filter != nil
 }
 
-func (v *SearchRequest) Filter() string {
+func (v *SearchRequest) HasSchema() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	if v.filter == nil {
-		return ""
-	}
-	return *(v.filter)
+	return v.schema != nil
 }
 
 func (v *SearchRequest) HasSchemas() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return true
-}
-
-func (v *SearchRequest) Schemas() []string {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	return v.schemas.List()
+	return v.schemas != nil
 }
 
 func (v *SearchRequest) HasSortBy() bool {
@@ -125,28 +206,10 @@ func (v *SearchRequest) HasSortBy() bool {
 	return v.sortBy != nil
 }
 
-func (v *SearchRequest) SortBy() string {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	if v.sortBy == nil {
-		return ""
-	}
-	return *(v.sortBy)
-}
-
 func (v *SearchRequest) HasSortOrder() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.sortOrder != nil
-}
-
-func (v *SearchRequest) SortOrder() string {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	if v.sortOrder == nil {
-		return ""
-	}
-	return *(v.sortOrder)
 }
 
 func (v *SearchRequest) HasStartIndex() bool {
@@ -155,50 +218,162 @@ func (v *SearchRequest) HasStartIndex() bool {
 	return v.startIndex != nil
 }
 
+func (v *SearchRequest) Attributes() []string {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	if val := v.attributes; val != nil {
+		return val
+	}
+	return []string(nil)
+}
+
+func (v *SearchRequest) Count() int {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	if val := v.count; val != nil {
+		return *val
+	}
+	return 0
+}
+
+func (v *SearchRequest) ExcludeAttributes() []string {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	if val := v.excludeAttributes; val != nil {
+		return val
+	}
+	return []string(nil)
+}
+
+func (v *SearchRequest) Filter() string {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	if val := v.filter; val != nil {
+		return *val
+	}
+	return ""
+}
+
+func (v *SearchRequest) Schema() string {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	if val := v.schema; val != nil {
+		return *val
+	}
+	return ""
+}
+
+func (v *SearchRequest) Schemas() []string {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	if val := v.schemas; val != nil {
+		return val.Get()
+	}
+	return nil
+}
+
+func (v *SearchRequest) SortBy() string {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	if val := v.sortBy; val != nil {
+		return *val
+	}
+	return ""
+}
+
+func (v *SearchRequest) SortOrder() string {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	if val := v.sortOrder; val != nil {
+		return *val
+	}
+	return ""
+}
+
 func (v *SearchRequest) StartIndex() int {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	if v.startIndex == nil {
-		return 0
+	if val := v.startIndex; val != nil {
+		return *val
 	}
-	return *(v.startIndex)
+	return 0
 }
 
-func (v *SearchRequest) makePairs() []pair {
-	pairs := make([]pair, 0, 8)
-	if v.attributes != nil {
-		pairs = append(pairs, pair{Key: "attributes", Value: v.attributes})
+// Remove removes the value associated with a key
+func (v *SearchRequest) Remove(key string) error {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+
+	switch key {
+	case SearchRequestAttributesKey:
+		v.attributes = nil
+	case SearchRequestCountKey:
+		v.count = nil
+	case SearchRequestExcludeAttributesKey:
+		v.excludeAttributes = nil
+	case SearchRequestFilterKey:
+		v.filter = nil
+	case SearchRequestSchemaKey:
+		v.schema = nil
+	case SearchRequestSchemasKey:
+		v.schemas = nil
+	case SearchRequestSortByKey:
+		v.sortBy = nil
+	case SearchRequestSortOrderKey:
+		v.sortOrder = nil
+	case SearchRequestStartIndexKey:
+		v.startIndex = nil
+	default:
+		delete(v.extra, key)
 	}
-	if v.count != nil {
-		pairs = append(pairs, pair{Key: "count", Value: *(v.count)})
+
+	return nil
+}
+
+func (v *SearchRequest) makePairs() []*fieldPair {
+	pairs := make([]*fieldPair, 0, 9)
+	if val := v.attributes; len(val) > 0 {
+		pairs = append(pairs, &fieldPair{Name: SearchRequestAttributesKey, Value: val})
 	}
-	if v.exludedAttributes != nil {
-		pairs = append(pairs, pair{Key: "exludedAttributes", Value: v.exludedAttributes})
+	if val := v.count; val != nil {
+		pairs = append(pairs, &fieldPair{Name: SearchRequestCountKey, Value: *val})
 	}
-	if v.filter != nil {
-		pairs = append(pairs, pair{Key: "filter", Value: *(v.filter)})
+	if val := v.excludeAttributes; len(val) > 0 {
+		pairs = append(pairs, &fieldPair{Name: SearchRequestExcludeAttributesKey, Value: val})
 	}
-	if v.schemas != nil {
-		pairs = append(pairs, pair{Key: "schemas", Value: v.schemas})
+	if val := v.filter; val != nil {
+		pairs = append(pairs, &fieldPair{Name: SearchRequestFilterKey, Value: *val})
 	}
-	if v.sortBy != nil {
-		pairs = append(pairs, pair{Key: "sortBy", Value: *(v.sortBy)})
+	if val := v.schema; val != nil {
+		pairs = append(pairs, &fieldPair{Name: SearchRequestSchemaKey, Value: *val})
 	}
-	if v.sortOrder != nil {
-		pairs = append(pairs, pair{Key: "sortOrder", Value: *(v.sortOrder)})
+	if val := v.schemas; val != nil {
+		pairs = append(pairs, &fieldPair{Name: SearchRequestSchemasKey, Value: *val})
 	}
-	if v.startIndex != nil {
-		pairs = append(pairs, pair{Key: "startIndex", Value: *(v.startIndex)})
+	if val := v.sortBy; val != nil {
+		pairs = append(pairs, &fieldPair{Name: SearchRequestSortByKey, Value: *val})
 	}
-	for k, v := range v.privateParams {
-		pairs = append(pairs, pair{Key: k, Value: v})
+	if val := v.sortOrder; val != nil {
+		pairs = append(pairs, &fieldPair{Name: SearchRequestSortOrderKey, Value: *val})
 	}
+	if val := v.startIndex; val != nil {
+		pairs = append(pairs, &fieldPair{Name: SearchRequestStartIndexKey, Value: *val})
+	}
+
+	for key, val := range v.extra {
+		pairs = append(pairs, &fieldPair{Name: key, Value: val})
+	}
+
 	sort.Slice(pairs, func(i, j int) bool {
-		return pairs[i].Key < pairs[j].Key
+		return pairs[i].Name < pairs[j].Name
 	})
 	return pairs
 }
 
+// MarshalJSON serializes SearchRequest into JSON.
+// All pre-declared fields are included as long as a value is
+// assigned to them, as well as all extra fields. All of these
+// fields are sorted in alphabetical order.
 func (v *SearchRequest) MarshalJSON() ([]byte, error) {
 	pairs := v.makePairs()
 
@@ -207,485 +382,196 @@ func (v *SearchRequest) MarshalJSON() ([]byte, error) {
 	buf.WriteByte('{')
 	for i, pair := range pairs {
 		if i > 0 {
-			buf.WriteRune(',')
+			buf.WriteByte(',')
 		}
-		fmt.Fprintf(&buf, "%q:", pair.Key)
-		if err := enc.Encode(pair.Value); err != nil {
-			return nil, fmt.Errorf("failed to encode value for key %q: %w", pair.Key, err)
-		}
+		enc.Encode(pair.Name)
+		buf.WriteByte(':')
+		enc.Encode(pair.Value)
 	}
 	buf.WriteByte('}')
 	return buf.Bytes(), nil
 }
 
-func (v *SearchRequest) Get(name string, options ...GetOption) (interface{}, bool) {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-
-	var ext string
-	//nolint:forcetypeassert
-	for _, option := range options {
-		switch option.Ident() {
-		case identExtension{}:
-			ext = option.Value().(string)
-		}
-	}
-	switch name {
-	case SearchRequestAttributesKey:
-		if v.attributes == nil {
-			return nil, false
-		}
-		return v.attributes, true
-	case SearchRequestCountKey:
-		if v.count == nil {
-			return nil, false
-		}
-		return *(v.count), true
-	case SearchRequestExludedAttributesKey:
-		if v.exludedAttributes == nil {
-			return nil, false
-		}
-		return v.exludedAttributes, true
-	case SearchRequestFilterKey:
-		if v.filter == nil {
-			return nil, false
-		}
-		return *(v.filter), true
-	case SearchRequestSchemasKey:
-		if v.schemas == nil {
-			return nil, false
-		}
-		return v.schemas, true
-	case SearchRequestSortByKey:
-		if v.sortBy == nil {
-			return nil, false
-		}
-		return *(v.sortBy), true
-	case SearchRequestSortOrderKey:
-		if v.sortOrder == nil {
-			return nil, false
-		}
-		return *(v.sortOrder), true
-	case SearchRequestStartIndexKey:
-		if v.startIndex == nil {
-			return nil, false
-		}
-		return *(v.startIndex), true
-	default:
-		pp := v.privateParams
-		if pp == nil {
-			return nil, false
-		}
-		if ext == "" {
-			ret, ok := pp[name]
-			return ret, ok
-		}
-		obj, ok := pp[ext]
-		if !ok {
-			return nil, false
-		}
-		getter, ok := obj.(interface {
-			Get(string, ...GetOption) (interface{}, bool)
-		})
-		if !ok {
-			return nil, false
-		}
-		return getter.Get(name)
-	}
-}
-
-func (v *SearchRequest) Set(name string, value interface{}) error {
-	v.mu.Lock()
-	defer v.mu.Unlock()
-	switch name {
-	case SearchRequestAttributesKey:
-		var tmp []string
-		tmp, ok := value.([]string)
-		if !ok {
-			return fmt.Errorf(`expected []string for field "attributes", but got %T`, value)
-		}
-		v.attributes = tmp
-		return nil
-	case SearchRequestCountKey:
-		var tmp int
-		tmp, ok := value.(int)
-		if !ok {
-			return fmt.Errorf(`expected int for field "count", but got %T`, value)
-		}
-		v.count = &tmp
-		return nil
-	case SearchRequestExludedAttributesKey:
-		var tmp []string
-		tmp, ok := value.([]string)
-		if !ok {
-			return fmt.Errorf(`expected []string for field "exludedAttributes", but got %T`, value)
-		}
-		v.exludedAttributes = tmp
-		return nil
-	case SearchRequestFilterKey:
-		var tmp string
-		tmp, ok := value.(string)
-		if !ok {
-			return fmt.Errorf(`expected string for field "filter", but got %T`, value)
-		}
-		v.filter = &tmp
-		return nil
-	case SearchRequestSchemasKey:
-		var tmp schemas
-		tmp, ok := value.(schemas)
-		if !ok {
-			return fmt.Errorf(`expected schemas for field "schemas", but got %T`, value)
-		}
-		v.schemas = tmp
-		return nil
-	case SearchRequestSortByKey:
-		var tmp string
-		tmp, ok := value.(string)
-		if !ok {
-			return fmt.Errorf(`expected string for field "sortBy", but got %T`, value)
-		}
-		v.sortBy = &tmp
-		return nil
-	case SearchRequestSortOrderKey:
-		var tmp string
-		tmp, ok := value.(string)
-		if !ok {
-			return fmt.Errorf(`expected string for field "sortOrder", but got %T`, value)
-		}
-		v.sortOrder = &tmp
-		return nil
-	case SearchRequestStartIndexKey:
-		var tmp int
-		tmp, ok := value.(int)
-		if !ok {
-			return fmt.Errorf(`expected int for field "startIndex", but got %T`, value)
-		}
-		v.startIndex = &tmp
-		return nil
-	default:
-		pp := v.privateParams
-		if pp == nil {
-			pp = make(map[string]interface{})
-			v.privateParams = pp
-		}
-		pp[name] = value
-		return nil
-	}
-}
-
-func (v *SearchRequest) Clone() *SearchRequest {
-	v.mu.Lock()
-	defer v.mu.Unlock()
-	return &SearchRequest{
-		attributes:        v.attributes,
-		count:             v.count,
-		exludedAttributes: v.exludedAttributes,
-		filter:            v.filter,
-		schemas:           v.schemas,
-		sortBy:            v.sortBy,
-		sortOrder:         v.sortOrder,
-		startIndex:        v.startIndex,
-	}
-}
-
+// UnmarshalJSON deserializes a piece of JSON data into SearchRequest.
+//
+// Pre-defined fields must be deserializable via "encoding/json" to their
+// respective Go types, otherwise an error is returned.
+//
+// Extra fields are stored in a special "extra" storage, which can only
+// be accessed via `Get()` and `Set()` methods.
 func (v *SearchRequest) UnmarshalJSON(data []byte) error {
+	v.mu.Lock()
+	defer v.mu.Unlock()
 	v.attributes = nil
 	v.count = nil
-	v.exludedAttributes = nil
+	v.excludeAttributes = nil
 	v.filter = nil
+	v.schema = nil
 	v.schemas = nil
 	v.sortBy = nil
 	v.sortOrder = nil
 	v.startIndex = nil
-	v.privateParams = nil
+
 	dec := json.NewDecoder(bytes.NewReader(data))
-	{ // first token
-		tok, err := dec.Token()
-		if err != nil {
-			return fmt.Errorf("failed to read next token: %s", err)
-		}
-		tok, ok := tok.(json.Delim)
-		if !ok {
-			return fmt.Errorf("expected first token to be '{', got %c", tok)
-		}
-	}
-	var privateParams map[string]interface{}
 
 LOOP:
 	for {
 		tok, err := dec.Token()
 		if err != nil {
-			return fmt.Errorf("failed to read next token: %s", err)
+			return fmt.Errorf(`error reading JSON token: %w`, err)
 		}
 		switch tok := tok.(type) {
 		case json.Delim:
-			if tok == '}' {
+			if tok == '}' { // end of object
 				break LOOP
-			} else {
-				return fmt.Errorf("unexpected token %c found", tok)
+			}
+			// we should only get into this clause at the very beginning, and just once
+			if tok != '{' {
+				return fmt.Errorf(`expected '{', but got '%c'`, tok)
 			}
 		case string:
 			switch tok {
 			case SearchRequestAttributesKey:
-				var x []string
-				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "attributes": %w`, err)
+				var val []string
+				if err := dec.Decode(&val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, SearchRequestAttributesKey, err)
 				}
-				v.attributes = x
+				v.attributes = val
 			case SearchRequestCountKey:
-				var x int
-				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "count": %w`, err)
+				var val int
+				if err := dec.Decode(&val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, SearchRequestCountKey, err)
 				}
-				v.count = &x
-			case SearchRequestExludedAttributesKey:
-				var x []string
-				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "exludedAttributes": %w`, err)
+				v.count = &val
+			case SearchRequestExcludeAttributesKey:
+				var val []string
+				if err := dec.Decode(&val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, SearchRequestExcludeAttributesKey, err)
 				}
-				v.exludedAttributes = x
+				v.excludeAttributes = val
 			case SearchRequestFilterKey:
-				var x string
-				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "filter": %w`, err)
+				var val string
+				if err := dec.Decode(&val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, SearchRequestFilterKey, err)
 				}
-				v.filter = &x
+				v.filter = &val
+			case SearchRequestSchemaKey:
+				var val string
+				if err := dec.Decode(&val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, SearchRequestSchemaKey, err)
+				}
+				v.schema = &val
 			case SearchRequestSchemasKey:
-				var x schemas
-				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "schemas": %w`, err)
+				var val schemas
+				if err := dec.Decode(&val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, SearchRequestSchemasKey, err)
 				}
-				v.schemas = x
+				v.schemas = &val
 			case SearchRequestSortByKey:
-				var x string
-				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "sortBy": %w`, err)
+				var val string
+				if err := dec.Decode(&val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, SearchRequestSortByKey, err)
 				}
-				v.sortBy = &x
+				v.sortBy = &val
 			case SearchRequestSortOrderKey:
-				var x string
-				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "sortOrder": %w`, err)
+				var val string
+				if err := dec.Decode(&val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, SearchRequestSortOrderKey, err)
 				}
-				v.sortOrder = &x
+				v.sortOrder = &val
 			case SearchRequestStartIndexKey:
-				var x int
-				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "startIndex": %w`, err)
+				var val int
+				if err := dec.Decode(&val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, SearchRequestStartIndexKey, err)
 				}
-				v.startIndex = &x
+				v.startIndex = &val
 			default:
-				var x interface{}
-				if rx, ok := registry.Get(tok); ok {
-					x = rx
-					if err := dec.Decode(x); err != nil {
-						return fmt.Errorf(`failed to decode value for key %q: %w`, tok, err)
-					}
-				} else {
-					if err := dec.Decode(&x); err != nil {
-						return fmt.Errorf(`failed to decode value for key %q: %w`, tok, err)
-					}
+				var val interface{}
+				if err := dec.Decode(&val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, tok, err)
 				}
-				if privateParams == nil {
-					privateParams = make(map[string]interface{})
+				if v.extra == nil {
+					v.extra = make(map[string]interface{})
 				}
-				privateParams[tok] = x
+				v.extra[tok] = val
 			}
 		}
 	}
-	if privateParams != nil {
-		v.privateParams = privateParams
-	}
 	return nil
 }
 
-func (v *SearchRequest) AsMap(dst map[string]interface{}) error {
-	for _, pair := range v.makePairs() {
-		dst[pair.Key] = pair.Value
-	}
-	return nil
-}
-
-// SearchRequestBuilder creates a SearchRequest resource
 type SearchRequestBuilder struct {
-	once      sync.Once
-	mu        sync.Mutex
-	err       error
-	validator SearchRequestValidator
-	object    *SearchRequest
+	mu     sync.Mutex
+	err    error
+	once   sync.Once
+	object *SearchRequest
 }
 
-func (b *Builder) SearchRequest() *SearchRequestBuilder {
-	return NewSearchRequestBuilder()
-}
-
+// NewSearchRequestBuilder creates a new SearchRequestBuilder instance.
+// SearchRequestBuilder is safe to be used uninitialized as well.
 func NewSearchRequestBuilder() *SearchRequestBuilder {
-	var b SearchRequestBuilder
-	b.init()
-	return &b
+	return &SearchRequestBuilder{}
 }
 
-func (b *SearchRequestBuilder) From(in *SearchRequest) *SearchRequestBuilder {
-	b.once.Do(b.init)
-	b.object = in.Clone()
-	return b
-}
-
-func (b *SearchRequestBuilder) init() {
+func (b *SearchRequestBuilder) initialize() {
 	b.err = nil
-	b.validator = nil
 	b.object = &SearchRequest{}
 }
-
-func (b *SearchRequestBuilder) Attributes(v ...string) *SearchRequestBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	if err := b.object.Set("attributes", v); err != nil {
-		b.err = err
-	}
+func (b *SearchRequestBuilder) Attributes(in []string) *SearchRequestBuilder {
+	b.once.Do(b.initialize)
+	_ = b.object.Set(SearchRequestAttributesKey, in)
 	return b
 }
-
-func (b *SearchRequestBuilder) Count(v int) *SearchRequestBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	if err := b.object.Set("count", v); err != nil {
-		b.err = err
-	}
+func (b *SearchRequestBuilder) Count(in int) *SearchRequestBuilder {
+	b.once.Do(b.initialize)
+	_ = b.object.Set(SearchRequestCountKey, in)
 	return b
 }
-
-func (b *SearchRequestBuilder) ExludedAttributes(v ...string) *SearchRequestBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	if err := b.object.Set("exludedAttributes", v); err != nil {
-		b.err = err
-	}
+func (b *SearchRequestBuilder) ExcludeAttributes(in []string) *SearchRequestBuilder {
+	b.once.Do(b.initialize)
+	_ = b.object.Set(SearchRequestExcludeAttributesKey, in)
 	return b
 }
-
-func (b *SearchRequestBuilder) Filter(v string) *SearchRequestBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	if err := b.object.Set("filter", v); err != nil {
-		b.err = err
-	}
+func (b *SearchRequestBuilder) Filter(in string) *SearchRequestBuilder {
+	b.once.Do(b.initialize)
+	_ = b.object.Set(SearchRequestFilterKey, in)
 	return b
 }
-
-func (b *SearchRequestBuilder) Schemas(v ...string) *SearchRequestBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	for _, schema := range v {
-		b.object.schemas.Add(schema)
-	}
+func (b *SearchRequestBuilder) Schema(in string) *SearchRequestBuilder {
+	b.once.Do(b.initialize)
+	_ = b.object.Set(SearchRequestSchemaKey, in)
 	return b
 }
-
-func (b *SearchRequestBuilder) SortBy(v string) *SearchRequestBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	if err := b.object.Set("sortBy", v); err != nil {
-		b.err = err
-	}
+func (b *SearchRequestBuilder) Schemas(in ...string) *SearchRequestBuilder {
+	b.once.Do(b.initialize)
+	_ = b.object.Set(SearchRequestSchemasKey, in)
 	return b
 }
-
-func (b *SearchRequestBuilder) SortOrder(v string) *SearchRequestBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	if err := b.object.Set("sortOrder", v); err != nil {
-		b.err = err
-	}
+func (b *SearchRequestBuilder) SortBy(in string) *SearchRequestBuilder {
+	b.once.Do(b.initialize)
+	_ = b.object.Set(SearchRequestSortByKey, in)
 	return b
 }
-
-func (b *SearchRequestBuilder) StartIndex(v int) *SearchRequestBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	if err := b.object.Set("startIndex", v); err != nil {
-		b.err = err
-	}
+func (b *SearchRequestBuilder) SortOrder(in string) *SearchRequestBuilder {
+	b.once.Do(b.initialize)
+	_ = b.object.Set(SearchRequestSortOrderKey, in)
 	return b
 }
-
-func (b *SearchRequestBuilder) Extension(uri string, value interface{}) *SearchRequestBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	b.object.schemas.Add(uri)
-	if err := b.object.Set(uri, value); err != nil {
-		b.err = err
-	}
-	return b
-}
-
-func (b *SearchRequestBuilder) Validator(v SearchRequestValidator) *SearchRequestBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	b.validator = v
+func (b *SearchRequestBuilder) StartIndex(in int) *SearchRequestBuilder {
+	b.once.Do(b.initialize)
+	_ = b.object.Set(SearchRequestStartIndexKey, in)
 	return b
 }
 
 func (b *SearchRequestBuilder) Build() (*SearchRequest, error) {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	object := b.object
-	validator := b.validator
 	err := b.err
-	b.once = sync.Once{}
 	if err != nil {
 		return nil, err
 	}
-	if object == nil {
-		return nil, fmt.Errorf("resource.SearchRequestBuilder: object was not initialized")
-	}
-	if validator == nil {
-		validator = DefaultSearchRequestValidator
-	}
-	if err := validator.Validate(object); err != nil {
-		return nil, err
-	}
-	return object, nil
+	obj := b.object
+	b.once = sync.Once{}
+	b.once.Do(b.initialize)
+	return obj, nil
 }
 
 func (b *SearchRequestBuilder) MustBuild() *SearchRequest {
@@ -694,4 +580,35 @@ func (b *SearchRequestBuilder) MustBuild() *SearchRequest {
 		panic(err)
 	}
 	return object
+}
+
+func (v *SearchRequest) AsMap(dst map[string]interface{}) error {
+	for _, pair := range v.makePairs() {
+		dst[pair.Name] = pair.Value
+	}
+	return nil
+}
+
+// GetExtension takes into account extension uri, and fetches
+// the specified attribute from the extension object
+func (v *SearchRequest) GetExtension(name, uri string, dst interface{}) error {
+	if uri == "" {
+		return v.Get(name, dst)
+	}
+	var ext interface{}
+	if err := v.Get(uri, ext); err != nil {
+		return fmt.Errorf(`failed to fetch extension %q: %w`, uri, err)
+	}
+
+	getter, ok := ext.(interface {
+		Get(string, interface{}) error
+	})
+	if !ok {
+		return fmt.Errorf(`extension does not implement Get(string, interface{}) error`)
+	}
+	return getter.Get(name, dst)
+}
+
+func (b *Builder) SearchRequest() *SearchRequestBuilder {
+	return &SearchRequestBuilder{}
 }

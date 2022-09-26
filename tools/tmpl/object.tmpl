@@ -1,0 +1,45 @@
+{{ define "ext/object/header" }}
+{{- $schemaURI := .GetSchemaURI }}
+{{- if (ne $schemaURI "") }}
+const {{ .Name }}SchemaURI = {{ $schemaURI | printf "%q" }}
+
+func init() {
+  RegisterExtension({{ .Name }}SchemaURI, {{ .Name }}{})
+}
+{{ end }}
+{{ end }}
+
+{{ define "ext/object/footer" }}
+{{- $objectName := .Name }}
+func (v *{{ $objectName }}) AsMap(dst map[string]interface{}) error {
+  for _, pair := range v.makePairs() {
+    dst[pair.Name] = pair.Value
+  }
+  return nil
+}
+
+// GetExtension takes into account extension uri, and fetches
+// the specified attribute from the extension object
+func (v *{{ $objectName }}) GetExtension(name, uri string, dst interface{}) error {
+  if uri == "" {
+    return v.Get(name, dst)
+  }
+  var ext interface{}
+  if err := v.Get(uri, ext); err != nil {
+    return fmt.Errorf(`failed to fetch extension %q: %w`, uri, err)
+  }
+
+  getter, ok := ext.(interface{
+    Get(string, interface{}) error
+  })
+  if !ok {
+    return fmt.Errorf(`extension does not implement Get(string, interface{}) error`)
+  }
+  return getter.Get(name, dst)
+}
+
+{{ $builderName := .Name | printf "%sBuilder" }}
+func (b *Builder) {{ $objectName }}() *{{ $builderName }} {
+  return &{{ $builderName }}{}
+}
+{{ end }}

@@ -5,18 +5,23 @@ package resource
 import (
 	"encoding/json"
 	"sort"
+	"sync"
 )
-
-func init() {
-	DefaultUserValidator = UserValidateFunc(defaultUserValidate)
-}
 
 // schemas is a container for schemas. it dedupes schema URIs,
 // and marshals to / unmarshals from []string
-type schemas map[string]struct{}
+type schemas struct {
+	once    sync.Once
+	storage map[string]struct{}
+}
 
-func (s schemas) Add(v string) {
-	s[v] = struct{}{}
+func (s *schemas) initialize() {
+	s.storage = make(map[string]struct{})
+}
+
+func (s *schemas) Add(v string) {
+	s.once.Do(s.initialize)
+	s.storage[v] = struct{}{}
 }
 
 func (s *schemas) UnmarshalJSON(data []byte) error {
@@ -25,16 +30,20 @@ func (s *schemas) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	*s = make(schemas)
+	s.storage = make(map[string]struct{})
 	for _, u := range list {
-		(*s)[u] = struct{}{}
+		s.storage[u] = struct{}{}
 	}
 	return nil
 }
 
+func (s schemas) Get() []string {
+	return s.List()
+}
+
 func (s schemas) List() []string {
-	list := make([]string, 0, len(s))
-	for u := range s {
+	list := make([]string, 0, len(s.storage))
+	for u := range s.storage {
 		list = append(list, u)
 	}
 

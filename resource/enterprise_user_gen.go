@@ -6,9 +6,32 @@ import (
 	"fmt"
 	"sort"
 	"sync"
+
+	"github.com/lestrrat-go/blackmagic"
 )
 
-// JSON key names for EnterpriseUser resource
+const EnterpriseUserSchemaURI = "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User"
+
+func init() {
+	RegisterExtension(EnterpriseUserSchemaURI, EnterpriseUser{})
+}
+
+type EnterpriseUser struct {
+	mu             sync.RWMutex
+	costCenter     *string
+	department     *string
+	division       *string
+	employeeNumber *string
+	manager        *EnterpriseManager
+	organization   *string
+	schemas        *schemas
+	extra          map[string]interface{}
+}
+
+// These constants are used when the JSON field name is used.
+// Their use is not strictly required, but certain linters
+// complain about repeated constants, and therefore internally
+// this used throughout
 const (
 	EnterpriseUserCostCenterKey     = "costCenter"
 	EnterpriseUserDepartmentKey     = "department"
@@ -19,51 +42,108 @@ const (
 	EnterpriseUserSchemasKey        = "schemas"
 )
 
-const EnterpriseUserSchemaURI = "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User"
-
-func init() {
-	RegisterExtension(EnterpriseUserSchemaURI, EnterpriseUser{})
+// Get retrieves the value associated with a key
+func (v *EnterpriseUser) Get(key string, dst interface{}) error {
+	switch key {
+	case EnterpriseUserCostCenterKey:
+		if val := v.costCenter; val != nil {
+			return blackmagic.AssignIfCompatible(dst, *val)
+		}
+	case EnterpriseUserDepartmentKey:
+		if val := v.department; val != nil {
+			return blackmagic.AssignIfCompatible(dst, *val)
+		}
+	case EnterpriseUserDivisionKey:
+		if val := v.division; val != nil {
+			return blackmagic.AssignIfCompatible(dst, *val)
+		}
+	case EnterpriseUserEmployeeNumberKey:
+		if val := v.employeeNumber; val != nil {
+			return blackmagic.AssignIfCompatible(dst, *val)
+		}
+	case EnterpriseUserManagerKey:
+		if val := v.manager; val != nil {
+			return blackmagic.AssignIfCompatible(dst, val)
+		}
+	case EnterpriseUserOrganizationKey:
+		if val := v.organization; val != nil {
+			return blackmagic.AssignIfCompatible(dst, *val)
+		}
+	case EnterpriseUserSchemasKey:
+		if val := v.schemas; val != nil {
+			return blackmagic.AssignIfCompatible(dst, *val)
+		}
+	default:
+		if v.extra != nil {
+			val, ok := v.extra[key]
+			if ok {
+				return blackmagic.AssignIfCompatible(dst, val)
+			}
+		}
+	}
+	return fmt.Errorf(`no such key %q`, key)
 }
 
-type EnterpriseUser struct {
-	costCenter     *string
-	department     *string
-	division       *string
-	employeeNumber *string
-	manager        *EnterpriseManager
-	organization   *string
-	schemas        schemas
-	privateParams  map[string]interface{}
-	mu             sync.RWMutex
-}
-
-type EnterpriseUserValidator interface {
-	Validate(*EnterpriseUser) error
-}
-
-type EnterpriseUserValidateFunc func(v *EnterpriseUser) error
-
-func (f EnterpriseUserValidateFunc) Validate(v *EnterpriseUser) error {
-	return f(v)
-}
-
-var DefaultEnterpriseUserValidator EnterpriseUserValidator = EnterpriseUserValidateFunc(func(v *EnterpriseUser) error {
+// Set sets the value of the specified field. The name must be a JSON
+// field name, not the Go name
+func (v *EnterpriseUser) Set(key string, value interface{}) error {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	switch key {
+	case EnterpriseUserCostCenterKey:
+		converted, ok := value.(string)
+		if !ok {
+			return fmt.Errorf(`expected value of type string for field costCenter, got %T`, value)
+		}
+		v.costCenter = &converted
+	case EnterpriseUserDepartmentKey:
+		converted, ok := value.(string)
+		if !ok {
+			return fmt.Errorf(`expected value of type string for field department, got %T`, value)
+		}
+		v.department = &converted
+	case EnterpriseUserDivisionKey:
+		converted, ok := value.(string)
+		if !ok {
+			return fmt.Errorf(`expected value of type string for field division, got %T`, value)
+		}
+		v.division = &converted
+	case EnterpriseUserEmployeeNumberKey:
+		converted, ok := value.(string)
+		if !ok {
+			return fmt.Errorf(`expected value of type string for field employeeNumber, got %T`, value)
+		}
+		v.employeeNumber = &converted
+	case EnterpriseUserManagerKey:
+		converted, ok := value.(*EnterpriseManager)
+		if !ok {
+			return fmt.Errorf(`expected value of type *EnterpriseManager for field manager, got %T`, value)
+		}
+		v.manager = converted
+	case EnterpriseUserOrganizationKey:
+		converted, ok := value.(string)
+		if !ok {
+			return fmt.Errorf(`expected value of type string for field organization, got %T`, value)
+		}
+		v.organization = &converted
+	case EnterpriseUserSchemasKey:
+		converted, ok := value.(schemas)
+		if !ok {
+			return fmt.Errorf(`expected value of type schemas for field schemas, got %T`, value)
+		}
+		v.schemas = &converted
+	default:
+		if v.extra == nil {
+			v.extra = make(map[string]interface{})
+		}
+		v.extra[key] = value
+	}
 	return nil
-})
-
+}
 func (v *EnterpriseUser) HasCostCenter() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.costCenter != nil
-}
-
-func (v *EnterpriseUser) CostCenter() string {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	if v.costCenter == nil {
-		return ""
-	}
-	return *(v.costCenter)
 }
 
 func (v *EnterpriseUser) HasDepartment() bool {
@@ -72,28 +152,10 @@ func (v *EnterpriseUser) HasDepartment() bool {
 	return v.department != nil
 }
 
-func (v *EnterpriseUser) Department() string {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	if v.department == nil {
-		return ""
-	}
-	return *(v.department)
-}
-
 func (v *EnterpriseUser) HasDivision() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.division != nil
-}
-
-func (v *EnterpriseUser) Division() string {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	if v.division == nil {
-		return ""
-	}
-	return *(v.division)
 }
 
 func (v *EnterpriseUser) HasEmployeeNumber() bool {
@@ -102,25 +164,10 @@ func (v *EnterpriseUser) HasEmployeeNumber() bool {
 	return v.employeeNumber != nil
 }
 
-func (v *EnterpriseUser) EmployeeNumber() string {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	if v.employeeNumber == nil {
-		return ""
-	}
-	return *(v.employeeNumber)
-}
-
 func (v *EnterpriseUser) HasManager() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.manager != nil
-}
-
-func (v *EnterpriseUser) Manager() *EnterpriseManager {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	return v.manager
 }
 
 func (v *EnterpriseUser) HasOrganization() bool {
@@ -129,59 +176,140 @@ func (v *EnterpriseUser) HasOrganization() bool {
 	return v.organization != nil
 }
 
-func (v *EnterpriseUser) Organization() string {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	if v.organization == nil {
-		return ""
-	}
-	return *(v.organization)
-}
-
 func (v *EnterpriseUser) HasSchemas() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return true
+	return v.schemas != nil
+}
+
+func (v *EnterpriseUser) CostCenter() string {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	if val := v.costCenter; val != nil {
+		return *val
+	}
+	return ""
+}
+
+func (v *EnterpriseUser) Department() string {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	if val := v.department; val != nil {
+		return *val
+	}
+	return ""
+}
+
+func (v *EnterpriseUser) Division() string {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	if val := v.division; val != nil {
+		return *val
+	}
+	return ""
+}
+
+func (v *EnterpriseUser) EmployeeNumber() string {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	if val := v.employeeNumber; val != nil {
+		return *val
+	}
+	return ""
+}
+
+func (v *EnterpriseUser) Manager() *EnterpriseManager {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	if val := v.manager; val != nil {
+		return val
+	}
+	return nil
+}
+
+func (v *EnterpriseUser) Organization() string {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	if val := v.organization; val != nil {
+		return *val
+	}
+	return ""
 }
 
 func (v *EnterpriseUser) Schemas() []string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return v.schemas.List()
+	if val := v.schemas; val != nil {
+		return val.Get()
+	}
+	return nil
 }
 
-func (v *EnterpriseUser) makePairs() []pair {
-	pairs := make([]pair, 0, 7)
-	if v.costCenter != nil {
-		pairs = append(pairs, pair{Key: "costCenter", Value: *(v.costCenter)})
+// Remove removes the value associated with a key
+func (v *EnterpriseUser) Remove(key string) error {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+
+	switch key {
+	case EnterpriseUserCostCenterKey:
+		v.costCenter = nil
+	case EnterpriseUserDepartmentKey:
+		v.department = nil
+	case EnterpriseUserDivisionKey:
+		v.division = nil
+	case EnterpriseUserEmployeeNumberKey:
+		v.employeeNumber = nil
+	case EnterpriseUserManagerKey:
+		v.manager = nil
+	case EnterpriseUserOrganizationKey:
+		v.organization = nil
+	case EnterpriseUserSchemasKey:
+		v.schemas = nil
+	default:
+		delete(v.extra, key)
 	}
-	if v.department != nil {
-		pairs = append(pairs, pair{Key: "department", Value: *(v.department)})
+
+	return nil
+}
+
+func (v *EnterpriseUser) makePairs() []*fieldPair {
+	pairs := make([]*fieldPair, 0, 7)
+	if val := v.costCenter; val != nil {
+		pairs = append(pairs, &fieldPair{Name: EnterpriseUserCostCenterKey, Value: *val})
 	}
-	if v.division != nil {
-		pairs = append(pairs, pair{Key: "division", Value: *(v.division)})
+	if val := v.department; val != nil {
+		pairs = append(pairs, &fieldPair{Name: EnterpriseUserDepartmentKey, Value: *val})
 	}
-	if v.employeeNumber != nil {
-		pairs = append(pairs, pair{Key: "employeeNumber", Value: *(v.employeeNumber)})
+	if val := v.division; val != nil {
+		pairs = append(pairs, &fieldPair{Name: EnterpriseUserDivisionKey, Value: *val})
 	}
-	if v.manager != nil {
-		pairs = append(pairs, pair{Key: "manager", Value: v.manager})
+	if val := v.employeeNumber; val != nil {
+		pairs = append(pairs, &fieldPair{Name: EnterpriseUserEmployeeNumberKey, Value: *val})
 	}
-	if v.organization != nil {
-		pairs = append(pairs, pair{Key: "organization", Value: *(v.organization)})
+	if val := v.manager; val != nil {
+		pairs = append(pairs, &fieldPair{Name: EnterpriseUserManagerKey, Value: val})
 	}
-	if v.schemas != nil {
-		pairs = append(pairs, pair{Key: "schemas", Value: v.schemas})
+	if val := v.organization; val != nil {
+		pairs = append(pairs, &fieldPair{Name: EnterpriseUserOrganizationKey, Value: *val})
 	}
-	for k, v := range v.privateParams {
-		pairs = append(pairs, pair{Key: k, Value: v})
+	if val := v.schemas; val != nil {
+		pairs = append(pairs, &fieldPair{Name: EnterpriseUserSchemasKey, Value: *val})
 	}
+
+	for key, val := range v.extra {
+		pairs = append(pairs, &fieldPair{Name: key, Value: val})
+	}
+
 	sort.Slice(pairs, func(i, j int) bool {
-		return pairs[i].Key < pairs[j].Key
+		return pairs[i].Name < pairs[j].Name
 	})
 	return pairs
 }
 
+// MarshalJSON serializes EnterpriseUser into JSON.
+// All pre-declared fields are included as long as a value is
+// assigned to them, as well as all extra fields. All of these
+// fields are sorted in alphabetical order.
 func (v *EnterpriseUser) MarshalJSON() ([]byte, error) {
 	pairs := v.makePairs()
 
@@ -190,174 +318,26 @@ func (v *EnterpriseUser) MarshalJSON() ([]byte, error) {
 	buf.WriteByte('{')
 	for i, pair := range pairs {
 		if i > 0 {
-			buf.WriteRune(',')
+			buf.WriteByte(',')
 		}
-		fmt.Fprintf(&buf, "%q:", pair.Key)
-		if err := enc.Encode(pair.Value); err != nil {
-			return nil, fmt.Errorf("failed to encode value for key %q: %w", pair.Key, err)
-		}
+		enc.Encode(pair.Name)
+		buf.WriteByte(':')
+		enc.Encode(pair.Value)
 	}
 	buf.WriteByte('}')
 	return buf.Bytes(), nil
 }
 
-func (v *EnterpriseUser) Get(name string, options ...GetOption) (interface{}, bool) {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-
-	var ext string
-	//nolint:forcetypeassert
-	for _, option := range options {
-		switch option.Ident() {
-		case identExtension{}:
-			ext = option.Value().(string)
-		}
-	}
-	switch name {
-	case EnterpriseUserCostCenterKey:
-		if v.costCenter == nil {
-			return nil, false
-		}
-		return *(v.costCenter), true
-	case EnterpriseUserDepartmentKey:
-		if v.department == nil {
-			return nil, false
-		}
-		return *(v.department), true
-	case EnterpriseUserDivisionKey:
-		if v.division == nil {
-			return nil, false
-		}
-		return *(v.division), true
-	case EnterpriseUserEmployeeNumberKey:
-		if v.employeeNumber == nil {
-			return nil, false
-		}
-		return *(v.employeeNumber), true
-	case EnterpriseUserManagerKey:
-		if v.manager == nil {
-			return nil, false
-		}
-		return v.manager, true
-	case EnterpriseUserOrganizationKey:
-		if v.organization == nil {
-			return nil, false
-		}
-		return *(v.organization), true
-	case EnterpriseUserSchemasKey:
-		if v.schemas == nil {
-			return nil, false
-		}
-		return v.schemas, true
-	default:
-		pp := v.privateParams
-		if pp == nil {
-			return nil, false
-		}
-		if ext == "" {
-			ret, ok := pp[name]
-			return ret, ok
-		}
-		obj, ok := pp[ext]
-		if !ok {
-			return nil, false
-		}
-		getter, ok := obj.(interface {
-			Get(string, ...GetOption) (interface{}, bool)
-		})
-		if !ok {
-			return nil, false
-		}
-		return getter.Get(name)
-	}
-}
-
-func (v *EnterpriseUser) Set(name string, value interface{}) error {
-	v.mu.Lock()
-	defer v.mu.Unlock()
-	switch name {
-	case EnterpriseUserCostCenterKey:
-		var tmp string
-		tmp, ok := value.(string)
-		if !ok {
-			return fmt.Errorf(`expected string for field "costCenter", but got %T`, value)
-		}
-		v.costCenter = &tmp
-		return nil
-	case EnterpriseUserDepartmentKey:
-		var tmp string
-		tmp, ok := value.(string)
-		if !ok {
-			return fmt.Errorf(`expected string for field "department", but got %T`, value)
-		}
-		v.department = &tmp
-		return nil
-	case EnterpriseUserDivisionKey:
-		var tmp string
-		tmp, ok := value.(string)
-		if !ok {
-			return fmt.Errorf(`expected string for field "division", but got %T`, value)
-		}
-		v.division = &tmp
-		return nil
-	case EnterpriseUserEmployeeNumberKey:
-		var tmp string
-		tmp, ok := value.(string)
-		if !ok {
-			return fmt.Errorf(`expected string for field "employeeNumber", but got %T`, value)
-		}
-		v.employeeNumber = &tmp
-		return nil
-	case EnterpriseUserManagerKey:
-		var tmp *EnterpriseManager
-		tmp, ok := value.(*EnterpriseManager)
-		if !ok {
-			return fmt.Errorf(`expected *EnterpriseManager for field "manager", but got %T`, value)
-		}
-		v.manager = tmp
-		return nil
-	case EnterpriseUserOrganizationKey:
-		var tmp string
-		tmp, ok := value.(string)
-		if !ok {
-			return fmt.Errorf(`expected string for field "organization", but got %T`, value)
-		}
-		v.organization = &tmp
-		return nil
-	case EnterpriseUserSchemasKey:
-		var tmp schemas
-		tmp, ok := value.(schemas)
-		if !ok {
-			return fmt.Errorf(`expected schemas for field "schemas", but got %T`, value)
-		}
-		v.schemas = tmp
-		return nil
-	default:
-		pp := v.privateParams
-		if pp == nil {
-			pp = make(map[string]interface{})
-			v.privateParams = pp
-		}
-		pp[name] = value
-		return nil
-	}
-}
-
-func (v *EnterpriseUser) Clone() *EnterpriseUser {
-	v.mu.Lock()
-	defer v.mu.Unlock()
-	return &EnterpriseUser{
-		costCenter:     v.costCenter,
-		department:     v.department,
-		division:       v.division,
-		employeeNumber: v.employeeNumber,
-		manager:        v.manager,
-		organization:   v.organization,
-		schemas:        v.schemas,
-	}
-}
-
+// UnmarshalJSON deserializes a piece of JSON data into EnterpriseUser.
+//
+// Pre-defined fields must be deserializable via "encoding/json" to their
+// respective Go types, otherwise an error is returned.
+//
+// Extra fields are stored in a special "extra" storage, which can only
+// be accessed via `Get()` and `Set()` methods.
 func (v *EnterpriseUser) UnmarshalJSON(data []byte) error {
+	v.mu.Lock()
+	defer v.mu.Unlock()
 	v.costCenter = nil
 	v.department = nil
 	v.division = nil
@@ -365,276 +345,145 @@ func (v *EnterpriseUser) UnmarshalJSON(data []byte) error {
 	v.manager = nil
 	v.organization = nil
 	v.schemas = nil
-	v.privateParams = nil
+
 	dec := json.NewDecoder(bytes.NewReader(data))
-	{ // first token
-		tok, err := dec.Token()
-		if err != nil {
-			return fmt.Errorf("failed to read next token: %s", err)
-		}
-		tok, ok := tok.(json.Delim)
-		if !ok {
-			return fmt.Errorf("expected first token to be '{', got %c", tok)
-		}
-	}
-	var privateParams map[string]interface{}
 
 LOOP:
 	for {
 		tok, err := dec.Token()
 		if err != nil {
-			return fmt.Errorf("failed to read next token: %s", err)
+			return fmt.Errorf(`error reading JSON token: %w`, err)
 		}
 		switch tok := tok.(type) {
 		case json.Delim:
-			if tok == '}' {
+			if tok == '}' { // end of object
 				break LOOP
-			} else {
-				return fmt.Errorf("unexpected token %c found", tok)
+			}
+			// we should only get into this clause at the very beginning, and just once
+			if tok != '{' {
+				return fmt.Errorf(`expected '{', but got '%c'`, tok)
 			}
 		case string:
 			switch tok {
 			case EnterpriseUserCostCenterKey:
-				var x string
-				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "costCenter": %w`, err)
+				var val string
+				if err := dec.Decode(&val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, EnterpriseUserCostCenterKey, err)
 				}
-				v.costCenter = &x
+				v.costCenter = &val
 			case EnterpriseUserDepartmentKey:
-				var x string
-				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "department": %w`, err)
+				var val string
+				if err := dec.Decode(&val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, EnterpriseUserDepartmentKey, err)
 				}
-				v.department = &x
+				v.department = &val
 			case EnterpriseUserDivisionKey:
-				var x string
-				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "division": %w`, err)
+				var val string
+				if err := dec.Decode(&val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, EnterpriseUserDivisionKey, err)
 				}
-				v.division = &x
+				v.division = &val
 			case EnterpriseUserEmployeeNumberKey:
-				var x string
-				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "employeeNumber": %w`, err)
+				var val string
+				if err := dec.Decode(&val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, EnterpriseUserEmployeeNumberKey, err)
 				}
-				v.employeeNumber = &x
+				v.employeeNumber = &val
 			case EnterpriseUserManagerKey:
-				var x *EnterpriseManager
-				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "manager": %w`, err)
+				var val *EnterpriseManager
+				if err := dec.Decode(&val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, EnterpriseUserManagerKey, err)
 				}
-				v.manager = x
+				v.manager = val
 			case EnterpriseUserOrganizationKey:
-				var x string
-				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "organization": %w`, err)
+				var val string
+				if err := dec.Decode(&val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, EnterpriseUserOrganizationKey, err)
 				}
-				v.organization = &x
+				v.organization = &val
 			case EnterpriseUserSchemasKey:
-				var x schemas
-				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "schemas": %w`, err)
+				var val schemas
+				if err := dec.Decode(&val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, EnterpriseUserSchemasKey, err)
 				}
-				v.schemas = x
+				v.schemas = &val
 			default:
-				var x interface{}
-				if rx, ok := registry.Get(tok); ok {
-					x = rx
-					if err := dec.Decode(x); err != nil {
-						return fmt.Errorf(`failed to decode value for key %q: %w`, tok, err)
-					}
-				} else {
-					if err := dec.Decode(&x); err != nil {
-						return fmt.Errorf(`failed to decode value for key %q: %w`, tok, err)
-					}
+				var val interface{}
+				if err := dec.Decode(&val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, tok, err)
 				}
-				if privateParams == nil {
-					privateParams = make(map[string]interface{})
+				if v.extra == nil {
+					v.extra = make(map[string]interface{})
 				}
-				privateParams[tok] = x
+				v.extra[tok] = val
 			}
 		}
 	}
-	if privateParams != nil {
-		v.privateParams = privateParams
-	}
 	return nil
 }
 
-func (v *EnterpriseUser) AsMap(dst map[string]interface{}) error {
-	for _, pair := range v.makePairs() {
-		dst[pair.Key] = pair.Value
-	}
-	return nil
-}
-
-// EnterpriseUserBuilder creates a EnterpriseUser resource
 type EnterpriseUserBuilder struct {
-	once      sync.Once
-	mu        sync.Mutex
-	err       error
-	validator EnterpriseUserValidator
-	object    *EnterpriseUser
+	mu     sync.Mutex
+	err    error
+	once   sync.Once
+	object *EnterpriseUser
 }
 
-func (b *Builder) EnterpriseUser() *EnterpriseUserBuilder {
-	return NewEnterpriseUserBuilder()
-}
-
+// NewEnterpriseUserBuilder creates a new EnterpriseUserBuilder instance.
+// EnterpriseUserBuilder is safe to be used uninitialized as well.
 func NewEnterpriseUserBuilder() *EnterpriseUserBuilder {
-	var b EnterpriseUserBuilder
-	b.init()
-	return &b
+	return &EnterpriseUserBuilder{}
 }
 
-func (b *EnterpriseUserBuilder) From(in *EnterpriseUser) *EnterpriseUserBuilder {
-	b.once.Do(b.init)
-	b.object = in.Clone()
-	return b
-}
-
-func (b *EnterpriseUserBuilder) init() {
+func (b *EnterpriseUserBuilder) initialize() {
 	b.err = nil
-	b.validator = nil
 	b.object = &EnterpriseUser{}
 }
-
-func (b *EnterpriseUserBuilder) CostCenter(v string) *EnterpriseUserBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	if err := b.object.Set("costCenter", v); err != nil {
-		b.err = err
-	}
+func (b *EnterpriseUserBuilder) CostCenter(in string) *EnterpriseUserBuilder {
+	b.once.Do(b.initialize)
+	_ = b.object.Set(EnterpriseUserCostCenterKey, in)
 	return b
 }
-
-func (b *EnterpriseUserBuilder) Department(v string) *EnterpriseUserBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	if err := b.object.Set("department", v); err != nil {
-		b.err = err
-	}
+func (b *EnterpriseUserBuilder) Department(in string) *EnterpriseUserBuilder {
+	b.once.Do(b.initialize)
+	_ = b.object.Set(EnterpriseUserDepartmentKey, in)
 	return b
 }
-
-func (b *EnterpriseUserBuilder) Division(v string) *EnterpriseUserBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	if err := b.object.Set("division", v); err != nil {
-		b.err = err
-	}
+func (b *EnterpriseUserBuilder) Division(in string) *EnterpriseUserBuilder {
+	b.once.Do(b.initialize)
+	_ = b.object.Set(EnterpriseUserDivisionKey, in)
 	return b
 }
-
-func (b *EnterpriseUserBuilder) EmployeeNumber(v string) *EnterpriseUserBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	if err := b.object.Set("employeeNumber", v); err != nil {
-		b.err = err
-	}
+func (b *EnterpriseUserBuilder) EmployeeNumber(in string) *EnterpriseUserBuilder {
+	b.once.Do(b.initialize)
+	_ = b.object.Set(EnterpriseUserEmployeeNumberKey, in)
 	return b
 }
-
-func (b *EnterpriseUserBuilder) Manager(v *EnterpriseManager) *EnterpriseUserBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	if err := b.object.Set("manager", v); err != nil {
-		b.err = err
-	}
+func (b *EnterpriseUserBuilder) Manager(in *EnterpriseManager) *EnterpriseUserBuilder {
+	b.once.Do(b.initialize)
+	_ = b.object.Set(EnterpriseUserManagerKey, in)
 	return b
 }
-
-func (b *EnterpriseUserBuilder) Organization(v string) *EnterpriseUserBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	if err := b.object.Set("organization", v); err != nil {
-		b.err = err
-	}
+func (b *EnterpriseUserBuilder) Organization(in string) *EnterpriseUserBuilder {
+	b.once.Do(b.initialize)
+	_ = b.object.Set(EnterpriseUserOrganizationKey, in)
 	return b
 }
-
-func (b *EnterpriseUserBuilder) Schemas(v ...string) *EnterpriseUserBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	for _, schema := range v {
-		b.object.schemas.Add(schema)
-	}
-	return b
-}
-
-func (b *EnterpriseUserBuilder) Extension(uri string, value interface{}) *EnterpriseUserBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	b.object.schemas.Add(uri)
-	if err := b.object.Set(uri, value); err != nil {
-		b.err = err
-	}
-	return b
-}
-
-func (b *EnterpriseUserBuilder) Validator(v EnterpriseUserValidator) *EnterpriseUserBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	b.validator = v
+func (b *EnterpriseUserBuilder) Schemas(in ...string) *EnterpriseUserBuilder {
+	b.once.Do(b.initialize)
+	_ = b.object.Set(EnterpriseUserSchemasKey, in)
 	return b
 }
 
 func (b *EnterpriseUserBuilder) Build() (*EnterpriseUser, error) {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	object := b.object
-	validator := b.validator
 	err := b.err
-	b.once = sync.Once{}
 	if err != nil {
 		return nil, err
 	}
-	if object == nil {
-		return nil, fmt.Errorf("resource.EnterpriseUserBuilder: object was not initialized")
-	}
-	if validator == nil {
-		validator = DefaultEnterpriseUserValidator
-	}
-	if err := validator.Validate(object); err != nil {
-		return nil, err
-	}
-	return object, nil
+	obj := b.object
+	b.once = sync.Once{}
+	b.once.Do(b.initialize)
+	return obj, nil
 }
 
 func (b *EnterpriseUserBuilder) MustBuild() *EnterpriseUser {
@@ -643,4 +492,35 @@ func (b *EnterpriseUserBuilder) MustBuild() *EnterpriseUser {
 		panic(err)
 	}
 	return object
+}
+
+func (v *EnterpriseUser) AsMap(dst map[string]interface{}) error {
+	for _, pair := range v.makePairs() {
+		dst[pair.Name] = pair.Value
+	}
+	return nil
+}
+
+// GetExtension takes into account extension uri, and fetches
+// the specified attribute from the extension object
+func (v *EnterpriseUser) GetExtension(name, uri string, dst interface{}) error {
+	if uri == "" {
+		return v.Get(name, dst)
+	}
+	var ext interface{}
+	if err := v.Get(uri, ext); err != nil {
+		return fmt.Errorf(`failed to fetch extension %q: %w`, uri, err)
+	}
+
+	getter, ok := ext.(interface {
+		Get(string, interface{}) error
+	})
+	if !ok {
+		return fmt.Errorf(`extension does not implement Get(string, interface{}) error`)
+	}
+	return getter.Get(name, dst)
+}
+
+func (b *Builder) EnterpriseUser() *EnterpriseUserBuilder {
+	return &EnterpriseUserBuilder{}
 }

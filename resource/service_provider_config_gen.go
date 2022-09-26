@@ -6,19 +6,8 @@ import (
 	"fmt"
 	"sort"
 	"sync"
-)
 
-// JSON key names for ServiceProviderConfig resource
-const (
-	ServiceProviderConfigAuthenticationSchemesKey = "authenticationSchemes"
-	ServiceProviderConfigBulkKey                  = "bulk"
-	ServiceProviderConfigChangePasswordKey        = "changePassword"
-	ServiceProviderConfigDocumentationURIKey      = "documentationUri"
-	ServiceProviderConfigETagKey                  = "etag"
-	ServiceProviderConfigFilterKey                = "filter"
-	ServiceProviderConfigPatchKey                 = "patch"
-	ServiceProviderConfigSchemasKey               = "schemas"
-	ServiceProviderConfigSortKey                  = "sort"
+	"github.com/lestrrat-go/blackmagic"
 )
 
 const ServiceProviderConfigSchemaURI = "urn:ietf:params:scim:schemas:core:2.0:ServiceProviderConfig"
@@ -28,76 +17,163 @@ func init() {
 }
 
 type ServiceProviderConfig struct {
+	mu                    sync.RWMutex
 	authenticationSchemes []*AuthenticationScheme
-	bulk                  *BulkSupport
+	bulkSupport           *BulkSupport
 	changePassword        *GenericSupport
-	documentationURI      *string
+	documentationUri      *string
 	etag                  *GenericSupport
 	filter                *FilterSupport
 	patch                 *GenericSupport
-	schemas               schemas
+	schemas               *schemas
 	sort                  *GenericSupport
-	privateParams         map[string]interface{}
-	mu                    sync.RWMutex
+	extra                 map[string]interface{}
 }
 
-type ServiceProviderConfigValidator interface {
-	Validate(*ServiceProviderConfig) error
+// These constants are used when the JSON field name is used.
+// Their use is not strictly required, but certain linters
+// complain about repeated constants, and therefore internally
+// this used throughout
+const (
+	ServiceProviderConfigAuthenticationSchemesKey = "authenticationSchemes"
+	ServiceProviderConfigBulkSupportKey           = "bulkSupport"
+	ServiceProviderConfigChangePasswordKey        = "changePassword"
+	ServiceProviderConfigDocumentationURIKey      = "documentationUri"
+	ServiceProviderConfigETagKey                  = "etag"
+	ServiceProviderConfigFilterKey                = "filter"
+	ServiceProviderConfigPatchKey                 = "patch"
+	ServiceProviderConfigSchemasKey               = "schemas"
+	ServiceProviderConfigSortKey                  = "sort"
+)
+
+// Get retrieves the value associated with a key
+func (v *ServiceProviderConfig) Get(key string, dst interface{}) error {
+	switch key {
+	case ServiceProviderConfigAuthenticationSchemesKey:
+		if val := v.authenticationSchemes; val != nil {
+			return blackmagic.AssignIfCompatible(dst, val)
+		}
+	case ServiceProviderConfigBulkSupportKey:
+		if val := v.bulkSupport; val != nil {
+			return blackmagic.AssignIfCompatible(dst, val)
+		}
+	case ServiceProviderConfigChangePasswordKey:
+		if val := v.changePassword; val != nil {
+			return blackmagic.AssignIfCompatible(dst, val)
+		}
+	case ServiceProviderConfigDocumentationURIKey:
+		if val := v.documentationUri; val != nil {
+			return blackmagic.AssignIfCompatible(dst, *val)
+		}
+	case ServiceProviderConfigETagKey:
+		if val := v.etag; val != nil {
+			return blackmagic.AssignIfCompatible(dst, val)
+		}
+	case ServiceProviderConfigFilterKey:
+		if val := v.filter; val != nil {
+			return blackmagic.AssignIfCompatible(dst, val)
+		}
+	case ServiceProviderConfigPatchKey:
+		if val := v.patch; val != nil {
+			return blackmagic.AssignIfCompatible(dst, val)
+		}
+	case ServiceProviderConfigSchemasKey:
+		if val := v.schemas; val != nil {
+			return blackmagic.AssignIfCompatible(dst, *val)
+		}
+	case ServiceProviderConfigSortKey:
+		if val := v.sort; val != nil {
+			return blackmagic.AssignIfCompatible(dst, val)
+		}
+	default:
+		if v.extra != nil {
+			val, ok := v.extra[key]
+			if ok {
+				return blackmagic.AssignIfCompatible(dst, val)
+			}
+		}
+	}
+	return fmt.Errorf(`no such key %q`, key)
 }
 
-type ServiceProviderConfigValidateFunc func(v *ServiceProviderConfig) error
-
-func (f ServiceProviderConfigValidateFunc) Validate(v *ServiceProviderConfig) error {
-	return f(v)
-}
-
-var DefaultServiceProviderConfigValidator ServiceProviderConfigValidator = ServiceProviderConfigValidateFunc(func(v *ServiceProviderConfig) error {
-	if v.authenticationSchemes == nil {
-		return fmt.Errorf(`required field "authenticationSchemes" is missing in "ServiceProviderConfig"`)
-	}
-	if v.bulk == nil {
-		return fmt.Errorf(`required field "bulk" is missing in "ServiceProviderConfig"`)
-	}
-	if v.changePassword == nil {
-		return fmt.Errorf(`required field "changePassword" is missing in "ServiceProviderConfig"`)
-	}
-	if v.etag == nil {
-		return fmt.Errorf(`required field "etag" is missing in "ServiceProviderConfig"`)
-	}
-	if v.filter == nil {
-		return fmt.Errorf(`required field "filter" is missing in "ServiceProviderConfig"`)
-	}
-	if v.patch == nil {
-		return fmt.Errorf(`required field "patch" is missing in "ServiceProviderConfig"`)
-	}
-	if v.sort == nil {
-		return fmt.Errorf(`required field "sort" is missing in "ServiceProviderConfig"`)
+// Set sets the value of the specified field. The name must be a JSON
+// field name, not the Go name
+func (v *ServiceProviderConfig) Set(key string, value interface{}) error {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	switch key {
+	case ServiceProviderConfigAuthenticationSchemesKey:
+		converted, ok := value.([]*AuthenticationScheme)
+		if !ok {
+			return fmt.Errorf(`expected value of type []*AuthenticationScheme for field authenticationSchemes, got %T`, value)
+		}
+		v.authenticationSchemes = converted
+	case ServiceProviderConfigBulkSupportKey:
+		converted, ok := value.(*BulkSupport)
+		if !ok {
+			return fmt.Errorf(`expected value of type *BulkSupport for field bulkSupport, got %T`, value)
+		}
+		v.bulkSupport = converted
+	case ServiceProviderConfigChangePasswordKey:
+		converted, ok := value.(*GenericSupport)
+		if !ok {
+			return fmt.Errorf(`expected value of type *GenericSupport for field changePassword, got %T`, value)
+		}
+		v.changePassword = converted
+	case ServiceProviderConfigDocumentationURIKey:
+		converted, ok := value.(string)
+		if !ok {
+			return fmt.Errorf(`expected value of type string for field documentationUri, got %T`, value)
+		}
+		v.documentationUri = &converted
+	case ServiceProviderConfigETagKey:
+		converted, ok := value.(*GenericSupport)
+		if !ok {
+			return fmt.Errorf(`expected value of type *GenericSupport for field etag, got %T`, value)
+		}
+		v.etag = converted
+	case ServiceProviderConfigFilterKey:
+		converted, ok := value.(*FilterSupport)
+		if !ok {
+			return fmt.Errorf(`expected value of type *FilterSupport for field filter, got %T`, value)
+		}
+		v.filter = converted
+	case ServiceProviderConfigPatchKey:
+		converted, ok := value.(*GenericSupport)
+		if !ok {
+			return fmt.Errorf(`expected value of type *GenericSupport for field patch, got %T`, value)
+		}
+		v.patch = converted
+	case ServiceProviderConfigSchemasKey:
+		converted, ok := value.(schemas)
+		if !ok {
+			return fmt.Errorf(`expected value of type schemas for field schemas, got %T`, value)
+		}
+		v.schemas = &converted
+	case ServiceProviderConfigSortKey:
+		converted, ok := value.(*GenericSupport)
+		if !ok {
+			return fmt.Errorf(`expected value of type *GenericSupport for field sort, got %T`, value)
+		}
+		v.sort = converted
+	default:
+		if v.extra == nil {
+			v.extra = make(map[string]interface{})
+		}
+		v.extra[key] = value
 	}
 	return nil
-})
-
+}
 func (v *ServiceProviderConfig) HasAuthenticationSchemes() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.authenticationSchemes != nil
 }
 
-func (v *ServiceProviderConfig) AuthenticationSchemes() []*AuthenticationScheme {
+func (v *ServiceProviderConfig) HasBulkSupport() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return v.authenticationSchemes
-}
-
-func (v *ServiceProviderConfig) HasBulk() bool {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	return v.bulk != nil
-}
-
-func (v *ServiceProviderConfig) Bulk() *BulkSupport {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	return v.bulk
+	return v.bulkSupport != nil
 }
 
 func (v *ServiceProviderConfig) HasChangePassword() bool {
@@ -106,25 +182,10 @@ func (v *ServiceProviderConfig) HasChangePassword() bool {
 	return v.changePassword != nil
 }
 
-func (v *ServiceProviderConfig) ChangePassword() *GenericSupport {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	return v.changePassword
-}
-
 func (v *ServiceProviderConfig) HasDocumentationURI() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return v.documentationURI != nil
-}
-
-func (v *ServiceProviderConfig) DocumentationURI() string {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	if v.documentationURI == nil {
-		return ""
-	}
-	return *(v.documentationURI)
+	return v.documentationUri != nil
 }
 
 func (v *ServiceProviderConfig) HasETag() bool {
@@ -133,22 +194,10 @@ func (v *ServiceProviderConfig) HasETag() bool {
 	return v.etag != nil
 }
 
-func (v *ServiceProviderConfig) ETag() *GenericSupport {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	return v.etag
-}
-
 func (v *ServiceProviderConfig) HasFilter() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.filter != nil
-}
-
-func (v *ServiceProviderConfig) Filter() *FilterSupport {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	return v.filter
 }
 
 func (v *ServiceProviderConfig) HasPatch() bool {
@@ -157,22 +206,10 @@ func (v *ServiceProviderConfig) HasPatch() bool {
 	return v.patch != nil
 }
 
-func (v *ServiceProviderConfig) Patch() *GenericSupport {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	return v.patch
-}
-
 func (v *ServiceProviderConfig) HasSchemas() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return true
-}
-
-func (v *ServiceProviderConfig) Schemas() []string {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	return v.schemas.List()
+	return v.schemas != nil
 }
 
 func (v *ServiceProviderConfig) HasSort() bool {
@@ -181,50 +218,162 @@ func (v *ServiceProviderConfig) HasSort() bool {
 	return v.sort != nil
 }
 
+func (v *ServiceProviderConfig) AuthenticationSchemes() []*AuthenticationScheme {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	if val := v.authenticationSchemes; val != nil {
+		return val
+	}
+	return nil
+}
+
+func (v *ServiceProviderConfig) BulkSupport() *BulkSupport {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	if val := v.bulkSupport; val != nil {
+		return val
+	}
+	return nil
+}
+
+func (v *ServiceProviderConfig) ChangePassword() *GenericSupport {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	if val := v.changePassword; val != nil {
+		return val
+	}
+	return nil
+}
+
+func (v *ServiceProviderConfig) DocumentationURI() string {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	if val := v.documentationUri; val != nil {
+		return *val
+	}
+	return ""
+}
+
+func (v *ServiceProviderConfig) ETag() *GenericSupport {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	if val := v.etag; val != nil {
+		return val
+	}
+	return nil
+}
+
+func (v *ServiceProviderConfig) Filter() *FilterSupport {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	if val := v.filter; val != nil {
+		return val
+	}
+	return nil
+}
+
+func (v *ServiceProviderConfig) Patch() *GenericSupport {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	if val := v.patch; val != nil {
+		return val
+	}
+	return nil
+}
+
+func (v *ServiceProviderConfig) Schemas() []string {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	if val := v.schemas; val != nil {
+		return val.Get()
+	}
+	return nil
+}
+
 func (v *ServiceProviderConfig) Sort() *GenericSupport {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return v.sort
+	if val := v.sort; val != nil {
+		return val
+	}
+	return nil
 }
 
-func (v *ServiceProviderConfig) makePairs() []pair {
-	pairs := make([]pair, 0, 9)
-	if v.authenticationSchemes != nil {
-		pairs = append(pairs, pair{Key: "authenticationSchemes", Value: v.authenticationSchemes})
+// Remove removes the value associated with a key
+func (v *ServiceProviderConfig) Remove(key string) error {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+
+	switch key {
+	case ServiceProviderConfigAuthenticationSchemesKey:
+		v.authenticationSchemes = nil
+	case ServiceProviderConfigBulkSupportKey:
+		v.bulkSupport = nil
+	case ServiceProviderConfigChangePasswordKey:
+		v.changePassword = nil
+	case ServiceProviderConfigDocumentationURIKey:
+		v.documentationUri = nil
+	case ServiceProviderConfigETagKey:
+		v.etag = nil
+	case ServiceProviderConfigFilterKey:
+		v.filter = nil
+	case ServiceProviderConfigPatchKey:
+		v.patch = nil
+	case ServiceProviderConfigSchemasKey:
+		v.schemas = nil
+	case ServiceProviderConfigSortKey:
+		v.sort = nil
+	default:
+		delete(v.extra, key)
 	}
-	if v.bulk != nil {
-		pairs = append(pairs, pair{Key: "bulk", Value: v.bulk})
+
+	return nil
+}
+
+func (v *ServiceProviderConfig) makePairs() []*fieldPair {
+	pairs := make([]*fieldPair, 0, 9)
+	if val := v.authenticationSchemes; len(val) > 0 {
+		pairs = append(pairs, &fieldPair{Name: ServiceProviderConfigAuthenticationSchemesKey, Value: val})
 	}
-	if v.changePassword != nil {
-		pairs = append(pairs, pair{Key: "changePassword", Value: v.changePassword})
+	if val := v.bulkSupport; val != nil {
+		pairs = append(pairs, &fieldPair{Name: ServiceProviderConfigBulkSupportKey, Value: val})
 	}
-	if v.documentationURI != nil {
-		pairs = append(pairs, pair{Key: "documentationUri", Value: *(v.documentationURI)})
+	if val := v.changePassword; val != nil {
+		pairs = append(pairs, &fieldPair{Name: ServiceProviderConfigChangePasswordKey, Value: val})
 	}
-	if v.etag != nil {
-		pairs = append(pairs, pair{Key: "etag", Value: v.etag})
+	if val := v.documentationUri; val != nil {
+		pairs = append(pairs, &fieldPair{Name: ServiceProviderConfigDocumentationURIKey, Value: *val})
 	}
-	if v.filter != nil {
-		pairs = append(pairs, pair{Key: "filter", Value: v.filter})
+	if val := v.etag; val != nil {
+		pairs = append(pairs, &fieldPair{Name: ServiceProviderConfigETagKey, Value: val})
 	}
-	if v.patch != nil {
-		pairs = append(pairs, pair{Key: "patch", Value: v.patch})
+	if val := v.filter; val != nil {
+		pairs = append(pairs, &fieldPair{Name: ServiceProviderConfigFilterKey, Value: val})
 	}
-	if v.schemas != nil {
-		pairs = append(pairs, pair{Key: "schemas", Value: v.schemas})
+	if val := v.patch; val != nil {
+		pairs = append(pairs, &fieldPair{Name: ServiceProviderConfigPatchKey, Value: val})
 	}
-	if v.sort != nil {
-		pairs = append(pairs, pair{Key: "sort", Value: v.sort})
+	if val := v.schemas; val != nil {
+		pairs = append(pairs, &fieldPair{Name: ServiceProviderConfigSchemasKey, Value: *val})
 	}
-	for k, v := range v.privateParams {
-		pairs = append(pairs, pair{Key: k, Value: v})
+	if val := v.sort; val != nil {
+		pairs = append(pairs, &fieldPair{Name: ServiceProviderConfigSortKey, Value: val})
 	}
+
+	for key, val := range v.extra {
+		pairs = append(pairs, &fieldPair{Name: key, Value: val})
+	}
+
 	sort.Slice(pairs, func(i, j int) bool {
-		return pairs[i].Key < pairs[j].Key
+		return pairs[i].Name < pairs[j].Name
 	})
 	return pairs
 }
 
+// MarshalJSON serializes ServiceProviderConfig into JSON.
+// All pre-declared fields are included as long as a value is
+// assigned to them, as well as all extra fields. All of these
+// fields are sorted in alphabetical order.
 func (v *ServiceProviderConfig) MarshalJSON() ([]byte, error) {
 	pairs := v.makePairs()
 
@@ -233,522 +382,196 @@ func (v *ServiceProviderConfig) MarshalJSON() ([]byte, error) {
 	buf.WriteByte('{')
 	for i, pair := range pairs {
 		if i > 0 {
-			buf.WriteRune(',')
+			buf.WriteByte(',')
 		}
-		fmt.Fprintf(&buf, "%q:", pair.Key)
-		if err := enc.Encode(pair.Value); err != nil {
-			return nil, fmt.Errorf("failed to encode value for key %q: %w", pair.Key, err)
-		}
+		enc.Encode(pair.Name)
+		buf.WriteByte(':')
+		enc.Encode(pair.Value)
 	}
 	buf.WriteByte('}')
 	return buf.Bytes(), nil
 }
 
-func (v *ServiceProviderConfig) Get(name string, options ...GetOption) (interface{}, bool) {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-
-	var ext string
-	//nolint:forcetypeassert
-	for _, option := range options {
-		switch option.Ident() {
-		case identExtension{}:
-			ext = option.Value().(string)
-		}
-	}
-	switch name {
-	case ServiceProviderConfigAuthenticationSchemesKey:
-		if v.authenticationSchemes == nil {
-			return nil, false
-		}
-		return v.authenticationSchemes, true
-	case ServiceProviderConfigBulkKey:
-		if v.bulk == nil {
-			return nil, false
-		}
-		return v.bulk, true
-	case ServiceProviderConfigChangePasswordKey:
-		if v.changePassword == nil {
-			return nil, false
-		}
-		return v.changePassword, true
-	case ServiceProviderConfigDocumentationURIKey:
-		if v.documentationURI == nil {
-			return nil, false
-		}
-		return *(v.documentationURI), true
-	case ServiceProviderConfigETagKey:
-		if v.etag == nil {
-			return nil, false
-		}
-		return v.etag, true
-	case ServiceProviderConfigFilterKey:
-		if v.filter == nil {
-			return nil, false
-		}
-		return v.filter, true
-	case ServiceProviderConfigPatchKey:
-		if v.patch == nil {
-			return nil, false
-		}
-		return v.patch, true
-	case ServiceProviderConfigSchemasKey:
-		if v.schemas == nil {
-			return nil, false
-		}
-		return v.schemas, true
-	case ServiceProviderConfigSortKey:
-		if v.sort == nil {
-			return nil, false
-		}
-		return v.sort, true
-	default:
-		pp := v.privateParams
-		if pp == nil {
-			return nil, false
-		}
-		if ext == "" {
-			ret, ok := pp[name]
-			return ret, ok
-		}
-		obj, ok := pp[ext]
-		if !ok {
-			return nil, false
-		}
-		getter, ok := obj.(interface {
-			Get(string, ...GetOption) (interface{}, bool)
-		})
-		if !ok {
-			return nil, false
-		}
-		return getter.Get(name)
-	}
-}
-
-func (v *ServiceProviderConfig) Set(name string, value interface{}) error {
-	v.mu.Lock()
-	defer v.mu.Unlock()
-	switch name {
-	case ServiceProviderConfigAuthenticationSchemesKey:
-		var tmp []*AuthenticationScheme
-		tmp, ok := value.([]*AuthenticationScheme)
-		if !ok {
-			return fmt.Errorf(`expected []*AuthenticationScheme for field "authenticationSchemes", but got %T`, value)
-		}
-		v.authenticationSchemes = tmp
-		return nil
-	case ServiceProviderConfigBulkKey:
-		var tmp *BulkSupport
-		tmp, ok := value.(*BulkSupport)
-		if !ok {
-			return fmt.Errorf(`expected *BulkSupport for field "bulk", but got %T`, value)
-		}
-		v.bulk = tmp
-		return nil
-	case ServiceProviderConfigChangePasswordKey:
-		var tmp *GenericSupport
-		tmp, ok := value.(*GenericSupport)
-		if !ok {
-			return fmt.Errorf(`expected *GenericSupport for field "changePassword", but got %T`, value)
-		}
-		v.changePassword = tmp
-		return nil
-	case ServiceProviderConfigDocumentationURIKey:
-		var tmp string
-		tmp, ok := value.(string)
-		if !ok {
-			return fmt.Errorf(`expected string for field "documentationUri", but got %T`, value)
-		}
-		v.documentationURI = &tmp
-		return nil
-	case ServiceProviderConfigETagKey:
-		var tmp *GenericSupport
-		tmp, ok := value.(*GenericSupport)
-		if !ok {
-			return fmt.Errorf(`expected *GenericSupport for field "etag", but got %T`, value)
-		}
-		v.etag = tmp
-		return nil
-	case ServiceProviderConfigFilterKey:
-		var tmp *FilterSupport
-		tmp, ok := value.(*FilterSupport)
-		if !ok {
-			return fmt.Errorf(`expected *FilterSupport for field "filter", but got %T`, value)
-		}
-		v.filter = tmp
-		return nil
-	case ServiceProviderConfigPatchKey:
-		var tmp *GenericSupport
-		tmp, ok := value.(*GenericSupport)
-		if !ok {
-			return fmt.Errorf(`expected *GenericSupport for field "patch", but got %T`, value)
-		}
-		v.patch = tmp
-		return nil
-	case ServiceProviderConfigSchemasKey:
-		var tmp schemas
-		tmp, ok := value.(schemas)
-		if !ok {
-			return fmt.Errorf(`expected schemas for field "schemas", but got %T`, value)
-		}
-		v.schemas = tmp
-		return nil
-	case ServiceProviderConfigSortKey:
-		var tmp *GenericSupport
-		tmp, ok := value.(*GenericSupport)
-		if !ok {
-			return fmt.Errorf(`expected *GenericSupport for field "sort", but got %T`, value)
-		}
-		v.sort = tmp
-		return nil
-	default:
-		pp := v.privateParams
-		if pp == nil {
-			pp = make(map[string]interface{})
-			v.privateParams = pp
-		}
-		pp[name] = value
-		return nil
-	}
-}
-
-func (v *ServiceProviderConfig) Clone() *ServiceProviderConfig {
-	v.mu.Lock()
-	defer v.mu.Unlock()
-	return &ServiceProviderConfig{
-		authenticationSchemes: v.authenticationSchemes,
-		bulk:                  v.bulk,
-		changePassword:        v.changePassword,
-		documentationURI:      v.documentationURI,
-		etag:                  v.etag,
-		filter:                v.filter,
-		patch:                 v.patch,
-		schemas:               v.schemas,
-		sort:                  v.sort,
-	}
-}
-
+// UnmarshalJSON deserializes a piece of JSON data into ServiceProviderConfig.
+//
+// Pre-defined fields must be deserializable via "encoding/json" to their
+// respective Go types, otherwise an error is returned.
+//
+// Extra fields are stored in a special "extra" storage, which can only
+// be accessed via `Get()` and `Set()` methods.
 func (v *ServiceProviderConfig) UnmarshalJSON(data []byte) error {
+	v.mu.Lock()
+	defer v.mu.Unlock()
 	v.authenticationSchemes = nil
-	v.bulk = nil
+	v.bulkSupport = nil
 	v.changePassword = nil
-	v.documentationURI = nil
+	v.documentationUri = nil
 	v.etag = nil
 	v.filter = nil
 	v.patch = nil
 	v.schemas = nil
 	v.sort = nil
-	v.privateParams = nil
+
 	dec := json.NewDecoder(bytes.NewReader(data))
-	{ // first token
-		tok, err := dec.Token()
-		if err != nil {
-			return fmt.Errorf("failed to read next token: %s", err)
-		}
-		tok, ok := tok.(json.Delim)
-		if !ok {
-			return fmt.Errorf("expected first token to be '{', got %c", tok)
-		}
-	}
-	var privateParams map[string]interface{}
 
 LOOP:
 	for {
 		tok, err := dec.Token()
 		if err != nil {
-			return fmt.Errorf("failed to read next token: %s", err)
+			return fmt.Errorf(`error reading JSON token: %w`, err)
 		}
 		switch tok := tok.(type) {
 		case json.Delim:
-			if tok == '}' {
+			if tok == '}' { // end of object
 				break LOOP
-			} else {
-				return fmt.Errorf("unexpected token %c found", tok)
+			}
+			// we should only get into this clause at the very beginning, and just once
+			if tok != '{' {
+				return fmt.Errorf(`expected '{', but got '%c'`, tok)
 			}
 		case string:
 			switch tok {
 			case ServiceProviderConfigAuthenticationSchemesKey:
-				var x []*AuthenticationScheme
-				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "authenticationSchemes": %w`, err)
+				var val []*AuthenticationScheme
+				if err := dec.Decode(&val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, ServiceProviderConfigAuthenticationSchemesKey, err)
 				}
-				v.authenticationSchemes = x
-			case ServiceProviderConfigBulkKey:
-				var x *BulkSupport
-				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "bulk": %w`, err)
+				v.authenticationSchemes = val
+			case ServiceProviderConfigBulkSupportKey:
+				var val *BulkSupport
+				if err := dec.Decode(&val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, ServiceProviderConfigBulkSupportKey, err)
 				}
-				v.bulk = x
+				v.bulkSupport = val
 			case ServiceProviderConfigChangePasswordKey:
-				var x *GenericSupport
-				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "changePassword": %w`, err)
+				var val *GenericSupport
+				if err := dec.Decode(&val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, ServiceProviderConfigChangePasswordKey, err)
 				}
-				v.changePassword = x
+				v.changePassword = val
 			case ServiceProviderConfigDocumentationURIKey:
-				var x string
-				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "documentationUri": %w`, err)
+				var val string
+				if err := dec.Decode(&val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, ServiceProviderConfigDocumentationURIKey, err)
 				}
-				v.documentationURI = &x
+				v.documentationUri = &val
 			case ServiceProviderConfigETagKey:
-				var x *GenericSupport
-				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "etag": %w`, err)
+				var val *GenericSupport
+				if err := dec.Decode(&val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, ServiceProviderConfigETagKey, err)
 				}
-				v.etag = x
+				v.etag = val
 			case ServiceProviderConfigFilterKey:
-				var x *FilterSupport
-				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "filter": %w`, err)
+				var val *FilterSupport
+				if err := dec.Decode(&val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, ServiceProviderConfigFilterKey, err)
 				}
-				v.filter = x
+				v.filter = val
 			case ServiceProviderConfigPatchKey:
-				var x *GenericSupport
-				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "patch": %w`, err)
+				var val *GenericSupport
+				if err := dec.Decode(&val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, ServiceProviderConfigPatchKey, err)
 				}
-				v.patch = x
+				v.patch = val
 			case ServiceProviderConfigSchemasKey:
-				var x schemas
-				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "schemas": %w`, err)
+				var val schemas
+				if err := dec.Decode(&val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, ServiceProviderConfigSchemasKey, err)
 				}
-				v.schemas = x
+				v.schemas = &val
 			case ServiceProviderConfigSortKey:
-				var x *GenericSupport
-				if err := dec.Decode(&x); err != nil {
-					return fmt.Errorf(`failed to decode value for key "sort": %w`, err)
+				var val *GenericSupport
+				if err := dec.Decode(&val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, ServiceProviderConfigSortKey, err)
 				}
-				v.sort = x
+				v.sort = val
 			default:
-				var x interface{}
-				if rx, ok := registry.Get(tok); ok {
-					x = rx
-					if err := dec.Decode(x); err != nil {
-						return fmt.Errorf(`failed to decode value for key %q: %w`, tok, err)
-					}
-				} else {
-					if err := dec.Decode(&x); err != nil {
-						return fmt.Errorf(`failed to decode value for key %q: %w`, tok, err)
-					}
+				var val interface{}
+				if err := dec.Decode(&val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, tok, err)
 				}
-				if privateParams == nil {
-					privateParams = make(map[string]interface{})
+				if v.extra == nil {
+					v.extra = make(map[string]interface{})
 				}
-				privateParams[tok] = x
+				v.extra[tok] = val
 			}
 		}
 	}
-	if privateParams != nil {
-		v.privateParams = privateParams
-	}
 	return nil
 }
 
-func (v *ServiceProviderConfig) AsMap(dst map[string]interface{}) error {
-	for _, pair := range v.makePairs() {
-		dst[pair.Key] = pair.Value
-	}
-	return nil
-}
-
-// ServiceProviderConfigBuilder creates a ServiceProviderConfig resource
 type ServiceProviderConfigBuilder struct {
-	once      sync.Once
-	mu        sync.Mutex
-	err       error
-	validator ServiceProviderConfigValidator
-	object    *ServiceProviderConfig
+	mu     sync.Mutex
+	err    error
+	once   sync.Once
+	object *ServiceProviderConfig
 }
 
-func (b *Builder) ServiceProviderConfig() *ServiceProviderConfigBuilder {
-	return NewServiceProviderConfigBuilder()
-}
-
+// NewServiceProviderConfigBuilder creates a new ServiceProviderConfigBuilder instance.
+// ServiceProviderConfigBuilder is safe to be used uninitialized as well.
 func NewServiceProviderConfigBuilder() *ServiceProviderConfigBuilder {
-	var b ServiceProviderConfigBuilder
-	b.init()
-	return &b
+	return &ServiceProviderConfigBuilder{}
 }
 
-func (b *ServiceProviderConfigBuilder) From(in *ServiceProviderConfig) *ServiceProviderConfigBuilder {
-	b.once.Do(b.init)
-	b.object = in.Clone()
-	return b
-}
-
-func (b *ServiceProviderConfigBuilder) init() {
+func (b *ServiceProviderConfigBuilder) initialize() {
 	b.err = nil
-	b.validator = nil
 	b.object = &ServiceProviderConfig{}
-
-	b.object.schemas = make(schemas)
-	b.object.schemas.Add(ServiceProviderConfigSchemaURI)
 }
-
-func (b *ServiceProviderConfigBuilder) AuthenticationSchemes(v ...*AuthenticationScheme) *ServiceProviderConfigBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	if err := b.object.Set("authenticationSchemes", v); err != nil {
-		b.err = err
-	}
+func (b *ServiceProviderConfigBuilder) AuthenticationSchemes(in ...*AuthenticationScheme) *ServiceProviderConfigBuilder {
+	b.once.Do(b.initialize)
+	_ = b.object.Set(ServiceProviderConfigAuthenticationSchemesKey, in)
 	return b
 }
-
-func (b *ServiceProviderConfigBuilder) Bulk(v *BulkSupport) *ServiceProviderConfigBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	if err := b.object.Set("bulk", v); err != nil {
-		b.err = err
-	}
+func (b *ServiceProviderConfigBuilder) BulkSupport(in *BulkSupport) *ServiceProviderConfigBuilder {
+	b.once.Do(b.initialize)
+	_ = b.object.Set(ServiceProviderConfigBulkSupportKey, in)
 	return b
 }
-
-func (b *ServiceProviderConfigBuilder) ChangePassword(v *GenericSupport) *ServiceProviderConfigBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	if err := b.object.Set("changePassword", v); err != nil {
-		b.err = err
-	}
+func (b *ServiceProviderConfigBuilder) ChangePassword(in *GenericSupport) *ServiceProviderConfigBuilder {
+	b.once.Do(b.initialize)
+	_ = b.object.Set(ServiceProviderConfigChangePasswordKey, in)
 	return b
 }
-
-func (b *ServiceProviderConfigBuilder) DocumentationURI(v string) *ServiceProviderConfigBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	if err := b.object.Set("documentationUri", v); err != nil {
-		b.err = err
-	}
+func (b *ServiceProviderConfigBuilder) DocumentationURI(in string) *ServiceProviderConfigBuilder {
+	b.once.Do(b.initialize)
+	_ = b.object.Set(ServiceProviderConfigDocumentationURIKey, in)
 	return b
 }
-
-func (b *ServiceProviderConfigBuilder) ETag(v *GenericSupport) *ServiceProviderConfigBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	if err := b.object.Set("etag", v); err != nil {
-		b.err = err
-	}
+func (b *ServiceProviderConfigBuilder) ETag(in *GenericSupport) *ServiceProviderConfigBuilder {
+	b.once.Do(b.initialize)
+	_ = b.object.Set(ServiceProviderConfigETagKey, in)
 	return b
 }
-
-func (b *ServiceProviderConfigBuilder) Filter(v *FilterSupport) *ServiceProviderConfigBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	if err := b.object.Set("filter", v); err != nil {
-		b.err = err
-	}
+func (b *ServiceProviderConfigBuilder) Filter(in *FilterSupport) *ServiceProviderConfigBuilder {
+	b.once.Do(b.initialize)
+	_ = b.object.Set(ServiceProviderConfigFilterKey, in)
 	return b
 }
-
-func (b *ServiceProviderConfigBuilder) Patch(v *GenericSupport) *ServiceProviderConfigBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	if err := b.object.Set("patch", v); err != nil {
-		b.err = err
-	}
+func (b *ServiceProviderConfigBuilder) Patch(in *GenericSupport) *ServiceProviderConfigBuilder {
+	b.once.Do(b.initialize)
+	_ = b.object.Set(ServiceProviderConfigPatchKey, in)
 	return b
 }
-
-func (b *ServiceProviderConfigBuilder) Schemas(v ...string) *ServiceProviderConfigBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	for _, schema := range v {
-		b.object.schemas.Add(schema)
-	}
+func (b *ServiceProviderConfigBuilder) Schemas(in ...string) *ServiceProviderConfigBuilder {
+	b.once.Do(b.initialize)
+	_ = b.object.Set(ServiceProviderConfigSchemasKey, in)
 	return b
 }
-
-func (b *ServiceProviderConfigBuilder) Sort(v *GenericSupport) *ServiceProviderConfigBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	if err := b.object.Set("sort", v); err != nil {
-		b.err = err
-	}
-	return b
-}
-
-func (b *ServiceProviderConfigBuilder) Extension(uri string, value interface{}) *ServiceProviderConfigBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	b.object.schemas.Add(uri)
-	if err := b.object.Set(uri, value); err != nil {
-		b.err = err
-	}
-	return b
-}
-
-func (b *ServiceProviderConfigBuilder) Validator(v ServiceProviderConfigValidator) *ServiceProviderConfigBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.once.Do(b.init)
-	if b.err != nil {
-		return b
-	}
-	b.validator = v
+func (b *ServiceProviderConfigBuilder) Sort(in *GenericSupport) *ServiceProviderConfigBuilder {
+	b.once.Do(b.initialize)
+	_ = b.object.Set(ServiceProviderConfigSortKey, in)
 	return b
 }
 
 func (b *ServiceProviderConfigBuilder) Build() (*ServiceProviderConfig, error) {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	object := b.object
-	validator := b.validator
 	err := b.err
-	b.once = sync.Once{}
 	if err != nil {
 		return nil, err
 	}
-	if object == nil {
-		return nil, fmt.Errorf("resource.ServiceProviderConfigBuilder: object was not initialized")
-	}
-	if validator == nil {
-		validator = DefaultServiceProviderConfigValidator
-	}
-	if err := validator.Validate(object); err != nil {
-		return nil, err
-	}
-	return object, nil
+	obj := b.object
+	b.once = sync.Once{}
+	b.once.Do(b.initialize)
+	return obj, nil
 }
 
 func (b *ServiceProviderConfigBuilder) MustBuild() *ServiceProviderConfig {
@@ -757,4 +580,35 @@ func (b *ServiceProviderConfigBuilder) MustBuild() *ServiceProviderConfig {
 		panic(err)
 	}
 	return object
+}
+
+func (v *ServiceProviderConfig) AsMap(dst map[string]interface{}) error {
+	for _, pair := range v.makePairs() {
+		dst[pair.Name] = pair.Value
+	}
+	return nil
+}
+
+// GetExtension takes into account extension uri, and fetches
+// the specified attribute from the extension object
+func (v *ServiceProviderConfig) GetExtension(name, uri string, dst interface{}) error {
+	if uri == "" {
+		return v.Get(name, dst)
+	}
+	var ext interface{}
+	if err := v.Get(uri, ext); err != nil {
+		return fmt.Errorf(`failed to fetch extension %q: %w`, uri, err)
+	}
+
+	getter, ok := ext.(interface {
+		Get(string, interface{}) error
+	})
+	if !ok {
+		return fmt.Errorf(`extension does not implement Get(string, interface{}) error`)
+	}
+	return getter.Get(name, dst)
+}
+
+func (b *Builder) ServiceProviderConfig() *ServiceProviderConfigBuilder {
+	return &ServiceProviderConfigBuilder{}
 }

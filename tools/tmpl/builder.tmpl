@@ -1,0 +1,23 @@
+{{ define "ext/builder/footer" }}
+{{ $objectName := .Name -}}
+{{ if (or (eq $objectName "User") (eq $objectName "Group")) }}
+{{ $builderName := .Name | printf "%sBuilder" -}}
+func (b *{{ $builderName }}) Extension(uri string, value interface{}) *{{ $builderName }} {
+  b.mu.Lock()
+  defer b.mu.Unlock()
+  b.once.Do(b.initialize)
+  if b.err != nil {
+    return b
+  }
+  if b.object.schemas == nil {
+    b.object.schemas = &schemas{}
+    b.object.schemas.Add({{ $objectName }}SchemaURI)
+  }
+  b.object.schemas.Add(uri)
+  if err := b.object.Set(uri, value); err != nil {
+    b.err = err
+  }
+  return b
+}
+{{ end }}
+{{ end }}

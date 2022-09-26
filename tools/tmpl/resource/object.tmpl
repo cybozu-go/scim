@@ -25,7 +25,7 @@ func (v *{{ $objectName }}) GetExtension(name, uri string, dst interface{}) erro
     return v.Get(name, dst)
   }
   var ext interface{}
-  if err := v.Get(uri, ext); err != nil {
+  if err := v.Get(uri, &ext); err != nil {
     return fmt.Errorf(`failed to fetch extension %q: %w`, uri, err)
   }
 

@@ -44,6 +44,8 @@ const (
 
 // Get retrieves the value associated with a key
 func (v *ResourceType) Get(key string, dst interface{}) error {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
 	switch key {
 	case ResourceTypeDescriptionKey:
 		if val := v.description; val != nil {
@@ -320,9 +322,13 @@ func (v *ResourceType) MarshalJSON() ([]byte, error) {
 		if i > 0 {
 			buf.WriteByte(',')
 		}
-		enc.Encode(pair.Name)
+		if err := enc.Encode(pair.Name); err != nil {
+			return nil, fmt.Errorf(`failed to encode map key name: %w`, err)
+		}
 		buf.WriteByte(':')
-		enc.Encode(pair.Value)
+		if err := enc.Encode(pair.Value); err != nil {
+			return nil, fmt.Errorf(`failed to encode map value for %q: %w`, pair.Name, err)
+		}
 	}
 	buf.WriteByte('}')
 	return buf.Bytes(), nil
@@ -441,41 +447,57 @@ func (b *ResourceTypeBuilder) initialize() {
 }
 func (b *ResourceTypeBuilder) Description(in string) *ResourceTypeBuilder {
 	b.once.Do(b.initialize)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	_ = b.object.Set(ResourceTypeDescriptionKey, in)
 	return b
 }
 func (b *ResourceTypeBuilder) Endpoint(in string) *ResourceTypeBuilder {
 	b.once.Do(b.initialize)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	_ = b.object.Set(ResourceTypeEndpointKey, in)
 	return b
 }
 func (b *ResourceTypeBuilder) ID(in string) *ResourceTypeBuilder {
 	b.once.Do(b.initialize)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	_ = b.object.Set(ResourceTypeIDKey, in)
 	return b
 }
 func (b *ResourceTypeBuilder) Name(in string) *ResourceTypeBuilder {
 	b.once.Do(b.initialize)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	_ = b.object.Set(ResourceTypeNameKey, in)
 	return b
 }
 func (b *ResourceTypeBuilder) Schema(in string) *ResourceTypeBuilder {
 	b.once.Do(b.initialize)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	_ = b.object.Set(ResourceTypeSchemaKey, in)
 	return b
 }
 func (b *ResourceTypeBuilder) SchemaExtension(in ...*SchemaExtension) *ResourceTypeBuilder {
 	b.once.Do(b.initialize)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	_ = b.object.Set(ResourceTypeSchemaExtensionKey, in)
 	return b
 }
 func (b *ResourceTypeBuilder) Schemas(in ...string) *ResourceTypeBuilder {
 	b.once.Do(b.initialize)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	_ = b.object.Set(ResourceTypeSchemasKey, in)
 	return b
 }
 
 func (b *ResourceTypeBuilder) Build() (*ResourceType, error) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	err := b.err
 	if err != nil {
 		return nil, err
@@ -494,6 +516,24 @@ func (b *ResourceTypeBuilder) MustBuild() *ResourceType {
 	return object
 }
 
+func (b *ResourceTypeBuilder) Extension(uri string, value interface{}) *ResourceTypeBuilder {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	b.once.Do(b.initialize)
+	if b.err != nil {
+		return b
+	}
+	if b.object.schemas == nil {
+		b.object.schemas = &schemas{}
+		b.object.schemas.Add(ResourceTypeSchemaURI)
+	}
+	b.object.schemas.Add(uri)
+	if err := b.object.Set(uri, value); err != nil {
+		b.err = err
+	}
+	return b
+}
+
 func (v *ResourceType) AsMap(dst map[string]interface{}) error {
 	for _, pair := range v.makePairs() {
 		dst[pair.Name] = pair.Value
@@ -508,7 +548,7 @@ func (v *ResourceType) GetExtension(name, uri string, dst interface{}) error {
 		return v.Get(name, dst)
 	}
 	var ext interface{}
-	if err := v.Get(uri, ext); err != nil {
+	if err := v.Get(uri, &ext); err != nil {
 		return fmt.Errorf(`failed to fetch extension %q: %w`, uri, err)
 	}
 

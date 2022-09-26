@@ -81,6 +81,8 @@ const (
 
 // Get retrieves the value associated with a key
 func (v *User) Get(key string, dst interface{}) error {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
 	switch key {
 	case UserActiveKey:
 		if val := v.active; val != nil {
@@ -897,9 +899,13 @@ func (v *User) MarshalJSON() ([]byte, error) {
 		if i > 0 {
 			buf.WriteByte(',')
 		}
-		enc.Encode(pair.Name)
+		if err := enc.Encode(pair.Name); err != nil {
+			return nil, fmt.Errorf(`failed to encode map key name: %w`, err)
+		}
 		buf.WriteByte(':')
-		enc.Encode(pair.Value)
+		if err := enc.Encode(pair.Value); err != nil {
+			return nil, fmt.Errorf(`failed to encode map value for %q: %w`, pair.Name, err)
+		}
 	}
 	buf.WriteByte('}')
 	return buf.Bytes(), nil
@@ -1144,131 +1150,183 @@ func (b *UserBuilder) initialize() {
 }
 func (b *UserBuilder) Active(in bool) *UserBuilder {
 	b.once.Do(b.initialize)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	_ = b.object.Set(UserActiveKey, in)
 	return b
 }
 func (b *UserBuilder) Addresses(in ...*Address) *UserBuilder {
 	b.once.Do(b.initialize)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	_ = b.object.Set(UserAddressesKey, in)
 	return b
 }
 func (b *UserBuilder) DisplayName(in string) *UserBuilder {
 	b.once.Do(b.initialize)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	_ = b.object.Set(UserDisplayNameKey, in)
 	return b
 }
 func (b *UserBuilder) Emails(in ...*Email) *UserBuilder {
 	b.once.Do(b.initialize)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	_ = b.object.Set(UserEmailsKey, in)
 	return b
 }
 func (b *UserBuilder) Entitlements(in ...*Entitlement) *UserBuilder {
 	b.once.Do(b.initialize)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	_ = b.object.Set(UserEntitlementsKey, in)
 	return b
 }
 func (b *UserBuilder) ExternalID(in string) *UserBuilder {
 	b.once.Do(b.initialize)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	_ = b.object.Set(UserExternalIDKey, in)
 	return b
 }
 func (b *UserBuilder) Groups(in ...*GroupMember) *UserBuilder {
 	b.once.Do(b.initialize)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	_ = b.object.Set(UserGroupsKey, in)
 	return b
 }
 func (b *UserBuilder) ID(in string) *UserBuilder {
 	b.once.Do(b.initialize)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	_ = b.object.Set(UserIDKey, in)
 	return b
 }
 func (b *UserBuilder) IMS(in ...*IMS) *UserBuilder {
 	b.once.Do(b.initialize)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	_ = b.object.Set(UserIMSKey, in)
 	return b
 }
 func (b *UserBuilder) Locale(in string) *UserBuilder {
 	b.once.Do(b.initialize)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	_ = b.object.Set(UserLocaleKey, in)
 	return b
 }
 func (b *UserBuilder) Meta(in *Meta) *UserBuilder {
 	b.once.Do(b.initialize)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	_ = b.object.Set(UserMetaKey, in)
 	return b
 }
 func (b *UserBuilder) Name(in *Names) *UserBuilder {
 	b.once.Do(b.initialize)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	_ = b.object.Set(UserNameKey, in)
 	return b
 }
 func (b *UserBuilder) NickName(in string) *UserBuilder {
 	b.once.Do(b.initialize)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	_ = b.object.Set(UserNickNameKey, in)
 	return b
 }
 func (b *UserBuilder) Password(in string) *UserBuilder {
 	b.once.Do(b.initialize)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	_ = b.object.Set(UserPasswordKey, in)
 	return b
 }
 func (b *UserBuilder) PhoneNumbers(in ...*PhoneNumber) *UserBuilder {
 	b.once.Do(b.initialize)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	_ = b.object.Set(UserPhoneNumbersKey, in)
 	return b
 }
 func (b *UserBuilder) Photos(in ...*Photo) *UserBuilder {
 	b.once.Do(b.initialize)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	_ = b.object.Set(UserPhotosKey, in)
 	return b
 }
 func (b *UserBuilder) PreferredLanguage(in string) *UserBuilder {
 	b.once.Do(b.initialize)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	_ = b.object.Set(UserPreferredLanguageKey, in)
 	return b
 }
 func (b *UserBuilder) ProfileURL(in string) *UserBuilder {
 	b.once.Do(b.initialize)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	_ = b.object.Set(UserProfileURLKey, in)
 	return b
 }
 func (b *UserBuilder) Roles(in ...*Role) *UserBuilder {
 	b.once.Do(b.initialize)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	_ = b.object.Set(UserRolesKey, in)
 	return b
 }
 func (b *UserBuilder) Schemas(in ...string) *UserBuilder {
 	b.once.Do(b.initialize)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	_ = b.object.Set(UserSchemasKey, in)
 	return b
 }
 func (b *UserBuilder) Timezone(in string) *UserBuilder {
 	b.once.Do(b.initialize)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	_ = b.object.Set(UserTimezoneKey, in)
 	return b
 }
 func (b *UserBuilder) Title(in string) *UserBuilder {
 	b.once.Do(b.initialize)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	_ = b.object.Set(UserTitleKey, in)
 	return b
 }
 func (b *UserBuilder) UserName(in string) *UserBuilder {
 	b.once.Do(b.initialize)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	_ = b.object.Set(UserUserNameKey, in)
 	return b
 }
 func (b *UserBuilder) UserType(in string) *UserBuilder {
 	b.once.Do(b.initialize)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	_ = b.object.Set(UserUserTypeKey, in)
 	return b
 }
 func (b *UserBuilder) X509Certificates(in ...*X509Certificate) *UserBuilder {
 	b.once.Do(b.initialize)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	_ = b.object.Set(UserX509CertificatesKey, in)
 	return b
 }
 
 func (b *UserBuilder) Build() (*User, error) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	err := b.err
 	if err != nil {
 		return nil, err

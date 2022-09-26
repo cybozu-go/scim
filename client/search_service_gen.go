@@ -62,8 +62,8 @@ func (call *SearchCall) Count(v int) *SearchCall {
 	return call
 }
 
-func (call *SearchCall) ExludedAttributes(v ...string) *SearchCall {
-	call.builder.ExludedAttributes(v...)
+func (call *SearchCall) ExcludedAttributes(v ...string) *SearchCall {
+	call.builder.ExcludedAttributes(v...)
 	return call
 }
 
@@ -90,11 +90,6 @@ func (call *SearchCall) StartIndex(v int) *SearchCall {
 // Extension allows users to register an extension using the fully qualified URI
 func (call *SearchCall) Extension(uri string, value interface{}) *SearchCall {
 	call.builder.Extension(uri, value)
-	return call
-}
-
-func (call *SearchCall) Validator(v resource.SearchRequestValidator) *SearchCall {
-	call.builder.Validator(v)
 	return call
 }
 

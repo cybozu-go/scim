@@ -214,11 +214,6 @@ func (call *CreateGroupCall) Extension(uri string, value interface{}) *CreateGro
 	return call
 }
 
-func (call *CreateGroupCall) Validator(v resource.GroupValidator) *CreateGroupCall {
-	call.builder.Validator(v)
-	return call
-}
-
 func (call *CreateGroupCall) Trace(w io.Writer) *CreateGroupCall {
 	call.trace = w
 	return call
@@ -350,11 +345,6 @@ func (call *ReplaceGroupCall) Extension(uri string, value interface{}) *ReplaceG
 	return call
 }
 
-func (call *ReplaceGroupCall) Validator(v resource.GroupValidator) *ReplaceGroupCall {
-	call.builder.Validator(v)
-	return call
-}
-
 func (call *ReplaceGroupCall) Trace(w io.Writer) *ReplaceGroupCall {
 	call.trace = w
 	return call
@@ -474,11 +464,6 @@ func (call *PatchGroupCall) Operations(v ...*resource.PatchOperation) *PatchGrou
 // Extension allows users to register an extension using the fully qualified URI
 func (call *PatchGroupCall) Extension(uri string, value interface{}) *PatchGroupCall {
 	call.builder.Extension(uri, value)
-	return call
-}
-
-func (call *PatchGroupCall) Validator(v resource.PatchRequestValidator) *PatchGroupCall {
-	call.builder.Validator(v)
 	return call
 }
 
@@ -747,8 +732,8 @@ func (call *SearchGroupCall) Count(v int) *SearchGroupCall {
 	return call
 }
 
-func (call *SearchGroupCall) ExludedAttributes(v ...string) *SearchGroupCall {
-	call.builder.ExludedAttributes(v...)
+func (call *SearchGroupCall) ExcludedAttributes(v ...string) *SearchGroupCall {
+	call.builder.ExcludedAttributes(v...)
 	return call
 }
 
@@ -775,11 +760,6 @@ func (call *SearchGroupCall) StartIndex(v int) *SearchGroupCall {
 // Extension allows users to register an extension using the fully qualified URI
 func (call *SearchGroupCall) Extension(uri string, value interface{}) *SearchGroupCall {
 	call.builder.Extension(uri, value)
-	return call
-}
-
-func (call *SearchGroupCall) Validator(v resource.SearchRequestValidator) *SearchGroupCall {
-	call.builder.Validator(v)
 	return call
 }
 

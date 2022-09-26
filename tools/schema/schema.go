@@ -237,7 +237,7 @@ func (SearchRequest) Fields() []*schema.Field {
 	return []*schema.Field{
 		schema.NewField(`Attributes`, []string(nil)),
 		schema.Int(`Count`),
-		schema.NewField(`ExcludeAttributes`, []string(nil)),
+		schema.NewField(`ExcludedAttributes`, []string(nil)),
 		schema.String(`Filter`),
 		schema.String(`Schema`),
 		schema.NewField(`Schemas`, schemastyp),
@@ -261,7 +261,7 @@ func (ServiceProviderConfig) Fields() []*schema.Field {
 	gensupporttyp := schema.Type(`*GenericSupport`)
 	return []*schema.Field{
 		schema.NewField(`AuthenticationSchemes`, authschemestyp),
-		schema.NewField(`BulkSupport`, schema.Type(`*BulkSupport`)),
+		schema.NewField(`Bulk`, schema.Type(`*BulkSupport`)),
 		schema.NewField(`ChangePassword`, gensupporttyp),
 		schema.String(`DocumentationURI`).
 			Unexported(`documentationUri`),

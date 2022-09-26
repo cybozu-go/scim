@@ -346,11 +346,6 @@ func generateCall(o *codegen.Output, svc Service, call *codegen.Object, resource
 			o.L(`call.builder.Extension(uri, value)`)
 			o.L(`return call`)
 			o.L(`}`)
-
-			o.LL(`func (call *%[1]s) Validator(v resource.%[2]sValidator) *%[1]s {`, call.Name(true), rs.Name(true))
-			o.L(`call.builder.Validator(v)`)
-			o.L(`return call`)
-			o.L(`}`)
 		}
 	}
 

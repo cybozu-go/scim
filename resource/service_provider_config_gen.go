@@ -19,7 +19,7 @@ func init() {
 type ServiceProviderConfig struct {
 	mu                    sync.RWMutex
 	authenticationSchemes []*AuthenticationScheme
-	bulkSupport           *BulkSupport
+	bulk                  *BulkSupport
 	changePassword        *GenericSupport
 	documentationUri      *string
 	etag                  *GenericSupport
@@ -36,7 +36,7 @@ type ServiceProviderConfig struct {
 // this used throughout
 const (
 	ServiceProviderConfigAuthenticationSchemesKey = "authenticationSchemes"
-	ServiceProviderConfigBulkSupportKey           = "bulkSupport"
+	ServiceProviderConfigBulkKey                  = "bulk"
 	ServiceProviderConfigChangePasswordKey        = "changePassword"
 	ServiceProviderConfigDocumentationURIKey      = "documentationUri"
 	ServiceProviderConfigETagKey                  = "etag"
@@ -48,13 +48,15 @@ const (
 
 // Get retrieves the value associated with a key
 func (v *ServiceProviderConfig) Get(key string, dst interface{}) error {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
 	switch key {
 	case ServiceProviderConfigAuthenticationSchemesKey:
 		if val := v.authenticationSchemes; val != nil {
 			return blackmagic.AssignIfCompatible(dst, val)
 		}
-	case ServiceProviderConfigBulkSupportKey:
-		if val := v.bulkSupport; val != nil {
+	case ServiceProviderConfigBulkKey:
+		if val := v.bulk; val != nil {
 			return blackmagic.AssignIfCompatible(dst, val)
 		}
 	case ServiceProviderConfigChangePasswordKey:
@@ -108,12 +110,12 @@ func (v *ServiceProviderConfig) Set(key string, value interface{}) error {
 			return fmt.Errorf(`expected value of type []*AuthenticationScheme for field authenticationSchemes, got %T`, value)
 		}
 		v.authenticationSchemes = converted
-	case ServiceProviderConfigBulkSupportKey:
+	case ServiceProviderConfigBulkKey:
 		converted, ok := value.(*BulkSupport)
 		if !ok {
-			return fmt.Errorf(`expected value of type *BulkSupport for field bulkSupport, got %T`, value)
+			return fmt.Errorf(`expected value of type *BulkSupport for field bulk, got %T`, value)
 		}
-		v.bulkSupport = converted
+		v.bulk = converted
 	case ServiceProviderConfigChangePasswordKey:
 		converted, ok := value.(*GenericSupport)
 		if !ok {
@@ -170,10 +172,10 @@ func (v *ServiceProviderConfig) HasAuthenticationSchemes() bool {
 	return v.authenticationSchemes != nil
 }
 
-func (v *ServiceProviderConfig) HasBulkSupport() bool {
+func (v *ServiceProviderConfig) HasBulk() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return v.bulkSupport != nil
+	return v.bulk != nil
 }
 
 func (v *ServiceProviderConfig) HasChangePassword() bool {
@@ -227,10 +229,10 @@ func (v *ServiceProviderConfig) AuthenticationSchemes() []*AuthenticationScheme 
 	return nil
 }
 
-func (v *ServiceProviderConfig) BulkSupport() *BulkSupport {
+func (v *ServiceProviderConfig) Bulk() *BulkSupport {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	if val := v.bulkSupport; val != nil {
+	if val := v.bulk; val != nil {
 		return val
 	}
 	return nil
@@ -307,8 +309,8 @@ func (v *ServiceProviderConfig) Remove(key string) error {
 	switch key {
 	case ServiceProviderConfigAuthenticationSchemesKey:
 		v.authenticationSchemes = nil
-	case ServiceProviderConfigBulkSupportKey:
-		v.bulkSupport = nil
+	case ServiceProviderConfigBulkKey:
+		v.bulk = nil
 	case ServiceProviderConfigChangePasswordKey:
 		v.changePassword = nil
 	case ServiceProviderConfigDocumentationURIKey:
@@ -335,8 +337,8 @@ func (v *ServiceProviderConfig) makePairs() []*fieldPair {
 	if val := v.authenticationSchemes; len(val) > 0 {
 		pairs = append(pairs, &fieldPair{Name: ServiceProviderConfigAuthenticationSchemesKey, Value: val})
 	}
-	if val := v.bulkSupport; val != nil {
-		pairs = append(pairs, &fieldPair{Name: ServiceProviderConfigBulkSupportKey, Value: val})
+	if val := v.bulk; val != nil {
+		pairs = append(pairs, &fieldPair{Name: ServiceProviderConfigBulkKey, Value: val})
 	}
 	if val := v.changePassword; val != nil {
 		pairs = append(pairs, &fieldPair{Name: ServiceProviderConfigChangePasswordKey, Value: val})
@@ -384,9 +386,13 @@ func (v *ServiceProviderConfig) MarshalJSON() ([]byte, error) {
 		if i > 0 {
 			buf.WriteByte(',')
 		}
-		enc.Encode(pair.Name)
+		if err := enc.Encode(pair.Name); err != nil {
+			return nil, fmt.Errorf(`failed to encode map key name: %w`, err)
+		}
 		buf.WriteByte(':')
-		enc.Encode(pair.Value)
+		if err := enc.Encode(pair.Value); err != nil {
+			return nil, fmt.Errorf(`failed to encode map value for %q: %w`, pair.Name, err)
+		}
 	}
 	buf.WriteByte('}')
 	return buf.Bytes(), nil
@@ -403,7 +409,7 @@ func (v *ServiceProviderConfig) UnmarshalJSON(data []byte) error {
 	v.mu.Lock()
 	defer v.mu.Unlock()
 	v.authenticationSchemes = nil
-	v.bulkSupport = nil
+	v.bulk = nil
 	v.changePassword = nil
 	v.documentationUri = nil
 	v.etag = nil
@@ -437,12 +443,12 @@ LOOP:
 					return fmt.Errorf(`failed to decode value for %q: %w`, ServiceProviderConfigAuthenticationSchemesKey, err)
 				}
 				v.authenticationSchemes = val
-			case ServiceProviderConfigBulkSupportKey:
+			case ServiceProviderConfigBulkKey:
 				var val *BulkSupport
 				if err := dec.Decode(&val); err != nil {
-					return fmt.Errorf(`failed to decode value for %q: %w`, ServiceProviderConfigBulkSupportKey, err)
+					return fmt.Errorf(`failed to decode value for %q: %w`, ServiceProviderConfigBulkKey, err)
 				}
-				v.bulkSupport = val
+				v.bulk = val
 			case ServiceProviderConfigChangePasswordKey:
 				var val *GenericSupport
 				if err := dec.Decode(&val); err != nil {
@@ -519,51 +525,71 @@ func (b *ServiceProviderConfigBuilder) initialize() {
 }
 func (b *ServiceProviderConfigBuilder) AuthenticationSchemes(in ...*AuthenticationScheme) *ServiceProviderConfigBuilder {
 	b.once.Do(b.initialize)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	_ = b.object.Set(ServiceProviderConfigAuthenticationSchemesKey, in)
 	return b
 }
-func (b *ServiceProviderConfigBuilder) BulkSupport(in *BulkSupport) *ServiceProviderConfigBuilder {
+func (b *ServiceProviderConfigBuilder) Bulk(in *BulkSupport) *ServiceProviderConfigBuilder {
 	b.once.Do(b.initialize)
-	_ = b.object.Set(ServiceProviderConfigBulkSupportKey, in)
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	_ = b.object.Set(ServiceProviderConfigBulkKey, in)
 	return b
 }
 func (b *ServiceProviderConfigBuilder) ChangePassword(in *GenericSupport) *ServiceProviderConfigBuilder {
 	b.once.Do(b.initialize)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	_ = b.object.Set(ServiceProviderConfigChangePasswordKey, in)
 	return b
 }
 func (b *ServiceProviderConfigBuilder) DocumentationURI(in string) *ServiceProviderConfigBuilder {
 	b.once.Do(b.initialize)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	_ = b.object.Set(ServiceProviderConfigDocumentationURIKey, in)
 	return b
 }
 func (b *ServiceProviderConfigBuilder) ETag(in *GenericSupport) *ServiceProviderConfigBuilder {
 	b.once.Do(b.initialize)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	_ = b.object.Set(ServiceProviderConfigETagKey, in)
 	return b
 }
 func (b *ServiceProviderConfigBuilder) Filter(in *FilterSupport) *ServiceProviderConfigBuilder {
 	b.once.Do(b.initialize)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	_ = b.object.Set(ServiceProviderConfigFilterKey, in)
 	return b
 }
 func (b *ServiceProviderConfigBuilder) Patch(in *GenericSupport) *ServiceProviderConfigBuilder {
 	b.once.Do(b.initialize)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	_ = b.object.Set(ServiceProviderConfigPatchKey, in)
 	return b
 }
 func (b *ServiceProviderConfigBuilder) Schemas(in ...string) *ServiceProviderConfigBuilder {
 	b.once.Do(b.initialize)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	_ = b.object.Set(ServiceProviderConfigSchemasKey, in)
 	return b
 }
 func (b *ServiceProviderConfigBuilder) Sort(in *GenericSupport) *ServiceProviderConfigBuilder {
 	b.once.Do(b.initialize)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	_ = b.object.Set(ServiceProviderConfigSortKey, in)
 	return b
 }
 
 func (b *ServiceProviderConfigBuilder) Build() (*ServiceProviderConfig, error) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	err := b.err
 	if err != nil {
 		return nil, err
@@ -582,6 +608,24 @@ func (b *ServiceProviderConfigBuilder) MustBuild() *ServiceProviderConfig {
 	return object
 }
 
+func (b *ServiceProviderConfigBuilder) Extension(uri string, value interface{}) *ServiceProviderConfigBuilder {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	b.once.Do(b.initialize)
+	if b.err != nil {
+		return b
+	}
+	if b.object.schemas == nil {
+		b.object.schemas = &schemas{}
+		b.object.schemas.Add(ServiceProviderConfigSchemaURI)
+	}
+	b.object.schemas.Add(uri)
+	if err := b.object.Set(uri, value); err != nil {
+		b.err = err
+	}
+	return b
+}
+
 func (v *ServiceProviderConfig) AsMap(dst map[string]interface{}) error {
 	for _, pair := range v.makePairs() {
 		dst[pair.Name] = pair.Value
@@ -596,7 +640,7 @@ func (v *ServiceProviderConfig) GetExtension(name, uri string, dst interface{}) 
 		return v.Get(name, dst)
 	}
 	var ext interface{}
-	if err := v.Get(uri, ext); err != nil {
+	if err := v.Get(uri, &ext); err != nil {
 		return fmt.Errorf(`failed to fetch extension %q: %w`, uri, err)
 	}
 

@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/goccy/go-yaml v1.9.5
-	github.com/lestrrat-go/blackmagic v1.0.2-0.20220926061631-9e875f47412a
+	github.com/lestrrat-go/blackmagic v1.0.2-0.20220926062815-509018abad40
 	github.com/lestrrat-go/codegen v1.0.4
 	github.com/lestrrat-go/mux v0.0.0-20220525044338-e2775b70cf3d
 	github.com/lestrrat-go/option v1.0.0

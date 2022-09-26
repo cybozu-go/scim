@@ -42,6 +42,8 @@ const (
 
 // Get retrieves the value associated with a key
 func (v *Group) Get(key string, dst interface{}) error {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
 	switch key {
 	case GroupDisplayNameKey:
 		if val := v.displayName; val != nil {
@@ -288,9 +290,13 @@ func (v *Group) MarshalJSON() ([]byte, error) {
 		if i > 0 {
 			buf.WriteByte(',')
 		}
-		enc.Encode(pair.Name)
+		if err := enc.Encode(pair.Name); err != nil {
+			return nil, fmt.Errorf(`failed to encode map key name: %w`, err)
+		}
 		buf.WriteByte(':')
-		enc.Encode(pair.Value)
+		if err := enc.Encode(pair.Value); err != nil {
+			return nil, fmt.Errorf(`failed to encode map value for %q: %w`, pair.Name, err)
+		}
 	}
 	buf.WriteByte('}')
 	return buf.Bytes(), nil
@@ -402,36 +408,50 @@ func (b *GroupBuilder) initialize() {
 }
 func (b *GroupBuilder) DisplayName(in string) *GroupBuilder {
 	b.once.Do(b.initialize)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	_ = b.object.Set(GroupDisplayNameKey, in)
 	return b
 }
 func (b *GroupBuilder) ExternalID(in string) *GroupBuilder {
 	b.once.Do(b.initialize)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	_ = b.object.Set(GroupExternalIDKey, in)
 	return b
 }
 func (b *GroupBuilder) ID(in string) *GroupBuilder {
 	b.once.Do(b.initialize)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	_ = b.object.Set(GroupIDKey, in)
 	return b
 }
 func (b *GroupBuilder) Members(in ...*GroupMember) *GroupBuilder {
 	b.once.Do(b.initialize)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	_ = b.object.Set(GroupMembersKey, in)
 	return b
 }
 func (b *GroupBuilder) Schemas(in ...string) *GroupBuilder {
 	b.once.Do(b.initialize)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	_ = b.object.Set(GroupSchemasKey, in)
 	return b
 }
 func (b *GroupBuilder) Meta(in *Meta) *GroupBuilder {
 	b.once.Do(b.initialize)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	_ = b.object.Set(GroupMetaKey, in)
 	return b
 }
 
 func (b *GroupBuilder) Build() (*Group, error) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	err := b.err
 	if err != nil {
 		return nil, err
@@ -482,7 +502,7 @@ func (v *Group) GetExtension(name, uri string, dst interface{}) error {
 		return v.Get(name, dst)
 	}
 	var ext interface{}
-	if err := v.Get(uri, ext); err != nil {
+	if err := v.Get(uri, &ext); err != nil {
 		return fmt.Errorf(`failed to fetch extension %q: %w`, uri, err)
 	}
 

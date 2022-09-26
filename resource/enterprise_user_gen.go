@@ -44,6 +44,8 @@ const (
 
 // Get retrieves the value associated with a key
 func (v *EnterpriseUser) Get(key string, dst interface{}) error {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
 	switch key {
 	case EnterpriseUserCostCenterKey:
 		if val := v.costCenter; val != nil {
@@ -320,9 +322,13 @@ func (v *EnterpriseUser) MarshalJSON() ([]byte, error) {
 		if i > 0 {
 			buf.WriteByte(',')
 		}
-		enc.Encode(pair.Name)
+		if err := enc.Encode(pair.Name); err != nil {
+			return nil, fmt.Errorf(`failed to encode map key name: %w`, err)
+		}
 		buf.WriteByte(':')
-		enc.Encode(pair.Value)
+		if err := enc.Encode(pair.Value); err != nil {
+			return nil, fmt.Errorf(`failed to encode map value for %q: %w`, pair.Name, err)
+		}
 	}
 	buf.WriteByte('}')
 	return buf.Bytes(), nil
@@ -441,41 +447,57 @@ func (b *EnterpriseUserBuilder) initialize() {
 }
 func (b *EnterpriseUserBuilder) CostCenter(in string) *EnterpriseUserBuilder {
 	b.once.Do(b.initialize)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	_ = b.object.Set(EnterpriseUserCostCenterKey, in)
 	return b
 }
 func (b *EnterpriseUserBuilder) Department(in string) *EnterpriseUserBuilder {
 	b.once.Do(b.initialize)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	_ = b.object.Set(EnterpriseUserDepartmentKey, in)
 	return b
 }
 func (b *EnterpriseUserBuilder) Division(in string) *EnterpriseUserBuilder {
 	b.once.Do(b.initialize)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	_ = b.object.Set(EnterpriseUserDivisionKey, in)
 	return b
 }
 func (b *EnterpriseUserBuilder) EmployeeNumber(in string) *EnterpriseUserBuilder {
 	b.once.Do(b.initialize)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	_ = b.object.Set(EnterpriseUserEmployeeNumberKey, in)
 	return b
 }
 func (b *EnterpriseUserBuilder) Manager(in *EnterpriseManager) *EnterpriseUserBuilder {
 	b.once.Do(b.initialize)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	_ = b.object.Set(EnterpriseUserManagerKey, in)
 	return b
 }
 func (b *EnterpriseUserBuilder) Organization(in string) *EnterpriseUserBuilder {
 	b.once.Do(b.initialize)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	_ = b.object.Set(EnterpriseUserOrganizationKey, in)
 	return b
 }
 func (b *EnterpriseUserBuilder) Schemas(in ...string) *EnterpriseUserBuilder {
 	b.once.Do(b.initialize)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	_ = b.object.Set(EnterpriseUserSchemasKey, in)
 	return b
 }
 
 func (b *EnterpriseUserBuilder) Build() (*EnterpriseUser, error) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	err := b.err
 	if err != nil {
 		return nil, err
@@ -494,6 +516,24 @@ func (b *EnterpriseUserBuilder) MustBuild() *EnterpriseUser {
 	return object
 }
 
+func (b *EnterpriseUserBuilder) Extension(uri string, value interface{}) *EnterpriseUserBuilder {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	b.once.Do(b.initialize)
+	if b.err != nil {
+		return b
+	}
+	if b.object.schemas == nil {
+		b.object.schemas = &schemas{}
+		b.object.schemas.Add(EnterpriseUserSchemaURI)
+	}
+	b.object.schemas.Add(uri)
+	if err := b.object.Set(uri, value); err != nil {
+		b.err = err
+	}
+	return b
+}
+
 func (v *EnterpriseUser) AsMap(dst map[string]interface{}) error {
 	for _, pair := range v.makePairs() {
 		dst[pair.Name] = pair.Value
@@ -508,7 +548,7 @@ func (v *EnterpriseUser) GetExtension(name, uri string, dst interface{}) error {
 		return v.Get(name, dst)
 	}
 	var ext interface{}
-	if err := v.Get(uri, ext); err != nil {
+	if err := v.Get(uri, &ext); err != nil {
 		return fmt.Errorf(`failed to fetch extension %q: %w`, uri, err)
 	}
 

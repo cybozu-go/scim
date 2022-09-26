@@ -1,6 +1,6 @@
 {{ define "ext/builder/footer" }}
 {{ $objectName := .Name -}}
-{{ if (or (eq $objectName "User") (eq $objectName "Group")) }}
+{{ if (and (ne $objectName "Meta") (ne $objectName "Schema")) }}
 {{ $builderName := .Name | printf "%sBuilder" -}}
 func (b *{{ $builderName }}) Extension(uri string, value interface{}) *{{ $builderName }} {
   b.mu.Lock()

@@ -36,6 +36,8 @@ const (
 
 // Get retrieves the value associated with a key
 func (v *Meta) Get(key string, dst interface{}) error {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
 	switch key {
 	case MetaResourceTypeKey:
 		if val := v.resourceType; val != nil {
@@ -252,9 +254,13 @@ func (v *Meta) MarshalJSON() ([]byte, error) {
 		if i > 0 {
 			buf.WriteByte(',')
 		}
-		enc.Encode(pair.Name)
+		if err := enc.Encode(pair.Name); err != nil {
+			return nil, fmt.Errorf(`failed to encode map key name: %w`, err)
+		}
 		buf.WriteByte(':')
-		enc.Encode(pair.Value)
+		if err := enc.Encode(pair.Value); err != nil {
+			return nil, fmt.Errorf(`failed to encode map value for %q: %w`, pair.Name, err)
+		}
 	}
 	buf.WriteByte('}')
 	return buf.Bytes(), nil
@@ -359,31 +365,43 @@ func (b *MetaBuilder) initialize() {
 }
 func (b *MetaBuilder) ResourceType(in string) *MetaBuilder {
 	b.once.Do(b.initialize)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	_ = b.object.Set(MetaResourceTypeKey, in)
 	return b
 }
 func (b *MetaBuilder) Location(in string) *MetaBuilder {
 	b.once.Do(b.initialize)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	_ = b.object.Set(MetaLocationKey, in)
 	return b
 }
 func (b *MetaBuilder) Version(in string) *MetaBuilder {
 	b.once.Do(b.initialize)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	_ = b.object.Set(MetaVersionKey, in)
 	return b
 }
 func (b *MetaBuilder) Created(in time.Time) *MetaBuilder {
 	b.once.Do(b.initialize)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	_ = b.object.Set(MetaCreatedKey, in)
 	return b
 }
 func (b *MetaBuilder) LastModified(in time.Time) *MetaBuilder {
 	b.once.Do(b.initialize)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	_ = b.object.Set(MetaLastModifiedKey, in)
 	return b
 }
 
 func (b *MetaBuilder) Build() (*Meta, error) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	err := b.err
 	if err != nil {
 		return nil, err
@@ -416,7 +434,7 @@ func (v *Meta) GetExtension(name, uri string, dst interface{}) error {
 		return v.Get(name, dst)
 	}
 	var ext interface{}
-	if err := v.Get(uri, ext); err != nil {
+	if err := v.Get(uri, &ext); err != nil {
 		return fmt.Errorf(`failed to fetch extension %q: %w`, uri, err)
 	}
 

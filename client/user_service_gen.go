@@ -309,11 +309,6 @@ func (call *CreateUserCall) Extension(uri string, value interface{}) *CreateUser
 	return call
 }
 
-func (call *CreateUserCall) Validator(v resource.UserValidator) *CreateUserCall {
-	call.builder.Validator(v)
-	return call
-}
-
 func (call *CreateUserCall) Trace(w io.Writer) *CreateUserCall {
 	call.trace = w
 	return call
@@ -537,11 +532,6 @@ func (call *ReplaceUserCall) Extension(uri string, value interface{}) *ReplaceUs
 	return call
 }
 
-func (call *ReplaceUserCall) Validator(v resource.UserValidator) *ReplaceUserCall {
-	call.builder.Validator(v)
-	return call
-}
-
 func (call *ReplaceUserCall) Trace(w io.Writer) *ReplaceUserCall {
 	call.trace = w
 	return call
@@ -661,11 +651,6 @@ func (call *PatchUserCall) Operations(v ...*resource.PatchOperation) *PatchUserC
 // Extension allows users to register an extension using the fully qualified URI
 func (call *PatchUserCall) Extension(uri string, value interface{}) *PatchUserCall {
 	call.builder.Extension(uri, value)
-	return call
-}
-
-func (call *PatchUserCall) Validator(v resource.PatchRequestValidator) *PatchUserCall {
-	call.builder.Validator(v)
 	return call
 }
 
@@ -1029,8 +1014,8 @@ func (call *SearchUserCall) Count(v int) *SearchUserCall {
 	return call
 }
 
-func (call *SearchUserCall) ExludedAttributes(v ...string) *SearchUserCall {
-	call.builder.ExludedAttributes(v...)
+func (call *SearchUserCall) ExcludedAttributes(v ...string) *SearchUserCall {
+	call.builder.ExcludedAttributes(v...)
 	return call
 }
 
@@ -1057,11 +1042,6 @@ func (call *SearchUserCall) StartIndex(v int) *SearchUserCall {
 // Extension allows users to register an extension using the fully qualified URI
 func (call *SearchUserCall) Extension(uri string, value interface{}) *SearchUserCall {
 	call.builder.Extension(uri, value)
-	return call
-}
-
-func (call *SearchUserCall) Validator(v resource.SearchRequestValidator) *SearchUserCall {
-	call.builder.Validator(v)
 	return call
 }
 

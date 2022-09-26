@@ -306,7 +306,7 @@ objects:
     fields:
       - name: attributes
         type: "[]string"
-      - name: exludedAttributes
+      - name: excludedAttributes
         type: "[]string"
       - name: filter
       - name: sortBy

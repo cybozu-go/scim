@@ -63,7 +63,7 @@ func (v *Group) Get(key string, dst interface{}) error {
 		}
 	case GroupSchemasKey:
 		if val := v.schemas; val != nil {
-			return blackmagic.AssignIfCompatible(dst, *val)
+			return blackmagic.AssignIfCompatible(dst, val.Get())
 		}
 	case GroupMetaKey:
 		if val := v.meta; val != nil {
@@ -111,11 +111,11 @@ func (v *Group) Set(key string, value interface{}) error {
 		}
 		v.members = converted
 	case GroupSchemasKey:
-		converted, ok := value.(schemas)
-		if !ok {
-			return fmt.Errorf(`expected value of type schemas for field schemas, got %T`, value)
+		var object schemas
+		if err := object.Accept(value); err != nil {
+			return fmt.Errorf(`failed to accept value: %w`, err)
 		}
-		v.schemas = &converted
+		v.schemas = &object
 	case GroupMetaKey:
 		converted, ok := value.(*Meta)
 		if !ok {
@@ -260,7 +260,7 @@ func (v *Group) makePairs() []*fieldPair {
 		pairs = append(pairs, &fieldPair{Name: GroupMembersKey, Value: val})
 	}
 	if val := v.schemas; val != nil {
-		pairs = append(pairs, &fieldPair{Name: GroupSchemasKey, Value: *val})
+		pairs = append(pairs, &fieldPair{Name: GroupSchemasKey, Value: val.Get()})
 	}
 	if val := v.meta; val != nil {
 		pairs = append(pairs, &fieldPair{Name: GroupMetaKey, Value: val})

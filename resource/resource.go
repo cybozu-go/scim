@@ -4,6 +4,7 @@ package resource
 
 import (
 	"encoding/json"
+	"fmt"
 	"sort"
 	"sync"
 )
@@ -11,20 +12,22 @@ import (
 // schemas is a container for schemas. it dedupes schema URIs,
 // and marshals to / unmarshals from []string
 type schemas struct {
-	once    sync.Once
+	mu      sync.RWMutex
 	storage map[string]struct{}
 }
 
-func (s *schemas) initialize() {
-	s.storage = make(map[string]struct{})
-}
-
 func (s *schemas) Add(v string) {
-	s.once.Do(s.initialize)
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.storage == nil {
+		s.storage = make(map[string]struct{})
+	}
 	s.storage[v] = struct{}{}
 }
 
 func (s *schemas) UnmarshalJSON(data []byte) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	var list []string
 	if err := json.Unmarshal(data, &list); err != nil {
 		return err
@@ -37,11 +40,30 @@ func (s *schemas) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (s schemas) Get() []string {
+func (s *schemas) Accept(v interface{}) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	storage := make(map[string]struct{})
+	switch v := v.(type) {
+	case []string:
+		for _, e := range v {
+			storage[e] = struct{}{}
+		}
+	default:
+		return fmt.Errorf(`schemas can only accept []string values (got %T)`, v)
+	}
+	s.storage = storage
+	return nil
+}
+
+func (s *schemas) Get() []string {
 	return s.List()
 }
 
-func (s schemas) List() []string {
+func (s *schemas) List() []string {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 	list := make([]string, 0, len(s.storage))
 	for u := range s.storage {
 		list = append(list, u)
@@ -51,7 +73,7 @@ func (s schemas) List() []string {
 	return list
 }
 
-func (s schemas) MarshalJSON() ([]byte, error) {
+func (s *schemas) MarshalJSON() ([]byte, error) {
 	return json.Marshal(s.List())
 }
 

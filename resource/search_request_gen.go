@@ -73,7 +73,7 @@ func (v *SearchRequest) Get(key string, dst interface{}) error {
 		}
 	case SearchRequestSchemasKey:
 		if val := v.schemas; val != nil {
-			return blackmagic.AssignIfCompatible(dst, *val)
+			return blackmagic.AssignIfCompatible(dst, val.Get())
 		}
 	case SearchRequestSortByKey:
 		if val := v.sortBy; val != nil {
@@ -135,11 +135,11 @@ func (v *SearchRequest) Set(key string, value interface{}) error {
 		}
 		v.schema = &converted
 	case SearchRequestSchemasKey:
-		converted, ok := value.(schemas)
-		if !ok {
-			return fmt.Errorf(`expected value of type schemas for field schemas, got %T`, value)
+		var object schemas
+		if err := object.Accept(value); err != nil {
+			return fmt.Errorf(`failed to accept value: %w`, err)
 		}
-		v.schemas = &converted
+		v.schemas = &object
 	case SearchRequestSortByKey:
 		converted, ok := value.(string)
 		if !ok {
@@ -350,7 +350,7 @@ func (v *SearchRequest) makePairs() []*fieldPair {
 		pairs = append(pairs, &fieldPair{Name: SearchRequestSchemaKey, Value: *val})
 	}
 	if val := v.schemas; val != nil {
-		pairs = append(pairs, &fieldPair{Name: SearchRequestSchemasKey, Value: *val})
+		pairs = append(pairs, &fieldPair{Name: SearchRequestSchemasKey, Value: val.Get()})
 	}
 	if val := v.sortBy; val != nil {
 		pairs = append(pairs, &fieldPair{Name: SearchRequestSortByKey, Value: *val})

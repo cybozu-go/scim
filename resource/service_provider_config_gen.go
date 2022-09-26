@@ -81,7 +81,7 @@ func (v *ServiceProviderConfig) Get(key string, dst interface{}) error {
 		}
 	case ServiceProviderConfigSchemasKey:
 		if val := v.schemas; val != nil {
-			return blackmagic.AssignIfCompatible(dst, *val)
+			return blackmagic.AssignIfCompatible(dst, val.Get())
 		}
 	case ServiceProviderConfigSortKey:
 		if val := v.sort; val != nil {
@@ -147,11 +147,11 @@ func (v *ServiceProviderConfig) Set(key string, value interface{}) error {
 		}
 		v.patch = converted
 	case ServiceProviderConfigSchemasKey:
-		converted, ok := value.(schemas)
-		if !ok {
-			return fmt.Errorf(`expected value of type schemas for field schemas, got %T`, value)
+		var object schemas
+		if err := object.Accept(value); err != nil {
+			return fmt.Errorf(`failed to accept value: %w`, err)
 		}
-		v.schemas = &converted
+		v.schemas = &object
 	case ServiceProviderConfigSortKey:
 		converted, ok := value.(*GenericSupport)
 		if !ok {
@@ -356,7 +356,7 @@ func (v *ServiceProviderConfig) makePairs() []*fieldPair {
 		pairs = append(pairs, &fieldPair{Name: ServiceProviderConfigPatchKey, Value: val})
 	}
 	if val := v.schemas; val != nil {
-		pairs = append(pairs, &fieldPair{Name: ServiceProviderConfigSchemasKey, Value: *val})
+		pairs = append(pairs, &fieldPair{Name: ServiceProviderConfigSchemasKey, Value: val.Get()})
 	}
 	if val := v.sort; val != nil {
 		pairs = append(pairs, &fieldPair{Name: ServiceProviderConfigSortKey, Value: val})

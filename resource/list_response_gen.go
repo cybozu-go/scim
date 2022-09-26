@@ -61,7 +61,7 @@ func (v *ListResponse) Get(key string, dst interface{}) error {
 		}
 	case ListResponseSchemasKey:
 		if val := v.schemas; val != nil {
-			return blackmagic.AssignIfCompatible(dst, *val)
+			return blackmagic.AssignIfCompatible(dst, val.Get())
 		}
 	default:
 		if v.extra != nil {
@@ -105,11 +105,11 @@ func (v *ListResponse) Set(key string, value interface{}) error {
 		}
 		v.totalResults = &converted
 	case ListResponseSchemasKey:
-		converted, ok := value.(schemas)
-		if !ok {
-			return fmt.Errorf(`expected value of type schemas for field schemas, got %T`, value)
+		var object schemas
+		if err := object.Accept(value); err != nil {
+			return fmt.Errorf(`failed to accept value: %w`, err)
 		}
-		v.schemas = &converted
+		v.schemas = &object
 	default:
 		if v.extra == nil {
 			v.extra = make(map[string]interface{})
@@ -231,7 +231,7 @@ func (v *ListResponse) makePairs() []*fieldPair {
 		pairs = append(pairs, &fieldPair{Name: ListResponseTotalResultsKey, Value: *val})
 	}
 	if val := v.schemas; val != nil {
-		pairs = append(pairs, &fieldPair{Name: ListResponseSchemasKey, Value: *val})
+		pairs = append(pairs, &fieldPair{Name: ListResponseSchemasKey, Value: val.Get()})
 	}
 
 	for key, val := range v.extra {

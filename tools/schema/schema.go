@@ -16,6 +16,7 @@ var schemastyp *schema.TypeInfo
 func init() {
 	metatyp = schema.Type(`*Meta`)
 	schemastyp = schema.Type(`schemas`).
+		ImplementsAccept(true).
 		ImplementsGet(true).
 		InitializerArgumentStyle(schema.InitializerArgumentAsSlice).
 		Element(`string`).

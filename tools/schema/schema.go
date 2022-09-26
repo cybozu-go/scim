@@ -1,7 +1,6 @@
 package schema
 
 import (
-	"sync"
 	"time"
 
 	"github.com/lestrrat-go/sketch/schema"
@@ -165,7 +164,6 @@ func (Schema) Fields() []*schema.Field {
 		schema.String("Description"),
 		schema.String("ID"),
 		schema.String("Name"),
-		schema.NewField("AttrByNameInitOnce", &sync.Once{}).Extension(true),
 	}
 }
 

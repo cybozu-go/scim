@@ -12,13 +12,12 @@ import (
 
 // Schema represents a Schema resource as defined in the SCIM RFC
 type Schema struct {
-	mu                 sync.RWMutex
-	attributes         []*SchemaAttribute
-	description        *string
-	id                 *string
-	name               *string
-	attrByNameInitOnce *sync.Once
-	extra              map[string]interface{}
+	mu          sync.RWMutex
+	attributes  []*SchemaAttribute
+	description *string
+	id          *string
+	name        *string
+	extra       map[string]interface{}
 }
 
 // These constants are used when the JSON field name is used.
@@ -184,7 +183,7 @@ func (v *Schema) Remove(key string) error {
 }
 
 func (v *Schema) makePairs() []*fieldPair {
-	pairs := make([]*fieldPair, 0, 5)
+	pairs := make([]*fieldPair, 0, 4)
 	if val := v.attributes; len(val) > 0 {
 		pairs = append(pairs, &fieldPair{Name: SchemaAttributesKey, Value: val})
 	}

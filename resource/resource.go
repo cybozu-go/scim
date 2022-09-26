@@ -60,10 +60,6 @@ type pair struct {
 	Value interface{}
 }
 
-func defaultUserValidate(v *User) error {
-	return nil
-}
-
 // Builder is a centralized store for other type-specific builders,
 // which exists mainly for convenience. Its zero-value can be used
 // safely, but you could also use the `resource.NewXXXXBuilder()` function

@@ -41,7 +41,6 @@ linters:
     - nakedret
     - nestif
     - nlreturn
-    - nosnakecase
     - paralleltest
     - revive
     - scopelint # deprecated

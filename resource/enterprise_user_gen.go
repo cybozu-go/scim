@@ -516,6 +516,13 @@ func (b *EnterpriseUserBuilder) MustBuild() *EnterpriseUser {
 	return object
 }
 
+func (b *EnterpriseUserBuilder) From(in *EnterpriseUser) *EnterpriseUserBuilder {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	b.object = in.Clone()
+	return b
+}
+
 func (b *EnterpriseUserBuilder) Extension(uri string, value interface{}) *EnterpriseUserBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
@@ -532,6 +539,20 @@ func (b *EnterpriseUserBuilder) Extension(uri string, value interface{}) *Enterp
 		b.err = err
 	}
 	return b
+}
+
+func (v *EnterpriseUser) Clone() *EnterpriseUser {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return &EnterpriseUser{
+		costCenter:     v.costCenter,
+		department:     v.department,
+		division:       v.division,
+		employeeNumber: v.employeeNumber,
+		manager:        v.manager,
+		organization:   v.organization,
+		schemas:        v.schemas,
+	}
 }
 
 func (v *EnterpriseUser) AsMap(dst map[string]interface{}) error {

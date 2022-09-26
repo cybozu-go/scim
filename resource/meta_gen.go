@@ -420,6 +420,18 @@ func (b *MetaBuilder) MustBuild() *Meta {
 	return object
 }
 
+func (v *Meta) Clone() *Meta {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return &Meta{
+		resourceType: v.resourceType,
+		location:     v.location,
+		version:      v.version,
+		created:      v.created,
+		lastModified: v.lastModified,
+	}
+}
+
 func (v *Meta) AsMap(dst map[string]interface{}) error {
 	for _, pair := range v.makePairs() {
 		dst[pair.Name] = pair.Value

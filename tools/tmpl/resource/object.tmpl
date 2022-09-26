@@ -11,6 +11,16 @@ func init() {
 
 {{ define "ext/object/footer" }}
 {{- $objectName := .Name }}
+func (v *{{ $objectName }}) Clone() *{{ $objectName }} {
+  v.mu.RLock()
+  defer v.mu.RUnlock()
+  return &{{ $objectName }}{
+{{- range $i, $field := .Fields }}
+    {{ $field.GetUnexportedName }}: v.{{ $field.GetUnexportedName }},
+{{- end }}
+  }
+}
+
 func (v *{{ $objectName }}) AsMap(dst map[string]interface{}) error {
   for _, pair := range v.makePairs() {
     dst[pair.Name] = pair.Value

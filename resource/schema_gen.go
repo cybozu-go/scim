@@ -373,6 +373,17 @@ func (b *SchemaBuilder) MustBuild() *Schema {
 	return object
 }
 
+func (v *Schema) Clone() *Schema {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return &Schema{
+		attributes:  v.attributes,
+		description: v.description,
+		id:          v.id,
+		name:        v.name,
+	}
+}
+
 func (v *Schema) AsMap(dst map[string]interface{}) error {
 	for _, pair := range v.makePairs() {
 		dst[pair.Name] = pair.Value

@@ -2,6 +2,13 @@
 {{ $objectName := .Name -}}
 {{ if (and (ne $objectName "Meta") (ne $objectName "Schema")) }}
 {{ $builderName := .Name | printf "%sBuilder" -}}
+func (b *{{ $builderName }}) From(in *{{ $objectName }}) *{{ $builderName }} {
+  b.mu.Lock()
+  defer b.mu.Unlock()
+  b.object = in.Clone()
+  return b
+}
+
 func (b *{{ $builderName }}) Extension(uri string, value interface{}) *{{ $builderName }} {
   b.mu.Lock()
   defer b.mu.Unlock()

@@ -608,6 +608,13 @@ func (b *ServiceProviderConfigBuilder) MustBuild() *ServiceProviderConfig {
 	return object
 }
 
+func (b *ServiceProviderConfigBuilder) From(in *ServiceProviderConfig) *ServiceProviderConfigBuilder {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	b.object = in.Clone()
+	return b
+}
+
 func (b *ServiceProviderConfigBuilder) Extension(uri string, value interface{}) *ServiceProviderConfigBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
@@ -624,6 +631,22 @@ func (b *ServiceProviderConfigBuilder) Extension(uri string, value interface{}) 
 		b.err = err
 	}
 	return b
+}
+
+func (v *ServiceProviderConfig) Clone() *ServiceProviderConfig {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return &ServiceProviderConfig{
+		authenticationSchemes: v.authenticationSchemes,
+		bulk:                  v.bulk,
+		changePassword:        v.changePassword,
+		documentationUri:      v.documentationUri,
+		etag:                  v.etag,
+		filter:                v.filter,
+		patch:                 v.patch,
+		schemas:               v.schemas,
+		sort:                  v.sort,
+	}
 }
 
 func (v *ServiceProviderConfig) AsMap(dst map[string]interface{}) error {

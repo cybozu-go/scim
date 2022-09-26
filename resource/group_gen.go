@@ -470,6 +470,13 @@ func (b *GroupBuilder) MustBuild() *Group {
 	return object
 }
 
+func (b *GroupBuilder) From(in *Group) *GroupBuilder {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	b.object = in.Clone()
+	return b
+}
+
 func (b *GroupBuilder) Extension(uri string, value interface{}) *GroupBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
@@ -486,6 +493,19 @@ func (b *GroupBuilder) Extension(uri string, value interface{}) *GroupBuilder {
 		b.err = err
 	}
 	return b
+}
+
+func (v *Group) Clone() *Group {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return &Group{
+		displayName: v.displayName,
+		externalId:  v.externalId,
+		id:          v.id,
+		members:     v.members,
+		schemas:     v.schemas,
+		meta:        v.meta,
+	}
 }
 
 func (v *Group) AsMap(dst map[string]interface{}) error {

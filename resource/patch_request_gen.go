@@ -286,6 +286,13 @@ func (b *PatchRequestBuilder) MustBuild() *PatchRequest {
 	return object
 }
 
+func (b *PatchRequestBuilder) From(in *PatchRequest) *PatchRequestBuilder {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	b.object = in.Clone()
+	return b
+}
+
 func (b *PatchRequestBuilder) Extension(uri string, value interface{}) *PatchRequestBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
@@ -302,6 +309,15 @@ func (b *PatchRequestBuilder) Extension(uri string, value interface{}) *PatchReq
 		b.err = err
 	}
 	return b
+}
+
+func (v *PatchRequest) Clone() *PatchRequest {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return &PatchRequest{
+		operations: v.operations,
+		schemas:    v.schemas,
+	}
 }
 
 func (v *PatchRequest) AsMap(dst map[string]interface{}) error {

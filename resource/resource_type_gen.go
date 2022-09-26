@@ -516,6 +516,13 @@ func (b *ResourceTypeBuilder) MustBuild() *ResourceType {
 	return object
 }
 
+func (b *ResourceTypeBuilder) From(in *ResourceType) *ResourceTypeBuilder {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	b.object = in.Clone()
+	return b
+}
+
 func (b *ResourceTypeBuilder) Extension(uri string, value interface{}) *ResourceTypeBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
@@ -532,6 +539,20 @@ func (b *ResourceTypeBuilder) Extension(uri string, value interface{}) *Resource
 		b.err = err
 	}
 	return b
+}
+
+func (v *ResourceType) Clone() *ResourceType {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return &ResourceType{
+		description:     v.description,
+		endpoint:        v.endpoint,
+		id:              v.id,
+		name:            v.name,
+		schema:          v.schema,
+		schemaExtension: v.schemaExtension,
+		schemas:         v.schemas,
+	}
 }
 
 func (v *ResourceType) AsMap(dst map[string]interface{}) error {

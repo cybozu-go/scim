@@ -344,6 +344,13 @@ func (b *ListResponseBuilder) MustBuild() *ListResponse {
 	return object
 }
 
+func (b *ListResponseBuilder) From(in *ListResponse) *ListResponseBuilder {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	b.object = in.Clone()
+	return b
+}
+
 func (b *ListResponseBuilder) Extension(uri string, value interface{}) *ListResponseBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
@@ -360,6 +367,18 @@ func (b *ListResponseBuilder) Extension(uri string, value interface{}) *ListResp
 		b.err = err
 	}
 	return b
+}
+
+func (v *ListResponse) Clone() *ListResponse {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return &ListResponse{
+		itemsPerPage: v.itemsPerPage,
+		resources:    v.resources,
+		startIndex:   v.startIndex,
+		totalResults: v.totalResults,
+		schemas:      v.schemas,
+	}
 }
 
 func (v *ListResponse) AsMap(dst map[string]interface{}) error {

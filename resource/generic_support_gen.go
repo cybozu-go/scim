@@ -231,6 +231,9 @@ func (b *GenericSupportBuilder) Build() (*GenericSupport, error) {
 	if err := b.err; err != nil {
 		return nil, err
 	}
+	if b.object.supported == nil {
+		return nil, fmt.Errorf("required field 'Supported' not initialized")
+	}
 	obj := b.object
 	b.once = sync.Once{}
 	b.once.Do(b.initialize)

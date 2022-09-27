@@ -388,6 +388,12 @@ func (b *SchemaBuilder) Build() (*Schema, error) {
 	if err := b.err; err != nil {
 		return nil, err
 	}
+	if b.object.attributes == nil {
+		return nil, fmt.Errorf("required field 'Attributes' not initialized")
+	}
+	if b.object.id == nil {
+		return nil, fmt.Errorf("required field 'ID' not initialized")
+	}
 	if b.object.name == nil {
 		return nil, fmt.Errorf("required field 'Name' not initialized")
 	}

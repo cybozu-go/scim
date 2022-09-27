@@ -335,6 +335,15 @@ func (b *BulkSupportBuilder) Build() (*BulkSupport, error) {
 	if err := b.err; err != nil {
 		return nil, err
 	}
+	if b.object.maxOperations == nil {
+		return nil, fmt.Errorf("required field 'MaxOperations' not initialized")
+	}
+	if b.object.maxPayloadSize == nil {
+		return nil, fmt.Errorf("required field 'MaxPayloadSize' not initialized")
+	}
+	if b.object.supported == nil {
+		return nil, fmt.Errorf("required field 'Supported' not initialized")
+	}
 	obj := b.object
 	b.once = sync.Once{}
 	b.once.Do(b.initialize)

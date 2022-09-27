@@ -439,6 +439,12 @@ func (b *AuthenticationSchemeBuilder) Build() (*AuthenticationScheme, error) {
 	if err := b.err; err != nil {
 		return nil, err
 	}
+	if b.object.description == nil {
+		return nil, fmt.Errorf("required field 'Description' not initialized")
+	}
+	if b.object.name == nil {
+		return nil, fmt.Errorf("required field 'Name' not initialized")
+	}
 	obj := b.object
 	b.once = sync.Once{}
 	b.once.Do(b.initialize)

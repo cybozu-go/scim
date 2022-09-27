@@ -549,6 +549,18 @@ func (b *ResourceTypeBuilder) Build() (*ResourceType, error) {
 	if err := b.err; err != nil {
 		return nil, err
 	}
+	if b.object.endpoint == nil {
+		return nil, fmt.Errorf("required field 'Endpoint' not initialized")
+	}
+	if b.object.name == nil {
+		return nil, fmt.Errorf("required field 'Name' not initialized")
+	}
+	if b.object.schema == nil {
+		return nil, fmt.Errorf("required field 'Schema' not initialized")
+	}
+	if b.object.schemaExtension == nil {
+		return nil, fmt.Errorf("required field 'SchemaExtension' not initialized")
+	}
 	obj := b.object
 	b.once = sync.Once{}
 	b.once.Do(b.initialize)

@@ -803,6 +803,12 @@ func (b *SchemaAttributeBuilder) Build() (*SchemaAttribute, error) {
 	if err := b.err; err != nil {
 		return nil, err
 	}
+	if b.object.multiValued == nil {
+		return nil, fmt.Errorf("required field 'MultiValued' not initialized")
+	}
+	if b.object.typ == nil {
+		return nil, fmt.Errorf("required field 'Type' not initialized")
+	}
 	obj := b.object
 	b.once = sync.Once{}
 	b.once.Do(b.initialize)

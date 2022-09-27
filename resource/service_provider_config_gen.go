@@ -653,6 +653,24 @@ func (b *ServiceProviderConfigBuilder) Build() (*ServiceProviderConfig, error) {
 	if err := b.err; err != nil {
 		return nil, err
 	}
+	if b.object.authenticationSchemes == nil {
+		return nil, fmt.Errorf("required field 'AuthenticationSchemes' not initialized")
+	}
+	if b.object.bulk == nil {
+		return nil, fmt.Errorf("required field 'Bulk' not initialized")
+	}
+	if b.object.changePassword == nil {
+		return nil, fmt.Errorf("required field 'ChangePassword' not initialized")
+	}
+	if b.object.filter == nil {
+		return nil, fmt.Errorf("required field 'Filter' not initialized")
+	}
+	if b.object.patch == nil {
+		return nil, fmt.Errorf("required field 'Patch' not initialized")
+	}
+	if b.object.sort == nil {
+		return nil, fmt.Errorf("required field 'Sort' not initialized")
+	}
 	obj := b.object
 	b.once = sync.Once{}
 	b.once.Do(b.initialize)

@@ -47,10 +47,10 @@ type AuthenticationScheme struct {
 
 func (AuthenticationScheme) Fields() []*schema.Field {
 	return []*schema.Field{
-		schema.String(`Description`),
+		schema.String(`Description`).Required(true),
 		schema.String(`DocumentationURI`).
 			Unexported(`documentationUri`),
-		schema.String(`Name`),
+		schema.String(`Name`).Required(true),
 		schema.String(`SpecURI`).
 			Unexported(`specUri`),
 		schema.NewField(`Type`, schema.Type(`*AuthenticationSchemeType`)).
@@ -65,9 +65,9 @@ type BulkSupport struct {
 
 func (BulkSupport) Fields() []*schema.Field {
 	return []*schema.Field{
-		schema.Int(`MaxOperations`),
-		schema.Int(`MaxPayloadSize`),
-		schema.Bool(`Supported`),
+		schema.Int(`MaxOperations`).Required(true),
+		schema.Int(`MaxPayloadSize`).Required(true),
+		schema.Bool(`Supported`).Required(true),
 	}
 }
 
@@ -169,7 +169,7 @@ type GenericSupport struct {
 
 func (GenericSupport) Fields() []*schema.Field {
 	return []*schema.Field{
-		schema.Bool(`Supported`),
+		schema.Bool(`Supported`).Required(true),
 	}
 }
 
@@ -376,11 +376,11 @@ func (ResourceType) Fields() []*schema.Field {
 	schemaexttyp := schema.Type(`[]*SchemaExtension`)
 	return []*schema.Field{
 		schema.String(`Description`),
-		schema.String(`Endpoint`),
+		schema.String(`Endpoint`).Required(true),
 		schema.String(`ID`),
-		schema.String(`Name`),
-		schema.String(`Schema`),
-		schema.NewField(`SchemaExtension`, schemaexttyp),
+		schema.String(`Name`).Required(true),
+		schema.String(`Schema`).Required(true),
+		schema.NewField(`SchemaExtension`, schemaexttyp).Required(true),
 		schema.NewField(`Schemas`, schemastyp),
 	}
 }
@@ -398,9 +398,9 @@ func (Schema) Fields() []*schema.Field {
 	satyp := schema.Type(`[]*SchemaAttribute`)
 
 	return []*schema.Field{
-		schema.NewField("Attributes", satyp),
+		schema.NewField("Attributes", satyp).Required(true),
 		schema.String("Description"),
-		schema.String("ID"),
+		schema.String("ID").Required(true),
 		schema.String("Name").Required(true),
 	}
 }
@@ -420,14 +420,14 @@ func (SchemaAttribute) Fields() []*schema.Field {
 		schema.NewField(`CanonicalValues`, `[]interface{}`),
 		schema.Bool(`CaseExact`),
 		schema.String(`Description`),
-		schema.Bool(`MultiValued`),
+		schema.Bool(`MultiValued`).Required(true),
 		schema.NewField(`Mutability`, muttype),
 		schema.String(`Name`),
 		schema.NewField(`ReferenceTypes`, []string(nil)),
 		schema.Bool(`Required`),
 		schema.NewField(`Returned`, rettype),
 		schema.NewField(`SubAttributes`, subattrtype),
-		schema.NewField(`Type`, dttype).Unexported(`typ`).JSON(`type`),
+		schema.NewField(`Type`, dttype).Unexported(`typ`).JSON(`type`).Required(true),
 		schema.NewField(`Uniqueness`, uniqtype),
 	}
 }
@@ -439,8 +439,8 @@ type SchemaExtension struct {
 
 func (SchemaExtension) Fields() []*schema.Field {
 	return []*schema.Field{
-		schema.String(`Schema`),
-		schema.Bool(`Required`),
+		schema.String(`Schema`).Required(true),
+		schema.Bool(`Required`).Required(true),
 	}
 }
 
@@ -480,16 +480,16 @@ func (ServiceProviderConfig) Fields() []*schema.Field {
 	authschemestyp := schema.Type(`[]*AuthenticationScheme`)
 	gensupporttyp := schema.Type(`*GenericSupport`)
 	return []*schema.Field{
-		schema.NewField(`AuthenticationSchemes`, authschemestyp),
-		schema.NewField(`Bulk`, schema.Type(`*BulkSupport`)),
-		schema.NewField(`ChangePassword`, gensupporttyp),
+		schema.NewField(`AuthenticationSchemes`, authschemestyp).Required(true),
+		schema.NewField(`Bulk`, schema.Type(`*BulkSupport`)).Required(true),
+		schema.NewField(`ChangePassword`, gensupporttyp).Required(true),
 		schema.String(`DocumentationURI`).
 			Unexported(`documentationUri`),
 		schema.NewField(`ETag`, gensupporttyp).Unexported(`etag`),
-		schema.NewField(`Filter`, schema.Type(`*FilterSupport`)),
-		schema.NewField(`Patch`, gensupporttyp),
+		schema.NewField(`Filter`, schema.Type(`*FilterSupport`)).Required(true),
+		schema.NewField(`Patch`, gensupporttyp).Required(true).Required(true),
 		schema.NewField(`Schemas`, schemastyp),
-		schema.NewField(`Sort`, gensupporttyp),
+		schema.NewField(`Sort`, gensupporttyp).Required(true),
 	}
 }
 

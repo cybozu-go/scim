@@ -283,6 +283,12 @@ func (b *SchemaExtensionBuilder) Build() (*SchemaExtension, error) {
 	if err := b.err; err != nil {
 		return nil, err
 	}
+	if b.object.schema == nil {
+		return nil, fmt.Errorf("required field 'Schema' not initialized")
+	}
+	if b.object.required == nil {
+		return nil, fmt.Errorf("required field 'Required' not initialized")
+	}
 	obj := b.object
 	b.once = sync.Once{}
 	b.once.Do(b.initialize)

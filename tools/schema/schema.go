@@ -385,6 +385,20 @@ func (ResourceType) Fields() []*schema.Field {
 	}
 }
 
+type Role struct {
+	schema.Base
+	scimSchemaBase
+}
+
+func (Role) Fields() []*schema.Field {
+	return []*schema.Field{
+		schema.String(`Display`),
+		schema.Bool(`Primary`),
+		schema.String(`Type`).Unexported(`typ`).JSON(`type`),
+		schema.String(`Value`),
+	}
+}
+
 type Schema struct {
 	schema.Base
 	scimSchemaBase

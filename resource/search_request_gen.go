@@ -14,7 +14,7 @@ import (
 const SearchRequestSchemaURI = "urn:ietf:params:scim:schemas:core:2.0:SearchRequest"
 
 func init() {
-	RegisterExtension(SearchRequestSchemaURI, SearchRequest{})
+	Register("SearchRequest", SearchRequestSchemaURI, SearchRequest{})
 }
 
 type SearchRequest struct {
@@ -495,8 +495,8 @@ LOOP:
 				v.startIndex = &val
 			default:
 				var val interface{}
-				if err := dec.Decode(&val); err != nil {
-					return fmt.Errorf(`failed to decode value for %q: %w`, tok, err)
+				if err := extraFieldsDecoder(tok, dec, &val); err != nil {
+					return err
 				}
 				if extra == nil {
 					extra = make(map[string]interface{})

@@ -2,11 +2,10 @@
 {{- $schemaURI := .GetSchemaURI }}
 {{- if (ne $schemaURI "") }}
 const {{ .Name }}SchemaURI = {{ $schemaURI | printf "%q" }}
-
-func init() {
-  RegisterExtension({{ .Name }}SchemaURI, {{ .Name }}{})
-}
 {{ end }}
+func init() {
+  Register({{ .Name | printf "%q" }}, {{ if (eq $schemaURI "") }}""{{ else }}{{ .Name }}SchemaURI{{ end }}, {{ .Name }}{})
+}
 {{ end }}
 
 {{ define "ext/object/footer" }}

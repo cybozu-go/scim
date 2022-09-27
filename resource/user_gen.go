@@ -14,7 +14,7 @@ import (
 const UserSchemaURI = "urn:ietf:params:scim:schemas:core:2.0:User"
 
 func init() {
-	RegisterExtension(UserSchemaURI, User{})
+	Register("User", UserSchemaURI, User{})
 }
 
 // User represents a User resource as defined in the SCIM RFC
@@ -1120,8 +1120,8 @@ LOOP:
 				v.x509Certificates = val
 			default:
 				var val interface{}
-				if err := dec.Decode(&val); err != nil {
-					return fmt.Errorf(`failed to decode value for %q: %w`, tok, err)
+				if err := extraFieldsDecoder(tok, dec, &val); err != nil {
+					return err
 				}
 				if extra == nil {
 					extra = make(map[string]interface{})

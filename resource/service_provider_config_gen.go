@@ -14,7 +14,7 @@ import (
 const ServiceProviderConfigSchemaURI = "urn:ietf:params:scim:schemas:core:2.0:ServiceProviderConfig"
 
 func init() {
-	RegisterExtension(ServiceProviderConfigSchemaURI, ServiceProviderConfig{})
+	Register("ServiceProviderConfig", ServiceProviderConfigSchemaURI, ServiceProviderConfig{})
 }
 
 type ServiceProviderConfig struct {
@@ -495,8 +495,8 @@ LOOP:
 				v.sort = val
 			default:
 				var val interface{}
-				if err := dec.Decode(&val); err != nil {
-					return fmt.Errorf(`failed to decode value for %q: %w`, tok, err)
+				if err := extraFieldsDecoder(tok, dec, &val); err != nil {
+					return err
 				}
 				if extra == nil {
 					extra = make(map[string]interface{})

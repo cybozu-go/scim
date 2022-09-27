@@ -104,7 +104,7 @@ LOOP:
 				v.totalResults = &x
 			default:
 				var x interface{}
-				if rx, ok := registry.Get(tok); ok {
+				if rx, ok := registry.LookupByURI(tok); ok {
 					x = rx
 					if err := dec.Decode(x); err != nil {
 						return fmt.Errorf(`failed to decode value for key %q: %w`, tok, err)

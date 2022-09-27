@@ -11,6 +11,10 @@ import (
 	"github.com/lestrrat-go/blackmagic"
 )
 
+func init() {
+	Register("GenericSupport", "", GenericSupport{})
+}
+
 type GenericSupport struct {
 	mu        sync.RWMutex
 	supported *bool
@@ -177,8 +181,8 @@ LOOP:
 				v.supported = &val
 			default:
 				var val interface{}
-				if err := dec.Decode(&val); err != nil {
-					return fmt.Errorf(`failed to decode value for %q: %w`, tok, err)
+				if err := extraFieldsDecoder(tok, dec, &val); err != nil {
+					return err
 				}
 				if extra == nil {
 					extra = make(map[string]interface{})

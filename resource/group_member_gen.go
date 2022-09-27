@@ -11,6 +11,10 @@ import (
 	"github.com/lestrrat-go/blackmagic"
 )
 
+func init() {
+	Register("GroupMember", "", GroupMember{})
+}
+
 type GroupMember struct {
 	mu    sync.RWMutex
 	value *string
@@ -255,8 +259,8 @@ LOOP:
 				v.typ = &val
 			default:
 				var val interface{}
-				if err := dec.Decode(&val); err != nil {
-					return fmt.Errorf(`failed to decode value for %q: %w`, tok, err)
+				if err := extraFieldsDecoder(tok, dec, &val); err != nil {
+					return err
 				}
 				if extra == nil {
 					extra = make(map[string]interface{})

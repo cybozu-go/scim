@@ -14,7 +14,7 @@ import (
 const ListResponseSchemaURI = "urn:ietf:params:scim:api:messages:2.0:ListResponse"
 
 func init() {
-	RegisterExtension(ListResponseSchemaURI, ListResponse{})
+	Register("ListResponse", ListResponseSchemaURI, ListResponse{})
 }
 
 type ListResponse struct {

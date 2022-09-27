@@ -1,4 +1,4 @@
-//go:generate ../tools/cmd/genresources.sh
+//go:generate ../tools/gen-resources.sh
 
 package resource
 
@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"sort"
 	"sync"
+
+	"github.com/lestrrat-go/blackmagic"
 )
 
 // schemas is a container for schemas. it dedupes schema URIs,
@@ -169,3 +171,24 @@ const (
 	PatchRemove  PatchOperationType = `remove`
 	PatchReplace PatchOperationType = `replace`
 )
+
+func decodeExtra(name string, dec *json.Decoder, dst interface{}) error {
+	// we can get an instance of the resource object
+	if rx, ok := registry.LookupByURI(name); ok {
+		if err := dec.Decode(&rx); err != nil {
+			return fmt.Errorf(`failed to decode value for key %q: %w`, name, err)
+		}
+		if err := blackmagic.AssignIfCompatible(dst, rx); err != nil {
+			return err
+		}
+	} else {
+		if err := dec.Decode(dst); err != nil {
+			return fmt.Errorf(`failed to decode value for key %q: %w`, name, err)
+		}
+	}
+	return nil
+}
+
+func init() {
+	extraFieldsDecoder = decodeExtra
+}

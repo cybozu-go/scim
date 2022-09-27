@@ -14,7 +14,7 @@ import (
 const GroupSchemaURI = "urn:ietf:params:scim:schemas:core:2.0:Group"
 
 func init() {
-	RegisterExtension(GroupSchemaURI, Group{})
+	Register("Group", GroupSchemaURI, Group{})
 }
 
 type Group struct {
@@ -378,8 +378,8 @@ LOOP:
 				v.meta = val
 			default:
 				var val interface{}
-				if err := dec.Decode(&val); err != nil {
-					return fmt.Errorf(`failed to decode value for %q: %w`, tok, err)
+				if err := extraFieldsDecoder(tok, dec, &val); err != nil {
+					return err
 				}
 				if extra == nil {
 					extra = make(map[string]interface{})

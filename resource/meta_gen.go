@@ -12,6 +12,10 @@ import (
 	"github.com/lestrrat-go/blackmagic"
 )
 
+func init() {
+	Register("Meta", "", Meta{})
+}
+
 // Meta represents the `meta` field included in SCIM responses. See https://datatracker.ietf.org/doc/html/rfc7643#section-3.1 for details
 type Meta struct {
 	mu           sync.RWMutex
@@ -335,8 +339,8 @@ LOOP:
 				v.lastModified = &val
 			default:
 				var val interface{}
-				if err := dec.Decode(&val); err != nil {
-					return fmt.Errorf(`failed to decode value for %q: %w`, tok, err)
+				if err := extraFieldsDecoder(tok, dec, &val); err != nil {
+					return err
 				}
 				if extra == nil {
 					extra = make(map[string]interface{})

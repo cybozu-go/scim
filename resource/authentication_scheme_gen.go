@@ -456,6 +456,7 @@ func (b *AuthenticationSchemeBuilder) MustBuild() *AuthenticationScheme {
 func (b *AuthenticationSchemeBuilder) From(in *AuthenticationScheme) *AuthenticationSchemeBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.initialize)
 	b.object = in.Clone()
 	return b
 }

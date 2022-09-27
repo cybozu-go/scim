@@ -404,6 +404,7 @@ func (b *PhoneNumberBuilder) MustBuild() *PhoneNumber {
 func (b *PhoneNumberBuilder) From(in *PhoneNumber) *PhoneNumberBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.initialize)
 	b.object = in.Clone()
 	return b
 }

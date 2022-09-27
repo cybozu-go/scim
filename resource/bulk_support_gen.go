@@ -352,6 +352,7 @@ func (b *BulkSupportBuilder) MustBuild() *BulkSupport {
 func (b *BulkSupportBuilder) From(in *BulkSupport) *BulkSupportBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.initialize)
 	b.object = in.Clone()
 	return b
 }

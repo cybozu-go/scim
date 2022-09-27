@@ -820,6 +820,7 @@ func (b *SchemaAttributeBuilder) MustBuild() *SchemaAttribute {
 func (b *SchemaAttributeBuilder) From(in *SchemaAttribute) *SchemaAttributeBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.initialize)
 	b.object = in.Clone()
 	return b
 }

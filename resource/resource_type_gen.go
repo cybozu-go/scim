@@ -566,6 +566,7 @@ func (b *ResourceTypeBuilder) MustBuild() *ResourceType {
 func (b *ResourceTypeBuilder) From(in *ResourceType) *ResourceTypeBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.initialize)
 	b.object = in.Clone()
 	return b
 }

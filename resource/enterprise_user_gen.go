@@ -566,6 +566,7 @@ func (b *EnterpriseUserBuilder) MustBuild() *EnterpriseUser {
 func (b *EnterpriseUserBuilder) From(in *EnterpriseUser) *EnterpriseUserBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.initialize)
 	b.object = in.Clone()
 	return b
 }

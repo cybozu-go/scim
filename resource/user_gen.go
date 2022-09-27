@@ -1506,6 +1506,7 @@ func (b *UserBuilder) MustBuild() *User {
 func (b *UserBuilder) From(in *User) *UserBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.initialize)
 	b.object = in.Clone()
 	return b
 }

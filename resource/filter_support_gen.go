@@ -300,6 +300,7 @@ func (b *FilterSupportBuilder) MustBuild() *FilterSupport {
 func (b *FilterSupportBuilder) From(in *FilterSupport) *FilterSupportBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.initialize)
 	b.object = in.Clone()
 	return b
 }

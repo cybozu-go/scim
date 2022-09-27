@@ -248,6 +248,7 @@ func (b *GenericSupportBuilder) MustBuild() *GenericSupport {
 func (b *GenericSupportBuilder) From(in *GenericSupport) *GenericSupportBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.initialize)
 	b.object = in.Clone()
 	return b
 }

@@ -306,6 +306,7 @@ func (b *PatchRequestBuilder) MustBuild() *PatchRequest {
 func (b *PatchRequestBuilder) From(in *PatchRequest) *PatchRequestBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.initialize)
 	b.object = in.Clone()
 	return b
 }

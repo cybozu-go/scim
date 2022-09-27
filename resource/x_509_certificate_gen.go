@@ -404,6 +404,7 @@ func (b *X509CertificateBuilder) MustBuild() *X509Certificate {
 func (b *X509CertificateBuilder) From(in *X509Certificate) *X509CertificateBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.initialize)
 	b.object = in.Clone()
 	return b
 }

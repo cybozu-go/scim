@@ -514,6 +514,7 @@ func (b *GroupBuilder) MustBuild() *Group {
 func (b *GroupBuilder) From(in *Group) *GroupBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.initialize)
 	b.object = in.Clone()
 	return b
 }

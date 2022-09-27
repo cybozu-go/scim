@@ -404,6 +404,7 @@ func (b *IMSBuilder) MustBuild() *IMS {
 func (b *IMSBuilder) From(in *IMS) *IMSBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.initialize)
 	b.object = in.Clone()
 	return b
 }

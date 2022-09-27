@@ -508,6 +508,7 @@ func (b *NamesBuilder) MustBuild() *Names {
 func (b *NamesBuilder) From(in *Names) *NamesBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.initialize)
 	b.object = in.Clone()
 	return b
 }

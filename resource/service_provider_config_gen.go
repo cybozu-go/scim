@@ -670,6 +670,7 @@ func (b *ServiceProviderConfigBuilder) MustBuild() *ServiceProviderConfig {
 func (b *ServiceProviderConfigBuilder) From(in *ServiceProviderConfig) *ServiceProviderConfigBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.initialize)
 	b.object = in.Clone()
 	return b
 }

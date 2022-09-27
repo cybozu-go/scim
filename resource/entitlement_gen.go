@@ -404,6 +404,7 @@ func (b *EntitlementBuilder) MustBuild() *Entitlement {
 func (b *EntitlementBuilder) From(in *Entitlement) *EntitlementBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.initialize)
 	b.object = in.Clone()
 	return b
 }

@@ -352,6 +352,7 @@ func (b *ErrorBuilder) MustBuild() *Error {
 func (b *ErrorBuilder) From(in *Error) *ErrorBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.initialize)
 	b.object = in.Clone()
 	return b
 }

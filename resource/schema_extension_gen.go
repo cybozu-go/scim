@@ -300,6 +300,7 @@ func (b *SchemaExtensionBuilder) MustBuild() *SchemaExtension {
 func (b *SchemaExtensionBuilder) From(in *SchemaExtension) *SchemaExtensionBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.initialize)
 	b.object = in.Clone()
 	return b
 }

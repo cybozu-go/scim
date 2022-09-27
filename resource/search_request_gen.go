@@ -670,6 +670,7 @@ func (b *SearchRequestBuilder) MustBuild() *SearchRequest {
 func (b *SearchRequestBuilder) From(in *SearchRequest) *SearchRequestBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.initialize)
 	b.object = in.Clone()
 	return b
 }

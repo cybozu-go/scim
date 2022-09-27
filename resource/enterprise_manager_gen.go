@@ -352,6 +352,7 @@ func (b *EnterpriseManagerBuilder) MustBuild() *EnterpriseManager {
 func (b *EnterpriseManagerBuilder) From(in *EnterpriseManager) *EnterpriseManagerBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.initialize)
 	b.object = in.Clone()
 	return b
 }

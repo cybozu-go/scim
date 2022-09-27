@@ -560,6 +560,7 @@ func (b *AddressBuilder) MustBuild() *Address {
 func (b *AddressBuilder) From(in *Address) *AddressBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.initialize)
 	b.object = in.Clone()
 	return b
 }

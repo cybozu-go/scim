@@ -404,6 +404,7 @@ func (b *PhotoBuilder) MustBuild() *Photo {
 func (b *PhotoBuilder) From(in *Photo) *PhotoBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.initialize)
 	b.object = in.Clone()
 	return b
 }

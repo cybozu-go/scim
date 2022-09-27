@@ -508,6 +508,7 @@ func (b *PatchOperationBuilder) MustBuild() *PatchOperation {
 func (b *PatchOperationBuilder) From(in *PatchOperation) *PatchOperationBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.initialize)
 	b.object = in.Clone()
 	return b
 }

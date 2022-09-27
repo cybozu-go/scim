@@ -355,6 +355,7 @@ func (b *GroupMemberBuilder) MustBuild() *GroupMember {
 func (b *GroupMemberBuilder) From(in *GroupMember) *GroupMemberBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.initialize)
 	b.object = in.Clone()
 	return b
 }

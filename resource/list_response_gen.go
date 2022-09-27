@@ -377,6 +377,7 @@ func (b *ListResponseBuilder) MustBuild() *ListResponse {
 func (b *ListResponseBuilder) From(in *ListResponse) *ListResponseBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.initialize)
 	b.object = in.Clone()
 	return b
 }

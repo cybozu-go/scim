@@ -404,6 +404,7 @@ func (b *EmailBuilder) MustBuild() *Email {
 func (b *EmailBuilder) From(in *Email) *EmailBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.initialize)
 	b.object = in.Clone()
 	return b
 }

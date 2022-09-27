@@ -13,6 +13,7 @@ import (
 
 func init() {
 	Register("PatchOperation", "", PatchOperation{})
+	RegisterBuilder("PatchOperationBuilder", "", PatchOperationBuilder{})
 }
 
 type PatchOperation struct {

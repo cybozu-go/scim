@@ -13,6 +13,7 @@ import (
 
 func init() {
 	Register("IMS", "", IMS{})
+	RegisterBuilder("IMSBuilder", "", IMSBuilder{})
 }
 
 type IMS struct {

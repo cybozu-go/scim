@@ -13,6 +13,7 @@ import (
 
 func init() {
 	Register("SchemaAttribute", "", SchemaAttribute{})
+	RegisterBuilder("SchemaAttributeBuilder", "", SchemaAttributeBuilder{})
 }
 
 type SchemaAttribute struct {

@@ -15,6 +15,7 @@ const ResourceTypeSchemaURI = "urn:ietf:params:scim:schemas:core:2.0:ResourceTyp
 
 func init() {
 	Register("ResourceType", ResourceTypeSchemaURI, ResourceType{})
+	RegisterBuilder("ResourceTypeBuilder", ResourceTypeSchemaURI, ResourceTypeBuilder{})
 }
 
 type ResourceType struct {

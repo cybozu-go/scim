@@ -15,6 +15,7 @@ const UserSchemaURI = "urn:ietf:params:scim:schemas:core:2.0:User"
 
 func init() {
 	Register("User", UserSchemaURI, User{})
+	RegisterBuilder("UserBuilder", UserSchemaURI, UserBuilder{})
 }
 
 // User represents a User resource as defined in the SCIM RFC

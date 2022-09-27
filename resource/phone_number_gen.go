@@ -13,6 +13,7 @@ import (
 
 func init() {
 	Register("PhoneNumber", "", PhoneNumber{})
+	RegisterBuilder("PhoneNumberBuilder", "", PhoneNumberBuilder{})
 }
 
 type PhoneNumber struct {

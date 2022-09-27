@@ -13,6 +13,7 @@ import (
 
 func init() {
 	Register("Email", "", Email{})
+	RegisterBuilder("EmailBuilder", "", EmailBuilder{})
 }
 
 type Email struct {

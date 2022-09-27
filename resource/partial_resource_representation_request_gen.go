@@ -13,6 +13,7 @@ import (
 
 func init() {
 	Register("PartialResourceRepresentationRequest", "", PartialResourceRepresentationRequest{})
+	RegisterBuilder("PartialResourceRepresentationRequestBuilder", "", PartialResourceRepresentationRequestBuilder{})
 }
 
 type PartialResourceRepresentationRequest struct {

@@ -13,6 +13,7 @@ import (
 
 func init() {
 	Register("Entitlement", "", Entitlement{})
+	RegisterBuilder("EntitlementBuilder", "", EntitlementBuilder{})
 }
 
 type Entitlement struct {

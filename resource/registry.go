@@ -50,3 +50,28 @@ var registry = &Registry{
 func Register(name, uri string, data interface{}) {
 	registry.Register(name, uri, data)
 }
+
+var builderRegistry = &Registry{
+	urimap:  make(map[string]reflect.Type),
+	namemap: make(map[string]reflect.Type),
+}
+
+func RegisterBiulder(name, uri string, data interface{}) {
+	builderRegistry.Register(name, uri, data)
+}
+
+func LookupResourceByName(name string) (interface{}, bool) {
+	return registry.LookupByName(name)
+}
+
+func LookupResourceByURI(uri string) (interface{}, bool) {
+	return registry.LookupByURI(uri)
+}
+
+func LookupBuilderByName(name string) (interface{}, bool) {
+	return builderRegistry.LookupByName(name)
+}
+
+func LookupBuilderByURI(uri string) (interface{}, bool) {
+	return builderRegistry.LookupByURI(uri)
+}

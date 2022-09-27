@@ -13,6 +13,7 @@ import (
 
 func init() {
 	Register("AuthenticationScheme", "", AuthenticationScheme{})
+	RegisterBuilder("AuthenticationSchemeBuilder", "", AuthenticationSchemeBuilder{})
 }
 
 type AuthenticationScheme struct {

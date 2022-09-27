@@ -13,6 +13,7 @@ import (
 
 func init() {
 	Register("Error", "", Error{})
+	RegisterBuilder("ErrorBuilder", "", ErrorBuilder{})
 }
 
 type Error struct {

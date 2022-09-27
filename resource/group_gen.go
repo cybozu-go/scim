@@ -15,6 +15,7 @@ const GroupSchemaURI = "urn:ietf:params:scim:schemas:core:2.0:Group"
 
 func init() {
 	Register("Group", GroupSchemaURI, Group{})
+	RegisterBuilder("GroupBuilder", GroupSchemaURI, GroupBuilder{})
 }
 
 type Group struct {

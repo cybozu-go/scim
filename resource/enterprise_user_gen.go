@@ -15,6 +15,7 @@ const EnterpriseUserSchemaURI = "urn:ietf:params:scim:schemas:extension:enterpri
 
 func init() {
 	Register("EnterpriseUser", EnterpriseUserSchemaURI, EnterpriseUser{})
+	RegisterBuilder("EnterpriseUserBuilder", EnterpriseUserSchemaURI, EnterpriseUserBuilder{})
 }
 
 type EnterpriseUser struct {

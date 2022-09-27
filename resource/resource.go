@@ -79,11 +79,6 @@ func (s *schemas) MarshalJSON() ([]byte, error) {
 	return json.Marshal(s.List())
 }
 
-type pair struct {
-	Key   string
-	Value interface{}
-}
-
 // Builder is a centralized store for other type-specific builders,
 // which exists mainly for convenience. Its zero-value can be used
 // safely, but you could also use the `resource.NewXXXXBuilder()` function

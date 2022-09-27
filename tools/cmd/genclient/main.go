@@ -53,39 +53,40 @@ func _main() error {
 	var callsFile = flag.String("calls", "calls.yml", "")
 
 	// Contains the resource objects that the calls use
-	var resourcesFile = flag.String("resources", "resources.yml", "")
+	// var resourcesFile = flag.String("resources", "resources.yml", "")
 	flag.Parse()
 
-	resourcesSrc, err := yaml2json(*resourcesFile)
-	if err != nil {
-		return err
-	}
+	//	resourcesSrc, err := yaml2json(*resourcesFile)
+	//	if err != nil {
+	//		return err
+	//	}
 
 	callsSrc, err := yaml2json(*callsFile)
 	if err != nil {
 		return err
 	}
 
-	var resourceDefs struct {
-		Common  codegen.FieldList
-		Objects []*codegen.Object `json:"objects"`
-	}
-	if err := json.NewDecoder(bytes.NewReader(resourcesSrc)).Decode(&resourceDefs); err != nil {
-		return fmt.Errorf(`failed to decode %q: %w`, *resourcesFile, err)
-	}
-
-	resources := make(map[string]*codegen.Object)
-	for _, object := range resourceDefs.Objects {
-		// Each object needs a common set of fields.
-		if !object.Bool(`skipCommonFields`) {
-			for _, commonField := range resourceDefs.Common {
-				object.AddField(commonField)
-			}
+	/*
+		var resourceDefs struct {
+			Common  codegen.FieldList
+			Objects []*codegen.Object `json:"objects"`
+		}
+		if err := json.NewDecoder(bytes.NewReader(resourcesSrc)).Decode(&resourceDefs); err != nil {
+			return fmt.Errorf(`failed to decode %q: %w`, *resourcesFile, err)
 		}
 
-		object.Organize()
-		resources[object.Name(true)] = object
-	}
+		resources := make(map[string]*codegen.Object)
+		for _, object := range resourceDefs.Objects {
+			// Each object needs a common set of fields.
+			if !object.Bool(`skipCommonFields`) {
+				for _, commonField := range resourceDefs.Common {
+					object.AddField(commonField)
+				}
+			}
+
+			object.Organize()
+			resources[object.Name(true)] = object
+		}*/
 
 	var calls struct {
 		Services []Service `json:"services"`
@@ -95,7 +96,7 @@ func _main() error {
 	}
 
 	for _, service := range calls.Services {
-		if err := generateService(service, resources); err != nil {
+		if err := generateService(service); err != nil {
 			return fmt.Errorf(`failed to generate service: %s`, err)
 		}
 	}
@@ -116,7 +117,7 @@ func IsIndirect(f codegen.Field) bool {
 	return strings.HasPrefix(s, `*`) || strings.HasPrefix(s, `[]`) || strings.HasSuffix(s, `List`)
 }
 
-func generateService(svc Service, resources map[string]*codegen.Object) error {
+func generateService(svc Service) error {
 	fmt.Printf("  ⌛ Generating %s...\n", svc.Name)
 
 	var buf bytes.Buffer
@@ -146,7 +147,7 @@ func generateService(svc Service, resources map[string]*codegen.Object) error {
 	for _, call := range svc.Calls {
 		fmt.Printf("    ⌛ Call %s...\n", call.Name(true))
 
-		if err := generateCall(o, svc, call, resources); err != nil {
+		if err := generateCall(o, svc, call); err != nil {
 			return fmt.Errorf(`failed to generate call %s: %w`, call.Name(true), err)
 		}
 	}
@@ -161,7 +162,7 @@ func generateService(svc Service, resources map[string]*codegen.Object) error {
 	return nil
 }
 
-func generateCall(o *codegen.Output, svc Service, call *codegen.Object, resources map[string]*codegen.Object) error {
+func generateCall(o *codegen.Output, svc Service, call *codegen.Object) error {
 	rstype := call.String(`resource`)
 
 	o.Comment(fmt.Sprintf(`%s is an encapsulation of a SCIM operation.`, call.Name(true)))
@@ -250,50 +251,49 @@ func generateCall(o *codegen.Output, svc Service, call *codegen.Object, resource
 	// an empty "resource" means no resource generation is necessary, and we can
 	// just send an "empty" request
 	if rstype != "" {
-		rs, ok := resources[rstype]
+		s, ok := schema.GetByResourceType(rstype)
 		if !ok {
 			return fmt.Errorf(`resource %q not found`, rstype)
 		}
 
 		if resType == "" {
-			resType = `resource.` + rs.Name(true)
+			resType = `resource.` + rstype
 		}
 
 		var fields []codegen.Field
 
-		rschema, ok := schema.GetByResourceType(rstype)
-		if !ok {
-			fields = append(rs.Fields(), optional...)
-		} else {
-			mutabilities := make(map[string]struct{})
-			if iface, ok := call.Extra(`allowedMutability`); ok {
-				if vam, ok := iface.([]interface{}); ok {
-					for _, v := range vam {
-						if sv, ok := v.(string); ok {
-							mutabilities[sv] = struct{}{}
-						}
+		//		if !ok {
+		//			fields = append(rs.Fields(), optional...)
+		//		} else {
+		mutabilities := make(map[string]struct{})
+		if iface, ok := call.Extra(`allowedMutability`); ok {
+			if vam, ok := iface.([]interface{}); ok {
+				for _, v := range vam {
+					if sv, ok := v.(string); ok {
+						mutabilities[sv] = struct{}{}
 					}
 				}
 			}
+		}
 
-			allowed := make(map[string]struct{})
-			if len(mutabilities) > 0 {
-				attrs := rschema.Attributes()
-				// I found out RFC7643 talks about “externalId” field, but it’s not in any of the defined schemas :(
-				eid := resource.NewSchemaAttributeBuilder().
-					Name(`externalId`).
-					Mutability(resource.MutWriteOnly).
-					MustBuild()
+		allowed := make(map[string]struct{})
+		if len(mutabilities) > 0 {
+			attrs := s.Attributes()
+			// I found out RFC7643 talks about “externalId” field, but it’s not in any of the defined schemas :(
+			eid := resource.NewSchemaAttributeBuilder().
+				Name(`externalId`).
+				Mutability(resource.MutWriteOnly).
+				MustBuild()
 
-				for _, attr := range append(attrs, eid) {
-					mut := string(attr.Mutability())
-					if _, ok := mutabilities[mut]; !ok {
-						continue
-					}
-
-					allowed[attr.Name()] = struct{}{}
+			for _, attr := range append(attrs, eid) {
+				mut := string(attr.Mutability())
+				if _, ok := mutabilities[mut]; !ok {
+					continue
 				}
+
+				allowed[attr.Name()] = struct{}{}
 			}
+			//			}
 
 			for _, f := range append(rs.Fields(), optional...) {
 				if len(mutabilities) > 0 {

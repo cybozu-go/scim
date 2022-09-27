@@ -5,6 +5,27 @@ import (
 	"fmt"
 )
 
+type PatchOperationValue json.RawMessage
+
+func (v *PatchOperationValue) Get() interface{} {
+	var dst interface{}
+	if err := json.Unmarshal(*v, &dst); err != nil {
+		return nil
+	}
+	return dst
+}
+
+func (v *PatchOperationValue) Accept(in interface{}) error {
+	serialized, err := json.Marshal(in)
+	if err != nil {
+		return fmt.Errorf(`failed to marshal value: %w`, err)
+	}
+
+	*v = PatchOperationValue(serialized)
+	return nil
+}
+
+/*
 func (b *PatchOperationBuilder) Value(v interface{}) *PatchOperationBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
@@ -22,4 +43,4 @@ func (b *PatchOperationBuilder) Value(v interface{}) *PatchOperationBuilder {
 		b.err = err
 	}
 	return b
-}
+}*/

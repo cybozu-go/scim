@@ -9,6 +9,7 @@ func (b *{{ $builderName }}) From(in *{{ $objectName }}) *{{ $builderName }} {
   return b
 }
 
+{{ if fieldByName $ "Schemas" }}
 func (b *{{ $builderName }}) Extension(uri string, value interface{}) *{{ $builderName }} {
   b.mu.Lock()
   defer b.mu.Unlock()
@@ -26,5 +27,6 @@ func (b *{{ $builderName }}) Extension(uri string, value interface{}) *{{ $build
   }
   return b
 }
+{{ end }}
 {{ end }}
 {{ end }}

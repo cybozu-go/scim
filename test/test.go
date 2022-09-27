@@ -241,7 +241,7 @@ func stockGroupCreateCall(cl *client.Client) *client.CreateGroupCall {
 	members := []*resource.GroupMember{
 		resource.NewGroupMemberBuilder().
 			Value(u3.ID()).
-			Ref(u3.Meta().Location()).
+			Reference(u3.Meta().Location()).
 			MustBuild(),
 	}
 	g1, err := cl.Group().Create().
@@ -255,15 +255,15 @@ func stockGroupCreateCall(cl *client.Client) *client.CreateGroupCall {
 	members = []*resource.GroupMember{
 		resource.NewGroupMemberBuilder().
 			Value(u1.ID()).
-			Ref(u1.Meta().Location()).
+			Reference(u1.Meta().Location()).
 			MustBuild(),
 		resource.NewGroupMemberBuilder().
 			Value(u2.ID()).
-			Ref(u2.Meta().Location()).
+			Reference(u2.Meta().Location()).
 			MustBuild(),
 		resource.NewGroupMemberBuilder().
 			Value(g1.ID()).
-			Ref(g1.Meta().Location()).
+			Reference(g1.Meta().Location()).
 			MustBuild(),
 	}
 
@@ -641,7 +641,7 @@ func UsersBasicCRUD(t *testing.T, cl *client.Client) func(*testing.T) {
 						Do(context.TODO())
 					var serr *resource.Error
 					require.True(t, errors.As(err, &serr), `error should be a resource.Error type`)
-					require.Equal(t, resource.ErrNoTarget, serr.ScimType())
+					require.Equal(t, resource.ErrNoTarget, serr.SCIMType())
 				})
 				t.Run("Single-value attribute", func(t *testing.T) {
 					user, err := cl.User().Patch(createdUser.ID()).

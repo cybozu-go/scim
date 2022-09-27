@@ -23,25 +23,80 @@ func init() {
 		UserFacingType(`[]string`)
 }
 
-type Group struct {
+type Address struct {
 	schema.Base
 	scimSchemaBase
 }
 
-func (Group) GetSchemaURI() string {
-	return "urn:ietf:params:scim:schemas:core:2.0:Group"
+func (Address) Fields() []*schema.Field {
+	return []*schema.Field{
+		schema.String(`Country`),
+		schema.String(`Formatted`),
+		schema.String(`Locality`),
+		schema.String(`PostalCode`),
+		schema.String(`Region`),
+		schema.String(`StreetAddress`),
+		schema.String(`Type`).Unexported(`typ`).JSON(`type`),
+	}
 }
 
-func (Group) Fields() []*schema.Field {
-	groupmembertyp := schema.Type(`[]*GroupMember`)
+type AuthenticationScheme struct {
+	schema.Base
+	scimSchemaBase
+}
+
+func (AuthenticationScheme) Fields() []*schema.Field {
+	return []*schema.Field{
+		schema.String(`Description`),
+		schema.String(`DocumentationURI`).
+			Unexported(`documentationUri`),
+		schema.String(`Name`),
+		schema.String(`SpecURI`).
+			Unexported(`specUri`),
+		schema.NewField(`Type`, schema.Type(`*AuthenticationSchemeType`)).
+			Unexported(`typ`).JSON(`type`),
+	}
+}
+
+type BulkSupport struct {
+	schema.Base
+	scimSchemaBase
+}
+
+func (BulkSupport) Fields() []*schema.Field {
+	return []*schema.Field{
+		schema.Int(`MaxOperations`),
+		schema.Int(`MaxPayloadSize`),
+		schema.Bool(`Supported`),
+	}
+}
+
+type Email struct {
+	schema.Base
+	scimSchemaBase
+}
+
+func (Email) Fields() []*schema.Field {
+	return []*schema.Field{
+		schema.String(`Display`),
+		schema.Bool(`Primary`),
+		schema.String(`Type`).Unexported(`typ`).JSON(`type`),
+		schema.String(`Value`),
+	}
+}
+
+type EnterpriseManager struct {
+	schema.Base
+	scimSchemaBase
+}
+
+func (EnterpriseManager) Fields() []*schema.Field {
 	return []*schema.Field{
 		schema.String(`DisplayName`),
-		schema.String(`ExternalID`).
-			Unexported(`externalId`),
 		schema.String(`ID`),
-		schema.NewField(`Members`, groupmembertyp),
-		schema.NewField(`Schemas`, schemastyp),
-		schema.NewField(`Meta`, metatyp),
+		schema.String(`Reference`).
+			Unexported(`ref`).
+			JSON(`$ref`),
 	}
 }
 
@@ -64,6 +119,106 @@ func (EnterpriseUser) Fields() []*schema.Field {
 		schema.NewField(`Manager`, emtyp),
 		schema.String(`Organization`),
 		schema.NewField(`Schemas`, schemastyp),
+	}
+}
+
+type Entitlement struct {
+	schema.Base
+	scimSchemaBase
+}
+
+func (Entitlement) Fields() []*schema.Field {
+	return []*schema.Field{
+		schema.String(`Display`),
+		schema.Bool(`Primary`),
+		schema.String(`Type`).Unexported(`typ`).JSON(`type`),
+		schema.String(`Value`),
+	}
+}
+
+type Error struct {
+	schema.Base
+	scimSchemaBase
+}
+
+func (Error) Fields() []*schema.Field {
+	errtyp := schema.Type(`ErrorType`).ZeroVal(`""`)
+	return []*schema.Field{
+		schema.String(`Detail`),
+		schema.NewField(`SCIMType`, errtyp).Unexported(`scimType`),
+		schema.Int(`Status`),
+	}
+}
+
+type FilterSupport struct {
+	schema.Base
+	scimSchemaBase
+}
+
+func (FilterSupport) Fields() []*schema.Field {
+	return []*schema.Field{
+		schema.Int(`MaxResults`),
+		schema.Bool(`Supported`),
+	}
+}
+
+type GenericSupport struct {
+	schema.Base
+	scimSchemaBase
+}
+
+func (GenericSupport) Fields() []*schema.Field {
+	return []*schema.Field{
+		schema.Bool(`Supported`),
+	}
+}
+
+type Group struct {
+	schema.Base
+	scimSchemaBase
+}
+
+func (Group) GetSchemaURI() string {
+	return "urn:ietf:params:scim:schemas:core:2.0:Group"
+}
+
+func (Group) Fields() []*schema.Field {
+	groupmembertyp := schema.Type(`[]*GroupMember`)
+	return []*schema.Field{
+		schema.String(`DisplayName`),
+		schema.String(`ExternalID`).
+			Unexported(`externalId`),
+		schema.String(`ID`),
+		schema.NewField(`Members`, groupmembertyp),
+		schema.NewField(`Schemas`, schemastyp),
+		schema.NewField(`Meta`, metatyp),
+	}
+}
+
+type GroupMember struct {
+	schema.Base
+	scimSchemaBase
+}
+
+func (GroupMember) Fields() []*schema.Field {
+	return []*schema.Field{
+		schema.String(`Value`).Required(true),
+		schema.String(`Reference`).Unexported(`ref`).JSON(`$ref`),
+		schema.String(`Type`).Unexported(`typ`).JSON(`type`),
+	}
+}
+
+type IMS struct {
+	schema.Base
+	scimSchemaBase
+}
+
+func (IMS) Fields() []*schema.Field {
+	return []*schema.Field{
+		schema.String(`Display`),
+		schema.Bool(`Primary`),
+		schema.String(`Type`).Unexported(`typ`).JSON(`type`),
+		schema.String(`Value`),
 	}
 }
 
@@ -109,6 +264,55 @@ func (Meta) Fields() []*schema.Field {
 	}
 }
 
+type Names struct {
+	schema.Base
+	scimSchemaBase
+}
+
+func (Names) Fields() []*schema.Field {
+	return []*schema.Field{
+		schema.String(`FamilyName`),
+		schema.String(`Formatted`),
+		schema.String(`GivenName`),
+		schema.String(`HonorificPrefix`),
+		schema.String(`HonorificSuffix`),
+		schema.String(`MiddleName`),
+	}
+}
+
+type PartialResourceRepresentationRequest struct {
+	schema.Base
+	scimSchemaBase
+}
+
+func (PartialResourceRepresentationRequest) Fields() []*schema.Field {
+	sslicetyp := schema.Type(`[]string`)
+	return []*schema.Field{
+		schema.NewField(`Attributes`, sslicetyp),
+		schema.NewField(`ExcludedAttributes`, sslicetyp),
+	}
+}
+
+type PatchOperation struct {
+	schema.Base
+	scimSchemaBase
+}
+
+func (PatchOperation) Fields() []*schema.Field {
+	potype := schema.Type(`PatchOperationValue`).
+		ImplementsGet(true).
+		ImplementsAccept(true).
+		UserFacingType(`interface{}`)
+	return []*schema.Field{
+		schema.String(`ExternalID`).Unexported(`externalId`),
+		schema.String(`ID`),
+		schema.NewField(`Meta`, metatyp),
+		schema.NewField(`Op`, schema.Type(`PatchOperationType`).ZeroVal(`""`)),
+		schema.String(`Path`),
+		schema.NewField(`Value`, potype),
+	}
+}
+
 type PatchRequest struct {
 	schema.Base
 	scimSchemaBase
@@ -123,6 +327,39 @@ func (PatchRequest) Fields() []*schema.Field {
 	return []*schema.Field{
 		schema.NewField(`Operations`, patchoptyp),
 		schema.NewField(`Schemas`, schemastyp),
+	}
+}
+
+type PhoneNumber struct {
+	schema.Base
+	scimSchemaBase
+}
+
+func (PhoneNumber) Fields() []*schema.Field {
+	pntype := schema.Type(`PhoneNumberValue`).
+		ZeroVal(`""`).
+		UserFacingType(`string`).
+		ImplementsGet(true).
+		ImplementsAccept(true)
+	return []*schema.Field{
+		schema.String(`Display`),
+		schema.Bool(`Primary`),
+		schema.String(`Type`).Unexported(`typ`).JSON(`type`),
+		schema.NewField(`Value`, pntype),
+	}
+}
+
+type Photo struct {
+	schema.Base
+	scimSchemaBase
+}
+
+func (Photo) Fields() []*schema.Field {
+	return []*schema.Field{
+		schema.String(`Display`),
+		schema.Bool(`Primary`),
+		schema.String(`Type`).Unexported(`typ`).JSON(`type`),
+		schema.String(`Value`),
 	}
 }
 
@@ -164,7 +401,95 @@ func (Schema) Fields() []*schema.Field {
 		schema.NewField("Attributes", satyp),
 		schema.String("Description"),
 		schema.String("ID"),
-		schema.String("Name"),
+		schema.String("Name").Required(true),
+	}
+}
+
+type SchemaAttribute struct {
+	schema.Base
+	scimSchemaBase
+}
+
+func (SchemaAttribute) Fields() []*schema.Field {
+	muttype := schema.Type(`Mutability`).ZeroVal(`MutReadOnly`)
+	rettype := schema.Type(`Returned`).ZeroVal(`ReturnedNever`)
+	subattrtype := schema.Type(`[]*SchemaAttribute`)
+	dttype := schema.Type(`DataType`).ZeroVal(`InvalidDataType`)
+	uniqtype := schema.Type(`Uniqueness`).ZeroVal(`UniqNone`)
+	return []*schema.Field{
+		schema.NewField(`CanonicalValues`, `[]interface{}`),
+		schema.Bool(`CaseExact`),
+		schema.String(`Description`),
+		schema.Bool(`MultiValued`),
+		schema.NewField(`Mutability`, muttype),
+		schema.String(`Name`),
+		schema.NewField(`ReferenceTypes`, []string(nil)),
+		schema.Bool(`Required`),
+		schema.NewField(`Returned`, rettype),
+		schema.NewField(`SubAttributes`, subattrtype),
+		schema.NewField(`Type`, dttype).Unexported(`typ`).JSON(`type`),
+		schema.NewField(`Uniqueness`, uniqtype),
+	}
+}
+
+type SchemaExtension struct {
+	schema.Base
+	scimSchemaBase
+}
+
+func (SchemaExtension) Fields() []*schema.Field {
+	return []*schema.Field{
+		schema.String(`Schema`),
+		schema.Bool(`Required`),
+	}
+}
+
+type SearchRequest struct {
+	schema.Base
+	scimSchemaBase
+}
+
+func (SearchRequest) GetSchemaURI() string {
+	return "urn:ietf:params:scim:schemas:core:2.0:SearchRequest"
+}
+
+func (SearchRequest) Fields() []*schema.Field {
+	return []*schema.Field{
+		schema.NewField(`Attributes`, []string(nil)),
+		schema.Int(`Count`),
+		schema.NewField(`ExcludedAttributes`, []string(nil)),
+		schema.String(`Filter`),
+		schema.String(`Schema`),
+		schema.NewField(`Schemas`, schemastyp),
+		schema.String(`SortBy`),
+		schema.String(`SortOrder`),
+		schema.Int(`StartIndex`),
+	}
+}
+
+type ServiceProviderConfig struct {
+	schema.Base
+	scimSchemaBase
+}
+
+func (ServiceProviderConfig) GetSchemaURI() string {
+	return "urn:ietf:params:scim:schemas:core:2.0:ServiceProviderConfig"
+}
+
+func (ServiceProviderConfig) Fields() []*schema.Field {
+	authschemestyp := schema.Type(`[]*AuthenticationScheme`)
+	gensupporttyp := schema.Type(`*GenericSupport`)
+	return []*schema.Field{
+		schema.NewField(`AuthenticationSchemes`, authschemestyp),
+		schema.NewField(`Bulk`, schema.Type(`*BulkSupport`)),
+		schema.NewField(`ChangePassword`, gensupporttyp),
+		schema.String(`DocumentationURI`).
+			Unexported(`documentationUri`),
+		schema.NewField(`ETag`, gensupporttyp).Unexported(`etag`),
+		schema.NewField(`Filter`, schema.Type(`*FilterSupport`)),
+		schema.NewField(`Patch`, gensupporttyp),
+		schema.NewField(`Schemas`, schemastyp),
+		schema.NewField(`Sort`, gensupporttyp),
 	}
 }
 
@@ -217,57 +542,22 @@ func (User) Fields() []*schema.Field {
 		schema.NewField(`Schemas`, schemastyp),
 		schema.String(`Timezone`),
 		schema.String(`Title`),
-		schema.String(`UserName`),
+		schema.String(`UserName`).Required(true),
 		schema.String(`UserType`),
 		schema.NewField(`X509Certificates`, certtyp),
 	}
 }
 
-type SearchRequest struct {
+type X509Certificate struct {
 	schema.Base
 	scimSchemaBase
 }
 
-func (SearchRequest) GetSchemaURI() string {
-	return "urn:ietf:params:scim:schemas:core:2.0:SearchRequest"
-}
-
-func (SearchRequest) Fields() []*schema.Field {
+func (X509Certificate) Fields() []*schema.Field {
 	return []*schema.Field{
-		schema.NewField(`Attributes`, []string(nil)),
-		schema.Int(`Count`),
-		schema.NewField(`ExcludedAttributes`, []string(nil)),
-		schema.String(`Filter`),
-		schema.String(`Schema`),
-		schema.NewField(`Schemas`, schemastyp),
-		schema.String(`SortBy`),
-		schema.String(`SortOrder`),
-		schema.Int(`StartIndex`),
-	}
-}
-
-type ServiceProviderConfig struct {
-	schema.Base
-	scimSchemaBase
-}
-
-func (ServiceProviderConfig) GetSchemaURI() string {
-	return "urn:ietf:params:scim:schemas:core:2.0:ServiceProviderConfig"
-}
-
-func (ServiceProviderConfig) Fields() []*schema.Field {
-	authschemestyp := schema.Type(`[]*AuthenticationScheme`)
-	gensupporttyp := schema.Type(`*GenericSupport`)
-	return []*schema.Field{
-		schema.NewField(`AuthenticationSchemes`, authschemestyp),
-		schema.NewField(`Bulk`, schema.Type(`*BulkSupport`)),
-		schema.NewField(`ChangePassword`, gensupporttyp),
-		schema.String(`DocumentationURI`).
-			Unexported(`documentationUri`),
-		schema.NewField(`ETag`, gensupporttyp).Unexported(`etag`),
-		schema.NewField(`Filter`, schema.Type(`*FilterSupport`)),
-		schema.NewField(`Patch`, gensupporttyp),
-		schema.NewField(`Schemas`, schemastyp),
-		schema.NewField(`Sort`, gensupporttyp),
+		schema.String(`Display`),
+		schema.Bool(`Primary`),
+		schema.String(`Type`).Unexported(`typ`).JSON(`type`),
+		schema.String(`Value`),
 	}
 }

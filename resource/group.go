@@ -17,10 +17,10 @@ func (b *GroupMemberBuilder) FromResource(r interface{}) *GroupMemberBuilder {
 	switch r := r.(type) {
 	case *Group:
 		b.Value(r.ID()).
-			Ref(r.Meta().Location())
+			Reference(r.Meta().Location())
 	case *User:
 		b.Value(r.ID()).
-			Ref(r.Meta().Location())
+			Reference(r.Meta().Location())
 	default:
 		b.err = fmt.Errorf(`invalid object type passed to GroupMemberBuilder.From: %T`, r)
 	}

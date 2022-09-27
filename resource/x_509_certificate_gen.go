@@ -11,14 +11,13 @@ import (
 	"github.com/lestrrat-go/blackmagic"
 )
 
-// Schema represents a Schema resource as defined in the SCIM RFC
-type Schema struct {
-	mu          sync.RWMutex
-	attributes  []*SchemaAttribute
-	description *string
-	id          *string
-	name        *string
-	extra       map[string]interface{}
+type X509Certificate struct {
+	mu      sync.RWMutex
+	display *string
+	primary *bool
+	typ     *string
+	value   *string
+	extra   map[string]interface{}
 }
 
 // These constants are used when the JSON field name is used.
@@ -26,31 +25,31 @@ type Schema struct {
 // complain about repeated constants, and therefore internally
 // this used throughout
 const (
-	SchemaAttributesKey  = "attributes"
-	SchemaDescriptionKey = "description"
-	SchemaIDKey          = "id"
-	SchemaNameKey        = "name"
+	X509CertificateDisplayKey = "display"
+	X509CertificatePrimaryKey = "primary"
+	X509CertificateTypeKey    = "type"
+	X509CertificateValueKey   = "value"
 )
 
 // Get retrieves the value associated with a key
-func (v *Schema) Get(key string, dst interface{}) error {
+func (v *X509Certificate) Get(key string, dst interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	switch key {
-	case SchemaAttributesKey:
-		if val := v.attributes; val != nil {
-			return blackmagic.AssignIfCompatible(dst, val)
-		}
-	case SchemaDescriptionKey:
-		if val := v.description; val != nil {
+	case X509CertificateDisplayKey:
+		if val := v.display; val != nil {
 			return blackmagic.AssignIfCompatible(dst, *val)
 		}
-	case SchemaIDKey:
-		if val := v.id; val != nil {
+	case X509CertificatePrimaryKey:
+		if val := v.primary; val != nil {
 			return blackmagic.AssignIfCompatible(dst, *val)
 		}
-	case SchemaNameKey:
-		if val := v.name; val != nil {
+	case X509CertificateTypeKey:
+		if val := v.typ; val != nil {
+			return blackmagic.AssignIfCompatible(dst, *val)
+		}
+	case X509CertificateValueKey:
+		if val := v.value; val != nil {
 			return blackmagic.AssignIfCompatible(dst, *val)
 		}
 	default:
@@ -66,34 +65,34 @@ func (v *Schema) Get(key string, dst interface{}) error {
 
 // Set sets the value of the specified field. The name must be a JSON
 // field name, not the Go name
-func (v *Schema) Set(key string, value interface{}) error {
+func (v *X509Certificate) Set(key string, value interface{}) error {
 	v.mu.Lock()
 	defer v.mu.Unlock()
 	switch key {
-	case SchemaAttributesKey:
-		converted, ok := value.([]*SchemaAttribute)
-		if !ok {
-			return fmt.Errorf(`expected value of type []*SchemaAttribute for field attributes, got %T`, value)
-		}
-		v.attributes = converted
-	case SchemaDescriptionKey:
+	case X509CertificateDisplayKey:
 		converted, ok := value.(string)
 		if !ok {
-			return fmt.Errorf(`expected value of type string for field description, got %T`, value)
+			return fmt.Errorf(`expected value of type string for field display, got %T`, value)
 		}
-		v.description = &converted
-	case SchemaIDKey:
+		v.display = &converted
+	case X509CertificatePrimaryKey:
+		converted, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf(`expected value of type bool for field primary, got %T`, value)
+		}
+		v.primary = &converted
+	case X509CertificateTypeKey:
 		converted, ok := value.(string)
 		if !ok {
-			return fmt.Errorf(`expected value of type string for field id, got %T`, value)
+			return fmt.Errorf(`expected value of type string for field type, got %T`, value)
 		}
-		v.id = &converted
-	case SchemaNameKey:
+		v.typ = &converted
+	case X509CertificateValueKey:
 		converted, ok := value.(string)
 		if !ok {
-			return fmt.Errorf(`expected value of type string for field name, got %T`, value)
+			return fmt.Errorf(`expected value of type string for field value, got %T`, value)
 		}
-		v.name = &converted
+		v.value = &converted
 	default:
 		if v.extra == nil {
 			v.extra = make(map[string]interface{})
@@ -102,80 +101,80 @@ func (v *Schema) Set(key string, value interface{}) error {
 	}
 	return nil
 }
-func (v *Schema) HasAttributes() bool {
+func (v *X509Certificate) HasDisplay() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return v.attributes != nil
+	return v.display != nil
 }
 
-func (v *Schema) HasDescription() bool {
+func (v *X509Certificate) HasPrimary() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return v.description != nil
+	return v.primary != nil
 }
 
-func (v *Schema) HasID() bool {
+func (v *X509Certificate) HasType() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return v.id != nil
+	return v.typ != nil
 }
 
-func (v *Schema) HasName() bool {
+func (v *X509Certificate) HasValue() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return v.name != nil
+	return v.value != nil
 }
 
-func (v *Schema) Attributes() []*SchemaAttribute {
+func (v *X509Certificate) Display() string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	if val := v.attributes; val != nil {
-		return val
-	}
-	return nil
-}
-
-func (v *Schema) Description() string {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	if val := v.description; val != nil {
+	if val := v.display; val != nil {
 		return *val
 	}
 	return ""
 }
 
-func (v *Schema) ID() string {
+func (v *X509Certificate) Primary() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	if val := v.id; val != nil {
+	if val := v.primary; val != nil {
+		return *val
+	}
+	return false
+}
+
+func (v *X509Certificate) Type() string {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	if val := v.typ; val != nil {
 		return *val
 	}
 	return ""
 }
 
-func (v *Schema) Name() string {
+func (v *X509Certificate) Value() string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	if val := v.name; val != nil {
+	if val := v.value; val != nil {
 		return *val
 	}
 	return ""
 }
 
 // Remove removes the value associated with a key
-func (v *Schema) Remove(key string) error {
+func (v *X509Certificate) Remove(key string) error {
 	v.mu.Lock()
 	defer v.mu.Unlock()
 
 	switch key {
-	case SchemaAttributesKey:
-		v.attributes = nil
-	case SchemaDescriptionKey:
-		v.description = nil
-	case SchemaIDKey:
-		v.id = nil
-	case SchemaNameKey:
-		v.name = nil
+	case X509CertificateDisplayKey:
+		v.display = nil
+	case X509CertificatePrimaryKey:
+		v.primary = nil
+	case X509CertificateTypeKey:
+		v.typ = nil
+	case X509CertificateValueKey:
+		v.value = nil
 	default:
 		delete(v.extra, key)
 	}
@@ -183,19 +182,19 @@ func (v *Schema) Remove(key string) error {
 	return nil
 }
 
-func (v *Schema) makePairs() []*fieldPair {
+func (v *X509Certificate) makePairs() []*fieldPair {
 	pairs := make([]*fieldPair, 0, 4)
-	if val := v.attributes; len(val) > 0 {
-		pairs = append(pairs, &fieldPair{Name: SchemaAttributesKey, Value: val})
+	if val := v.display; val != nil {
+		pairs = append(pairs, &fieldPair{Name: X509CertificateDisplayKey, Value: *val})
 	}
-	if val := v.description; val != nil {
-		pairs = append(pairs, &fieldPair{Name: SchemaDescriptionKey, Value: *val})
+	if val := v.primary; val != nil {
+		pairs = append(pairs, &fieldPair{Name: X509CertificatePrimaryKey, Value: *val})
 	}
-	if val := v.id; val != nil {
-		pairs = append(pairs, &fieldPair{Name: SchemaIDKey, Value: *val})
+	if val := v.typ; val != nil {
+		pairs = append(pairs, &fieldPair{Name: X509CertificateTypeKey, Value: *val})
 	}
-	if val := v.name; val != nil {
-		pairs = append(pairs, &fieldPair{Name: SchemaNameKey, Value: *val})
+	if val := v.value; val != nil {
+		pairs = append(pairs, &fieldPair{Name: X509CertificateValueKey, Value: *val})
 	}
 
 	for key, val := range v.extra {
@@ -208,11 +207,11 @@ func (v *Schema) makePairs() []*fieldPair {
 	return pairs
 }
 
-// MarshalJSON serializes Schema into JSON.
+// MarshalJSON serializes X509Certificate into JSON.
 // All pre-declared fields are included as long as a value is
 // assigned to them, as well as all extra fields. All of these
 // fields are sorted in alphabetical order.
-func (v *Schema) MarshalJSON() ([]byte, error) {
+func (v *X509Certificate) MarshalJSON() ([]byte, error) {
 	pairs := v.makePairs()
 
 	var buf bytes.Buffer
@@ -234,20 +233,20 @@ func (v *Schema) MarshalJSON() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-// UnmarshalJSON deserializes a piece of JSON data into Schema.
+// UnmarshalJSON deserializes a piece of JSON data into X509Certificate.
 //
 // Pre-defined fields must be deserializable via "encoding/json" to their
 // respective Go types, otherwise an error is returned.
 //
 // Extra fields are stored in a special "extra" storage, which can only
 // be accessed via `Get()` and `Set()` methods.
-func (v *Schema) UnmarshalJSON(data []byte) error {
+func (v *X509Certificate) UnmarshalJSON(data []byte) error {
 	v.mu.Lock()
 	defer v.mu.Unlock()
-	v.attributes = nil
-	v.description = nil
-	v.id = nil
-	v.name = nil
+	v.display = nil
+	v.primary = nil
+	v.typ = nil
+	v.value = nil
 
 	dec := json.NewDecoder(bytes.NewReader(data))
 	var extra map[string]interface{}
@@ -269,30 +268,30 @@ LOOP:
 			}
 		case string:
 			switch tok {
-			case SchemaAttributesKey:
-				var val []*SchemaAttribute
-				if err := dec.Decode(&val); err != nil {
-					return fmt.Errorf(`failed to decode value for %q: %w`, SchemaAttributesKey, err)
-				}
-				v.attributes = val
-			case SchemaDescriptionKey:
+			case X509CertificateDisplayKey:
 				var val string
 				if err := dec.Decode(&val); err != nil {
-					return fmt.Errorf(`failed to decode value for %q: %w`, SchemaDescriptionKey, err)
+					return fmt.Errorf(`failed to decode value for %q: %w`, X509CertificateDisplayKey, err)
 				}
-				v.description = &val
-			case SchemaIDKey:
+				v.display = &val
+			case X509CertificatePrimaryKey:
+				var val bool
+				if err := dec.Decode(&val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, X509CertificatePrimaryKey, err)
+				}
+				v.primary = &val
+			case X509CertificateTypeKey:
 				var val string
 				if err := dec.Decode(&val); err != nil {
-					return fmt.Errorf(`failed to decode value for %q: %w`, SchemaIDKey, err)
+					return fmt.Errorf(`failed to decode value for %q: %w`, X509CertificateTypeKey, err)
 				}
-				v.id = &val
-			case SchemaNameKey:
+				v.typ = &val
+			case X509CertificateValueKey:
 				var val string
 				if err := dec.Decode(&val); err != nil {
-					return fmt.Errorf(`failed to decode value for %q: %w`, SchemaNameKey, err)
+					return fmt.Errorf(`failed to decode value for %q: %w`, X509CertificateValueKey, err)
 				}
-				v.name = &val
+				v.value = &val
 			default:
 				var val interface{}
 				if err := dec.Decode(&val); err != nil {
@@ -312,24 +311,24 @@ LOOP:
 	return nil
 }
 
-type SchemaBuilder struct {
+type X509CertificateBuilder struct {
 	mu     sync.Mutex
 	err    error
 	once   sync.Once
-	object *Schema
+	object *X509Certificate
 }
 
-// NewSchemaBuilder creates a new SchemaBuilder instance.
-// SchemaBuilder is safe to be used uninitialized as well.
-func NewSchemaBuilder() *SchemaBuilder {
-	return &SchemaBuilder{}
+// NewX509CertificateBuilder creates a new X509CertificateBuilder instance.
+// X509CertificateBuilder is safe to be used uninitialized as well.
+func NewX509CertificateBuilder() *X509CertificateBuilder {
+	return &X509CertificateBuilder{}
 }
 
-func (b *SchemaBuilder) initialize() {
+func (b *X509CertificateBuilder) initialize() {
 	b.err = nil
-	b.object = &Schema{}
+	b.object = &X509Certificate{}
 }
-func (b *SchemaBuilder) Attributes(in ...*SchemaAttribute) *SchemaBuilder {
+func (b *X509CertificateBuilder) Display(in string) *X509CertificateBuilder {
 	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
@@ -337,12 +336,12 @@ func (b *SchemaBuilder) Attributes(in ...*SchemaAttribute) *SchemaBuilder {
 		return b
 	}
 
-	if err := b.object.Set(SchemaAttributesKey, in); err != nil {
+	if err := b.object.Set(X509CertificateDisplayKey, in); err != nil {
 		b.err = err
 	}
 	return b
 }
-func (b *SchemaBuilder) Description(in string) *SchemaBuilder {
+func (b *X509CertificateBuilder) Primary(in bool) *X509CertificateBuilder {
 	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
@@ -350,12 +349,12 @@ func (b *SchemaBuilder) Description(in string) *SchemaBuilder {
 		return b
 	}
 
-	if err := b.object.Set(SchemaDescriptionKey, in); err != nil {
+	if err := b.object.Set(X509CertificatePrimaryKey, in); err != nil {
 		b.err = err
 	}
 	return b
 }
-func (b *SchemaBuilder) ID(in string) *SchemaBuilder {
+func (b *X509CertificateBuilder) Type(in string) *X509CertificateBuilder {
 	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
@@ -363,12 +362,12 @@ func (b *SchemaBuilder) ID(in string) *SchemaBuilder {
 		return b
 	}
 
-	if err := b.object.Set(SchemaIDKey, in); err != nil {
+	if err := b.object.Set(X509CertificateTypeKey, in); err != nil {
 		b.err = err
 	}
 	return b
 }
-func (b *SchemaBuilder) Name(in string) *SchemaBuilder {
+func (b *X509CertificateBuilder) Value(in string) *X509CertificateBuilder {
 	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
@@ -376,20 +375,17 @@ func (b *SchemaBuilder) Name(in string) *SchemaBuilder {
 		return b
 	}
 
-	if err := b.object.Set(SchemaNameKey, in); err != nil {
+	if err := b.object.Set(X509CertificateValueKey, in); err != nil {
 		b.err = err
 	}
 	return b
 }
 
-func (b *SchemaBuilder) Build() (*Schema, error) {
+func (b *X509CertificateBuilder) Build() (*X509Certificate, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	if err := b.err; err != nil {
 		return nil, err
-	}
-	if b.object.name == nil {
-		return nil, fmt.Errorf("required field 'Name' not initialized")
 	}
 	obj := b.object
 	b.once = sync.Once{}
@@ -397,7 +393,7 @@ func (b *SchemaBuilder) Build() (*Schema, error) {
 	return obj, nil
 }
 
-func (b *SchemaBuilder) MustBuild() *Schema {
+func (b *X509CertificateBuilder) MustBuild() *X509Certificate {
 	object, err := b.Build()
 	if err != nil {
 		panic(err)
@@ -405,18 +401,25 @@ func (b *SchemaBuilder) MustBuild() *Schema {
 	return object
 }
 
-func (v *Schema) Clone() *Schema {
+func (b *X509CertificateBuilder) From(in *X509Certificate) *X509CertificateBuilder {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	b.object = in.Clone()
+	return b
+}
+
+func (v *X509Certificate) Clone() *X509Certificate {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return &Schema{
-		attributes:  v.attributes,
-		description: v.description,
-		id:          v.id,
-		name:        v.name,
+	return &X509Certificate{
+		display: v.display,
+		primary: v.primary,
+		typ:     v.typ,
+		value:   v.value,
 	}
 }
 
-func (v *Schema) AsMap(dst map[string]interface{}) error {
+func (v *X509Certificate) AsMap(dst map[string]interface{}) error {
 	for _, pair := range v.makePairs() {
 		dst[pair.Name] = pair.Value
 	}
@@ -425,7 +428,7 @@ func (v *Schema) AsMap(dst map[string]interface{}) error {
 
 // GetExtension takes into account extension uri, and fetches
 // the specified attribute from the extension object
-func (v *Schema) GetExtension(name, uri string, dst interface{}) error {
+func (v *X509Certificate) GetExtension(name, uri string, dst interface{}) error {
 	if uri == "" {
 		return v.Get(name, dst)
 	}
@@ -443,6 +446,6 @@ func (v *Schema) GetExtension(name, uri string, dst interface{}) error {
 	return getter.Get(name, dst)
 }
 
-func (b *Builder) Schema() *SchemaBuilder {
-	return &SchemaBuilder{}
+func (b *Builder) X509Certificate() *X509CertificateBuilder {
+	return &X509CertificateBuilder{}
 }

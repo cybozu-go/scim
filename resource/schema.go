@@ -1,6 +1,8 @@
 package resource
 
-// AttributeByName fetches a schema attribute by name.
+// AttributeByName fetches a schema attribute by its JSON field name.
+// (i.e. you must use `$ref` instead of `Reference`, `name` instead of
+// `Name`, etc)
 //
 // If an attribute with the given name does not exist,
 // the second return value is false.

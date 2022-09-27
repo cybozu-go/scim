@@ -7,7 +7,7 @@ import "github.com/cybozu-go/scim/resource"
 var schemaByType = make(map[string]*resource.Schema)
 var schemaByURI = make(map[string]*resource.Schema)
 
-// Registers a sysmtem schema so that it can be queried by clients
+// Registers a system schema so that it can be queried by clients
 func Register(s string, schema *resource.Schema) {
 	schemaByType[s] = schema
 	schemaByURI[schema.ID()] = schema

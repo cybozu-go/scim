@@ -89,7 +89,7 @@ func WriteSCIMError(w http.ResponseWriter, st int, msg string) {
 	serr := resource.NewErrorBuilder().
 		Status(st).
 		Detail(msg).
-		ScimType(resource.ErrUnknown).
+		SCIMType(resource.ErrUnknown).
 		MustBuild()
 
 	// Try one more time in vein to write the error of Encode?

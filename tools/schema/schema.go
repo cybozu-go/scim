@@ -40,6 +40,20 @@ func (Address) Fields() []*schema.Field {
 	}
 }
 
+type AssociatedGroup struct {
+	schema.Base
+	scimSchemaBase
+}
+
+func (AssociatedGroup) Fields() []*schema.Field {
+	return []*schema.Field{
+		schema.String(`Display`),
+		schema.String(`Reference`).Unexported(`ref`).JSON(`$ref`),
+		schema.String(`Type`).Unexported(`typ`).JSON(`type`),
+		schema.String(`Value`),
+	}
+}
+
 type AuthenticationScheme struct {
 	schema.Base
 	scimSchemaBase
@@ -526,7 +540,7 @@ func (User) Fields() []*schema.Field {
 	addrtyp := schema.Type(`[]*Address`)
 	entitlementtyp := schema.Type(`[]*Entitlement`)
 	emailtyp := schema.Type(`[]*Email`)
-	grpmembertyp := schema.Type(`[]*GroupMember`)
+	grpmembertyp := schema.Type(`[]*AssociatedGroup`)
 	imstyp := schema.Type(`[]*IMS`)
 	namestyp := schema.Type(`*Names`)
 	phonenumbertyp := schema.Type(`[]*PhoneNumber`)

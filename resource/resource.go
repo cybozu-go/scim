@@ -1,4 +1,4 @@
-//go:generate ../tools/gen-resources.sh
+//go:generate ../tools/gen-resource.sh
 
 package resource
 

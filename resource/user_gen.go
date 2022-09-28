@@ -27,7 +27,7 @@ type User struct {
 	emails            []*Email
 	entitlements      []*Entitlement
 	externalId        *string
-	groups            []*GroupMember
+	groups            []*AssociatedGroup
 	id                *string
 	ims               []*IMS
 	locale            *string
@@ -240,9 +240,9 @@ func (v *User) Set(key string, value interface{}) error {
 		}
 		v.externalId = &converted
 	case UserGroupsKey:
-		converted, ok := value.([]*GroupMember)
+		converted, ok := value.([]*AssociatedGroup)
 		if !ok {
-			return fmt.Errorf(`expected value of type []*GroupMember for field groups, got %T`, value)
+			return fmt.Errorf(`expected value of type []*AssociatedGroup for field groups, got %T`, value)
 		}
 		v.groups = converted
 	case UserIDKey:
@@ -565,7 +565,7 @@ func (v *User) ExternalID() string {
 	return ""
 }
 
-func (v *User) Groups() []*GroupMember {
+func (v *User) Groups() []*AssociatedGroup {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	if val := v.groups; val != nil {
@@ -1006,7 +1006,7 @@ LOOP:
 				}
 				v.externalId = &val
 			case UserGroupsKey:
-				var val []*GroupMember
+				var val []*AssociatedGroup
 				if err := dec.Decode(&val); err != nil {
 					return fmt.Errorf(`failed to decode value for %q: %w`, UserGroupsKey, err)
 				}
@@ -1233,7 +1233,7 @@ func (b *UserBuilder) ExternalID(in string) *UserBuilder {
 	}
 	return b
 }
-func (b *UserBuilder) Groups(in ...*GroupMember) *UserBuilder {
+func (b *UserBuilder) Groups(in ...*AssociatedGroup) *UserBuilder {
 	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()

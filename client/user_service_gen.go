@@ -804,7 +804,7 @@ func (call *DeleteUserCall) ExternalID(in string) *DeleteUserCall {
 	return call
 }
 
-func (call *DeleteUserCall) Groups(in ...*resource.GroupMember) *DeleteUserCall {
+func (call *DeleteUserCall) Groups(in ...*resource.AssociatedGroup) *DeleteUserCall {
 	call.builder.Groups(in...)
 	return call
 }

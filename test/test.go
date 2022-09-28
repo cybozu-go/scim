@@ -146,10 +146,8 @@ func PrepareFixtures(t *testing.T, cl *client.Client) func(t *testing.T) {
 					require.NoError(t, err, `user search should succeed`)
 
 					createGroupCall := cl.Group().Create().
-						DisplayName(def.Name)
-					for _, r := range list.Resources() {
-						createGroupCall.MemberFrom(r)
-					}
+						DisplayName(def.Name).
+						MembersFrom(list.Resources()...)
 					g, err := createGroupCall.Do(context.TODO())
 					require.NoError(t, err, `group creation should succeed`)
 					t.Logf(`Created group %q with %d members`, g.DisplayName(), len(list.Resources()))
@@ -159,11 +157,13 @@ func PrepareFixtures(t *testing.T, cl *client.Client) func(t *testing.T) {
 
 			t.Run("Create group Everybody", func(t *testing.T) {
 				// Now create a group that contains everybody
-				createGroupCall := cl.Group().Create().
-					DisplayName("Everybody")
-				for _, g := range groups {
-					createGroupCall.MemberFrom(g)
+				igrps := make([]interface{}, len(groups))
+				for i := 0; i < len(groups); i++ {
+					igrps[i] = groups[i]
 				}
+				createGroupCall := cl.Group().Create().
+					DisplayName("Everybody").
+					MembersFrom(igrps...)
 				_, err := createGroupCall.Do(context.TODO())
 				require.NoError(t, err, `group creation should succeed`)
 			})

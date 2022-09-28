@@ -60,6 +60,7 @@ services:
       method_name: Create
       http_method: http.MethodPost
       resource: User
+      response_type: resource.User
       path: /Users
       jsonPayload: true
       successStatus: http.StatusCreated
@@ -74,6 +75,7 @@ services:
       method_name: Replace
       http_method: http.MethodPut
       resource: User
+      response_type: resource.User
       path: /Users
       makeURLTemplate: |
         func (call {{ .ObjectName }}) makeURL() string {
@@ -145,6 +147,7 @@ services:
       method_name: Create
       http_method: http.MethodPost
       resource: Group
+      response_type: resource.Group
       path: /Groups
       jsonPayload: true
       successStatus: http.StatusCreated
@@ -156,6 +159,7 @@ services:
       method_name: Replace
       http_method: http.MethodPut
       resource: Group
+      response_type: resource.Group
       path: /Groups
       makeURLTemplate: |
         func (call {{ .ObjectName }}) makeURL() string {

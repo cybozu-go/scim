@@ -13,12 +13,12 @@ import (
 
 func init() {
 	Register("SchemaAttribute", "", SchemaAttribute{})
-	RegisterBuilder("SchemaAttributeBuilder", "", SchemaAttributeBuilder{})
+	RegisterBuilder("SchemaAttribute", "", SchemaAttributeBuilder{})
 }
 
 type SchemaAttribute struct {
 	mu              sync.RWMutex
-	canonicalValues *string
+	canonicalValues []interface{}
 	caseExact       *bool
 	description     *string
 	multiValued     *bool
@@ -30,6 +30,7 @@ type SchemaAttribute struct {
 	subAttributes   []*SchemaAttribute
 	typ             *DataType
 	uniqueness      *Uniqueness
+	goAccessorName  *string
 	extra           map[string]interface{}
 }
 
@@ -59,7 +60,7 @@ func (v *SchemaAttribute) Get(key string, dst interface{}) error {
 	switch key {
 	case SchemaAttributeCanonicalValuesKey:
 		if val := v.canonicalValues; val != nil {
-			return blackmagic.AssignIfCompatible(dst, *val)
+			return blackmagic.AssignIfCompatible(dst, val)
 		}
 	case SchemaAttributeCaseExactKey:
 		if val := v.caseExact; val != nil {
@@ -123,11 +124,11 @@ func (v *SchemaAttribute) Set(key string, value interface{}) error {
 	defer v.mu.Unlock()
 	switch key {
 	case SchemaAttributeCanonicalValuesKey:
-		converted, ok := value.(string)
+		converted, ok := value.([]interface{})
 		if !ok {
-			return fmt.Errorf(`expected value of type string for field canonicalValues, got %T`, value)
+			return fmt.Errorf(`expected value of type []interface {} for field canonicalValues, got %T`, value)
 		}
-		v.canonicalValues = &converted
+		v.canonicalValues = converted
 	case SchemaAttributeCaseExactKey:
 		converted, ok := value.(bool)
 		if !ok {
@@ -274,13 +275,13 @@ func (v *SchemaAttribute) HasUniqueness() bool {
 	return v.uniqueness != nil
 }
 
-func (v *SchemaAttribute) CanonicalValues() string {
+func (v *SchemaAttribute) CanonicalValues() []interface{} {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	if val := v.canonicalValues; val != nil {
-		return *val
+		return val
 	}
-	return ""
+	return []interface{}(nil)
 }
 
 func (v *SchemaAttribute) CaseExact() bool {
@@ -420,9 +421,9 @@ func (v *SchemaAttribute) Remove(key string) error {
 }
 
 func (v *SchemaAttribute) makePairs() []*fieldPair {
-	pairs := make([]*fieldPair, 0, 12)
-	if val := v.canonicalValues; val != nil {
-		pairs = append(pairs, &fieldPair{Name: SchemaAttributeCanonicalValuesKey, Value: *val})
+	pairs := make([]*fieldPair, 0, 13)
+	if val := v.canonicalValues; len(val) > 0 {
+		pairs = append(pairs, &fieldPair{Name: SchemaAttributeCanonicalValuesKey, Value: val})
 	}
 	if val := v.caseExact; val != nil {
 		pairs = append(pairs, &fieldPair{Name: SchemaAttributeCaseExactKey, Value: *val})
@@ -538,11 +539,11 @@ LOOP:
 		case string:
 			switch tok {
 			case SchemaAttributeCanonicalValuesKey:
-				var val string
+				var val []interface{}
 				if err := dec.Decode(&val); err != nil {
 					return fmt.Errorf(`failed to decode value for %q: %w`, SchemaAttributeCanonicalValuesKey, err)
 				}
-				v.canonicalValues = &val
+				v.canonicalValues = val
 			case SchemaAttributeCaseExactKey:
 				var val bool
 				if err := dec.Decode(&val); err != nil {
@@ -645,7 +646,7 @@ func (b *SchemaAttributeBuilder) initialize() {
 	b.err = nil
 	b.object = &SchemaAttribute{}
 }
-func (b *SchemaAttributeBuilder) CanonicalValues(in string) *SchemaAttributeBuilder {
+func (b *SchemaAttributeBuilder) CanonicalValues(in ...interface{}) *SchemaAttributeBuilder {
 	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
@@ -852,6 +853,7 @@ func (v *SchemaAttribute) Clone() *SchemaAttribute {
 		subAttributes:   v.subAttributes,
 		typ:             v.typ,
 		uniqueness:      v.uniqueness,
+		goAccessorName:  v.goAccessorName,
 	}
 }
 

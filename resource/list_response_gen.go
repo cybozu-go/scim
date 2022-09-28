@@ -15,7 +15,7 @@ const ListResponseSchemaURI = "urn:ietf:params:scim:api:messages:2.0:ListRespons
 
 func init() {
 	Register("ListResponse", ListResponseSchemaURI, ListResponse{})
-	RegisterBuilder("ListResponseBuilder", ListResponseSchemaURI, ListResponseBuilder{})
+	RegisterBuilder("ListResponse", ListResponseSchemaURI, ListResponseBuilder{})
 }
 
 type ListResponse struct {

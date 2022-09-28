@@ -13,7 +13,7 @@ import (
 
 func init() {
 	Register("Names", "", Names{})
-	RegisterBuilder("NamesBuilder", "", NamesBuilder{})
+	RegisterBuilder("Names", "", NamesBuilder{})
 }
 
 type Names struct {

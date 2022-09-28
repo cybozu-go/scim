@@ -13,7 +13,7 @@ import (
 
 func init() {
 	Register("GenericSupport", "", GenericSupport{})
-	RegisterBuilder("GenericSupportBuilder", "", GenericSupportBuilder{})
+	RegisterBuilder("GenericSupport", "", GenericSupportBuilder{})
 }
 
 type GenericSupport struct {

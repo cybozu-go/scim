@@ -13,7 +13,7 @@ import (
 
 func init() {
 	Register("FilterSupport", "", FilterSupport{})
-	RegisterBuilder("FilterSupportBuilder", "", FilterSupportBuilder{})
+	RegisterBuilder("FilterSupport", "", FilterSupportBuilder{})
 }
 
 type FilterSupport struct {

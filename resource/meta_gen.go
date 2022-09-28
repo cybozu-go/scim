@@ -14,7 +14,7 @@ import (
 
 func init() {
 	Register("Meta", "", Meta{})
-	RegisterBuilder("MetaBuilder", "", MetaBuilder{})
+	RegisterBuilder("Meta", "", MetaBuilder{})
 }
 
 // Meta represents the `meta` field included in SCIM responses. See https://datatracker.ietf.org/doc/html/rfc7643#section-3.1 for details

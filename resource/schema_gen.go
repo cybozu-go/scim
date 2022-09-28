@@ -13,7 +13,7 @@ import (
 
 func init() {
 	Register("Schema", "", Schema{})
-	RegisterBuilder("SchemaBuilder", "", SchemaBuilder{})
+	RegisterBuilder("Schema", "", SchemaBuilder{})
 }
 
 // Schema represents a Schema resource as defined in the SCIM RFC

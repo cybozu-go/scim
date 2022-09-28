@@ -63,13 +63,13 @@ func (svc *GroupService) Get(id string) *GetGroupCall {
 	}
 }
 
-func (call *GetGroupCall) Attributes(v ...string) *GetGroupCall {
-	call.builder.Attributes(v...)
+func (call *GetGroupCall) Attributes(in ...string) *GetGroupCall {
+	call.builder.Attributes(in...)
 	return call
 }
 
-func (call *GetGroupCall) ExcludedAttributes(v ...string) *GetGroupCall {
-	call.builder.ExcludedAttributes(v...)
+func (call *GetGroupCall) ExcludedAttributes(in ...string) *GetGroupCall {
+	call.builder.ExcludedAttributes(in...)
 	return call
 }
 
@@ -193,18 +193,18 @@ func (svc *GroupService) Create() *CreateGroupCall {
 	}
 }
 
-func (call *CreateGroupCall) DisplayName(v string) *CreateGroupCall {
-	call.builder.DisplayName(v)
+func (call *CreateGroupCall) DisplayName(in string) *CreateGroupCall {
+	call.builder.DisplayName(in)
 	return call
 }
 
-func (call *CreateGroupCall) ExternalID(v string) *CreateGroupCall {
-	call.builder.ExternalID(v)
+func (call *CreateGroupCall) ExternalID(in string) *CreateGroupCall {
+	call.builder.ExternalID(in)
 	return call
 }
 
-func (call *CreateGroupCall) Members(v ...*resource.GroupMember) *CreateGroupCall {
-	call.builder.Members(v...)
+func (call *CreateGroupCall) Members(in ...*resource.GroupMember) *CreateGroupCall {
+	call.builder.Members(in...)
 	return call
 }
 
@@ -324,18 +324,18 @@ func (svc *GroupService) Replace(id string) *ReplaceGroupCall {
 	}
 }
 
-func (call *ReplaceGroupCall) DisplayName(v string) *ReplaceGroupCall {
-	call.builder.DisplayName(v)
+func (call *ReplaceGroupCall) DisplayName(in string) *ReplaceGroupCall {
+	call.builder.DisplayName(in)
 	return call
 }
 
-func (call *ReplaceGroupCall) ExternalID(v string) *ReplaceGroupCall {
-	call.builder.ExternalID(v)
+func (call *ReplaceGroupCall) ExternalID(in string) *ReplaceGroupCall {
+	call.builder.ExternalID(in)
 	return call
 }
 
-func (call *ReplaceGroupCall) Members(v ...*resource.GroupMember) *ReplaceGroupCall {
-	call.builder.Members(v...)
+func (call *ReplaceGroupCall) Members(in ...*resource.GroupMember) *ReplaceGroupCall {
+	call.builder.Members(in...)
 	return call
 }
 
@@ -456,8 +456,13 @@ func (svc *GroupService) Patch(id string) *PatchGroupCall {
 	}
 }
 
-func (call *PatchGroupCall) Operations(v ...*resource.PatchOperation) *PatchGroupCall {
-	call.builder.Operations(v...)
+func (call *PatchGroupCall) Operations(in ...*resource.PatchOperation) *PatchGroupCall {
+	call.builder.Operations(in...)
+	return call
+}
+
+func (call *PatchGroupCall) Schemas(in ...string) *PatchGroupCall {
+	call.builder.Schemas(in...)
 	return call
 }
 
@@ -582,28 +587,38 @@ func (svc *GroupService) Delete(id string) *DeleteGroupCall {
 	}
 }
 
-func (call *DeleteGroupCall) DisplayName(v string) *DeleteGroupCall {
-	call.builder.DisplayName(v)
+func (call *DeleteGroupCall) DisplayName(in string) *DeleteGroupCall {
+	call.builder.DisplayName(in)
 	return call
 }
 
-func (call *DeleteGroupCall) ExternalID(v string) *DeleteGroupCall {
-	call.builder.ExternalID(v)
+func (call *DeleteGroupCall) ExternalID(in string) *DeleteGroupCall {
+	call.builder.ExternalID(in)
 	return call
 }
 
-func (call *DeleteGroupCall) ID(v string) *DeleteGroupCall {
-	call.builder.ID(v)
+func (call *DeleteGroupCall) ID(in string) *DeleteGroupCall {
+	call.builder.ID(in)
 	return call
 }
 
-func (call *DeleteGroupCall) Members(v ...*resource.GroupMember) *DeleteGroupCall {
-	call.builder.Members(v...)
+func (call *DeleteGroupCall) Members(in ...*resource.GroupMember) *DeleteGroupCall {
+	call.builder.Members(in...)
 	return call
 }
 
-func (call *DeleteGroupCall) Meta(v *resource.Meta) *DeleteGroupCall {
-	call.builder.Meta(v)
+func (call *DeleteGroupCall) MembersFrom(in ...interface{}) *DeleteGroupCall {
+	call.builder.MembersFrom(in...)
+	return call
+}
+
+func (call *DeleteGroupCall) Meta(in *resource.Meta) *DeleteGroupCall {
+	call.builder.Meta(in)
+	return call
+}
+
+func (call *DeleteGroupCall) Schemas(in ...string) *DeleteGroupCall {
+	call.builder.Schemas(in...)
 	return call
 }
 
@@ -722,38 +737,48 @@ func (svc *GroupService) Search() *SearchGroupCall {
 	}
 }
 
-func (call *SearchGroupCall) Attributes(v ...string) *SearchGroupCall {
-	call.builder.Attributes(v...)
+func (call *SearchGroupCall) Attributes(in ...string) *SearchGroupCall {
+	call.builder.Attributes(in...)
 	return call
 }
 
-func (call *SearchGroupCall) Count(v int) *SearchGroupCall {
-	call.builder.Count(v)
+func (call *SearchGroupCall) Count(in int) *SearchGroupCall {
+	call.builder.Count(in)
 	return call
 }
 
-func (call *SearchGroupCall) ExcludedAttributes(v ...string) *SearchGroupCall {
-	call.builder.ExcludedAttributes(v...)
+func (call *SearchGroupCall) ExcludedAttributes(in ...string) *SearchGroupCall {
+	call.builder.ExcludedAttributes(in...)
 	return call
 }
 
-func (call *SearchGroupCall) Filter(v string) *SearchGroupCall {
-	call.builder.Filter(v)
+func (call *SearchGroupCall) Filter(in string) *SearchGroupCall {
+	call.builder.Filter(in)
 	return call
 }
 
-func (call *SearchGroupCall) SortBy(v string) *SearchGroupCall {
-	call.builder.SortBy(v)
+func (call *SearchGroupCall) Schema(in string) *SearchGroupCall {
+	call.builder.Schema(in)
 	return call
 }
 
-func (call *SearchGroupCall) SortOrder(v string) *SearchGroupCall {
-	call.builder.SortOrder(v)
+func (call *SearchGroupCall) Schemas(in ...string) *SearchGroupCall {
+	call.builder.Schemas(in...)
 	return call
 }
 
-func (call *SearchGroupCall) StartIndex(v int) *SearchGroupCall {
-	call.builder.StartIndex(v)
+func (call *SearchGroupCall) SortBy(in string) *SearchGroupCall {
+	call.builder.SortBy(in)
+	return call
+}
+
+func (call *SearchGroupCall) SortOrder(in string) *SearchGroupCall {
+	call.builder.SortOrder(in)
+	return call
+}
+
+func (call *SearchGroupCall) StartIndex(in int) *SearchGroupCall {
+	call.builder.StartIndex(in)
 	return call
 }
 

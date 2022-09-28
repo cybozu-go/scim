@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"reflect"
 	"strings"
 	"text/template"
 
@@ -251,91 +252,99 @@ func generateCall(o *codegen.Output, svc Service, call *codegen.Object) error {
 	// an empty "resource" means no resource generation is necessary, and we can
 	// just send an "empty" request
 	if rstype != "" {
+		allowed := make(map[string]struct{})
 		s, ok := schema.GetByResourceType(rstype)
-		if !ok {
-			return fmt.Errorf(`resource %q not found`, rstype)
-		}
-
-		if resType == "" {
-			resType = `resource.` + rstype
-		}
-
-		var fields []codegen.Field
-
-		//		if !ok {
-		//			fields = append(rs.Fields(), optional...)
-		//		} else {
-		mutabilities := make(map[string]struct{})
-		if iface, ok := call.Extra(`allowedMutability`); ok {
-			if vam, ok := iface.([]interface{}); ok {
-				for _, v := range vam {
-					if sv, ok := v.(string); ok {
-						mutabilities[sv] = struct{}{}
+		if ok {
+			mutabilities := make(map[string]struct{})
+			if iface, ok := call.Extra(`allowedMutability`); ok {
+				if vam, ok := iface.([]interface{}); ok {
+					for _, v := range vam {
+						if sv, ok := v.(string); ok {
+							mutabilities[sv] = struct{}{}
+						}
 					}
 				}
 			}
-		}
 
-		allowed := make(map[string]struct{})
-		if len(mutabilities) > 0 {
-			attrs := s.Attributes()
-			// I found out RFC7643 talks about “externalId” field, but it’s not in any of the defined schemas :(
-			eid := resource.NewSchemaAttributeBuilder().
-				Name(`externalId`).
-				Mutability(resource.MutWriteOnly).
-				MustBuild()
-
-			for _, attr := range append(attrs, eid) {
-				mut := string(attr.Mutability())
-				if _, ok := mutabilities[mut]; !ok {
-					continue
-				}
-
-				allowed[attr.Name()] = struct{}{}
-			}
-			//			}
-
-			for _, f := range append(rs.Fields(), optional...) {
-				if len(mutabilities) > 0 {
-					if _, ok := allowed[f.JSON()]; !ok {
+			if len(mutabilities) > 0 {
+				for _, attr := range s.Attributes() {
+					mut := string(attr.Mutability())
+					if _, ok := mutabilities[mut]; !ok {
 						continue
 					}
+
+					allowed[attr.GoAccessorName()] = struct{}{}
 				}
-				fields = append(fields, f)
 			}
 		}
 
-		for _, field := range fields {
-			var typ string
-			var isSlice bool
-			if IsSlice(field) {
-				typ = strings.TrimPrefix(field.Type(), `[]`)
-				isSlice = true
+		builder, ok := resource.LookupBuilderByName(rstype)
+		if !ok {
+			return fmt.Errorf(`could not find builder for resource type %q`, rstype)
+		}
+
+		var tpHelper func(*strings.Builder, reflect.Type)
+		tpHelper = func(sb *strings.Builder, t reflect.Type) {
+			switch t.Kind() {
+			case reflect.Slice:
+				sb.WriteString(`[]`)
+				tpHelper(sb, t.Elem())
+			case reflect.Ptr:
+				sb.WriteString(`*`)
+				tpHelper(sb, t.Elem())
+			case reflect.Interface:
+				if t.Name() == "" {
+					sb.WriteString(`interface{}`)
+				}
+				fallthrough
+			default:
+				if pkg := t.PkgPath(); pkg != "" {
+					i := strings.LastIndex(pkg, "/")
+					if i > 0 {
+						pkg = pkg[i+1:]
+					}
+					sb.WriteString(pkg)
+					sb.WriteRune('.')
+				}
+				sb.WriteString(t.Name())
+			}
+		}
+
+		typeName := func(t reflect.Type) string {
+			var sb strings.Builder
+			tpHelper(&sb, t)
+			return sb.String()
+		}
+
+		rt := reflect.TypeOf(builder)
+		for i := 0; i < rt.NumMethod(); i++ {
+			m := rt.Method(i)
+			if m.Name == `Build` || m.Name == `MustBuild` || m.Name == `From` || m.Name == `Extension` {
+				continue
+			}
+			if len(allowed) > 0 {
+				if _, ok := allowed[m.Name]; !ok {
+					continue
+				}
+			}
+
+			o.LL(`func(call *%[1]s) %[2]s(`, call.Name(true), m.Name)
+			mt := m.Type
+
+			// There should be only one argument, so we use 1
+			if mt.IsVariadic() {
+				o.R(`in ...%s`, mt.In(1).Elem())
 			} else {
-				typ = field.Type()
+				o.R(`in %s`, typeName(mt.In(1)))
 			}
+			o.R(`) *%s {`, call.Name(true))
 
-			var hasPtrPrefix bool
-			if strings.HasPrefix(typ, `*`) {
-				typ = strings.TrimPrefix(typ, `*`)
-				hasPtrPrefix = true
+			o.R(`call.builder.%s(in`, m.Name)
+			// variadic args need expanding
+			if mt.IsVariadic() {
+				o.R(`...`)
 			}
-
-			if _, ok := resources[typ]; ok {
-				typ = `resource.` + typ
-			}
-			if hasPtrPrefix {
-				typ = `*` + typ
-			}
-
-			// If the argument is a slice, the parameter type should be varg
-			if isSlice {
-				o.LL(`func (call *%[1]s) %[2]s(v ...%[3]s) *%[1]s {`, call.Name(true), field.Name(true), typ)
-				o.L(`call.builder.%s(v...)`, field.Name(true))
-			} else {
-				o.LL(`func (call *%[1]s) %[2]s(v %[3]s) *%[1]s {`, call.Name(true), field.Name(true), typ)
-				o.L(`call.builder.%s(v)`, field.Name(true))
-			}
+			o.R(`)`)
 			o.L(`return call`)
 			o.L(`}`)
 		}
@@ -503,6 +512,5 @@ func generateCall(o *codegen.Output, svc Service, call *codegen.Object) error {
 		o.LL(`return &respayload, nil`)
 	}
 	o.L(`}`)
-
 	return nil
 }

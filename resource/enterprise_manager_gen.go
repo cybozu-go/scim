@@ -13,7 +13,7 @@ import (
 
 func init() {
 	Register("EnterpriseManager", "", EnterpriseManager{})
-	RegisterBuilder("EnterpriseManagerBuilder", "", EnterpriseManagerBuilder{})
+	RegisterBuilder("EnterpriseManager", "", EnterpriseManagerBuilder{})
 }
 
 type EnterpriseManager struct {

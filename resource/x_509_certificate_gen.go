@@ -13,7 +13,7 @@ import (
 
 func init() {
 	Register("X509Certificate", "", X509Certificate{})
-	RegisterBuilder("X509CertificateBuilder", "", X509CertificateBuilder{})
+	RegisterBuilder("X509Certificate", "", X509CertificateBuilder{})
 }
 
 type X509Certificate struct {

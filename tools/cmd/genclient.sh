@@ -15,7 +15,7 @@ GOWORK=off go build -o .genclient main.go
 popd > /dev/null
 
 EXE="${DIR}/.genclient"
-"$EXE" -calls=$DIR/calls.yml -resources=../tools/cmd/genresources/objects.yml
+"$EXE" -calls=$DIR/calls.yml
 echo "✔ done!"
 
 rm "$EXE"

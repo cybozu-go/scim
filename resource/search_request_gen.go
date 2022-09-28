@@ -15,7 +15,7 @@ const SearchRequestSchemaURI = "urn:ietf:params:scim:schemas:core:2.0:SearchRequ
 
 func init() {
 	Register("SearchRequest", SearchRequestSchemaURI, SearchRequest{})
-	RegisterBuilder("SearchRequestBuilder", SearchRequestSchemaURI, SearchRequestBuilder{})
+	RegisterBuilder("SearchRequest", SearchRequestSchemaURI, SearchRequestBuilder{})
 }
 
 type SearchRequest struct {

@@ -13,7 +13,7 @@ import (
 
 func init() {
 	Register("BulkSupport", "", BulkSupport{})
-	RegisterBuilder("BulkSupportBuilder", "", BulkSupportBuilder{})
+	RegisterBuilder("BulkSupport", "", BulkSupportBuilder{})
 }
 
 type BulkSupport struct {

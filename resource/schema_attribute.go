@@ -1,5 +1,18 @@
 package resource
 
+func (b *SchemaAttributeBuilder) GoAccessorName(name string) *SchemaAttributeBuilder {
+	b.object.goAccessorName = &name
+	return b
+}
+
+func (v *SchemaAttribute) GoAccessorName() string {
+	sp := v.goAccessorName
+	if sp == nil {
+		return ""
+	}
+	return *sp
+}
+
 // Attributes is an alias to `SubAttributes()` method, provided so that
 // resource.Schema and resource.SchemaAttribute can be used interchangeably
 func (v *SchemaAttribute) Attributes() []*SchemaAttribute {

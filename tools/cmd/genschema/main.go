@@ -8,10 +8,12 @@ import (
 	"log"
 	"os"
 	"sort"
+	"strings"
 
 	"github.com/cybozu-go/scim/resource"
 	"github.com/goccy/go-yaml"
 	"github.com/lestrrat-go/codegen"
+	"github.com/lestrrat-go/xstrings"
 )
 
 func main() {
@@ -110,7 +112,6 @@ func generateAttr(o *codegen.Output, attr *resource.SchemaAttribute) error {
 	o.L(`Description(%q).`, attr.Description())
 	o.L(`Required(%t).`, attr.Required())
 	o.L(`CaseExact(%t).`, attr.CaseExact())
-	o.L(`Required(%t).`, attr.Required())
 
 	var mut string
 	switch attr.Mutability() {
@@ -167,6 +168,26 @@ func generateAttr(o *codegen.Output, attr *resource.SchemaAttribute) error {
 		o.L(`).`)
 	}
 
+	o.L(`GoAccessorName(%q).`, goAccessorName(attr))
+
 	o.L(`MustBuild()`)
 	return nil
+}
+
+func goAccessorName(attr *resource.SchemaAttribute) string {
+	s := attr.Name()
+	if s == `$ref` {
+		s = `reference`
+	}
+	s = xstrings.Camel(s)
+	if s == `Ims` {
+		s = `IMS`
+	}
+	if strings.HasSuffix(s, `Id`) {
+		s = strings.TrimSuffix(s, `Id`) + `ID`
+	}
+	if strings.HasSuffix(s, `Url`) {
+		s = strings.TrimSuffix(s, `Url`) + `URL`
+	}
+	return s
 }

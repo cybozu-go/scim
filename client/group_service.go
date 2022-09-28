@@ -1,6 +1,6 @@
 package client
 
-func (call *CreateGroupCall) MemberFrom(v interface{}) *CreateGroupCall {
-	call.builder.MemberFrom(v)
+func (call *CreateGroupCall) MembersFrom(v ...interface{}) *CreateGroupCall {
+	call.builder.MembersFrom(v...)
 	return call
 }

@@ -13,7 +13,7 @@ import (
 
 func init() {
 	Register("Role", "", Role{})
-	RegisterBuilder("RoleBuilder", "", RoleBuilder{})
+	RegisterBuilder("Role", "", RoleBuilder{})
 }
 
 type Role struct {

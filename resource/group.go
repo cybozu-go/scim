@@ -28,36 +28,43 @@ func (b *GroupMemberBuilder) FromResource(r interface{}) *GroupMemberBuilder {
 	return b
 }
 
-// MemberFrom is a convenience method to directly add a SCIM
+// MembersFrom is a convenience method to directly add a SCIM
 // resource to the Group object without having to construct the
 // GroupMember object yourself.
 //
 // Currently this method only accepts `*resource.User` and
 // `*resource.Group` as its input, and otherwise an error
-// is stored in the builder, failing the Build() call
-func (b *GroupBuilder) MemberFrom(r interface{}) *GroupBuilder {
+// is stored in the builder, failing the Build() call.
+//
+// If you would like to otherwise construct the `members` field
+// yourself, use the `Members()` method
+func (b *GroupBuilder) MembersFrom(in ...interface{}) *GroupBuilder {
 	if b.err != nil {
 		return b
 	}
 
 	var builder Builder
-	switch r := r.(type) {
-	case *User:
-		m, err := builder.GroupMember().FromResource(r).Build()
-		if err != nil {
-			b.err = err
-			return b
+LOOP:
+	for _, r := range in {
+		switch r := r.(type) {
+		case *User:
+			m, err := builder.GroupMember().FromResource(r).Build()
+			if err != nil {
+				b.err = err
+				break LOOP
+			}
+			b.object.members = append(b.object.members, m)
+		case *Group:
+			m, err := builder.GroupMember().FromResource(r).Build()
+			if err != nil {
+				b.err = err
+				break LOOP
+			}
+			b.object.members = append(b.object.members, m)
+		default:
+			b.err = fmt.Errorf(`invalid type passed to MembersFrom: %T`, r)
+			break LOOP
 		}
-		b.object.members = append(b.object.members, m)
-	case *Group:
-		m, err := builder.GroupMember().FromResource(r).Build()
-		if err != nil {
-			b.err = err
-			return b
-		}
-		b.object.members = append(b.object.members, m)
-	default:
-		b.err = fmt.Errorf(`invalid type passed to MemberFrom: %T`, r)
 	}
 
 	return b

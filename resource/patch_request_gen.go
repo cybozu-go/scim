@@ -15,7 +15,7 @@ const PatchRequestSchemaURI = "urn:ietf:params:scim:api:messages:2.0:PatchOp"
 
 func init() {
 	Register("PatchRequest", PatchRequestSchemaURI, PatchRequest{})
-	RegisterBuilder("PatchRequestBuilder", PatchRequestSchemaURI, PatchRequestBuilder{})
+	RegisterBuilder("PatchRequest", PatchRequestSchemaURI, PatchRequestBuilder{})
 }
 
 type PatchRequest struct {

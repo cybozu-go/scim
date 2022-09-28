@@ -13,7 +13,7 @@ import (
 
 func init() {
 	Register("SchemaExtension", "", SchemaExtension{})
-	RegisterBuilder("SchemaExtensionBuilder", "", SchemaExtensionBuilder{})
+	RegisterBuilder("SchemaExtension", "", SchemaExtensionBuilder{})
 }
 
 type SchemaExtension struct {

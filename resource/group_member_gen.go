@@ -13,7 +13,7 @@ import (
 
 func init() {
 	Register("GroupMember", "", GroupMember{})
-	RegisterBuilder("GroupMemberBuilder", "", GroupMemberBuilder{})
+	RegisterBuilder("GroupMember", "", GroupMemberBuilder{})
 }
 
 type GroupMember struct {

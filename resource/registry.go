@@ -56,7 +56,7 @@ var builderRegistry = &Registry{
 	namemap: make(map[string]reflect.Type),
 }
 
-func RegisterBiulder(name, uri string, data interface{}) {
+func RegisterBuilder(name, uri string, data interface{}) {
 	builderRegistry.Register(name, uri, data)
 }
 

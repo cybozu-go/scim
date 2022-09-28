@@ -66,13 +66,13 @@ func (svc *UserService) Get(id string) *GetUserCall {
 	}
 }
 
-func (call *GetUserCall) Attributes(v ...string) *GetUserCall {
-	call.builder.Attributes(v...)
+func (call *GetUserCall) Attributes(in ...string) *GetUserCall {
+	call.builder.Attributes(in...)
 	return call
 }
 
-func (call *GetUserCall) ExcludedAttributes(v ...string) *GetUserCall {
-	call.builder.ExcludedAttributes(v...)
+func (call *GetUserCall) ExcludedAttributes(in ...string) *GetUserCall {
+	call.builder.ExcludedAttributes(in...)
 	return call
 }
 
@@ -198,108 +198,108 @@ func (svc *UserService) Create() *CreateUserCall {
 	}
 }
 
-func (call *CreateUserCall) Active(v bool) *CreateUserCall {
-	call.builder.Active(v)
+func (call *CreateUserCall) Active(in bool) *CreateUserCall {
+	call.builder.Active(in)
 	return call
 }
 
-func (call *CreateUserCall) Addresses(v ...*resource.Address) *CreateUserCall {
-	call.builder.Addresses(v...)
+func (call *CreateUserCall) Addresses(in ...*resource.Address) *CreateUserCall {
+	call.builder.Addresses(in...)
 	return call
 }
 
-func (call *CreateUserCall) DisplayName(v string) *CreateUserCall {
-	call.builder.DisplayName(v)
+func (call *CreateUserCall) DisplayName(in string) *CreateUserCall {
+	call.builder.DisplayName(in)
 	return call
 }
 
-func (call *CreateUserCall) Emails(v ...*resource.Email) *CreateUserCall {
-	call.builder.Emails(v...)
+func (call *CreateUserCall) Emails(in ...*resource.Email) *CreateUserCall {
+	call.builder.Emails(in...)
 	return call
 }
 
-func (call *CreateUserCall) Entitlements(v ...*resource.Entitlement) *CreateUserCall {
-	call.builder.Entitlements(v...)
+func (call *CreateUserCall) Entitlements(in ...*resource.Entitlement) *CreateUserCall {
+	call.builder.Entitlements(in...)
 	return call
 }
 
-func (call *CreateUserCall) ExternalID(v string) *CreateUserCall {
-	call.builder.ExternalID(v)
+func (call *CreateUserCall) ExternalID(in string) *CreateUserCall {
+	call.builder.ExternalID(in)
 	return call
 }
 
-func (call *CreateUserCall) IMS(v ...*resource.IMS) *CreateUserCall {
-	call.builder.IMS(v...)
+func (call *CreateUserCall) IMS(in ...*resource.IMS) *CreateUserCall {
+	call.builder.IMS(in...)
 	return call
 }
 
-func (call *CreateUserCall) Locale(v string) *CreateUserCall {
-	call.builder.Locale(v)
+func (call *CreateUserCall) Locale(in string) *CreateUserCall {
+	call.builder.Locale(in)
 	return call
 }
 
-func (call *CreateUserCall) Name(v *resource.Names) *CreateUserCall {
-	call.builder.Name(v)
+func (call *CreateUserCall) Name(in *resource.Names) *CreateUserCall {
+	call.builder.Name(in)
 	return call
 }
 
-func (call *CreateUserCall) NickName(v string) *CreateUserCall {
-	call.builder.NickName(v)
+func (call *CreateUserCall) NickName(in string) *CreateUserCall {
+	call.builder.NickName(in)
 	return call
 }
 
-func (call *CreateUserCall) Password(v string) *CreateUserCall {
-	call.builder.Password(v)
+func (call *CreateUserCall) Password(in string) *CreateUserCall {
+	call.builder.Password(in)
 	return call
 }
 
-func (call *CreateUserCall) PhoneNumbers(v ...*resource.PhoneNumber) *CreateUserCall {
-	call.builder.PhoneNumbers(v...)
+func (call *CreateUserCall) PhoneNumbers(in ...*resource.PhoneNumber) *CreateUserCall {
+	call.builder.PhoneNumbers(in...)
 	return call
 }
 
-func (call *CreateUserCall) Photos(v ...*resource.Photo) *CreateUserCall {
-	call.builder.Photos(v...)
+func (call *CreateUserCall) Photos(in ...*resource.Photo) *CreateUserCall {
+	call.builder.Photos(in...)
 	return call
 }
 
-func (call *CreateUserCall) PreferredLanguage(v string) *CreateUserCall {
-	call.builder.PreferredLanguage(v)
+func (call *CreateUserCall) PreferredLanguage(in string) *CreateUserCall {
+	call.builder.PreferredLanguage(in)
 	return call
 }
 
-func (call *CreateUserCall) ProfileURL(v string) *CreateUserCall {
-	call.builder.ProfileURL(v)
+func (call *CreateUserCall) ProfileURL(in string) *CreateUserCall {
+	call.builder.ProfileURL(in)
 	return call
 }
 
-func (call *CreateUserCall) Roles(v ...*resource.Role) *CreateUserCall {
-	call.builder.Roles(v...)
+func (call *CreateUserCall) Roles(in ...*resource.Role) *CreateUserCall {
+	call.builder.Roles(in...)
 	return call
 }
 
-func (call *CreateUserCall) Timezone(v string) *CreateUserCall {
-	call.builder.Timezone(v)
+func (call *CreateUserCall) Timezone(in string) *CreateUserCall {
+	call.builder.Timezone(in)
 	return call
 }
 
-func (call *CreateUserCall) Title(v string) *CreateUserCall {
-	call.builder.Title(v)
+func (call *CreateUserCall) Title(in string) *CreateUserCall {
+	call.builder.Title(in)
 	return call
 }
 
-func (call *CreateUserCall) UserName(v string) *CreateUserCall {
-	call.builder.UserName(v)
+func (call *CreateUserCall) UserName(in string) *CreateUserCall {
+	call.builder.UserName(in)
 	return call
 }
 
-func (call *CreateUserCall) UserType(v string) *CreateUserCall {
-	call.builder.UserType(v)
+func (call *CreateUserCall) UserType(in string) *CreateUserCall {
+	call.builder.UserType(in)
 	return call
 }
 
-func (call *CreateUserCall) X509Certificates(v ...*resource.X509Certificate) *CreateUserCall {
-	call.builder.X509Certificates(v...)
+func (call *CreateUserCall) X509Certificates(in ...*resource.X509Certificate) *CreateUserCall {
+	call.builder.X509Certificates(in...)
 	return call
 }
 
@@ -421,108 +421,108 @@ func (svc *UserService) Replace(id string) *ReplaceUserCall {
 	}
 }
 
-func (call *ReplaceUserCall) Active(v bool) *ReplaceUserCall {
-	call.builder.Active(v)
+func (call *ReplaceUserCall) Active(in bool) *ReplaceUserCall {
+	call.builder.Active(in)
 	return call
 }
 
-func (call *ReplaceUserCall) Addresses(v ...*resource.Address) *ReplaceUserCall {
-	call.builder.Addresses(v...)
+func (call *ReplaceUserCall) Addresses(in ...*resource.Address) *ReplaceUserCall {
+	call.builder.Addresses(in...)
 	return call
 }
 
-func (call *ReplaceUserCall) DisplayName(v string) *ReplaceUserCall {
-	call.builder.DisplayName(v)
+func (call *ReplaceUserCall) DisplayName(in string) *ReplaceUserCall {
+	call.builder.DisplayName(in)
 	return call
 }
 
-func (call *ReplaceUserCall) Emails(v ...*resource.Email) *ReplaceUserCall {
-	call.builder.Emails(v...)
+func (call *ReplaceUserCall) Emails(in ...*resource.Email) *ReplaceUserCall {
+	call.builder.Emails(in...)
 	return call
 }
 
-func (call *ReplaceUserCall) Entitlements(v ...*resource.Entitlement) *ReplaceUserCall {
-	call.builder.Entitlements(v...)
+func (call *ReplaceUserCall) Entitlements(in ...*resource.Entitlement) *ReplaceUserCall {
+	call.builder.Entitlements(in...)
 	return call
 }
 
-func (call *ReplaceUserCall) ExternalID(v string) *ReplaceUserCall {
-	call.builder.ExternalID(v)
+func (call *ReplaceUserCall) ExternalID(in string) *ReplaceUserCall {
+	call.builder.ExternalID(in)
 	return call
 }
 
-func (call *ReplaceUserCall) IMS(v ...*resource.IMS) *ReplaceUserCall {
-	call.builder.IMS(v...)
+func (call *ReplaceUserCall) IMS(in ...*resource.IMS) *ReplaceUserCall {
+	call.builder.IMS(in...)
 	return call
 }
 
-func (call *ReplaceUserCall) Locale(v string) *ReplaceUserCall {
-	call.builder.Locale(v)
+func (call *ReplaceUserCall) Locale(in string) *ReplaceUserCall {
+	call.builder.Locale(in)
 	return call
 }
 
-func (call *ReplaceUserCall) Name(v *resource.Names) *ReplaceUserCall {
-	call.builder.Name(v)
+func (call *ReplaceUserCall) Name(in *resource.Names) *ReplaceUserCall {
+	call.builder.Name(in)
 	return call
 }
 
-func (call *ReplaceUserCall) NickName(v string) *ReplaceUserCall {
-	call.builder.NickName(v)
+func (call *ReplaceUserCall) NickName(in string) *ReplaceUserCall {
+	call.builder.NickName(in)
 	return call
 }
 
-func (call *ReplaceUserCall) Password(v string) *ReplaceUserCall {
-	call.builder.Password(v)
+func (call *ReplaceUserCall) Password(in string) *ReplaceUserCall {
+	call.builder.Password(in)
 	return call
 }
 
-func (call *ReplaceUserCall) PhoneNumbers(v ...*resource.PhoneNumber) *ReplaceUserCall {
-	call.builder.PhoneNumbers(v...)
+func (call *ReplaceUserCall) PhoneNumbers(in ...*resource.PhoneNumber) *ReplaceUserCall {
+	call.builder.PhoneNumbers(in...)
 	return call
 }
 
-func (call *ReplaceUserCall) Photos(v ...*resource.Photo) *ReplaceUserCall {
-	call.builder.Photos(v...)
+func (call *ReplaceUserCall) Photos(in ...*resource.Photo) *ReplaceUserCall {
+	call.builder.Photos(in...)
 	return call
 }
 
-func (call *ReplaceUserCall) PreferredLanguage(v string) *ReplaceUserCall {
-	call.builder.PreferredLanguage(v)
+func (call *ReplaceUserCall) PreferredLanguage(in string) *ReplaceUserCall {
+	call.builder.PreferredLanguage(in)
 	return call
 }
 
-func (call *ReplaceUserCall) ProfileURL(v string) *ReplaceUserCall {
-	call.builder.ProfileURL(v)
+func (call *ReplaceUserCall) ProfileURL(in string) *ReplaceUserCall {
+	call.builder.ProfileURL(in)
 	return call
 }
 
-func (call *ReplaceUserCall) Roles(v ...*resource.Role) *ReplaceUserCall {
-	call.builder.Roles(v...)
+func (call *ReplaceUserCall) Roles(in ...*resource.Role) *ReplaceUserCall {
+	call.builder.Roles(in...)
 	return call
 }
 
-func (call *ReplaceUserCall) Timezone(v string) *ReplaceUserCall {
-	call.builder.Timezone(v)
+func (call *ReplaceUserCall) Timezone(in string) *ReplaceUserCall {
+	call.builder.Timezone(in)
 	return call
 }
 
-func (call *ReplaceUserCall) Title(v string) *ReplaceUserCall {
-	call.builder.Title(v)
+func (call *ReplaceUserCall) Title(in string) *ReplaceUserCall {
+	call.builder.Title(in)
 	return call
 }
 
-func (call *ReplaceUserCall) UserName(v string) *ReplaceUserCall {
-	call.builder.UserName(v)
+func (call *ReplaceUserCall) UserName(in string) *ReplaceUserCall {
+	call.builder.UserName(in)
 	return call
 }
 
-func (call *ReplaceUserCall) UserType(v string) *ReplaceUserCall {
-	call.builder.UserType(v)
+func (call *ReplaceUserCall) UserType(in string) *ReplaceUserCall {
+	call.builder.UserType(in)
 	return call
 }
 
-func (call *ReplaceUserCall) X509Certificates(v ...*resource.X509Certificate) *ReplaceUserCall {
-	call.builder.X509Certificates(v...)
+func (call *ReplaceUserCall) X509Certificates(in ...*resource.X509Certificate) *ReplaceUserCall {
+	call.builder.X509Certificates(in...)
 	return call
 }
 
@@ -643,8 +643,13 @@ func (svc *UserService) Patch(id string) *PatchUserCall {
 	}
 }
 
-func (call *PatchUserCall) Operations(v ...*resource.PatchOperation) *PatchUserCall {
-	call.builder.Operations(v...)
+func (call *PatchUserCall) Operations(in ...*resource.PatchOperation) *PatchUserCall {
+	call.builder.Operations(in...)
+	return call
+}
+
+func (call *PatchUserCall) Schemas(in ...string) *PatchUserCall {
+	call.builder.Schemas(in...)
 	return call
 }
 
@@ -769,123 +774,128 @@ func (svc *UserService) Delete(id string) *DeleteUserCall {
 	}
 }
 
-func (call *DeleteUserCall) Active(v bool) *DeleteUserCall {
-	call.builder.Active(v)
+func (call *DeleteUserCall) Active(in bool) *DeleteUserCall {
+	call.builder.Active(in)
 	return call
 }
 
-func (call *DeleteUserCall) Addresses(v ...*resource.Address) *DeleteUserCall {
-	call.builder.Addresses(v...)
+func (call *DeleteUserCall) Addresses(in ...*resource.Address) *DeleteUserCall {
+	call.builder.Addresses(in...)
 	return call
 }
 
-func (call *DeleteUserCall) DisplayName(v string) *DeleteUserCall {
-	call.builder.DisplayName(v)
+func (call *DeleteUserCall) DisplayName(in string) *DeleteUserCall {
+	call.builder.DisplayName(in)
 	return call
 }
 
-func (call *DeleteUserCall) Emails(v ...*resource.Email) *DeleteUserCall {
-	call.builder.Emails(v...)
+func (call *DeleteUserCall) Emails(in ...*resource.Email) *DeleteUserCall {
+	call.builder.Emails(in...)
 	return call
 }
 
-func (call *DeleteUserCall) Entitlements(v ...*resource.Entitlement) *DeleteUserCall {
-	call.builder.Entitlements(v...)
+func (call *DeleteUserCall) Entitlements(in ...*resource.Entitlement) *DeleteUserCall {
+	call.builder.Entitlements(in...)
 	return call
 }
 
-func (call *DeleteUserCall) ExternalID(v string) *DeleteUserCall {
-	call.builder.ExternalID(v)
+func (call *DeleteUserCall) ExternalID(in string) *DeleteUserCall {
+	call.builder.ExternalID(in)
 	return call
 }
 
-func (call *DeleteUserCall) Groups(v ...*resource.GroupMember) *DeleteUserCall {
-	call.builder.Groups(v...)
+func (call *DeleteUserCall) Groups(in ...*resource.GroupMember) *DeleteUserCall {
+	call.builder.Groups(in...)
 	return call
 }
 
-func (call *DeleteUserCall) ID(v string) *DeleteUserCall {
-	call.builder.ID(v)
+func (call *DeleteUserCall) ID(in string) *DeleteUserCall {
+	call.builder.ID(in)
 	return call
 }
 
-func (call *DeleteUserCall) IMS(v ...*resource.IMS) *DeleteUserCall {
-	call.builder.IMS(v...)
+func (call *DeleteUserCall) IMS(in ...*resource.IMS) *DeleteUserCall {
+	call.builder.IMS(in...)
 	return call
 }
 
-func (call *DeleteUserCall) Locale(v string) *DeleteUserCall {
-	call.builder.Locale(v)
+func (call *DeleteUserCall) Locale(in string) *DeleteUserCall {
+	call.builder.Locale(in)
 	return call
 }
 
-func (call *DeleteUserCall) Meta(v *resource.Meta) *DeleteUserCall {
-	call.builder.Meta(v)
+func (call *DeleteUserCall) Meta(in *resource.Meta) *DeleteUserCall {
+	call.builder.Meta(in)
 	return call
 }
 
-func (call *DeleteUserCall) Name(v *resource.Names) *DeleteUserCall {
-	call.builder.Name(v)
+func (call *DeleteUserCall) Name(in *resource.Names) *DeleteUserCall {
+	call.builder.Name(in)
 	return call
 }
 
-func (call *DeleteUserCall) NickName(v string) *DeleteUserCall {
-	call.builder.NickName(v)
+func (call *DeleteUserCall) NickName(in string) *DeleteUserCall {
+	call.builder.NickName(in)
 	return call
 }
 
-func (call *DeleteUserCall) Password(v string) *DeleteUserCall {
-	call.builder.Password(v)
+func (call *DeleteUserCall) Password(in string) *DeleteUserCall {
+	call.builder.Password(in)
 	return call
 }
 
-func (call *DeleteUserCall) PhoneNumbers(v ...*resource.PhoneNumber) *DeleteUserCall {
-	call.builder.PhoneNumbers(v...)
+func (call *DeleteUserCall) PhoneNumbers(in ...*resource.PhoneNumber) *DeleteUserCall {
+	call.builder.PhoneNumbers(in...)
 	return call
 }
 
-func (call *DeleteUserCall) Photos(v ...*resource.Photo) *DeleteUserCall {
-	call.builder.Photos(v...)
+func (call *DeleteUserCall) Photos(in ...*resource.Photo) *DeleteUserCall {
+	call.builder.Photos(in...)
 	return call
 }
 
-func (call *DeleteUserCall) PreferredLanguage(v string) *DeleteUserCall {
-	call.builder.PreferredLanguage(v)
+func (call *DeleteUserCall) PreferredLanguage(in string) *DeleteUserCall {
+	call.builder.PreferredLanguage(in)
 	return call
 }
 
-func (call *DeleteUserCall) ProfileURL(v string) *DeleteUserCall {
-	call.builder.ProfileURL(v)
+func (call *DeleteUserCall) ProfileURL(in string) *DeleteUserCall {
+	call.builder.ProfileURL(in)
 	return call
 }
 
-func (call *DeleteUserCall) Roles(v ...*resource.Role) *DeleteUserCall {
-	call.builder.Roles(v...)
+func (call *DeleteUserCall) Roles(in ...*resource.Role) *DeleteUserCall {
+	call.builder.Roles(in...)
 	return call
 }
 
-func (call *DeleteUserCall) Timezone(v string) *DeleteUserCall {
-	call.builder.Timezone(v)
+func (call *DeleteUserCall) Schemas(in ...string) *DeleteUserCall {
+	call.builder.Schemas(in...)
 	return call
 }
 
-func (call *DeleteUserCall) Title(v string) *DeleteUserCall {
-	call.builder.Title(v)
+func (call *DeleteUserCall) Timezone(in string) *DeleteUserCall {
+	call.builder.Timezone(in)
 	return call
 }
 
-func (call *DeleteUserCall) UserName(v string) *DeleteUserCall {
-	call.builder.UserName(v)
+func (call *DeleteUserCall) Title(in string) *DeleteUserCall {
+	call.builder.Title(in)
 	return call
 }
 
-func (call *DeleteUserCall) UserType(v string) *DeleteUserCall {
-	call.builder.UserType(v)
+func (call *DeleteUserCall) UserName(in string) *DeleteUserCall {
+	call.builder.UserName(in)
 	return call
 }
 
-func (call *DeleteUserCall) X509Certificates(v ...*resource.X509Certificate) *DeleteUserCall {
-	call.builder.X509Certificates(v...)
+func (call *DeleteUserCall) UserType(in string) *DeleteUserCall {
+	call.builder.UserType(in)
+	return call
+}
+
+func (call *DeleteUserCall) X509Certificates(in ...*resource.X509Certificate) *DeleteUserCall {
+	call.builder.X509Certificates(in...)
 	return call
 }
 
@@ -1004,38 +1014,48 @@ func (svc *UserService) Search() *SearchUserCall {
 	}
 }
 
-func (call *SearchUserCall) Attributes(v ...string) *SearchUserCall {
-	call.builder.Attributes(v...)
+func (call *SearchUserCall) Attributes(in ...string) *SearchUserCall {
+	call.builder.Attributes(in...)
 	return call
 }
 
-func (call *SearchUserCall) Count(v int) *SearchUserCall {
-	call.builder.Count(v)
+func (call *SearchUserCall) Count(in int) *SearchUserCall {
+	call.builder.Count(in)
 	return call
 }
 
-func (call *SearchUserCall) ExcludedAttributes(v ...string) *SearchUserCall {
-	call.builder.ExcludedAttributes(v...)
+func (call *SearchUserCall) ExcludedAttributes(in ...string) *SearchUserCall {
+	call.builder.ExcludedAttributes(in...)
 	return call
 }
 
-func (call *SearchUserCall) Filter(v string) *SearchUserCall {
-	call.builder.Filter(v)
+func (call *SearchUserCall) Filter(in string) *SearchUserCall {
+	call.builder.Filter(in)
 	return call
 }
 
-func (call *SearchUserCall) SortBy(v string) *SearchUserCall {
-	call.builder.SortBy(v)
+func (call *SearchUserCall) Schema(in string) *SearchUserCall {
+	call.builder.Schema(in)
 	return call
 }
 
-func (call *SearchUserCall) SortOrder(v string) *SearchUserCall {
-	call.builder.SortOrder(v)
+func (call *SearchUserCall) Schemas(in ...string) *SearchUserCall {
+	call.builder.Schemas(in...)
 	return call
 }
 
-func (call *SearchUserCall) StartIndex(v int) *SearchUserCall {
-	call.builder.StartIndex(v)
+func (call *SearchUserCall) SortBy(in string) *SearchUserCall {
+	call.builder.SortBy(in)
+	return call
+}
+
+func (call *SearchUserCall) SortOrder(in string) *SearchUserCall {
+	call.builder.SortOrder(in)
+	return call
+}
+
+func (call *SearchUserCall) StartIndex(in int) *SearchUserCall {
+	call.builder.StartIndex(in)
 	return call
 }
 

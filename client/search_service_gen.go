@@ -52,38 +52,48 @@ func (svc *SearchService) Search() *SearchCall {
 	}
 }
 
-func (call *SearchCall) Attributes(v ...string) *SearchCall {
-	call.builder.Attributes(v...)
+func (call *SearchCall) Attributes(in ...string) *SearchCall {
+	call.builder.Attributes(in...)
 	return call
 }
 
-func (call *SearchCall) Count(v int) *SearchCall {
-	call.builder.Count(v)
+func (call *SearchCall) Count(in int) *SearchCall {
+	call.builder.Count(in)
 	return call
 }
 
-func (call *SearchCall) ExcludedAttributes(v ...string) *SearchCall {
-	call.builder.ExcludedAttributes(v...)
+func (call *SearchCall) ExcludedAttributes(in ...string) *SearchCall {
+	call.builder.ExcludedAttributes(in...)
 	return call
 }
 
-func (call *SearchCall) Filter(v string) *SearchCall {
-	call.builder.Filter(v)
+func (call *SearchCall) Filter(in string) *SearchCall {
+	call.builder.Filter(in)
 	return call
 }
 
-func (call *SearchCall) SortBy(v string) *SearchCall {
-	call.builder.SortBy(v)
+func (call *SearchCall) Schema(in string) *SearchCall {
+	call.builder.Schema(in)
 	return call
 }
 
-func (call *SearchCall) SortOrder(v string) *SearchCall {
-	call.builder.SortOrder(v)
+func (call *SearchCall) Schemas(in ...string) *SearchCall {
+	call.builder.Schemas(in...)
 	return call
 }
 
-func (call *SearchCall) StartIndex(v int) *SearchCall {
-	call.builder.StartIndex(v)
+func (call *SearchCall) SortBy(in string) *SearchCall {
+	call.builder.SortBy(in)
+	return call
+}
+
+func (call *SearchCall) SortOrder(in string) *SearchCall {
+	call.builder.SortOrder(in)
+	return call
+}
+
+func (call *SearchCall) StartIndex(in int) *SearchCall {
+	call.builder.StartIndex(in)
 	return call
 }
 

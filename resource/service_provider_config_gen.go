@@ -15,7 +15,7 @@ const ServiceProviderConfigSchemaURI = "urn:ietf:params:scim:schemas:core:2.0:Se
 
 func init() {
 	Register("ServiceProviderConfig", ServiceProviderConfigSchemaURI, ServiceProviderConfig{})
-	RegisterBuilder("ServiceProviderConfigBuilder", ServiceProviderConfigSchemaURI, ServiceProviderConfigBuilder{})
+	RegisterBuilder("ServiceProviderConfig", ServiceProviderConfigSchemaURI, ServiceProviderConfigBuilder{})
 }
 
 type ServiceProviderConfig struct {

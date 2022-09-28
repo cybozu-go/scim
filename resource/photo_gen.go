@@ -13,7 +13,7 @@ import (
 
 func init() {
 	Register("Photo", "", Photo{})
-	RegisterBuilder("PhotoBuilder", "", PhotoBuilder{})
+	RegisterBuilder("Photo", "", PhotoBuilder{})
 }
 
 type Photo struct {

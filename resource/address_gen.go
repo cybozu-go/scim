@@ -13,7 +13,7 @@ import (
 
 func init() {
 	Register("Address", "", Address{})
-	RegisterBuilder("AddressBuilder", "", AddressBuilder{})
+	RegisterBuilder("Address", "", AddressBuilder{})
 }
 
 type Address struct {

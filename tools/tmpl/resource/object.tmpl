@@ -5,7 +5,7 @@ const {{ .Name }}SchemaURI = {{ $schemaURI | printf "%q" }}
 {{ end }}
 func init() {
   Register({{ .Name | printf "%q" }}, {{ if (eq $schemaURI "") }}""{{ else }}{{ .Name }}SchemaURI{{ end }}, {{ .Name }}{})
-  RegisterBuilder({{ .Name | printf "%sBuilder" | printf "%q" }}, {{ if (eq $schemaURI "") }}""{{ else }}{{ .Name }}SchemaURI{{ end }}, {{ .Name }}Builder{})
+  RegisterBuilder({{ .Name | printf "%q" }}, {{ if (eq $schemaURI "") }}""{{ else }}{{ .Name }}SchemaURI{{ end }}, {{ .Name }}Builder{})
 }
 {{ end }}
 

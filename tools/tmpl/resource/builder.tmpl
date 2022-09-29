@@ -1,8 +1,10 @@
 {{ define "ext/builder/initialize" }}
 {{- $schemaURI := .GetSchemaURI }}
-{{- if (ne $schemaURI "") }}
+{{- if (ne $schemaURI "") }}{{- /* extensions are not allowed... TODO: come up with a better way to filter */}}
+{{- if (and (ne .Name "EnterpriseUser") (ne .Name "EnterpriseManager")) }}
   b.object.schemas = &schemas{}
   b.object.schemas.Add({{ .Name }}SchemaURI)
+{{- end }}
 {{- end }}
 {{- end }}
 

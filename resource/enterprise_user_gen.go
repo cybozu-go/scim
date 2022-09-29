@@ -466,8 +466,6 @@ func NewEnterpriseUserBuilder() *EnterpriseUserBuilder {
 func (b *EnterpriseUserBuilder) initialize() {
 	b.err = nil
 	b.object = &EnterpriseUser{}
-	b.object.schemas = &schemas{}
-	b.object.schemas.Add(EnterpriseUserSchemaURI)
 }
 func (b *EnterpriseUserBuilder) CostCenter(in string) *EnterpriseUserBuilder {
 	b.mu.Lock()

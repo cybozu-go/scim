@@ -213,6 +213,17 @@ func (v *Schema) makePairs() []*fieldPair {
 	return pairs
 }
 
+func (v *Schema) Clone() *Schema {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return &Schema{
+		attributes:  v.attributes,
+		description: v.description,
+		id:          v.id,
+		name:        v.name,
+	}
+}
+
 // MarshalJSON serializes Schema into JSON.
 // All pre-declared fields are included as long as a value is
 // assigned to them, as well as all extra fields. All of these
@@ -414,17 +425,6 @@ func (b *SchemaBuilder) MustBuild() *Schema {
 		panic(err)
 	}
 	return object
-}
-
-func (v *Schema) Clone() *Schema {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	return &Schema{
-		attributes:  v.attributes,
-		description: v.description,
-		id:          v.id,
-		name:        v.name,
-	}
 }
 
 func (v *Schema) AsMap(dst map[string]interface{}) error {

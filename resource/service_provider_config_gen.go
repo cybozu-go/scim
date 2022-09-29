@@ -374,6 +374,22 @@ func (v *ServiceProviderConfig) makePairs() []*fieldPair {
 	return pairs
 }
 
+func (v *ServiceProviderConfig) Clone() *ServiceProviderConfig {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return &ServiceProviderConfig{
+		authenticationSchemes: v.authenticationSchemes,
+		bulk:                  v.bulk,
+		changePassword:        v.changePassword,
+		documentationUri:      v.documentationUri,
+		etag:                  v.etag,
+		filter:                v.filter,
+		patch:                 v.patch,
+		schemas:               v.schemas,
+		sort:                  v.sort,
+	}
+}
+
 // MarshalJSON serializes ServiceProviderConfig into JSON.
 // All pre-declared fields are included as long as a value is
 // assigned to them, as well as all extra fields. All of these
@@ -710,22 +726,6 @@ func (b *ServiceProviderConfigBuilder) Extension(uri string, value interface{}) 
 		b.err = err
 	}
 	return b
-}
-
-func (v *ServiceProviderConfig) Clone() *ServiceProviderConfig {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	return &ServiceProviderConfig{
-		authenticationSchemes: v.authenticationSchemes,
-		bulk:                  v.bulk,
-		changePassword:        v.changePassword,
-		documentationUri:      v.documentationUri,
-		etag:                  v.etag,
-		filter:                v.filter,
-		patch:                 v.patch,
-		schemas:               v.schemas,
-		sort:                  v.sort,
-	}
 }
 
 func (v *ServiceProviderConfig) AsMap(dst map[string]interface{}) error {

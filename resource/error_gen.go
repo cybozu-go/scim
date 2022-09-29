@@ -180,6 +180,16 @@ func (v *Error) makePairs() []*fieldPair {
 	return pairs
 }
 
+func (v *Error) Clone() *Error {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return &Error{
+		detail:   v.detail,
+		scimType: v.scimType,
+		status:   v.status,
+	}
+}
+
 // MarshalJSON serializes Error into JSON.
 // All pre-declared fields are included as long as a value is
 // assigned to them, as well as all extra fields. All of these
@@ -360,16 +370,6 @@ func (b *ErrorBuilder) From(in *Error) *ErrorBuilder {
 	b.once.Do(b.initialize)
 	b.object = in.Clone()
 	return b
-}
-
-func (v *Error) Clone() *Error {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	return &Error{
-		detail:   v.detail,
-		scimType: v.scimType,
-		status:   v.status,
-	}
 }
 
 func (v *Error) AsMap(dst map[string]interface{}) error {

@@ -308,6 +308,20 @@ func (v *Address) makePairs() []*fieldPair {
 	return pairs
 }
 
+func (v *Address) Clone() *Address {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return &Address{
+		country:       v.country,
+		formatted:     v.formatted,
+		locality:      v.locality,
+		postalCode:    v.postalCode,
+		region:        v.region,
+		streetAddress: v.streetAddress,
+		typ:           v.typ,
+	}
+}
+
 // MarshalJSON serializes Address into JSON.
 // All pre-declared fields are included as long as a value is
 // assigned to them, as well as all extra fields. All of these
@@ -568,20 +582,6 @@ func (b *AddressBuilder) From(in *Address) *AddressBuilder {
 	b.once.Do(b.initialize)
 	b.object = in.Clone()
 	return b
-}
-
-func (v *Address) Clone() *Address {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	return &Address{
-		country:       v.country,
-		formatted:     v.formatted,
-		locality:      v.locality,
-		postalCode:    v.postalCode,
-		region:        v.region,
-		streetAddress: v.streetAddress,
-		typ:           v.typ,
-	}
 }
 
 func (v *Address) AsMap(dst map[string]interface{}) error {

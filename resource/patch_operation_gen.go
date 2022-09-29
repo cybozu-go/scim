@@ -276,6 +276,19 @@ func (v *PatchOperation) makePairs() []*fieldPair {
 	return pairs
 }
 
+func (v *PatchOperation) Clone() *PatchOperation {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return &PatchOperation{
+		externalId: v.externalId,
+		id:         v.id,
+		meta:       v.meta,
+		op:         v.op,
+		path:       v.path,
+		value:      v.value,
+	}
+}
+
 // MarshalJSON serializes PatchOperation into JSON.
 // All pre-declared fields are included as long as a value is
 // assigned to them, as well as all extra fields. All of these
@@ -516,19 +529,6 @@ func (b *PatchOperationBuilder) From(in *PatchOperation) *PatchOperationBuilder 
 	b.once.Do(b.initialize)
 	b.object = in.Clone()
 	return b
-}
-
-func (v *PatchOperation) Clone() *PatchOperation {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	return &PatchOperation{
-		externalId: v.externalId,
-		id:         v.id,
-		meta:       v.meta,
-		op:         v.op,
-		path:       v.path,
-		value:      v.value,
-	}
 }
 
 func (v *PatchOperation) AsMap(dst map[string]interface{}) error {

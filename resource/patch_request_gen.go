@@ -150,6 +150,15 @@ func (v *PatchRequest) makePairs() []*fieldPair {
 	return pairs
 }
 
+func (v *PatchRequest) Clone() *PatchRequest {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return &PatchRequest{
+		operations: v.operations,
+		schemas:    v.schemas,
+	}
+}
+
 // MarshalJSON serializes PatchRequest into JSON.
 // All pre-declared fields are included as long as a value is
 // assigned to them, as well as all extra fields. All of these
@@ -328,15 +337,6 @@ func (b *PatchRequestBuilder) Extension(uri string, value interface{}) *PatchReq
 		b.err = err
 	}
 	return b
-}
-
-func (v *PatchRequest) Clone() *PatchRequest {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	return &PatchRequest{
-		operations: v.operations,
-		schemas:    v.schemas,
-	}
 }
 
 func (v *PatchRequest) AsMap(dst map[string]interface{}) error {

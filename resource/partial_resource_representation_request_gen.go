@@ -148,6 +148,15 @@ func (v *PartialResourceRepresentationRequest) makePairs() []*fieldPair {
 	return pairs
 }
 
+func (v *PartialResourceRepresentationRequest) Clone() *PartialResourceRepresentationRequest {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return &PartialResourceRepresentationRequest{
+		attributes:         v.attributes,
+		excludedAttributes: v.excludedAttributes,
+	}
+}
+
 // MarshalJSON serializes PartialResourceRepresentationRequest into JSON.
 // All pre-declared fields are included as long as a value is
 // assigned to them, as well as all extra fields. All of these
@@ -308,15 +317,6 @@ func (b *PartialResourceRepresentationRequestBuilder) From(in *PartialResourceRe
 	b.once.Do(b.initialize)
 	b.object = in.Clone()
 	return b
-}
-
-func (v *PartialResourceRepresentationRequest) Clone() *PartialResourceRepresentationRequest {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	return &PartialResourceRepresentationRequest{
-		attributes:         v.attributes,
-		excludedAttributes: v.excludedAttributes,
-	}
 }
 
 func (v *PartialResourceRepresentationRequest) AsMap(dst map[string]interface{}) error {

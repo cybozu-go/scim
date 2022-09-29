@@ -278,6 +278,19 @@ func (v *Group) makePairs() []*fieldPair {
 	return pairs
 }
 
+func (v *Group) Clone() *Group {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return &Group{
+		displayName: v.displayName,
+		externalId:  v.externalId,
+		id:          v.id,
+		members:     v.members,
+		schemas:     v.schemas,
+		meta:        v.meta,
+	}
+}
+
 // MarshalJSON serializes Group into JSON.
 // All pre-declared fields are included as long as a value is
 // assigned to them, as well as all extra fields. All of these
@@ -536,19 +549,6 @@ func (b *GroupBuilder) Extension(uri string, value interface{}) *GroupBuilder {
 		b.err = err
 	}
 	return b
-}
-
-func (v *Group) Clone() *Group {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	return &Group{
-		displayName: v.displayName,
-		externalId:  v.externalId,
-		id:          v.id,
-		members:     v.members,
-		schemas:     v.schemas,
-		meta:        v.meta,
-	}
 }
 
 func (v *Group) AsMap(dst map[string]interface{}) error {

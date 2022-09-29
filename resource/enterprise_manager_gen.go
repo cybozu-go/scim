@@ -180,6 +180,16 @@ func (v *EnterpriseManager) makePairs() []*fieldPair {
 	return pairs
 }
 
+func (v *EnterpriseManager) Clone() *EnterpriseManager {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return &EnterpriseManager{
+		displayName: v.displayName,
+		id:          v.id,
+		ref:         v.ref,
+	}
+}
+
 // MarshalJSON serializes EnterpriseManager into JSON.
 // All pre-declared fields are included as long as a value is
 // assigned to them, as well as all extra fields. All of these
@@ -360,16 +370,6 @@ func (b *EnterpriseManagerBuilder) From(in *EnterpriseManager) *EnterpriseManage
 	b.once.Do(b.initialize)
 	b.object = in.Clone()
 	return b
-}
-
-func (v *EnterpriseManager) Clone() *EnterpriseManager {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	return &EnterpriseManager{
-		displayName: v.displayName,
-		id:          v.id,
-		ref:         v.ref,
-	}
 }
 
 func (v *EnterpriseManager) AsMap(dst map[string]interface{}) error {

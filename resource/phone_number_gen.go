@@ -212,6 +212,17 @@ func (v *PhoneNumber) makePairs() []*fieldPair {
 	return pairs
 }
 
+func (v *PhoneNumber) Clone() *PhoneNumber {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return &PhoneNumber{
+		display: v.display,
+		primary: v.primary,
+		typ:     v.typ,
+		value:   v.value,
+	}
+}
+
 // MarshalJSON serializes PhoneNumber into JSON.
 // All pre-declared fields are included as long as a value is
 // assigned to them, as well as all extra fields. All of these
@@ -412,17 +423,6 @@ func (b *PhoneNumberBuilder) From(in *PhoneNumber) *PhoneNumberBuilder {
 	b.once.Do(b.initialize)
 	b.object = in.Clone()
 	return b
-}
-
-func (v *PhoneNumber) Clone() *PhoneNumber {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	return &PhoneNumber{
-		display: v.display,
-		primary: v.primary,
-		typ:     v.typ,
-		value:   v.value,
-	}
 }
 
 func (v *PhoneNumber) AsMap(dst map[string]interface{}) error {

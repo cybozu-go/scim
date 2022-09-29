@@ -310,6 +310,20 @@ func (v *ResourceType) makePairs() []*fieldPair {
 	return pairs
 }
 
+func (v *ResourceType) Clone() *ResourceType {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return &ResourceType{
+		description:     v.description,
+		endpoint:        v.endpoint,
+		id:              v.id,
+		name:            v.name,
+		schema:          v.schema,
+		schemaExtension: v.schemaExtension,
+		schemas:         v.schemas,
+	}
+}
+
 // MarshalJSON serializes ResourceType into JSON.
 // All pre-declared fields are included as long as a value is
 // assigned to them, as well as all extra fields. All of these
@@ -600,20 +614,6 @@ func (b *ResourceTypeBuilder) Extension(uri string, value interface{}) *Resource
 		b.err = err
 	}
 	return b
-}
-
-func (v *ResourceType) Clone() *ResourceType {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	return &ResourceType{
-		description:     v.description,
-		endpoint:        v.endpoint,
-		id:              v.id,
-		name:            v.name,
-		schema:          v.schema,
-		schemaExtension: v.schemaExtension,
-		schemas:         v.schemas,
-	}
 }
 
 func (v *ResourceType) AsMap(dst map[string]interface{}) error {

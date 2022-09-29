@@ -116,6 +116,14 @@ func (v *GenericSupport) makePairs() []*fieldPair {
 	return pairs
 }
 
+func (v *GenericSupport) Clone() *GenericSupport {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return &GenericSupport{
+		supported: v.supported,
+	}
+}
+
 // MarshalJSON serializes GenericSupport into JSON.
 // All pre-declared fields are included as long as a value is
 // assigned to them, as well as all extra fields. All of these
@@ -259,14 +267,6 @@ func (b *GenericSupportBuilder) From(in *GenericSupport) *GenericSupportBuilder 
 	b.once.Do(b.initialize)
 	b.object = in.Clone()
 	return b
-}
-
-func (v *GenericSupport) Clone() *GenericSupport {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	return &GenericSupport{
-		supported: v.supported,
-	}
 }
 
 func (v *GenericSupport) AsMap(dst map[string]interface{}) error {

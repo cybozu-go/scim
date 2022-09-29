@@ -887,6 +887,38 @@ func (v *User) makePairs() []*fieldPair {
 	return pairs
 }
 
+func (v *User) Clone() *User {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return &User{
+		active:            v.active,
+		addresses:         v.addresses,
+		displayName:       v.displayName,
+		emails:            v.emails,
+		entitlements:      v.entitlements,
+		externalId:        v.externalId,
+		groups:            v.groups,
+		id:                v.id,
+		ims:               v.ims,
+		locale:            v.locale,
+		meta:              v.meta,
+		name:              v.name,
+		nickName:          v.nickName,
+		password:          v.password,
+		phoneNumbers:      v.phoneNumbers,
+		photos:            v.photos,
+		preferredLanguage: v.preferredLanguage,
+		profileUrl:        v.profileUrl,
+		roles:             v.roles,
+		schemas:           v.schemas,
+		timezone:          v.timezone,
+		title:             v.title,
+		userName:          v.userName,
+		userType:          v.userType,
+		x509Certificates:  v.x509Certificates,
+	}
+}
+
 // MarshalJSON serializes User into JSON.
 // All pre-declared fields are included as long as a value is
 // assigned to them, as well as all extra fields. All of these
@@ -1528,38 +1560,6 @@ func (b *UserBuilder) Extension(uri string, value interface{}) *UserBuilder {
 		b.err = err
 	}
 	return b
-}
-
-func (v *User) Clone() *User {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	return &User{
-		active:            v.active,
-		addresses:         v.addresses,
-		displayName:       v.displayName,
-		emails:            v.emails,
-		entitlements:      v.entitlements,
-		externalId:        v.externalId,
-		groups:            v.groups,
-		id:                v.id,
-		ims:               v.ims,
-		locale:            v.locale,
-		meta:              v.meta,
-		name:              v.name,
-		nickName:          v.nickName,
-		password:          v.password,
-		phoneNumbers:      v.phoneNumbers,
-		photos:            v.photos,
-		preferredLanguage: v.preferredLanguage,
-		profileUrl:        v.profileUrl,
-		roles:             v.roles,
-		schemas:           v.schemas,
-		timezone:          v.timezone,
-		title:             v.title,
-		userName:          v.userName,
-		userType:          v.userType,
-		x509Certificates:  v.x509Certificates,
-	}
 }
 
 func (v *User) AsMap(dst map[string]interface{}) error {

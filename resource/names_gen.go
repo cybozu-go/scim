@@ -276,6 +276,19 @@ func (v *Names) makePairs() []*fieldPair {
 	return pairs
 }
 
+func (v *Names) Clone() *Names {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return &Names{
+		familyName:      v.familyName,
+		formatted:       v.formatted,
+		givenName:       v.givenName,
+		honorificPrefix: v.honorificPrefix,
+		honorificSuffix: v.honorificSuffix,
+		middleName:      v.middleName,
+	}
+}
+
 // MarshalJSON serializes Names into JSON.
 // All pre-declared fields are included as long as a value is
 // assigned to them, as well as all extra fields. All of these
@@ -516,19 +529,6 @@ func (b *NamesBuilder) From(in *Names) *NamesBuilder {
 	b.once.Do(b.initialize)
 	b.object = in.Clone()
 	return b
-}
-
-func (v *Names) Clone() *Names {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	return &Names{
-		familyName:      v.familyName,
-		formatted:       v.formatted,
-		givenName:       v.givenName,
-		honorificPrefix: v.honorificPrefix,
-		honorificSuffix: v.honorificSuffix,
-		middleName:      v.middleName,
-	}
 }
 
 func (v *Names) AsMap(dst map[string]interface{}) error {

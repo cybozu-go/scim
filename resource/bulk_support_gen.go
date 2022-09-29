@@ -180,6 +180,16 @@ func (v *BulkSupport) makePairs() []*fieldPair {
 	return pairs
 }
 
+func (v *BulkSupport) Clone() *BulkSupport {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return &BulkSupport{
+		maxOperations:  v.maxOperations,
+		maxPayloadSize: v.maxPayloadSize,
+		supported:      v.supported,
+	}
+}
+
 // MarshalJSON serializes BulkSupport into JSON.
 // All pre-declared fields are included as long as a value is
 // assigned to them, as well as all extra fields. All of these
@@ -369,16 +379,6 @@ func (b *BulkSupportBuilder) From(in *BulkSupport) *BulkSupportBuilder {
 	b.once.Do(b.initialize)
 	b.object = in.Clone()
 	return b
-}
-
-func (v *BulkSupport) Clone() *BulkSupport {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	return &BulkSupport{
-		maxOperations:  v.maxOperations,
-		maxPayloadSize: v.maxPayloadSize,
-		supported:      v.supported,
-	}
 }
 
 func (v *BulkSupport) AsMap(dst map[string]interface{}) error {

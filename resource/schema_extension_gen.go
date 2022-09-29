@@ -148,6 +148,15 @@ func (v *SchemaExtension) makePairs() []*fieldPair {
 	return pairs
 }
 
+func (v *SchemaExtension) Clone() *SchemaExtension {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return &SchemaExtension{
+		schema:   v.schema,
+		required: v.required,
+	}
+}
+
 // MarshalJSON serializes SchemaExtension into JSON.
 // All pre-declared fields are included as long as a value is
 // assigned to them, as well as all extra fields. All of these
@@ -314,15 +323,6 @@ func (b *SchemaExtensionBuilder) From(in *SchemaExtension) *SchemaExtensionBuild
 	b.once.Do(b.initialize)
 	b.object = in.Clone()
 	return b
-}
-
-func (v *SchemaExtension) Clone() *SchemaExtension {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	return &SchemaExtension{
-		schema:   v.schema,
-		required: v.required,
-	}
 }
 
 func (v *SchemaExtension) AsMap(dst map[string]interface{}) error {

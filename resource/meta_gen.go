@@ -246,6 +246,18 @@ func (v *Meta) makePairs() []*fieldPair {
 	return pairs
 }
 
+func (v *Meta) Clone() *Meta {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return &Meta{
+		resourceType: v.resourceType,
+		location:     v.location,
+		version:      v.version,
+		created:      v.created,
+		lastModified: v.lastModified,
+	}
+}
+
 // MarshalJSON serializes Meta into JSON.
 // All pre-declared fields are included as long as a value is
 // assigned to them, as well as all extra fields. All of these
@@ -458,18 +470,6 @@ func (b *MetaBuilder) MustBuild() *Meta {
 		panic(err)
 	}
 	return object
-}
-
-func (v *Meta) Clone() *Meta {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	return &Meta{
-		resourceType: v.resourceType,
-		location:     v.location,
-		version:      v.version,
-		created:      v.created,
-		lastModified: v.lastModified,
-	}
 }
 
 func (v *Meta) AsMap(dst map[string]interface{}) error {

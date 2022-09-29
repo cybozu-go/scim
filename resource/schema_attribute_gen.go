@@ -469,6 +469,26 @@ func (v *SchemaAttribute) makePairs() []*fieldPair {
 	return pairs
 }
 
+func (v *SchemaAttribute) Clone() *SchemaAttribute {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return &SchemaAttribute{
+		canonicalValues: v.canonicalValues,
+		caseExact:       v.caseExact,
+		description:     v.description,
+		multiValued:     v.multiValued,
+		mutability:      v.mutability,
+		name:            v.name,
+		referenceTypes:  v.referenceTypes,
+		required:        v.required,
+		returned:        v.returned,
+		subAttributes:   v.subAttributes,
+		typ:             v.typ,
+		uniqueness:      v.uniqueness,
+		goAccessorName:  v.goAccessorName,
+	}
+}
+
 // MarshalJSON serializes SchemaAttribute into JSON.
 // All pre-declared fields are included as long as a value is
 // assigned to them, as well as all extra fields. All of these
@@ -835,26 +855,6 @@ func (b *SchemaAttributeBuilder) From(in *SchemaAttribute) *SchemaAttributeBuild
 	b.once.Do(b.initialize)
 	b.object = in.Clone()
 	return b
-}
-
-func (v *SchemaAttribute) Clone() *SchemaAttribute {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	return &SchemaAttribute{
-		canonicalValues: v.canonicalValues,
-		caseExact:       v.caseExact,
-		description:     v.description,
-		multiValued:     v.multiValued,
-		mutability:      v.mutability,
-		name:            v.name,
-		referenceTypes:  v.referenceTypes,
-		required:        v.required,
-		returned:        v.returned,
-		subAttributes:   v.subAttributes,
-		typ:             v.typ,
-		uniqueness:      v.uniqueness,
-		goAccessorName:  v.goAccessorName,
-	}
 }
 
 func (v *SchemaAttribute) AsMap(dst map[string]interface{}) error {

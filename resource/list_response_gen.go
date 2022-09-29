@@ -246,6 +246,18 @@ func (v *ListResponse) makePairs() []*fieldPair {
 	return pairs
 }
 
+func (v *ListResponse) Clone() *ListResponse {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return &ListResponse{
+		itemsPerPage: v.itemsPerPage,
+		resources:    v.resources,
+		startIndex:   v.startIndex,
+		totalResults: v.totalResults,
+		schemas:      v.schemas,
+	}
+}
+
 // MarshalJSON serializes ListResponse into JSON.
 // All pre-declared fields are included as long as a value is
 // assigned to them, as well as all extra fields. All of these
@@ -399,18 +411,6 @@ func (b *ListResponseBuilder) Extension(uri string, value interface{}) *ListResp
 		b.err = err
 	}
 	return b
-}
-
-func (v *ListResponse) Clone() *ListResponse {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	return &ListResponse{
-		itemsPerPage: v.itemsPerPage,
-		resources:    v.resources,
-		startIndex:   v.startIndex,
-		totalResults: v.totalResults,
-		schemas:      v.schemas,
-	}
 }
 
 func (v *ListResponse) AsMap(dst map[string]interface{}) error {

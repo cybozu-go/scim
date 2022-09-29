@@ -374,6 +374,22 @@ func (v *SearchRequest) makePairs() []*fieldPair {
 	return pairs
 }
 
+func (v *SearchRequest) Clone() *SearchRequest {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return &SearchRequest{
+		attributes:         v.attributes,
+		count:              v.count,
+		excludedAttributes: v.excludedAttributes,
+		filter:             v.filter,
+		schema:             v.schema,
+		schemas:            v.schemas,
+		sortBy:             v.sortBy,
+		sortOrder:          v.sortOrder,
+		startIndex:         v.startIndex,
+	}
+}
+
 // MarshalJSON serializes SearchRequest into JSON.
 // All pre-declared fields are included as long as a value is
 // assigned to them, as well as all extra fields. All of these
@@ -692,22 +708,6 @@ func (b *SearchRequestBuilder) Extension(uri string, value interface{}) *SearchR
 		b.err = err
 	}
 	return b
-}
-
-func (v *SearchRequest) Clone() *SearchRequest {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	return &SearchRequest{
-		attributes:         v.attributes,
-		count:              v.count,
-		excludedAttributes: v.excludedAttributes,
-		filter:             v.filter,
-		schema:             v.schema,
-		schemas:            v.schemas,
-		sortBy:             v.sortBy,
-		sortOrder:          v.sortOrder,
-		startIndex:         v.startIndex,
-	}
 }
 
 func (v *SearchRequest) AsMap(dst map[string]interface{}) error {

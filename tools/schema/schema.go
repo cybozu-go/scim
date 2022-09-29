@@ -457,7 +457,7 @@ func (SchemaAttribute) Fields() []*schema.Field {
 		schema.NewField(`SubAttributes`, subattrtype),
 		schema.NewField(`Type`, dttype).Unexported(`typ`).JSON(`type`).Required(true),
 		schema.NewField(`Uniqueness`, uniqtype),
-		schema.String("GoAccessorName").Extension(true).
+		schema.String("GoAccessorName").IsExtension(true).
 			Comment("returns the exported method name to retrieve the particular attribute. For example, attribute that // has the JSON field name `externalId` might return `ExternalID`, `$ref` might return `Reference`, etc."),
 	}
 }

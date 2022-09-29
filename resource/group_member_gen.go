@@ -180,6 +180,16 @@ func (v *GroupMember) makePairs() []*fieldPair {
 	return pairs
 }
 
+func (v *GroupMember) Clone() *GroupMember {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return &GroupMember{
+		value: v.value,
+		ref:   v.ref,
+		typ:   v.typ,
+	}
+}
+
 // MarshalJSON serializes GroupMember into JSON.
 // All pre-declared fields are included as long as a value is
 // assigned to them, as well as all extra fields. All of these
@@ -363,16 +373,6 @@ func (b *GroupMemberBuilder) From(in *GroupMember) *GroupMemberBuilder {
 	b.once.Do(b.initialize)
 	b.object = in.Clone()
 	return b
-}
-
-func (v *GroupMember) Clone() *GroupMember {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	return &GroupMember{
-		value: v.value,
-		ref:   v.ref,
-		typ:   v.typ,
-	}
 }
 
 func (v *GroupMember) AsMap(dst map[string]interface{}) error {

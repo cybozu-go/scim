@@ -148,6 +148,15 @@ func (v *FilterSupport) makePairs() []*fieldPair {
 	return pairs
 }
 
+func (v *FilterSupport) Clone() *FilterSupport {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return &FilterSupport{
+		maxResults: v.maxResults,
+		supported:  v.supported,
+	}
+}
+
 // MarshalJSON serializes FilterSupport into JSON.
 // All pre-declared fields are included as long as a value is
 // assigned to them, as well as all extra fields. All of these
@@ -308,15 +317,6 @@ func (b *FilterSupportBuilder) From(in *FilterSupport) *FilterSupportBuilder {
 	b.once.Do(b.initialize)
 	b.object = in.Clone()
 	return b
-}
-
-func (v *FilterSupport) Clone() *FilterSupport {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	return &FilterSupport{
-		maxResults: v.maxResults,
-		supported:  v.supported,
-	}
 }
 
 func (v *FilterSupport) AsMap(dst map[string]interface{}) error {

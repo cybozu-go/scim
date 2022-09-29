@@ -212,6 +212,17 @@ func (v *Photo) makePairs() []*fieldPair {
 	return pairs
 }
 
+func (v *Photo) Clone() *Photo {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return &Photo{
+		display: v.display,
+		primary: v.primary,
+		typ:     v.typ,
+		value:   v.value,
+	}
+}
+
 // MarshalJSON serializes Photo into JSON.
 // All pre-declared fields are included as long as a value is
 // assigned to them, as well as all extra fields. All of these
@@ -412,17 +423,6 @@ func (b *PhotoBuilder) From(in *Photo) *PhotoBuilder {
 	b.once.Do(b.initialize)
 	b.object = in.Clone()
 	return b
-}
-
-func (v *Photo) Clone() *Photo {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	return &Photo{
-		display: v.display,
-		primary: v.primary,
-		typ:     v.typ,
-		value:   v.value,
-	}
 }
 
 func (v *Photo) AsMap(dst map[string]interface{}) error {

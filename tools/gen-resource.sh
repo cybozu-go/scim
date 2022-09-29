@@ -10,6 +10,6 @@ sketch \
 	--tmpl-dir=$DIR/tmpl/resource \
 	--with-builders \
 	--with-has-methods \
-	--with-key-prefix \
+	--with-key-name-prefix \
 	-d $(cd $DIR/../resource; pwd -P) \
 	$DIR/schema 

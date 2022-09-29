@@ -212,6 +212,17 @@ func (v *Role) makePairs() []*fieldPair {
 	return pairs
 }
 
+func (v *Role) Clone() *Role {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return &Role{
+		display: v.display,
+		primary: v.primary,
+		typ:     v.typ,
+		value:   v.value,
+	}
+}
+
 // MarshalJSON serializes Role into JSON.
 // All pre-declared fields are included as long as a value is
 // assigned to them, as well as all extra fields. All of these
@@ -412,17 +423,6 @@ func (b *RoleBuilder) From(in *Role) *RoleBuilder {
 	b.once.Do(b.initialize)
 	b.object = in.Clone()
 	return b
-}
-
-func (v *Role) Clone() *Role {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	return &Role{
-		display: v.display,
-		primary: v.primary,
-		typ:     v.typ,
-		value:   v.value,
-	}
 }
 
 func (v *Role) AsMap(dst map[string]interface{}) error {

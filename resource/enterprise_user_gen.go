@@ -310,6 +310,20 @@ func (v *EnterpriseUser) makePairs() []*fieldPair {
 	return pairs
 }
 
+func (v *EnterpriseUser) Clone() *EnterpriseUser {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return &EnterpriseUser{
+		costCenter:     v.costCenter,
+		department:     v.department,
+		division:       v.division,
+		employeeNumber: v.employeeNumber,
+		manager:        v.manager,
+		organization:   v.organization,
+		schemas:        v.schemas,
+	}
+}
+
 // MarshalJSON serializes EnterpriseUser into JSON.
 // All pre-declared fields are included as long as a value is
 // assigned to them, as well as all extra fields. All of these
@@ -588,20 +602,6 @@ func (b *EnterpriseUserBuilder) Extension(uri string, value interface{}) *Enterp
 		b.err = err
 	}
 	return b
-}
-
-func (v *EnterpriseUser) Clone() *EnterpriseUser {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	return &EnterpriseUser{
-		costCenter:     v.costCenter,
-		department:     v.department,
-		division:       v.division,
-		employeeNumber: v.employeeNumber,
-		manager:        v.manager,
-		organization:   v.organization,
-		schemas:        v.schemas,
-	}
 }
 
 func (v *EnterpriseUser) AsMap(dst map[string]interface{}) error {

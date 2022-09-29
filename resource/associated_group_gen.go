@@ -212,6 +212,17 @@ func (v *AssociatedGroup) makePairs() []*fieldPair {
 	return pairs
 }
 
+func (v *AssociatedGroup) Clone() *AssociatedGroup {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return &AssociatedGroup{
+		display: v.display,
+		ref:     v.ref,
+		typ:     v.typ,
+		value:   v.value,
+	}
+}
+
 // MarshalJSON serializes AssociatedGroup into JSON.
 // All pre-declared fields are included as long as a value is
 // assigned to them, as well as all extra fields. All of these
@@ -412,17 +423,6 @@ func (b *AssociatedGroupBuilder) From(in *AssociatedGroup) *AssociatedGroupBuild
 	b.once.Do(b.initialize)
 	b.object = in.Clone()
 	return b
-}
-
-func (v *AssociatedGroup) Clone() *AssociatedGroup {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	return &AssociatedGroup{
-		display: v.display,
-		ref:     v.ref,
-		typ:     v.typ,
-		value:   v.value,
-	}
 }
 
 func (v *AssociatedGroup) AsMap(dst map[string]interface{}) error {

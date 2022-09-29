@@ -212,6 +212,17 @@ func (v *X509Certificate) makePairs() []*fieldPair {
 	return pairs
 }
 
+func (v *X509Certificate) Clone() *X509Certificate {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return &X509Certificate{
+		display: v.display,
+		primary: v.primary,
+		typ:     v.typ,
+		value:   v.value,
+	}
+}
+
 // MarshalJSON serializes X509Certificate into JSON.
 // All pre-declared fields are included as long as a value is
 // assigned to them, as well as all extra fields. All of these
@@ -412,17 +423,6 @@ func (b *X509CertificateBuilder) From(in *X509Certificate) *X509CertificateBuild
 	b.once.Do(b.initialize)
 	b.object = in.Clone()
 	return b
-}
-
-func (v *X509Certificate) Clone() *X509Certificate {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	return &X509Certificate{
-		display: v.display,
-		primary: v.primary,
-		typ:     v.typ,
-		value:   v.value,
-	}
 }
 
 func (v *X509Certificate) AsMap(dst map[string]interface{}) error {

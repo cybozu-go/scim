@@ -212,6 +212,17 @@ func (v *IMS) makePairs() []*fieldPair {
 	return pairs
 }
 
+func (v *IMS) Clone() *IMS {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return &IMS{
+		display: v.display,
+		primary: v.primary,
+		typ:     v.typ,
+		value:   v.value,
+	}
+}
+
 // MarshalJSON serializes IMS into JSON.
 // All pre-declared fields are included as long as a value is
 // assigned to them, as well as all extra fields. All of these
@@ -412,17 +423,6 @@ func (b *IMSBuilder) From(in *IMS) *IMSBuilder {
 	b.once.Do(b.initialize)
 	b.object = in.Clone()
 	return b
-}
-
-func (v *IMS) Clone() *IMS {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	return &IMS{
-		display: v.display,
-		primary: v.primary,
-		typ:     v.typ,
-		value:   v.value,
-	}
 }
 
 func (v *IMS) AsMap(dst map[string]interface{}) error {

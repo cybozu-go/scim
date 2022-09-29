@@ -346,9 +346,10 @@ func (b *IMSBuilder) initialize() {
 	b.object = &IMS{}
 }
 func (b *IMSBuilder) Display(in string) *IMSBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -359,9 +360,10 @@ func (b *IMSBuilder) Display(in string) *IMSBuilder {
 	return b
 }
 func (b *IMSBuilder) Primary(in bool) *IMSBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -372,9 +374,10 @@ func (b *IMSBuilder) Primary(in bool) *IMSBuilder {
 	return b
 }
 func (b *IMSBuilder) Type(in string) *IMSBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -385,9 +388,10 @@ func (b *IMSBuilder) Type(in string) *IMSBuilder {
 	return b
 }
 func (b *IMSBuilder) Value(in string) *IMSBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -401,10 +405,10 @@ func (b *IMSBuilder) Value(in string) *IMSBuilder {
 func (b *IMSBuilder) Build() (*IMS, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
-	b.once.Do(b.initialize)
 
-	if err := b.err; err != nil {
-		return nil, err
+	b.once.Do(b.initialize)
+	if b.err != nil {
+		return nil, b.err
 	}
 	obj := b.object
 	b.once = sync.Once{}
@@ -429,6 +433,8 @@ func (b *IMSBuilder) From(in *IMS) *IMSBuilder {
 }
 
 func (v *IMS) AsMap(dst map[string]interface{}) error {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
 	for _, pair := range v.makePairs() {
 		dst[pair.Name] = pair.Value
 	}

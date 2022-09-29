@@ -110,7 +110,6 @@ services:
     - name: DeleteUserCall
       method_name: Delete
       http_method: http.MethodDelete
-      resource: User
       path: /Users
       successStatus: http.StatusNoContent
       makeURLTemplate: |

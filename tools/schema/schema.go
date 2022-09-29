@@ -204,7 +204,8 @@ func (Group) Fields() []*schema.Field {
 	return []*schema.Field{
 		schema.String(`DisplayName`),
 		schema.String(`ExternalID`).
-			Unexported(`externalId`),
+			Unexported(`externalID`).
+			JSON(`externalId`),
 		schema.String(`ID`),
 		schema.NewField(`Members`, groupmembertyp),
 		schema.NewField(`Schemas`, schemastyp),
@@ -321,7 +322,9 @@ func (PatchOperation) Fields() []*schema.Field {
 		ImplementsAccept(true).
 		UserFacingType(`interface{}`)
 	return []*schema.Field{
-		schema.String(`ExternalID`).Unexported(`externalId`),
+		schema.String(`ExternalID`).
+			Unexported(`externalID`).
+			JSON(`externalId`),
 		schema.String(`ID`),
 		schema.NewField(`Meta`, metatyp),
 		schema.NewField(`Op`, schema.Type(`PatchOperationType`).ZeroVal(`""`)),
@@ -557,7 +560,8 @@ func (User) Fields() []*schema.Field {
 		schema.NewField(`Emails`, emailtyp),
 		schema.NewField(`Entitlements`, entitlementtyp),
 		schema.String(`ExternalID`).
-			Unexported(`externalId`),
+			Unexported(`externalID`).
+			JSON(`externalId`),
 		schema.NewField(`Groups`, grpmembertyp),
 		schema.String(`ID`),
 		schema.NewField(`IMS`, imstyp).Unexported(`ims`),
@@ -570,7 +574,8 @@ func (User) Fields() []*schema.Field {
 		schema.NewField(`Photos`, phototyp),
 		schema.String(`PreferredLanguage`),
 		schema.String(`ProfileURL`).
-			Unexported(`profileUrl`),
+			Unexported(`profileURL`).
+			JSON(`profileUrl`),
 		schema.NewField(`Roles`, roletyp),
 		schema.NewField(`Schemas`, schemastyp),
 		schema.String(`Timezone`),

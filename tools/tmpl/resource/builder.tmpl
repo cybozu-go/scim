@@ -1,3 +1,11 @@
+{{ define "ext/builder/initialize" }}
+{{- $schemaURI := .GetSchemaURI }}
+{{- if (ne $schemaURI "") }}
+  b.object.schemas = &schemas{}
+  b.object.schemas.Add({{ .Name }}SchemaURI)
+{{- end }}
+{{- end }}
+
 {{ define "ext/builder/footer" }}
 {{ $objectName := .Name -}}
 {{ if (and (ne $objectName "Meta") (ne $objectName "Schema")) }}

@@ -306,9 +306,10 @@ func (b *ErrorBuilder) initialize() {
 	b.object = &Error{}
 }
 func (b *ErrorBuilder) Detail(in string) *ErrorBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -319,9 +320,10 @@ func (b *ErrorBuilder) Detail(in string) *ErrorBuilder {
 	return b
 }
 func (b *ErrorBuilder) SCIMType(in ErrorType) *ErrorBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -332,9 +334,10 @@ func (b *ErrorBuilder) SCIMType(in ErrorType) *ErrorBuilder {
 	return b
 }
 func (b *ErrorBuilder) Status(in int) *ErrorBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -348,10 +351,10 @@ func (b *ErrorBuilder) Status(in int) *ErrorBuilder {
 func (b *ErrorBuilder) Build() (*Error, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
-	b.once.Do(b.initialize)
 
-	if err := b.err; err != nil {
-		return nil, err
+	b.once.Do(b.initialize)
+	if b.err != nil {
+		return nil, b.err
 	}
 	obj := b.object
 	b.once = sync.Once{}
@@ -376,6 +379,8 @@ func (b *ErrorBuilder) From(in *Error) *ErrorBuilder {
 }
 
 func (v *Error) AsMap(dst map[string]interface{}) error {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
 	for _, pair := range v.makePairs() {
 		dst[pair.Name] = pair.Value
 	}

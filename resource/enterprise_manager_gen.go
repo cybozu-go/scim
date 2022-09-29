@@ -306,9 +306,10 @@ func (b *EnterpriseManagerBuilder) initialize() {
 	b.object = &EnterpriseManager{}
 }
 func (b *EnterpriseManagerBuilder) DisplayName(in string) *EnterpriseManagerBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -319,9 +320,10 @@ func (b *EnterpriseManagerBuilder) DisplayName(in string) *EnterpriseManagerBuil
 	return b
 }
 func (b *EnterpriseManagerBuilder) ID(in string) *EnterpriseManagerBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -332,9 +334,10 @@ func (b *EnterpriseManagerBuilder) ID(in string) *EnterpriseManagerBuilder {
 	return b
 }
 func (b *EnterpriseManagerBuilder) Reference(in string) *EnterpriseManagerBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -348,10 +351,10 @@ func (b *EnterpriseManagerBuilder) Reference(in string) *EnterpriseManagerBuilde
 func (b *EnterpriseManagerBuilder) Build() (*EnterpriseManager, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
-	b.once.Do(b.initialize)
 
-	if err := b.err; err != nil {
-		return nil, err
+	b.once.Do(b.initialize)
+	if b.err != nil {
+		return nil, b.err
 	}
 	obj := b.object
 	b.once = sync.Once{}
@@ -376,6 +379,8 @@ func (b *EnterpriseManagerBuilder) From(in *EnterpriseManager) *EnterpriseManage
 }
 
 func (v *EnterpriseManager) AsMap(dst map[string]interface{}) error {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
 	for _, pair := range v.makePairs() {
 		dst[pair.Name] = pair.Value
 	}

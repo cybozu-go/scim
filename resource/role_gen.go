@@ -346,9 +346,10 @@ func (b *RoleBuilder) initialize() {
 	b.object = &Role{}
 }
 func (b *RoleBuilder) Display(in string) *RoleBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -359,9 +360,10 @@ func (b *RoleBuilder) Display(in string) *RoleBuilder {
 	return b
 }
 func (b *RoleBuilder) Primary(in bool) *RoleBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -372,9 +374,10 @@ func (b *RoleBuilder) Primary(in bool) *RoleBuilder {
 	return b
 }
 func (b *RoleBuilder) Type(in string) *RoleBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -385,9 +388,10 @@ func (b *RoleBuilder) Type(in string) *RoleBuilder {
 	return b
 }
 func (b *RoleBuilder) Value(in string) *RoleBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -401,10 +405,10 @@ func (b *RoleBuilder) Value(in string) *RoleBuilder {
 func (b *RoleBuilder) Build() (*Role, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
-	b.once.Do(b.initialize)
 
-	if err := b.err; err != nil {
-		return nil, err
+	b.once.Do(b.initialize)
+	if b.err != nil {
+		return nil, b.err
 	}
 	obj := b.object
 	b.once = sync.Once{}
@@ -429,6 +433,8 @@ func (b *RoleBuilder) From(in *Role) *RoleBuilder {
 }
 
 func (v *Role) AsMap(dst map[string]interface{}) error {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
 	for _, pair := range v.makePairs() {
 		dst[pair.Name] = pair.Value
 	}

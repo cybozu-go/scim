@@ -306,9 +306,10 @@ func (b *BulkSupportBuilder) initialize() {
 	b.object = &BulkSupport{}
 }
 func (b *BulkSupportBuilder) MaxOperations(in int) *BulkSupportBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -319,9 +320,10 @@ func (b *BulkSupportBuilder) MaxOperations(in int) *BulkSupportBuilder {
 	return b
 }
 func (b *BulkSupportBuilder) MaxPayloadSize(in int) *BulkSupportBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -332,9 +334,10 @@ func (b *BulkSupportBuilder) MaxPayloadSize(in int) *BulkSupportBuilder {
 	return b
 }
 func (b *BulkSupportBuilder) Supported(in bool) *BulkSupportBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -348,10 +351,10 @@ func (b *BulkSupportBuilder) Supported(in bool) *BulkSupportBuilder {
 func (b *BulkSupportBuilder) Build() (*BulkSupport, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
-	b.once.Do(b.initialize)
 
-	if err := b.err; err != nil {
-		return nil, err
+	b.once.Do(b.initialize)
+	if b.err != nil {
+		return nil, b.err
 	}
 	if b.object.maxOperations == nil {
 		return nil, fmt.Errorf("required field 'MaxOperations' not initialized")
@@ -385,6 +388,8 @@ func (b *BulkSupportBuilder) From(in *BulkSupport) *BulkSupportBuilder {
 }
 
 func (v *BulkSupport) AsMap(dst map[string]interface{}) error {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
 	for _, pair := range v.makePairs() {
 		dst[pair.Name] = pair.Value
 	}

@@ -9,6 +9,8 @@ github.com/lestrrat-go/sketch v0.0.0-20220929095642-5729f59f3c2a h1:BkfE/S2Pbps5
 github.com/lestrrat-go/sketch v0.0.0-20220929095642-5729f59f3c2a/go.mod h1:mMNEE7gMduv7lnXXzSzdEjdGSAY5E63LBfourZ8deVI=
 github.com/lestrrat-go/sketch v0.0.0-20220929113813-e9c9cd792b75 h1:H5X0Er/W1kp94lsjfiJ3zaSw0qqy+P4hTIp+dTSQ9E4=
 github.com/lestrrat-go/sketch v0.0.0-20220929113813-e9c9cd792b75/go.mod h1:mMNEE7gMduv7lnXXzSzdEjdGSAY5E63LBfourZ8deVI=
+github.com/lestrrat-go/sketch v0.0.0-20220929123716-f53fc8a8bdc8 h1:Yj3pAy4tkYTjZ4KhVjLUT/ZLT9+QZdUW21jBMxUNfbA=
+github.com/lestrrat-go/sketch v0.0.0-20220929123716-f53fc8a8bdc8/go.mod h1:mMNEE7gMduv7lnXXzSzdEjdGSAY5E63LBfourZ8deVI=
 github.com/lestrrat-go/xstrings v0.0.0-20210804220435-4dd8b234342b h1:3laG8JWIeDGb7lf00nMRznLdCHy0aZPd/CGz7Okn1SY=
 github.com/lestrrat-go/xstrings v0.0.0-20210804220435-4dd8b234342b/go.mod h1:mPFmD3Wuy0ddyPFvllLq4sUpGfE40T3VE8kWWS8fxGA=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=

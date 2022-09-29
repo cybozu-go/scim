@@ -266,9 +266,10 @@ func (b *SchemaExtensionBuilder) initialize() {
 	b.object = &SchemaExtension{}
 }
 func (b *SchemaExtensionBuilder) Schema(in string) *SchemaExtensionBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -279,9 +280,10 @@ func (b *SchemaExtensionBuilder) Schema(in string) *SchemaExtensionBuilder {
 	return b
 }
 func (b *SchemaExtensionBuilder) Required(in bool) *SchemaExtensionBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -295,10 +297,10 @@ func (b *SchemaExtensionBuilder) Required(in bool) *SchemaExtensionBuilder {
 func (b *SchemaExtensionBuilder) Build() (*SchemaExtension, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
-	b.once.Do(b.initialize)
 
-	if err := b.err; err != nil {
-		return nil, err
+	b.once.Do(b.initialize)
+	if b.err != nil {
+		return nil, b.err
 	}
 	if b.object.schema == nil {
 		return nil, fmt.Errorf("required field 'Schema' not initialized")
@@ -329,6 +331,8 @@ func (b *SchemaExtensionBuilder) From(in *SchemaExtension) *SchemaExtensionBuild
 }
 
 func (v *SchemaExtension) AsMap(dst map[string]interface{}) error {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
 	for _, pair := range v.makePairs() {
 		dst[pair.Name] = pair.Value
 	}

@@ -266,9 +266,10 @@ func (b *PartialResourceRepresentationRequestBuilder) initialize() {
 	b.object = &PartialResourceRepresentationRequest{}
 }
 func (b *PartialResourceRepresentationRequestBuilder) Attributes(in ...string) *PartialResourceRepresentationRequestBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -279,9 +280,10 @@ func (b *PartialResourceRepresentationRequestBuilder) Attributes(in ...string) *
 	return b
 }
 func (b *PartialResourceRepresentationRequestBuilder) ExcludedAttributes(in ...string) *PartialResourceRepresentationRequestBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -295,10 +297,10 @@ func (b *PartialResourceRepresentationRequestBuilder) ExcludedAttributes(in ...s
 func (b *PartialResourceRepresentationRequestBuilder) Build() (*PartialResourceRepresentationRequest, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
-	b.once.Do(b.initialize)
 
-	if err := b.err; err != nil {
-		return nil, err
+	b.once.Do(b.initialize)
+	if b.err != nil {
+		return nil, b.err
 	}
 	obj := b.object
 	b.once = sync.Once{}
@@ -323,6 +325,8 @@ func (b *PartialResourceRepresentationRequestBuilder) From(in *PartialResourceRe
 }
 
 func (v *PartialResourceRepresentationRequest) AsMap(dst map[string]interface{}) error {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
 	for _, pair := range v.makePairs() {
 		dst[pair.Name] = pair.Value
 	}

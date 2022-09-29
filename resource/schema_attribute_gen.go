@@ -668,9 +668,10 @@ func (b *SchemaAttributeBuilder) initialize() {
 	b.object = &SchemaAttribute{}
 }
 func (b *SchemaAttributeBuilder) CanonicalValues(in ...interface{}) *SchemaAttributeBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -681,9 +682,10 @@ func (b *SchemaAttributeBuilder) CanonicalValues(in ...interface{}) *SchemaAttri
 	return b
 }
 func (b *SchemaAttributeBuilder) CaseExact(in bool) *SchemaAttributeBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -694,9 +696,10 @@ func (b *SchemaAttributeBuilder) CaseExact(in bool) *SchemaAttributeBuilder {
 	return b
 }
 func (b *SchemaAttributeBuilder) Description(in string) *SchemaAttributeBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -707,9 +710,10 @@ func (b *SchemaAttributeBuilder) Description(in string) *SchemaAttributeBuilder 
 	return b
 }
 func (b *SchemaAttributeBuilder) MultiValued(in bool) *SchemaAttributeBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -720,9 +724,10 @@ func (b *SchemaAttributeBuilder) MultiValued(in bool) *SchemaAttributeBuilder {
 	return b
 }
 func (b *SchemaAttributeBuilder) Mutability(in Mutability) *SchemaAttributeBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -733,9 +738,10 @@ func (b *SchemaAttributeBuilder) Mutability(in Mutability) *SchemaAttributeBuild
 	return b
 }
 func (b *SchemaAttributeBuilder) Name(in string) *SchemaAttributeBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -746,9 +752,10 @@ func (b *SchemaAttributeBuilder) Name(in string) *SchemaAttributeBuilder {
 	return b
 }
 func (b *SchemaAttributeBuilder) ReferenceTypes(in ...string) *SchemaAttributeBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -759,9 +766,10 @@ func (b *SchemaAttributeBuilder) ReferenceTypes(in ...string) *SchemaAttributeBu
 	return b
 }
 func (b *SchemaAttributeBuilder) Required(in bool) *SchemaAttributeBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -772,9 +780,10 @@ func (b *SchemaAttributeBuilder) Required(in bool) *SchemaAttributeBuilder {
 	return b
 }
 func (b *SchemaAttributeBuilder) Returned(in Returned) *SchemaAttributeBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -785,9 +794,10 @@ func (b *SchemaAttributeBuilder) Returned(in Returned) *SchemaAttributeBuilder {
 	return b
 }
 func (b *SchemaAttributeBuilder) SubAttributes(in ...*SchemaAttribute) *SchemaAttributeBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -798,9 +808,10 @@ func (b *SchemaAttributeBuilder) SubAttributes(in ...*SchemaAttribute) *SchemaAt
 	return b
 }
 func (b *SchemaAttributeBuilder) Type(in DataType) *SchemaAttributeBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -811,9 +822,10 @@ func (b *SchemaAttributeBuilder) Type(in DataType) *SchemaAttributeBuilder {
 	return b
 }
 func (b *SchemaAttributeBuilder) Uniqueness(in Uniqueness) *SchemaAttributeBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -827,10 +839,10 @@ func (b *SchemaAttributeBuilder) Uniqueness(in Uniqueness) *SchemaAttributeBuild
 func (b *SchemaAttributeBuilder) Build() (*SchemaAttribute, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
-	b.once.Do(b.initialize)
 
-	if err := b.err; err != nil {
-		return nil, err
+	b.once.Do(b.initialize)
+	if b.err != nil {
+		return nil, b.err
 	}
 	if b.object.multiValued == nil {
 		return nil, fmt.Errorf("required field 'MultiValued' not initialized")
@@ -861,6 +873,8 @@ func (b *SchemaAttributeBuilder) From(in *SchemaAttribute) *SchemaAttributeBuild
 }
 
 func (v *SchemaAttribute) AsMap(dst map[string]interface{}) error {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
 	for _, pair := range v.makePairs() {
 		dst[pair.Name] = pair.Value
 	}

@@ -346,9 +346,10 @@ func (b *EntitlementBuilder) initialize() {
 	b.object = &Entitlement{}
 }
 func (b *EntitlementBuilder) Display(in string) *EntitlementBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -359,9 +360,10 @@ func (b *EntitlementBuilder) Display(in string) *EntitlementBuilder {
 	return b
 }
 func (b *EntitlementBuilder) Primary(in bool) *EntitlementBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -372,9 +374,10 @@ func (b *EntitlementBuilder) Primary(in bool) *EntitlementBuilder {
 	return b
 }
 func (b *EntitlementBuilder) Type(in string) *EntitlementBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -385,9 +388,10 @@ func (b *EntitlementBuilder) Type(in string) *EntitlementBuilder {
 	return b
 }
 func (b *EntitlementBuilder) Value(in string) *EntitlementBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -401,10 +405,10 @@ func (b *EntitlementBuilder) Value(in string) *EntitlementBuilder {
 func (b *EntitlementBuilder) Build() (*Entitlement, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
-	b.once.Do(b.initialize)
 
-	if err := b.err; err != nil {
-		return nil, err
+	b.once.Do(b.initialize)
+	if b.err != nil {
+		return nil, b.err
 	}
 	obj := b.object
 	b.once = sync.Once{}
@@ -429,6 +433,8 @@ func (b *EntitlementBuilder) From(in *Entitlement) *EntitlementBuilder {
 }
 
 func (v *Entitlement) AsMap(dst map[string]interface{}) error {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
 	for _, pair := range v.makePairs() {
 		dst[pair.Name] = pair.Value
 	}

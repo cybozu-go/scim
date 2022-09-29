@@ -346,9 +346,10 @@ func (b *PhotoBuilder) initialize() {
 	b.object = &Photo{}
 }
 func (b *PhotoBuilder) Display(in string) *PhotoBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -359,9 +360,10 @@ func (b *PhotoBuilder) Display(in string) *PhotoBuilder {
 	return b
 }
 func (b *PhotoBuilder) Primary(in bool) *PhotoBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -372,9 +374,10 @@ func (b *PhotoBuilder) Primary(in bool) *PhotoBuilder {
 	return b
 }
 func (b *PhotoBuilder) Type(in string) *PhotoBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -385,9 +388,10 @@ func (b *PhotoBuilder) Type(in string) *PhotoBuilder {
 	return b
 }
 func (b *PhotoBuilder) Value(in string) *PhotoBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -401,10 +405,10 @@ func (b *PhotoBuilder) Value(in string) *PhotoBuilder {
 func (b *PhotoBuilder) Build() (*Photo, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
-	b.once.Do(b.initialize)
 
-	if err := b.err; err != nil {
-		return nil, err
+	b.once.Do(b.initialize)
+	if b.err != nil {
+		return nil, b.err
 	}
 	obj := b.object
 	b.once = sync.Once{}
@@ -429,6 +433,8 @@ func (b *PhotoBuilder) From(in *Photo) *PhotoBuilder {
 }
 
 func (v *Photo) AsMap(dst map[string]interface{}) error {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
 	for _, pair := range v.makePairs() {
 		dst[pair.Name] = pair.Value
 	}

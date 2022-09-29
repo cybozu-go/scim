@@ -226,9 +226,10 @@ func (b *GenericSupportBuilder) initialize() {
 	b.object = &GenericSupport{}
 }
 func (b *GenericSupportBuilder) Supported(in bool) *GenericSupportBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -242,10 +243,10 @@ func (b *GenericSupportBuilder) Supported(in bool) *GenericSupportBuilder {
 func (b *GenericSupportBuilder) Build() (*GenericSupport, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
-	b.once.Do(b.initialize)
 
-	if err := b.err; err != nil {
-		return nil, err
+	b.once.Do(b.initialize)
+	if b.err != nil {
+		return nil, b.err
 	}
 	if b.object.supported == nil {
 		return nil, fmt.Errorf("required field 'Supported' not initialized")
@@ -273,6 +274,8 @@ func (b *GenericSupportBuilder) From(in *GenericSupport) *GenericSupportBuilder 
 }
 
 func (v *GenericSupport) AsMap(dst map[string]interface{}) error {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
 	for _, pair := range v.makePairs() {
 		dst[pair.Name] = pair.Value
 	}

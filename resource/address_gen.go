@@ -466,9 +466,10 @@ func (b *AddressBuilder) initialize() {
 	b.object = &Address{}
 }
 func (b *AddressBuilder) Country(in string) *AddressBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -479,9 +480,10 @@ func (b *AddressBuilder) Country(in string) *AddressBuilder {
 	return b
 }
 func (b *AddressBuilder) Formatted(in string) *AddressBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -492,9 +494,10 @@ func (b *AddressBuilder) Formatted(in string) *AddressBuilder {
 	return b
 }
 func (b *AddressBuilder) Locality(in string) *AddressBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -505,9 +508,10 @@ func (b *AddressBuilder) Locality(in string) *AddressBuilder {
 	return b
 }
 func (b *AddressBuilder) PostalCode(in string) *AddressBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -518,9 +522,10 @@ func (b *AddressBuilder) PostalCode(in string) *AddressBuilder {
 	return b
 }
 func (b *AddressBuilder) Region(in string) *AddressBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -531,9 +536,10 @@ func (b *AddressBuilder) Region(in string) *AddressBuilder {
 	return b
 }
 func (b *AddressBuilder) StreetAddress(in string) *AddressBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -544,9 +550,10 @@ func (b *AddressBuilder) StreetAddress(in string) *AddressBuilder {
 	return b
 }
 func (b *AddressBuilder) Type(in string) *AddressBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -560,10 +567,10 @@ func (b *AddressBuilder) Type(in string) *AddressBuilder {
 func (b *AddressBuilder) Build() (*Address, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
-	b.once.Do(b.initialize)
 
-	if err := b.err; err != nil {
-		return nil, err
+	b.once.Do(b.initialize)
+	if b.err != nil {
+		return nil, b.err
 	}
 	obj := b.object
 	b.once = sync.Once{}
@@ -588,6 +595,8 @@ func (b *AddressBuilder) From(in *Address) *AddressBuilder {
 }
 
 func (v *Address) AsMap(dst map[string]interface{}) error {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
 	for _, pair := range v.makePairs() {
 		dst[pair.Name] = pair.Value
 	}

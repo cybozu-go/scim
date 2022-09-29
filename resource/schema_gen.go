@@ -347,9 +347,10 @@ func (b *SchemaBuilder) initialize() {
 	b.object = &Schema{}
 }
 func (b *SchemaBuilder) Attributes(in ...*SchemaAttribute) *SchemaBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -360,9 +361,10 @@ func (b *SchemaBuilder) Attributes(in ...*SchemaAttribute) *SchemaBuilder {
 	return b
 }
 func (b *SchemaBuilder) Description(in string) *SchemaBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -373,9 +375,10 @@ func (b *SchemaBuilder) Description(in string) *SchemaBuilder {
 	return b
 }
 func (b *SchemaBuilder) ID(in string) *SchemaBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -386,9 +389,10 @@ func (b *SchemaBuilder) ID(in string) *SchemaBuilder {
 	return b
 }
 func (b *SchemaBuilder) Name(in string) *SchemaBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -402,10 +406,10 @@ func (b *SchemaBuilder) Name(in string) *SchemaBuilder {
 func (b *SchemaBuilder) Build() (*Schema, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
-	b.once.Do(b.initialize)
 
-	if err := b.err; err != nil {
-		return nil, err
+	b.once.Do(b.initialize)
+	if b.err != nil {
+		return nil, b.err
 	}
 	if b.object.attributes == nil {
 		return nil, fmt.Errorf("required field 'Attributes' not initialized")
@@ -431,6 +435,8 @@ func (b *SchemaBuilder) MustBuild() *Schema {
 }
 
 func (v *Schema) AsMap(dst map[string]interface{}) error {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
 	for _, pair := range v.makePairs() {
 		dst[pair.Name] = pair.Value
 	}

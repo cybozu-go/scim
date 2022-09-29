@@ -388,9 +388,10 @@ func (b *MetaBuilder) initialize() {
 	b.object = &Meta{}
 }
 func (b *MetaBuilder) ResourceType(in string) *MetaBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -401,9 +402,10 @@ func (b *MetaBuilder) ResourceType(in string) *MetaBuilder {
 	return b
 }
 func (b *MetaBuilder) Location(in string) *MetaBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -414,9 +416,10 @@ func (b *MetaBuilder) Location(in string) *MetaBuilder {
 	return b
 }
 func (b *MetaBuilder) Version(in string) *MetaBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -427,9 +430,10 @@ func (b *MetaBuilder) Version(in string) *MetaBuilder {
 	return b
 }
 func (b *MetaBuilder) Created(in time.Time) *MetaBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -440,9 +444,10 @@ func (b *MetaBuilder) Created(in time.Time) *MetaBuilder {
 	return b
 }
 func (b *MetaBuilder) LastModified(in time.Time) *MetaBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -456,10 +461,10 @@ func (b *MetaBuilder) LastModified(in time.Time) *MetaBuilder {
 func (b *MetaBuilder) Build() (*Meta, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
-	b.once.Do(b.initialize)
 
-	if err := b.err; err != nil {
-		return nil, err
+	b.once.Do(b.initialize)
+	if b.err != nil {
+		return nil, b.err
 	}
 	obj := b.object
 	b.once = sync.Once{}
@@ -476,6 +481,8 @@ func (b *MetaBuilder) MustBuild() *Meta {
 }
 
 func (v *Meta) AsMap(dst map[string]interface{}) error {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
 	for _, pair := range v.makePairs() {
 		dst[pair.Name] = pair.Value
 	}

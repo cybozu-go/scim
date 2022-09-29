@@ -12,6 +12,8 @@ func init() {
 {{ define "ext/object/footer" }}
 {{- $objectName := .Name }}
 func (v *{{ $objectName }}) AsMap(dst map[string]interface{}) error {
+  v.mu.RLock()
+  defer v.mu.RUnlock()
   for _, pair := range v.makePairs() {
     dst[pair.Name] = pair.Value
   }

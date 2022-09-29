@@ -738,165 +738,17 @@ func (call *PatchUserCall) Do(ctx context.Context) (*resource.User, error) {
 
 // DeleteUserCall is an encapsulation of a SCIM operation.
 type DeleteUserCall struct {
-	builder *resource.UserBuilder
-	object  *resource.User
-	err     error
-	client  *Client
-	trace   io.Writer
-	id      string
-}
-
-func (call *DeleteUserCall) payload() (*resource.User, error) {
-	if object := call.object; object != nil {
-		return object, nil
-	}
-	return call.builder.Build()
-}
-
-func (call *DeleteUserCall) FromJSON(data []byte) *DeleteUserCall {
-	if call.err != nil {
-		return call
-	}
-	var in resource.User
-	if err := json.Unmarshal(data, &in); err != nil {
-		call.err = fmt.Errorf("failed to decode data: %w", err)
-		return call
-	}
-	call.object = &in
-	return call
+	err    error
+	client *Client
+	trace  io.Writer
+	id     string
 }
 
 func (svc *UserService) Delete(id string) *DeleteUserCall {
 	return &DeleteUserCall{
-		builder: resource.NewUserBuilder(),
-		client:  svc.client,
-		id:      id,
+		client: svc.client,
+		id:     id,
 	}
-}
-
-func (call *DeleteUserCall) Active(in bool) *DeleteUserCall {
-	call.builder.Active(in)
-	return call
-}
-
-func (call *DeleteUserCall) Addresses(in ...*resource.Address) *DeleteUserCall {
-	call.builder.Addresses(in...)
-	return call
-}
-
-func (call *DeleteUserCall) DisplayName(in string) *DeleteUserCall {
-	call.builder.DisplayName(in)
-	return call
-}
-
-func (call *DeleteUserCall) Emails(in ...*resource.Email) *DeleteUserCall {
-	call.builder.Emails(in...)
-	return call
-}
-
-func (call *DeleteUserCall) Entitlements(in ...*resource.Entitlement) *DeleteUserCall {
-	call.builder.Entitlements(in...)
-	return call
-}
-
-func (call *DeleteUserCall) ExternalID(in string) *DeleteUserCall {
-	call.builder.ExternalID(in)
-	return call
-}
-
-func (call *DeleteUserCall) Groups(in ...*resource.AssociatedGroup) *DeleteUserCall {
-	call.builder.Groups(in...)
-	return call
-}
-
-func (call *DeleteUserCall) ID(in string) *DeleteUserCall {
-	call.builder.ID(in)
-	return call
-}
-
-func (call *DeleteUserCall) IMS(in ...*resource.IMS) *DeleteUserCall {
-	call.builder.IMS(in...)
-	return call
-}
-
-func (call *DeleteUserCall) Locale(in string) *DeleteUserCall {
-	call.builder.Locale(in)
-	return call
-}
-
-func (call *DeleteUserCall) Meta(in *resource.Meta) *DeleteUserCall {
-	call.builder.Meta(in)
-	return call
-}
-
-func (call *DeleteUserCall) Name(in *resource.Names) *DeleteUserCall {
-	call.builder.Name(in)
-	return call
-}
-
-func (call *DeleteUserCall) NickName(in string) *DeleteUserCall {
-	call.builder.NickName(in)
-	return call
-}
-
-func (call *DeleteUserCall) Password(in string) *DeleteUserCall {
-	call.builder.Password(in)
-	return call
-}
-
-func (call *DeleteUserCall) PhoneNumbers(in ...*resource.PhoneNumber) *DeleteUserCall {
-	call.builder.PhoneNumbers(in...)
-	return call
-}
-
-func (call *DeleteUserCall) Photos(in ...*resource.Photo) *DeleteUserCall {
-	call.builder.Photos(in...)
-	return call
-}
-
-func (call *DeleteUserCall) PreferredLanguage(in string) *DeleteUserCall {
-	call.builder.PreferredLanguage(in)
-	return call
-}
-
-func (call *DeleteUserCall) ProfileURL(in string) *DeleteUserCall {
-	call.builder.ProfileURL(in)
-	return call
-}
-
-func (call *DeleteUserCall) Roles(in ...*resource.Role) *DeleteUserCall {
-	call.builder.Roles(in...)
-	return call
-}
-
-func (call *DeleteUserCall) Schemas(in ...string) *DeleteUserCall {
-	call.builder.Schemas(in...)
-	return call
-}
-
-func (call *DeleteUserCall) Timezone(in string) *DeleteUserCall {
-	call.builder.Timezone(in)
-	return call
-}
-
-func (call *DeleteUserCall) Title(in string) *DeleteUserCall {
-	call.builder.Title(in)
-	return call
-}
-
-func (call *DeleteUserCall) UserName(in string) *DeleteUserCall {
-	call.builder.UserName(in)
-	return call
-}
-
-func (call *DeleteUserCall) UserType(in string) *DeleteUserCall {
-	call.builder.UserType(in)
-	return call
-}
-
-func (call *DeleteUserCall) X509Certificates(in ...*resource.X509Certificate) *DeleteUserCall {
-	call.builder.X509Certificates(in...)
-	return call
 }
 
 func (call *DeleteUserCall) Trace(w io.Writer) *DeleteUserCall {
@@ -912,11 +764,6 @@ func (call *DeleteUserCall) Do(ctx context.Context) error {
 	if err := call.err; err != nil {
 		return fmt.Errorf("failed to build request: %w", err)
 	}
-	payload, err := call.payload()
-	if err != nil {
-		return fmt.Errorf(`failed to generate request payload for DeleteUserCall: %w`, err)
-	}
-
 	trace := call.trace
 	if trace == nil {
 		trace = call.client.trace
@@ -926,25 +773,6 @@ func (call *DeleteUserCall) Do(ctx context.Context) error {
 		fmt.Fprintf(trace, "trace: client sending call request to %q\n", u)
 	}
 
-	var vals url.Values
-	m := make(map[string]interface{})
-	if err := payload.AsMap(m); err != nil {
-		return fmt.Errorf(`failed to convert resource into map: %w`, err)
-	}
-	if len(m) > 0 {
-		vals = make(url.Values)
-		for key, value := range m {
-			switch value := value.(type) {
-			case []string:
-				vals.Add(key, strings.Join(value, ","))
-			default:
-				vals.Add(key, fmt.Sprintf(`%s`, value))
-			}
-		}
-	}
-	if enc := vals.Encode(); len(enc) > 0 {
-		u = u + "?" + vals.Encode()
-	}
 	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, u, nil)
 	if err != nil {
 		return fmt.Errorf(`failed to create new HTTP request: %w`, err)

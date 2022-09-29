@@ -26,7 +26,7 @@ type User struct {
 	displayName       *string
 	emails            []*Email
 	entitlements      []*Entitlement
-	externalId        *string
+	externalID        *string
 	groups            []*AssociatedGroup
 	id                *string
 	ims               []*IMS
@@ -38,7 +38,7 @@ type User struct {
 	phoneNumbers      []*PhoneNumber
 	photos            []*Photo
 	preferredLanguage *string
-	profileUrl        *string
+	profileURL        *string
 	roles             []*Role
 	schemas           *schemas
 	timezone          *string
@@ -107,7 +107,7 @@ func (v *User) Get(key string, dst interface{}) error {
 			return blackmagic.AssignIfCompatible(dst, val)
 		}
 	case UserExternalIDKey:
-		if val := v.externalId; val != nil {
+		if val := v.externalID; val != nil {
 			return blackmagic.AssignIfCompatible(dst, *val)
 		}
 	case UserGroupsKey:
@@ -155,7 +155,7 @@ func (v *User) Get(key string, dst interface{}) error {
 			return blackmagic.AssignIfCompatible(dst, *val)
 		}
 	case UserProfileURLKey:
-		if val := v.profileUrl; val != nil {
+		if val := v.profileURL; val != nil {
 			return blackmagic.AssignIfCompatible(dst, *val)
 		}
 	case UserRolesKey:
@@ -238,7 +238,7 @@ func (v *User) Set(key string, value interface{}) error {
 		if !ok {
 			return fmt.Errorf(`expected value of type string for field externalId, got %T`, value)
 		}
-		v.externalId = &converted
+		v.externalID = &converted
 	case UserGroupsKey:
 		converted, ok := value.([]*AssociatedGroup)
 		if !ok {
@@ -310,7 +310,7 @@ func (v *User) Set(key string, value interface{}) error {
 		if !ok {
 			return fmt.Errorf(`expected value of type string for field profileUrl, got %T`, value)
 		}
-		v.profileUrl = &converted
+		v.profileURL = &converted
 	case UserRolesKey:
 		converted, ok := value.([]*Role)
 		if !ok {
@@ -395,7 +395,7 @@ func (v *User) HasEntitlements() bool {
 func (v *User) HasExternalID() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return v.externalId != nil
+	return v.externalID != nil
 }
 
 func (v *User) HasGroups() bool {
@@ -467,7 +467,7 @@ func (v *User) HasPreferredLanguage() bool {
 func (v *User) HasProfileURL() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return v.profileUrl != nil
+	return v.profileURL != nil
 }
 
 func (v *User) HasRoles() bool {
@@ -560,7 +560,7 @@ func (v *User) Entitlements() []*Entitlement {
 func (v *User) ExternalID() string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	if val := v.externalId; val != nil {
+	if val := v.externalID; val != nil {
 		return *val
 	}
 	return ""
@@ -668,7 +668,7 @@ func (v *User) PreferredLanguage() string {
 func (v *User) ProfileURL() string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	if val := v.profileUrl; val != nil {
+	if val := v.profileURL; val != nil {
 		return *val
 	}
 	return ""
@@ -754,7 +754,7 @@ func (v *User) Remove(key string) error {
 	case UserEntitlementsKey:
 		v.entitlements = nil
 	case UserExternalIDKey:
-		v.externalId = nil
+		v.externalID = nil
 	case UserGroupsKey:
 		v.groups = nil
 	case UserIDKey:
@@ -778,7 +778,7 @@ func (v *User) Remove(key string) error {
 	case UserPreferredLanguageKey:
 		v.preferredLanguage = nil
 	case UserProfileURLKey:
-		v.profileUrl = nil
+		v.profileURL = nil
 	case UserRolesKey:
 		v.roles = nil
 	case UserSchemasKey:
@@ -817,7 +817,7 @@ func (v *User) makePairs() []*fieldPair {
 	if val := v.entitlements; len(val) > 0 {
 		pairs = append(pairs, &fieldPair{Name: UserEntitlementsKey, Value: val})
 	}
-	if val := v.externalId; val != nil {
+	if val := v.externalID; val != nil {
 		pairs = append(pairs, &fieldPair{Name: UserExternalIDKey, Value: *val})
 	}
 	if val := v.groups; len(val) > 0 {
@@ -853,7 +853,7 @@ func (v *User) makePairs() []*fieldPair {
 	if val := v.preferredLanguage; val != nil {
 		pairs = append(pairs, &fieldPair{Name: UserPreferredLanguageKey, Value: *val})
 	}
-	if val := v.profileUrl; val != nil {
+	if val := v.profileURL; val != nil {
 		pairs = append(pairs, &fieldPair{Name: UserProfileURLKey, Value: *val})
 	}
 	if val := v.roles; len(val) > 0 {
@@ -897,7 +897,7 @@ func (v *User) Clone() *User {
 		displayName:       v.displayName,
 		emails:            v.emails,
 		entitlements:      v.entitlements,
-		externalId:        v.externalId,
+		externalID:        v.externalID,
 		groups:            v.groups,
 		id:                v.id,
 		ims:               v.ims,
@@ -909,7 +909,7 @@ func (v *User) Clone() *User {
 		phoneNumbers:      v.phoneNumbers,
 		photos:            v.photos,
 		preferredLanguage: v.preferredLanguage,
-		profileUrl:        v.profileUrl,
+		profileURL:        v.profileURL,
 		roles:             v.roles,
 		schemas:           v.schemas,
 		timezone:          v.timezone,
@@ -961,7 +961,7 @@ func (v *User) UnmarshalJSON(data []byte) error {
 	v.displayName = nil
 	v.emails = nil
 	v.entitlements = nil
-	v.externalId = nil
+	v.externalID = nil
 	v.groups = nil
 	v.id = nil
 	v.ims = nil
@@ -973,7 +973,7 @@ func (v *User) UnmarshalJSON(data []byte) error {
 	v.phoneNumbers = nil
 	v.photos = nil
 	v.preferredLanguage = nil
-	v.profileUrl = nil
+	v.profileURL = nil
 	v.roles = nil
 	v.schemas = nil
 	v.timezone = nil
@@ -1037,7 +1037,7 @@ LOOP:
 				if err := dec.Decode(&val); err != nil {
 					return fmt.Errorf(`failed to decode value for %q: %w`, UserExternalIDKey, err)
 				}
-				v.externalId = &val
+				v.externalID = &val
 			case UserGroupsKey:
 				var val []*AssociatedGroup
 				if err := dec.Decode(&val); err != nil {
@@ -1109,7 +1109,7 @@ LOOP:
 				if err := dec.Decode(&val); err != nil {
 					return fmt.Errorf(`failed to decode value for %q: %w`, UserProfileURLKey, err)
 				}
-				v.profileUrl = &val
+				v.profileURL = &val
 			case UserRolesKey:
 				var val []*Role
 				if err := dec.Decode(&val); err != nil {
@@ -1187,11 +1187,14 @@ func NewUserBuilder() *UserBuilder {
 func (b *UserBuilder) initialize() {
 	b.err = nil
 	b.object = &User{}
+	b.object.schemas = &schemas{}
+	b.object.schemas.Add(UserSchemaURI)
 }
 func (b *UserBuilder) Active(in bool) *UserBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -1202,9 +1205,10 @@ func (b *UserBuilder) Active(in bool) *UserBuilder {
 	return b
 }
 func (b *UserBuilder) Addresses(in ...*Address) *UserBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -1215,9 +1219,10 @@ func (b *UserBuilder) Addresses(in ...*Address) *UserBuilder {
 	return b
 }
 func (b *UserBuilder) DisplayName(in string) *UserBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -1228,9 +1233,10 @@ func (b *UserBuilder) DisplayName(in string) *UserBuilder {
 	return b
 }
 func (b *UserBuilder) Emails(in ...*Email) *UserBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -1241,9 +1247,10 @@ func (b *UserBuilder) Emails(in ...*Email) *UserBuilder {
 	return b
 }
 func (b *UserBuilder) Entitlements(in ...*Entitlement) *UserBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -1254,9 +1261,10 @@ func (b *UserBuilder) Entitlements(in ...*Entitlement) *UserBuilder {
 	return b
 }
 func (b *UserBuilder) ExternalID(in string) *UserBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -1267,9 +1275,10 @@ func (b *UserBuilder) ExternalID(in string) *UserBuilder {
 	return b
 }
 func (b *UserBuilder) Groups(in ...*AssociatedGroup) *UserBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -1280,9 +1289,10 @@ func (b *UserBuilder) Groups(in ...*AssociatedGroup) *UserBuilder {
 	return b
 }
 func (b *UserBuilder) ID(in string) *UserBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -1293,9 +1303,10 @@ func (b *UserBuilder) ID(in string) *UserBuilder {
 	return b
 }
 func (b *UserBuilder) IMS(in ...*IMS) *UserBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -1306,9 +1317,10 @@ func (b *UserBuilder) IMS(in ...*IMS) *UserBuilder {
 	return b
 }
 func (b *UserBuilder) Locale(in string) *UserBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -1319,9 +1331,10 @@ func (b *UserBuilder) Locale(in string) *UserBuilder {
 	return b
 }
 func (b *UserBuilder) Meta(in *Meta) *UserBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -1332,9 +1345,10 @@ func (b *UserBuilder) Meta(in *Meta) *UserBuilder {
 	return b
 }
 func (b *UserBuilder) Name(in *Names) *UserBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -1345,9 +1359,10 @@ func (b *UserBuilder) Name(in *Names) *UserBuilder {
 	return b
 }
 func (b *UserBuilder) NickName(in string) *UserBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -1358,9 +1373,10 @@ func (b *UserBuilder) NickName(in string) *UserBuilder {
 	return b
 }
 func (b *UserBuilder) Password(in string) *UserBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -1371,9 +1387,10 @@ func (b *UserBuilder) Password(in string) *UserBuilder {
 	return b
 }
 func (b *UserBuilder) PhoneNumbers(in ...*PhoneNumber) *UserBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -1384,9 +1401,10 @@ func (b *UserBuilder) PhoneNumbers(in ...*PhoneNumber) *UserBuilder {
 	return b
 }
 func (b *UserBuilder) Photos(in ...*Photo) *UserBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -1397,9 +1415,10 @@ func (b *UserBuilder) Photos(in ...*Photo) *UserBuilder {
 	return b
 }
 func (b *UserBuilder) PreferredLanguage(in string) *UserBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -1410,9 +1429,10 @@ func (b *UserBuilder) PreferredLanguage(in string) *UserBuilder {
 	return b
 }
 func (b *UserBuilder) ProfileURL(in string) *UserBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -1423,9 +1443,10 @@ func (b *UserBuilder) ProfileURL(in string) *UserBuilder {
 	return b
 }
 func (b *UserBuilder) Roles(in ...*Role) *UserBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -1436,9 +1457,10 @@ func (b *UserBuilder) Roles(in ...*Role) *UserBuilder {
 	return b
 }
 func (b *UserBuilder) Schemas(in ...string) *UserBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -1449,9 +1471,10 @@ func (b *UserBuilder) Schemas(in ...string) *UserBuilder {
 	return b
 }
 func (b *UserBuilder) Timezone(in string) *UserBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -1462,9 +1485,10 @@ func (b *UserBuilder) Timezone(in string) *UserBuilder {
 	return b
 }
 func (b *UserBuilder) Title(in string) *UserBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -1475,9 +1499,10 @@ func (b *UserBuilder) Title(in string) *UserBuilder {
 	return b
 }
 func (b *UserBuilder) UserName(in string) *UserBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -1488,9 +1513,10 @@ func (b *UserBuilder) UserName(in string) *UserBuilder {
 	return b
 }
 func (b *UserBuilder) UserType(in string) *UserBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -1501,9 +1527,10 @@ func (b *UserBuilder) UserType(in string) *UserBuilder {
 	return b
 }
 func (b *UserBuilder) X509Certificates(in ...*X509Certificate) *UserBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -1517,10 +1544,10 @@ func (b *UserBuilder) X509Certificates(in ...*X509Certificate) *UserBuilder {
 func (b *UserBuilder) Build() (*User, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
-	b.once.Do(b.initialize)
 
-	if err := b.err; err != nil {
-		return nil, err
+	b.once.Do(b.initialize)
+	if b.err != nil {
+		return nil, b.err
 	}
 	if b.object.userName == nil {
 		return nil, fmt.Errorf("required field 'UserName' not initialized")
@@ -1566,6 +1593,8 @@ func (b *UserBuilder) Extension(uri string, value interface{}) *UserBuilder {
 }
 
 func (v *User) AsMap(dst map[string]interface{}) error {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
 	for _, pair := range v.makePairs() {
 		dst[pair.Name] = pair.Value
 	}

@@ -546,11 +546,14 @@ func NewServiceProviderConfigBuilder() *ServiceProviderConfigBuilder {
 func (b *ServiceProviderConfigBuilder) initialize() {
 	b.err = nil
 	b.object = &ServiceProviderConfig{}
+	b.object.schemas = &schemas{}
+	b.object.schemas.Add(ServiceProviderConfigSchemaURI)
 }
 func (b *ServiceProviderConfigBuilder) AuthenticationSchemes(in ...*AuthenticationScheme) *ServiceProviderConfigBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -561,9 +564,10 @@ func (b *ServiceProviderConfigBuilder) AuthenticationSchemes(in ...*Authenticati
 	return b
 }
 func (b *ServiceProviderConfigBuilder) Bulk(in *BulkSupport) *ServiceProviderConfigBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -574,9 +578,10 @@ func (b *ServiceProviderConfigBuilder) Bulk(in *BulkSupport) *ServiceProviderCon
 	return b
 }
 func (b *ServiceProviderConfigBuilder) ChangePassword(in *GenericSupport) *ServiceProviderConfigBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -587,9 +592,10 @@ func (b *ServiceProviderConfigBuilder) ChangePassword(in *GenericSupport) *Servi
 	return b
 }
 func (b *ServiceProviderConfigBuilder) DocumentationURI(in string) *ServiceProviderConfigBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -600,9 +606,10 @@ func (b *ServiceProviderConfigBuilder) DocumentationURI(in string) *ServiceProvi
 	return b
 }
 func (b *ServiceProviderConfigBuilder) ETag(in *GenericSupport) *ServiceProviderConfigBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -613,9 +620,10 @@ func (b *ServiceProviderConfigBuilder) ETag(in *GenericSupport) *ServiceProvider
 	return b
 }
 func (b *ServiceProviderConfigBuilder) Filter(in *FilterSupport) *ServiceProviderConfigBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -626,9 +634,10 @@ func (b *ServiceProviderConfigBuilder) Filter(in *FilterSupport) *ServiceProvide
 	return b
 }
 func (b *ServiceProviderConfigBuilder) Patch(in *GenericSupport) *ServiceProviderConfigBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -639,9 +648,10 @@ func (b *ServiceProviderConfigBuilder) Patch(in *GenericSupport) *ServiceProvide
 	return b
 }
 func (b *ServiceProviderConfigBuilder) Schemas(in ...string) *ServiceProviderConfigBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -652,9 +662,10 @@ func (b *ServiceProviderConfigBuilder) Schemas(in ...string) *ServiceProviderCon
 	return b
 }
 func (b *ServiceProviderConfigBuilder) Sort(in *GenericSupport) *ServiceProviderConfigBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -668,10 +679,10 @@ func (b *ServiceProviderConfigBuilder) Sort(in *GenericSupport) *ServiceProvider
 func (b *ServiceProviderConfigBuilder) Build() (*ServiceProviderConfig, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
-	b.once.Do(b.initialize)
 
-	if err := b.err; err != nil {
-		return nil, err
+	b.once.Do(b.initialize)
+	if b.err != nil {
+		return nil, b.err
 	}
 	if b.object.authenticationSchemes == nil {
 		return nil, fmt.Errorf("required field 'AuthenticationSchemes' not initialized")
@@ -732,6 +743,8 @@ func (b *ServiceProviderConfigBuilder) Extension(uri string, value interface{}) 
 }
 
 func (v *ServiceProviderConfig) AsMap(dst map[string]interface{}) error {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
 	for _, pair := range v.makePairs() {
 		dst[pair.Name] = pair.Value
 	}

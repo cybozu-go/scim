@@ -145,6 +145,8 @@ func PrepareFixtures(t *testing.T, cl *client.Client) func(t *testing.T) {
 						Do(context.TODO())
 					require.NoError(t, err, `user search should succeed`)
 
+					t.Logf("%#v", list.Resources())
+
 					createGroupCall := cl.Group().Create().
 						DisplayName(def.Name).
 						MembersFrom(list.Resources()...)
@@ -660,6 +662,7 @@ func UsersBasicCRUD(t *testing.T, cl *client.Client) func(*testing.T) {
 		})
 		t.Run("Replace user", func(t *testing.T) {
 			replaced, err := cl.User().Replace(createdUser.ID()).
+				UserName(createdUser.UserName()).
 				ExternalID(createdUser.ExternalID()).
 				Emails(resource.NewEmailBuilder().
 					Value("babs-new@jensen.org").

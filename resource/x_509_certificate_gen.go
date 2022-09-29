@@ -346,9 +346,10 @@ func (b *X509CertificateBuilder) initialize() {
 	b.object = &X509Certificate{}
 }
 func (b *X509CertificateBuilder) Display(in string) *X509CertificateBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -359,9 +360,10 @@ func (b *X509CertificateBuilder) Display(in string) *X509CertificateBuilder {
 	return b
 }
 func (b *X509CertificateBuilder) Primary(in bool) *X509CertificateBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -372,9 +374,10 @@ func (b *X509CertificateBuilder) Primary(in bool) *X509CertificateBuilder {
 	return b
 }
 func (b *X509CertificateBuilder) Type(in string) *X509CertificateBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -385,9 +388,10 @@ func (b *X509CertificateBuilder) Type(in string) *X509CertificateBuilder {
 	return b
 }
 func (b *X509CertificateBuilder) Value(in string) *X509CertificateBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -401,10 +405,10 @@ func (b *X509CertificateBuilder) Value(in string) *X509CertificateBuilder {
 func (b *X509CertificateBuilder) Build() (*X509Certificate, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
-	b.once.Do(b.initialize)
 
-	if err := b.err; err != nil {
-		return nil, err
+	b.once.Do(b.initialize)
+	if b.err != nil {
+		return nil, b.err
 	}
 	obj := b.object
 	b.once = sync.Once{}
@@ -429,6 +433,8 @@ func (b *X509CertificateBuilder) From(in *X509Certificate) *X509CertificateBuild
 }
 
 func (v *X509Certificate) AsMap(dst map[string]interface{}) error {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
 	for _, pair := range v.makePairs() {
 		dst[pair.Name] = pair.Value
 	}

@@ -18,7 +18,7 @@ func init() {
 
 type PatchOperation struct {
 	mu         sync.RWMutex
-	externalId *string
+	externalID *string
 	id         *string
 	meta       *Meta
 	op         *PatchOperationType
@@ -46,7 +46,7 @@ func (v *PatchOperation) Get(key string, dst interface{}) error {
 	defer v.mu.RUnlock()
 	switch key {
 	case PatchOperationExternalIDKey:
-		if val := v.externalId; val != nil {
+		if val := v.externalID; val != nil {
 			return blackmagic.AssignIfCompatible(dst, *val)
 		}
 	case PatchOperationIDKey:
@@ -91,7 +91,7 @@ func (v *PatchOperation) Set(key string, value interface{}) error {
 		if !ok {
 			return fmt.Errorf(`expected value of type string for field externalId, got %T`, value)
 		}
-		v.externalId = &converted
+		v.externalID = &converted
 	case PatchOperationIDKey:
 		converted, ok := value.(string)
 		if !ok {
@@ -134,7 +134,7 @@ func (v *PatchOperation) Set(key string, value interface{}) error {
 func (v *PatchOperation) HasExternalID() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return v.externalId != nil
+	return v.externalID != nil
 }
 
 func (v *PatchOperation) HasID() bool {
@@ -170,7 +170,7 @@ func (v *PatchOperation) HasValue() bool {
 func (v *PatchOperation) ExternalID() string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	if val := v.externalId; val != nil {
+	if val := v.externalID; val != nil {
 		return *val
 	}
 	return ""
@@ -228,7 +228,7 @@ func (v *PatchOperation) Remove(key string) error {
 
 	switch key {
 	case PatchOperationExternalIDKey:
-		v.externalId = nil
+		v.externalID = nil
 	case PatchOperationIDKey:
 		v.id = nil
 	case PatchOperationMetaKey:
@@ -248,7 +248,7 @@ func (v *PatchOperation) Remove(key string) error {
 
 func (v *PatchOperation) makePairs() []*fieldPair {
 	pairs := make([]*fieldPair, 0, 6)
-	if val := v.externalId; val != nil {
+	if val := v.externalID; val != nil {
 		pairs = append(pairs, &fieldPair{Name: PatchOperationExternalIDKey, Value: *val})
 	}
 	if val := v.id; val != nil {
@@ -281,7 +281,7 @@ func (v *PatchOperation) Clone() *PatchOperation {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return &PatchOperation{
-		externalId: v.externalId,
+		externalID: v.externalID,
 		id:         v.id,
 		meta:       v.meta,
 		op:         v.op,
@@ -326,7 +326,7 @@ func (v *PatchOperation) MarshalJSON() ([]byte, error) {
 func (v *PatchOperation) UnmarshalJSON(data []byte) error {
 	v.mu.Lock()
 	defer v.mu.Unlock()
-	v.externalId = nil
+	v.externalID = nil
 	v.id = nil
 	v.meta = nil
 	v.op = nil
@@ -358,7 +358,7 @@ LOOP:
 				if err := dec.Decode(&val); err != nil {
 					return fmt.Errorf(`failed to decode value for %q: %w`, PatchOperationExternalIDKey, err)
 				}
-				v.externalId = &val
+				v.externalID = &val
 			case PatchOperationIDKey:
 				var val string
 				if err := dec.Decode(&val); err != nil {
@@ -426,9 +426,10 @@ func (b *PatchOperationBuilder) initialize() {
 	b.object = &PatchOperation{}
 }
 func (b *PatchOperationBuilder) ExternalID(in string) *PatchOperationBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -439,9 +440,10 @@ func (b *PatchOperationBuilder) ExternalID(in string) *PatchOperationBuilder {
 	return b
 }
 func (b *PatchOperationBuilder) ID(in string) *PatchOperationBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -452,9 +454,10 @@ func (b *PatchOperationBuilder) ID(in string) *PatchOperationBuilder {
 	return b
 }
 func (b *PatchOperationBuilder) Meta(in *Meta) *PatchOperationBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -465,9 +468,10 @@ func (b *PatchOperationBuilder) Meta(in *Meta) *PatchOperationBuilder {
 	return b
 }
 func (b *PatchOperationBuilder) Op(in PatchOperationType) *PatchOperationBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -478,9 +482,10 @@ func (b *PatchOperationBuilder) Op(in PatchOperationType) *PatchOperationBuilder
 	return b
 }
 func (b *PatchOperationBuilder) Path(in string) *PatchOperationBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -491,9 +496,10 @@ func (b *PatchOperationBuilder) Path(in string) *PatchOperationBuilder {
 	return b
 }
 func (b *PatchOperationBuilder) Value(in interface{}) *PatchOperationBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -507,10 +513,10 @@ func (b *PatchOperationBuilder) Value(in interface{}) *PatchOperationBuilder {
 func (b *PatchOperationBuilder) Build() (*PatchOperation, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
-	b.once.Do(b.initialize)
 
-	if err := b.err; err != nil {
-		return nil, err
+	b.once.Do(b.initialize)
+	if b.err != nil {
+		return nil, b.err
 	}
 	obj := b.object
 	b.once = sync.Once{}
@@ -535,6 +541,8 @@ func (b *PatchOperationBuilder) From(in *PatchOperation) *PatchOperationBuilder 
 }
 
 func (v *PatchOperation) AsMap(dst map[string]interface{}) error {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
 	for _, pair := range v.makePairs() {
 		dst[pair.Name] = pair.Value
 	}

@@ -346,9 +346,10 @@ func (b *AssociatedGroupBuilder) initialize() {
 	b.object = &AssociatedGroup{}
 }
 func (b *AssociatedGroupBuilder) Display(in string) *AssociatedGroupBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -359,9 +360,10 @@ func (b *AssociatedGroupBuilder) Display(in string) *AssociatedGroupBuilder {
 	return b
 }
 func (b *AssociatedGroupBuilder) Reference(in string) *AssociatedGroupBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -372,9 +374,10 @@ func (b *AssociatedGroupBuilder) Reference(in string) *AssociatedGroupBuilder {
 	return b
 }
 func (b *AssociatedGroupBuilder) Type(in string) *AssociatedGroupBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -385,9 +388,10 @@ func (b *AssociatedGroupBuilder) Type(in string) *AssociatedGroupBuilder {
 	return b
 }
 func (b *AssociatedGroupBuilder) Value(in string) *AssociatedGroupBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -401,10 +405,10 @@ func (b *AssociatedGroupBuilder) Value(in string) *AssociatedGroupBuilder {
 func (b *AssociatedGroupBuilder) Build() (*AssociatedGroup, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
-	b.once.Do(b.initialize)
 
-	if err := b.err; err != nil {
-		return nil, err
+	b.once.Do(b.initialize)
+	if b.err != nil {
+		return nil, b.err
 	}
 	obj := b.object
 	b.once = sync.Once{}
@@ -429,6 +433,8 @@ func (b *AssociatedGroupBuilder) From(in *AssociatedGroup) *AssociatedGroupBuild
 }
 
 func (v *AssociatedGroup) AsMap(dst map[string]interface{}) error {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
 	for _, pair := range v.makePairs() {
 		dst[pair.Name] = pair.Value
 	}

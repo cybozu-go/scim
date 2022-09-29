@@ -21,7 +21,7 @@ func init() {
 type Group struct {
 	mu          sync.RWMutex
 	displayName *string
-	externalId  *string
+	externalID  *string
 	id          *string
 	members     []*GroupMember
 	schemas     *schemas
@@ -52,7 +52,7 @@ func (v *Group) Get(key string, dst interface{}) error {
 			return blackmagic.AssignIfCompatible(dst, *val)
 		}
 	case GroupExternalIDKey:
-		if val := v.externalId; val != nil {
+		if val := v.externalID; val != nil {
 			return blackmagic.AssignIfCompatible(dst, *val)
 		}
 	case GroupIDKey:
@@ -99,7 +99,7 @@ func (v *Group) Set(key string, value interface{}) error {
 		if !ok {
 			return fmt.Errorf(`expected value of type string for field externalId, got %T`, value)
 		}
-		v.externalId = &converted
+		v.externalID = &converted
 	case GroupIDKey:
 		converted, ok := value.(string)
 		if !ok {
@@ -142,7 +142,7 @@ func (v *Group) HasDisplayName() bool {
 func (v *Group) HasExternalID() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return v.externalId != nil
+	return v.externalID != nil
 }
 
 func (v *Group) HasID() bool {
@@ -181,7 +181,7 @@ func (v *Group) DisplayName() string {
 func (v *Group) ExternalID() string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	if val := v.externalId; val != nil {
+	if val := v.externalID; val != nil {
 		return *val
 	}
 	return ""
@@ -232,7 +232,7 @@ func (v *Group) Remove(key string) error {
 	case GroupDisplayNameKey:
 		v.displayName = nil
 	case GroupExternalIDKey:
-		v.externalId = nil
+		v.externalID = nil
 	case GroupIDKey:
 		v.id = nil
 	case GroupMembersKey:
@@ -253,7 +253,7 @@ func (v *Group) makePairs() []*fieldPair {
 	if val := v.displayName; val != nil {
 		pairs = append(pairs, &fieldPair{Name: GroupDisplayNameKey, Value: *val})
 	}
-	if val := v.externalId; val != nil {
+	if val := v.externalID; val != nil {
 		pairs = append(pairs, &fieldPair{Name: GroupExternalIDKey, Value: *val})
 	}
 	if val := v.id; val != nil {
@@ -284,7 +284,7 @@ func (v *Group) Clone() *Group {
 	defer v.mu.RUnlock()
 	return &Group{
 		displayName: v.displayName,
-		externalId:  v.externalId,
+		externalID:  v.externalID,
 		id:          v.id,
 		members:     v.members,
 		schemas:     v.schemas,
@@ -329,7 +329,7 @@ func (v *Group) UnmarshalJSON(data []byte) error {
 	v.mu.Lock()
 	defer v.mu.Unlock()
 	v.displayName = nil
-	v.externalId = nil
+	v.externalID = nil
 	v.id = nil
 	v.members = nil
 	v.schemas = nil
@@ -366,7 +366,7 @@ LOOP:
 				if err := dec.Decode(&val); err != nil {
 					return fmt.Errorf(`failed to decode value for %q: %w`, GroupExternalIDKey, err)
 				}
-				v.externalId = &val
+				v.externalID = &val
 			case GroupIDKey:
 				var val string
 				if err := dec.Decode(&val); err != nil {
@@ -426,11 +426,14 @@ func NewGroupBuilder() *GroupBuilder {
 func (b *GroupBuilder) initialize() {
 	b.err = nil
 	b.object = &Group{}
+	b.object.schemas = &schemas{}
+	b.object.schemas.Add(GroupSchemaURI)
 }
 func (b *GroupBuilder) DisplayName(in string) *GroupBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -441,9 +444,10 @@ func (b *GroupBuilder) DisplayName(in string) *GroupBuilder {
 	return b
 }
 func (b *GroupBuilder) ExternalID(in string) *GroupBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -454,9 +458,10 @@ func (b *GroupBuilder) ExternalID(in string) *GroupBuilder {
 	return b
 }
 func (b *GroupBuilder) ID(in string) *GroupBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -467,9 +472,10 @@ func (b *GroupBuilder) ID(in string) *GroupBuilder {
 	return b
 }
 func (b *GroupBuilder) Members(in ...*GroupMember) *GroupBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -480,9 +486,10 @@ func (b *GroupBuilder) Members(in ...*GroupMember) *GroupBuilder {
 	return b
 }
 func (b *GroupBuilder) Schemas(in ...string) *GroupBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -493,9 +500,10 @@ func (b *GroupBuilder) Schemas(in ...string) *GroupBuilder {
 	return b
 }
 func (b *GroupBuilder) Meta(in *Meta) *GroupBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -509,10 +517,10 @@ func (b *GroupBuilder) Meta(in *Meta) *GroupBuilder {
 func (b *GroupBuilder) Build() (*Group, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
-	b.once.Do(b.initialize)
 
-	if err := b.err; err != nil {
-		return nil, err
+	b.once.Do(b.initialize)
+	if b.err != nil {
+		return nil, b.err
 	}
 	obj := b.object
 	b.once = sync.Once{}
@@ -555,6 +563,8 @@ func (b *GroupBuilder) Extension(uri string, value interface{}) *GroupBuilder {
 }
 
 func (v *Group) AsMap(dst map[string]interface{}) error {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
 	for _, pair := range v.makePairs() {
 		dst[pair.Name] = pair.Value
 	}

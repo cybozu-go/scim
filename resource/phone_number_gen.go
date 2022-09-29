@@ -346,9 +346,10 @@ func (b *PhoneNumberBuilder) initialize() {
 	b.object = &PhoneNumber{}
 }
 func (b *PhoneNumberBuilder) Display(in string) *PhoneNumberBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -359,9 +360,10 @@ func (b *PhoneNumberBuilder) Display(in string) *PhoneNumberBuilder {
 	return b
 }
 func (b *PhoneNumberBuilder) Primary(in bool) *PhoneNumberBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -372,9 +374,10 @@ func (b *PhoneNumberBuilder) Primary(in bool) *PhoneNumberBuilder {
 	return b
 }
 func (b *PhoneNumberBuilder) Type(in string) *PhoneNumberBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -385,9 +388,10 @@ func (b *PhoneNumberBuilder) Type(in string) *PhoneNumberBuilder {
 	return b
 }
 func (b *PhoneNumberBuilder) Value(in string) *PhoneNumberBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -401,10 +405,10 @@ func (b *PhoneNumberBuilder) Value(in string) *PhoneNumberBuilder {
 func (b *PhoneNumberBuilder) Build() (*PhoneNumber, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
-	b.once.Do(b.initialize)
 
-	if err := b.err; err != nil {
-		return nil, err
+	b.once.Do(b.initialize)
+	if b.err != nil {
+		return nil, b.err
 	}
 	obj := b.object
 	b.once = sync.Once{}
@@ -429,6 +433,8 @@ func (b *PhoneNumberBuilder) From(in *PhoneNumber) *PhoneNumberBuilder {
 }
 
 func (v *PhoneNumber) AsMap(dst map[string]interface{}) error {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
 	for _, pair := range v.makePairs() {
 		dst[pair.Name] = pair.Value
 	}

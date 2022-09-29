@@ -266,11 +266,14 @@ func NewPatchRequestBuilder() *PatchRequestBuilder {
 func (b *PatchRequestBuilder) initialize() {
 	b.err = nil
 	b.object = &PatchRequest{}
+	b.object.schemas = &schemas{}
+	b.object.schemas.Add(PatchRequestSchemaURI)
 }
 func (b *PatchRequestBuilder) Operations(in ...*PatchOperation) *PatchRequestBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -281,9 +284,10 @@ func (b *PatchRequestBuilder) Operations(in ...*PatchOperation) *PatchRequestBui
 	return b
 }
 func (b *PatchRequestBuilder) Schemas(in ...string) *PatchRequestBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -297,10 +301,10 @@ func (b *PatchRequestBuilder) Schemas(in ...string) *PatchRequestBuilder {
 func (b *PatchRequestBuilder) Build() (*PatchRequest, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
-	b.once.Do(b.initialize)
 
-	if err := b.err; err != nil {
-		return nil, err
+	b.once.Do(b.initialize)
+	if b.err != nil {
+		return nil, b.err
 	}
 	obj := b.object
 	b.once = sync.Once{}
@@ -343,6 +347,8 @@ func (b *PatchRequestBuilder) Extension(uri string, value interface{}) *PatchReq
 }
 
 func (v *PatchRequest) AsMap(dst map[string]interface{}) error {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
 	for _, pair := range v.makePairs() {
 		dst[pair.Name] = pair.Value
 	}

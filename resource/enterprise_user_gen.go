@@ -466,11 +466,14 @@ func NewEnterpriseUserBuilder() *EnterpriseUserBuilder {
 func (b *EnterpriseUserBuilder) initialize() {
 	b.err = nil
 	b.object = &EnterpriseUser{}
+	b.object.schemas = &schemas{}
+	b.object.schemas.Add(EnterpriseUserSchemaURI)
 }
 func (b *EnterpriseUserBuilder) CostCenter(in string) *EnterpriseUserBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -481,9 +484,10 @@ func (b *EnterpriseUserBuilder) CostCenter(in string) *EnterpriseUserBuilder {
 	return b
 }
 func (b *EnterpriseUserBuilder) Department(in string) *EnterpriseUserBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -494,9 +498,10 @@ func (b *EnterpriseUserBuilder) Department(in string) *EnterpriseUserBuilder {
 	return b
 }
 func (b *EnterpriseUserBuilder) Division(in string) *EnterpriseUserBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -507,9 +512,10 @@ func (b *EnterpriseUserBuilder) Division(in string) *EnterpriseUserBuilder {
 	return b
 }
 func (b *EnterpriseUserBuilder) EmployeeNumber(in string) *EnterpriseUserBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -520,9 +526,10 @@ func (b *EnterpriseUserBuilder) EmployeeNumber(in string) *EnterpriseUserBuilder
 	return b
 }
 func (b *EnterpriseUserBuilder) Manager(in *EnterpriseManager) *EnterpriseUserBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -533,9 +540,10 @@ func (b *EnterpriseUserBuilder) Manager(in *EnterpriseManager) *EnterpriseUserBu
 	return b
 }
 func (b *EnterpriseUserBuilder) Organization(in string) *EnterpriseUserBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -546,9 +554,10 @@ func (b *EnterpriseUserBuilder) Organization(in string) *EnterpriseUserBuilder {
 	return b
 }
 func (b *EnterpriseUserBuilder) Schemas(in ...string) *EnterpriseUserBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -562,10 +571,10 @@ func (b *EnterpriseUserBuilder) Schemas(in ...string) *EnterpriseUserBuilder {
 func (b *EnterpriseUserBuilder) Build() (*EnterpriseUser, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
-	b.once.Do(b.initialize)
 
-	if err := b.err; err != nil {
-		return nil, err
+	b.once.Do(b.initialize)
+	if b.err != nil {
+		return nil, b.err
 	}
 	obj := b.object
 	b.once = sync.Once{}
@@ -608,6 +617,8 @@ func (b *EnterpriseUserBuilder) Extension(uri string, value interface{}) *Enterp
 }
 
 func (v *EnterpriseUser) AsMap(dst map[string]interface{}) error {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
 	for _, pair := range v.makePairs() {
 		dst[pair.Name] = pair.Value
 	}

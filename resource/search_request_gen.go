@@ -546,11 +546,14 @@ func NewSearchRequestBuilder() *SearchRequestBuilder {
 func (b *SearchRequestBuilder) initialize() {
 	b.err = nil
 	b.object = &SearchRequest{}
+	b.object.schemas = &schemas{}
+	b.object.schemas.Add(SearchRequestSchemaURI)
 }
 func (b *SearchRequestBuilder) Attributes(in ...string) *SearchRequestBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -561,9 +564,10 @@ func (b *SearchRequestBuilder) Attributes(in ...string) *SearchRequestBuilder {
 	return b
 }
 func (b *SearchRequestBuilder) Count(in int) *SearchRequestBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -574,9 +578,10 @@ func (b *SearchRequestBuilder) Count(in int) *SearchRequestBuilder {
 	return b
 }
 func (b *SearchRequestBuilder) ExcludedAttributes(in ...string) *SearchRequestBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -587,9 +592,10 @@ func (b *SearchRequestBuilder) ExcludedAttributes(in ...string) *SearchRequestBu
 	return b
 }
 func (b *SearchRequestBuilder) Filter(in string) *SearchRequestBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -600,9 +606,10 @@ func (b *SearchRequestBuilder) Filter(in string) *SearchRequestBuilder {
 	return b
 }
 func (b *SearchRequestBuilder) Schema(in string) *SearchRequestBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -613,9 +620,10 @@ func (b *SearchRequestBuilder) Schema(in string) *SearchRequestBuilder {
 	return b
 }
 func (b *SearchRequestBuilder) Schemas(in ...string) *SearchRequestBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -626,9 +634,10 @@ func (b *SearchRequestBuilder) Schemas(in ...string) *SearchRequestBuilder {
 	return b
 }
 func (b *SearchRequestBuilder) SortBy(in string) *SearchRequestBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -639,9 +648,10 @@ func (b *SearchRequestBuilder) SortBy(in string) *SearchRequestBuilder {
 	return b
 }
 func (b *SearchRequestBuilder) SortOrder(in string) *SearchRequestBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -652,9 +662,10 @@ func (b *SearchRequestBuilder) SortOrder(in string) *SearchRequestBuilder {
 	return b
 }
 func (b *SearchRequestBuilder) StartIndex(in int) *SearchRequestBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -668,10 +679,10 @@ func (b *SearchRequestBuilder) StartIndex(in int) *SearchRequestBuilder {
 func (b *SearchRequestBuilder) Build() (*SearchRequest, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
-	b.once.Do(b.initialize)
 
-	if err := b.err; err != nil {
-		return nil, err
+	b.once.Do(b.initialize)
+	if b.err != nil {
+		return nil, b.err
 	}
 	obj := b.object
 	b.once = sync.Once{}
@@ -714,6 +725,8 @@ func (b *SearchRequestBuilder) Extension(uri string, value interface{}) *SearchR
 }
 
 func (v *SearchRequest) AsMap(dst map[string]interface{}) error {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
 	for _, pair := range v.makePairs() {
 		dst[pair.Name] = pair.Value
 	}

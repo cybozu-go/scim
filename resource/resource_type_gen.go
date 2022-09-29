@@ -466,11 +466,14 @@ func NewResourceTypeBuilder() *ResourceTypeBuilder {
 func (b *ResourceTypeBuilder) initialize() {
 	b.err = nil
 	b.object = &ResourceType{}
+	b.object.schemas = &schemas{}
+	b.object.schemas.Add(ResourceTypeSchemaURI)
 }
 func (b *ResourceTypeBuilder) Description(in string) *ResourceTypeBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -481,9 +484,10 @@ func (b *ResourceTypeBuilder) Description(in string) *ResourceTypeBuilder {
 	return b
 }
 func (b *ResourceTypeBuilder) Endpoint(in string) *ResourceTypeBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -494,9 +498,10 @@ func (b *ResourceTypeBuilder) Endpoint(in string) *ResourceTypeBuilder {
 	return b
 }
 func (b *ResourceTypeBuilder) ID(in string) *ResourceTypeBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -507,9 +512,10 @@ func (b *ResourceTypeBuilder) ID(in string) *ResourceTypeBuilder {
 	return b
 }
 func (b *ResourceTypeBuilder) Name(in string) *ResourceTypeBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -520,9 +526,10 @@ func (b *ResourceTypeBuilder) Name(in string) *ResourceTypeBuilder {
 	return b
 }
 func (b *ResourceTypeBuilder) Schema(in string) *ResourceTypeBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -533,9 +540,10 @@ func (b *ResourceTypeBuilder) Schema(in string) *ResourceTypeBuilder {
 	return b
 }
 func (b *ResourceTypeBuilder) SchemaExtensions(in ...*SchemaExtension) *ResourceTypeBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -546,9 +554,10 @@ func (b *ResourceTypeBuilder) SchemaExtensions(in ...*SchemaExtension) *Resource
 	return b
 }
 func (b *ResourceTypeBuilder) Schemas(in ...string) *ResourceTypeBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -562,10 +571,10 @@ func (b *ResourceTypeBuilder) Schemas(in ...string) *ResourceTypeBuilder {
 func (b *ResourceTypeBuilder) Build() (*ResourceType, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
-	b.once.Do(b.initialize)
 
-	if err := b.err; err != nil {
-		return nil, err
+	b.once.Do(b.initialize)
+	if b.err != nil {
+		return nil, b.err
 	}
 	if b.object.endpoint == nil {
 		return nil, fmt.Errorf("required field 'Endpoint' not initialized")
@@ -617,6 +626,8 @@ func (b *ResourceTypeBuilder) Extension(uri string, value interface{}) *Resource
 }
 
 func (v *ResourceType) AsMap(dst map[string]interface{}) error {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
 	for _, pair := range v.makePairs() {
 		dst[pair.Name] = pair.Value
 	}

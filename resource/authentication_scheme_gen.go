@@ -386,9 +386,10 @@ func (b *AuthenticationSchemeBuilder) initialize() {
 	b.object = &AuthenticationScheme{}
 }
 func (b *AuthenticationSchemeBuilder) Description(in string) *AuthenticationSchemeBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -399,9 +400,10 @@ func (b *AuthenticationSchemeBuilder) Description(in string) *AuthenticationSche
 	return b
 }
 func (b *AuthenticationSchemeBuilder) DocumentationURI(in string) *AuthenticationSchemeBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -412,9 +414,10 @@ func (b *AuthenticationSchemeBuilder) DocumentationURI(in string) *Authenticatio
 	return b
 }
 func (b *AuthenticationSchemeBuilder) Name(in string) *AuthenticationSchemeBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -425,9 +428,10 @@ func (b *AuthenticationSchemeBuilder) Name(in string) *AuthenticationSchemeBuild
 	return b
 }
 func (b *AuthenticationSchemeBuilder) SpecURI(in string) *AuthenticationSchemeBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -438,9 +442,10 @@ func (b *AuthenticationSchemeBuilder) SpecURI(in string) *AuthenticationSchemeBu
 	return b
 }
 func (b *AuthenticationSchemeBuilder) Type(in AuthenticationSchemeType) *AuthenticationSchemeBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -454,10 +459,10 @@ func (b *AuthenticationSchemeBuilder) Type(in AuthenticationSchemeType) *Authent
 func (b *AuthenticationSchemeBuilder) Build() (*AuthenticationScheme, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
-	b.once.Do(b.initialize)
 
-	if err := b.err; err != nil {
-		return nil, err
+	b.once.Do(b.initialize)
+	if b.err != nil {
+		return nil, b.err
 	}
 	if b.object.description == nil {
 		return nil, fmt.Errorf("required field 'Description' not initialized")
@@ -488,6 +493,8 @@ func (b *AuthenticationSchemeBuilder) From(in *AuthenticationScheme) *Authentica
 }
 
 func (v *AuthenticationScheme) AsMap(dst map[string]interface{}) error {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
 	for _, pair := range v.makePairs() {
 		dst[pair.Name] = pair.Value
 	}

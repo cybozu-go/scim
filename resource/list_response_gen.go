@@ -301,11 +301,14 @@ func NewListResponseBuilder() *ListResponseBuilder {
 func (b *ListResponseBuilder) initialize() {
 	b.err = nil
 	b.object = &ListResponse{}
+	b.object.schemas = &schemas{}
+	b.object.schemas.Add(ListResponseSchemaURI)
 }
 func (b *ListResponseBuilder) ItemsPerPage(in int) *ListResponseBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -316,9 +319,10 @@ func (b *ListResponseBuilder) ItemsPerPage(in int) *ListResponseBuilder {
 	return b
 }
 func (b *ListResponseBuilder) Resources(in ...interface{}) *ListResponseBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -329,9 +333,10 @@ func (b *ListResponseBuilder) Resources(in ...interface{}) *ListResponseBuilder 
 	return b
 }
 func (b *ListResponseBuilder) StartIndex(in int) *ListResponseBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -342,9 +347,10 @@ func (b *ListResponseBuilder) StartIndex(in int) *ListResponseBuilder {
 	return b
 }
 func (b *ListResponseBuilder) TotalResults(in int) *ListResponseBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -355,9 +361,10 @@ func (b *ListResponseBuilder) TotalResults(in int) *ListResponseBuilder {
 	return b
 }
 func (b *ListResponseBuilder) Schemas(in ...string) *ListResponseBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -371,10 +378,10 @@ func (b *ListResponseBuilder) Schemas(in ...string) *ListResponseBuilder {
 func (b *ListResponseBuilder) Build() (*ListResponse, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
-	b.once.Do(b.initialize)
 
-	if err := b.err; err != nil {
-		return nil, err
+	b.once.Do(b.initialize)
+	if b.err != nil {
+		return nil, b.err
 	}
 	obj := b.object
 	b.once = sync.Once{}
@@ -417,6 +424,8 @@ func (b *ListResponseBuilder) Extension(uri string, value interface{}) *ListResp
 }
 
 func (v *ListResponse) AsMap(dst map[string]interface{}) error {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
 	for _, pair := range v.makePairs() {
 		dst[pair.Name] = pair.Value
 	}

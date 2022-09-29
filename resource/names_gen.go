@@ -426,9 +426,10 @@ func (b *NamesBuilder) initialize() {
 	b.object = &Names{}
 }
 func (b *NamesBuilder) FamilyName(in string) *NamesBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -439,9 +440,10 @@ func (b *NamesBuilder) FamilyName(in string) *NamesBuilder {
 	return b
 }
 func (b *NamesBuilder) Formatted(in string) *NamesBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -452,9 +454,10 @@ func (b *NamesBuilder) Formatted(in string) *NamesBuilder {
 	return b
 }
 func (b *NamesBuilder) GivenName(in string) *NamesBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -465,9 +468,10 @@ func (b *NamesBuilder) GivenName(in string) *NamesBuilder {
 	return b
 }
 func (b *NamesBuilder) HonorificPrefix(in string) *NamesBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -478,9 +482,10 @@ func (b *NamesBuilder) HonorificPrefix(in string) *NamesBuilder {
 	return b
 }
 func (b *NamesBuilder) HonorificSuffix(in string) *NamesBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -491,9 +496,10 @@ func (b *NamesBuilder) HonorificSuffix(in string) *NamesBuilder {
 	return b
 }
 func (b *NamesBuilder) MiddleName(in string) *NamesBuilder {
-	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	b.once.Do(b.initialize)
 	if b.err != nil {
 		return b
 	}
@@ -507,10 +513,10 @@ func (b *NamesBuilder) MiddleName(in string) *NamesBuilder {
 func (b *NamesBuilder) Build() (*Names, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
-	b.once.Do(b.initialize)
 
-	if err := b.err; err != nil {
-		return nil, err
+	b.once.Do(b.initialize)
+	if b.err != nil {
+		return nil, b.err
 	}
 	obj := b.object
 	b.once = sync.Once{}
@@ -535,6 +541,8 @@ func (b *NamesBuilder) From(in *Names) *NamesBuilder {
 }
 
 func (v *Names) AsMap(dst map[string]interface{}) error {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
 	for _, pair := range v.makePairs() {
 		dst[pair.Name] = pair.Value
 	}

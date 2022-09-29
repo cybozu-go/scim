@@ -168,6 +168,7 @@ func (v *ServiceProviderConfig) Set(key string, value interface{}) error {
 	}
 	return nil
 }
+
 func (v *ServiceProviderConfig) HasAuthenticationSchemes() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()

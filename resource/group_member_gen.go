@@ -94,6 +94,7 @@ func (v *GroupMember) Set(key string, value interface{}) error {
 	}
 	return nil
 }
+
 func (v *GroupMember) HasValue() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()

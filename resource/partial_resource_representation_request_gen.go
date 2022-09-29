@@ -82,6 +82,7 @@ func (v *PartialResourceRepresentationRequest) Set(key string, value interface{}
 	}
 	return nil
 }
+
 func (v *PartialResourceRepresentationRequest) HasAttributes() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()

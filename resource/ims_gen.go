@@ -106,6 +106,7 @@ func (v *IMS) Set(key string, value interface{}) error {
 	}
 	return nil
 }
+
 func (v *IMS) HasDisplay() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()

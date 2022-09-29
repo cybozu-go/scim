@@ -118,6 +118,7 @@ func (v *AuthenticationScheme) Set(key string, value interface{}) error {
 	}
 	return nil
 }
+
 func (v *AuthenticationScheme) HasDescription() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()

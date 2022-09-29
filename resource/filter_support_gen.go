@@ -82,6 +82,7 @@ func (v *FilterSupport) Set(key string, value interface{}) error {
 	}
 	return nil
 }
+
 func (v *FilterSupport) HasMaxResults() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()

@@ -130,6 +130,7 @@ func (v *Names) Set(key string, value interface{}) error {
 	}
 	return nil
 }
+
 func (v *Names) HasFamilyName() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()

@@ -94,6 +94,7 @@ func (v *Error) Set(key string, value interface{}) error {
 	}
 	return nil
 }
+
 func (v *Error) HasDetail() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()

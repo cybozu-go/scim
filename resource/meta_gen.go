@@ -120,6 +120,7 @@ func (v *Meta) Set(key string, value interface{}) error {
 	}
 	return nil
 }
+
 func (v *Meta) HasResourceType() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()

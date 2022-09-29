@@ -361,6 +361,7 @@ func (v *User) Set(key string, value interface{}) error {
 	}
 	return nil
 }
+
 func (v *User) HasActive() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()

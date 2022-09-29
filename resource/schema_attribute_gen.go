@@ -203,6 +203,7 @@ func (v *SchemaAttribute) Set(key string, value interface{}) error {
 	}
 	return nil
 }
+
 func (v *SchemaAttribute) HasCanonicalValues() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()

@@ -94,6 +94,7 @@ func (v *EnterpriseManager) Set(key string, value interface{}) error {
 	}
 	return nil
 }
+
 func (v *EnterpriseManager) HasDisplayName() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()

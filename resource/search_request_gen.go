@@ -168,6 +168,7 @@ func (v *SearchRequest) Set(key string, value interface{}) error {
 	}
 	return nil
 }
+
 func (v *SearchRequest) HasAttributes() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()

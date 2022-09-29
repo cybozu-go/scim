@@ -106,6 +106,7 @@ func (v *X509Certificate) Set(key string, value interface{}) error {
 	}
 	return nil
 }
+
 func (v *X509Certificate) HasDisplay() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()

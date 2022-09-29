@@ -106,6 +106,7 @@ func (v *Entitlement) Set(key string, value interface{}) error {
 	}
 	return nil
 }
+
 func (v *Entitlement) HasDisplay() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()

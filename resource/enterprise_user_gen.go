@@ -144,6 +144,7 @@ func (v *EnterpriseUser) Set(key string, value interface{}) error {
 	}
 	return nil
 }
+
 func (v *EnterpriseUser) HasCostCenter() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()

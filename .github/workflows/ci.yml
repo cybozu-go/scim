@@ -18,6 +18,12 @@ jobs:
         uses: actions/setup-go@v3
         with:
           go-version: ${{ matrix.go }}
+      - name: Install sketch
+        run: |
+          go install github.com/lestrrat-go/sketch/cmd/sketch@latest
+      - name: Generate files
+        run: |
+          go generate
       - name: Test
         # TODO: make it smarter
         run: |
@@ -25,6 +31,8 @@ jobs:
           go test
           popd
           go test -v -race -coverprofile=coverage.out -coverpkg=./... ./...
+      - name: Check Diff
+        run: ./tools/check-diff.sh
       - name: Upload code coverage to codecov
         if: matrix.go == '1.18'
         uses: codecov/codecov-action@v1

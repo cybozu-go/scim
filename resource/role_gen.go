@@ -106,6 +106,7 @@ func (v *Role) Set(key string, value interface{}) error {
 	}
 	return nil
 }
+
 func (v *Role) HasDisplay() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()

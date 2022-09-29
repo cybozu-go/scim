@@ -130,6 +130,7 @@ func (v *PatchOperation) Set(key string, value interface{}) error {
 	}
 	return nil
 }
+
 func (v *PatchOperation) HasExternalID() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()

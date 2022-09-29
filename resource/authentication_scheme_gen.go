@@ -19,9 +19,9 @@ func init() {
 type AuthenticationScheme struct {
 	mu               sync.RWMutex
 	description      *string
-	documentationUri *string
+	documentationURI *string
 	name             *string
-	specUri          *string
+	specURI          *string
 	typ              *AuthenticationSchemeType
 	extra            map[string]interface{}
 }
@@ -48,7 +48,7 @@ func (v *AuthenticationScheme) Get(key string, dst interface{}) error {
 			return blackmagic.AssignIfCompatible(dst, *val)
 		}
 	case AuthenticationSchemeDocumentationURIKey:
-		if val := v.documentationUri; val != nil {
+		if val := v.documentationURI; val != nil {
 			return blackmagic.AssignIfCompatible(dst, *val)
 		}
 	case AuthenticationSchemeNameKey:
@@ -56,7 +56,7 @@ func (v *AuthenticationScheme) Get(key string, dst interface{}) error {
 			return blackmagic.AssignIfCompatible(dst, *val)
 		}
 	case AuthenticationSchemeSpecURIKey:
-		if val := v.specUri; val != nil {
+		if val := v.specURI; val != nil {
 			return blackmagic.AssignIfCompatible(dst, *val)
 		}
 	case AuthenticationSchemeTypeKey:
@@ -91,7 +91,7 @@ func (v *AuthenticationScheme) Set(key string, value interface{}) error {
 		if !ok {
 			return fmt.Errorf(`expected value of type string for field documentationUri, got %T`, value)
 		}
-		v.documentationUri = &converted
+		v.documentationURI = &converted
 	case AuthenticationSchemeNameKey:
 		converted, ok := value.(string)
 		if !ok {
@@ -103,7 +103,7 @@ func (v *AuthenticationScheme) Set(key string, value interface{}) error {
 		if !ok {
 			return fmt.Errorf(`expected value of type string for field specUri, got %T`, value)
 		}
-		v.specUri = &converted
+		v.specURI = &converted
 	case AuthenticationSchemeTypeKey:
 		converted, ok := value.(AuthenticationSchemeType)
 		if !ok {
@@ -128,7 +128,7 @@ func (v *AuthenticationScheme) HasDescription() bool {
 func (v *AuthenticationScheme) HasDocumentationURI() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return v.documentationUri != nil
+	return v.documentationURI != nil
 }
 
 func (v *AuthenticationScheme) HasName() bool {
@@ -140,7 +140,7 @@ func (v *AuthenticationScheme) HasName() bool {
 func (v *AuthenticationScheme) HasSpecURI() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return v.specUri != nil
+	return v.specURI != nil
 }
 
 func (v *AuthenticationScheme) HasType() bool {
@@ -161,7 +161,7 @@ func (v *AuthenticationScheme) Description() string {
 func (v *AuthenticationScheme) DocumentationURI() string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	if val := v.documentationUri; val != nil {
+	if val := v.documentationURI; val != nil {
 		return *val
 	}
 	return ""
@@ -179,7 +179,7 @@ func (v *AuthenticationScheme) Name() string {
 func (v *AuthenticationScheme) SpecURI() string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	if val := v.specUri; val != nil {
+	if val := v.specURI; val != nil {
 		return *val
 	}
 	return ""
@@ -203,11 +203,11 @@ func (v *AuthenticationScheme) Remove(key string) error {
 	case AuthenticationSchemeDescriptionKey:
 		v.description = nil
 	case AuthenticationSchemeDocumentationURIKey:
-		v.documentationUri = nil
+		v.documentationURI = nil
 	case AuthenticationSchemeNameKey:
 		v.name = nil
 	case AuthenticationSchemeSpecURIKey:
-		v.specUri = nil
+		v.specURI = nil
 	case AuthenticationSchemeTypeKey:
 		v.typ = nil
 	default:
@@ -222,13 +222,13 @@ func (v *AuthenticationScheme) makePairs() []*fieldPair {
 	if val := v.description; val != nil {
 		pairs = append(pairs, &fieldPair{Name: AuthenticationSchemeDescriptionKey, Value: *val})
 	}
-	if val := v.documentationUri; val != nil {
+	if val := v.documentationURI; val != nil {
 		pairs = append(pairs, &fieldPair{Name: AuthenticationSchemeDocumentationURIKey, Value: *val})
 	}
 	if val := v.name; val != nil {
 		pairs = append(pairs, &fieldPair{Name: AuthenticationSchemeNameKey, Value: *val})
 	}
-	if val := v.specUri; val != nil {
+	if val := v.specURI; val != nil {
 		pairs = append(pairs, &fieldPair{Name: AuthenticationSchemeSpecURIKey, Value: *val})
 	}
 	if val := v.typ; val != nil {
@@ -250,9 +250,9 @@ func (v *AuthenticationScheme) Clone() *AuthenticationScheme {
 	defer v.mu.RUnlock()
 	return &AuthenticationScheme{
 		description:      v.description,
-		documentationUri: v.documentationUri,
+		documentationURI: v.documentationURI,
 		name:             v.name,
-		specUri:          v.specUri,
+		specURI:          v.specURI,
 		typ:              v.typ,
 	}
 }
@@ -294,9 +294,9 @@ func (v *AuthenticationScheme) UnmarshalJSON(data []byte) error {
 	v.mu.Lock()
 	defer v.mu.Unlock()
 	v.description = nil
-	v.documentationUri = nil
+	v.documentationURI = nil
 	v.name = nil
-	v.specUri = nil
+	v.specURI = nil
 	v.typ = nil
 
 	dec := json.NewDecoder(bytes.NewReader(data))
@@ -330,7 +330,7 @@ LOOP:
 				if err := dec.Decode(&val); err != nil {
 					return fmt.Errorf(`failed to decode value for %q: %w`, AuthenticationSchemeDocumentationURIKey, err)
 				}
-				v.documentationUri = &val
+				v.documentationURI = &val
 			case AuthenticationSchemeNameKey:
 				var val string
 				if err := dec.Decode(&val); err != nil {
@@ -342,7 +342,7 @@ LOOP:
 				if err := dec.Decode(&val); err != nil {
 					return fmt.Errorf(`failed to decode value for %q: %w`, AuthenticationSchemeSpecURIKey, err)
 				}
-				v.specUri = &val
+				v.specURI = &val
 			case AuthenticationSchemeTypeKey:
 				var val AuthenticationSchemeType
 				if err := dec.Decode(&val); err != nil {

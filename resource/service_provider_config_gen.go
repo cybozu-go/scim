@@ -23,7 +23,7 @@ type ServiceProviderConfig struct {
 	authenticationSchemes []*AuthenticationScheme
 	bulk                  *BulkSupport
 	changePassword        *GenericSupport
-	documentationUri      *string
+	documentationURI      *string
 	etag                  *GenericSupport
 	filter                *FilterSupport
 	patch                 *GenericSupport
@@ -66,7 +66,7 @@ func (v *ServiceProviderConfig) Get(key string, dst interface{}) error {
 			return blackmagic.AssignIfCompatible(dst, val)
 		}
 	case ServiceProviderConfigDocumentationURIKey:
-		if val := v.documentationUri; val != nil {
+		if val := v.documentationURI; val != nil {
 			return blackmagic.AssignIfCompatible(dst, *val)
 		}
 	case ServiceProviderConfigETagKey:
@@ -129,7 +129,7 @@ func (v *ServiceProviderConfig) Set(key string, value interface{}) error {
 		if !ok {
 			return fmt.Errorf(`expected value of type string for field documentationUri, got %T`, value)
 		}
-		v.documentationUri = &converted
+		v.documentationURI = &converted
 	case ServiceProviderConfigETagKey:
 		converted, ok := value.(*GenericSupport)
 		if !ok {
@@ -190,7 +190,7 @@ func (v *ServiceProviderConfig) HasChangePassword() bool {
 func (v *ServiceProviderConfig) HasDocumentationURI() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return v.documentationUri != nil
+	return v.documentationURI != nil
 }
 
 func (v *ServiceProviderConfig) HasETag() bool {
@@ -253,7 +253,7 @@ func (v *ServiceProviderConfig) ChangePassword() *GenericSupport {
 func (v *ServiceProviderConfig) DocumentationURI() string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	if val := v.documentationUri; val != nil {
+	if val := v.documentationURI; val != nil {
 		return *val
 	}
 	return ""
@@ -317,7 +317,7 @@ func (v *ServiceProviderConfig) Remove(key string) error {
 	case ServiceProviderConfigChangePasswordKey:
 		v.changePassword = nil
 	case ServiceProviderConfigDocumentationURIKey:
-		v.documentationUri = nil
+		v.documentationURI = nil
 	case ServiceProviderConfigETagKey:
 		v.etag = nil
 	case ServiceProviderConfigFilterKey:
@@ -346,7 +346,7 @@ func (v *ServiceProviderConfig) makePairs() []*fieldPair {
 	if val := v.changePassword; val != nil {
 		pairs = append(pairs, &fieldPair{Name: ServiceProviderConfigChangePasswordKey, Value: val})
 	}
-	if val := v.documentationUri; val != nil {
+	if val := v.documentationURI; val != nil {
 		pairs = append(pairs, &fieldPair{Name: ServiceProviderConfigDocumentationURIKey, Value: *val})
 	}
 	if val := v.etag; val != nil {
@@ -382,7 +382,7 @@ func (v *ServiceProviderConfig) Clone() *ServiceProviderConfig {
 		authenticationSchemes: v.authenticationSchemes,
 		bulk:                  v.bulk,
 		changePassword:        v.changePassword,
-		documentationUri:      v.documentationUri,
+		documentationURI:      v.documentationURI,
 		etag:                  v.etag,
 		filter:                v.filter,
 		patch:                 v.patch,
@@ -430,7 +430,7 @@ func (v *ServiceProviderConfig) UnmarshalJSON(data []byte) error {
 	v.authenticationSchemes = nil
 	v.bulk = nil
 	v.changePassword = nil
-	v.documentationUri = nil
+	v.documentationURI = nil
 	v.etag = nil
 	v.filter = nil
 	v.patch = nil
@@ -480,7 +480,7 @@ LOOP:
 				if err := dec.Decode(&val); err != nil {
 					return fmt.Errorf(`failed to decode value for %q: %w`, ServiceProviderConfigDocumentationURIKey, err)
 				}
-				v.documentationUri = &val
+				v.documentationURI = &val
 			case ServiceProviderConfigETagKey:
 				var val *GenericSupport
 				if err := dec.Decode(&val); err != nil {

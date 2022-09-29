@@ -65,10 +65,12 @@ func (AuthenticationScheme) Fields() []*schema.Field {
 	return []*schema.Field{
 		schema.String(`Description`).Required(true),
 		schema.String(`DocumentationURI`).
-			Unexported(`documentationUri`),
+			Unexported(`documentationURI`).
+			JSON(`documentationUri`),
 		schema.String(`Name`).Required(true),
 		schema.String(`SpecURI`).
-			Unexported(`specUri`),
+			Unexported(`specURI`).
+			JSON(`specUri`),
 		schema.NewField(`Type`, authschemetyp).
 			Unexported(`typ`).
 			JSON(`type`),
@@ -520,7 +522,8 @@ func (ServiceProviderConfig) Fields() []*schema.Field {
 		schema.NewField(`Bulk`, schema.Type(`*BulkSupport`)).Required(true),
 		schema.NewField(`ChangePassword`, gensupporttyp).Required(true),
 		schema.String(`DocumentationURI`).
-			Unexported(`documentationUri`),
+			Unexported(`documentationURI`).
+			JSON(`documentationUri`),
 		schema.NewField(`ETag`, gensupporttyp).Unexported(`etag`),
 		schema.NewField(`Filter`, schema.Type(`*FilterSupport`)).Required(true),
 		schema.NewField(`Patch`, gensupporttyp).Required(true).Required(true),

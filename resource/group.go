@@ -10,7 +10,7 @@ import (
 // As of this writing, the object must have a proper Meta
 // field populated
 func (b *GroupMemberBuilder) FromResource(r interface{}) *GroupMemberBuilder {
-	// We need to be slighly inventive with our locking because
+	// We need to be slightly inventive with our locking because
 	// later we call other value setters that also acquires the lock
 	b.mu.Lock()
 	b.once.Do(b.initialize)

@@ -456,6 +456,8 @@ func (b *MetaBuilder) LastModified(in time.Time) *MetaBuilder {
 func (b *MetaBuilder) Build() (*Meta, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.initialize)
+
 	if err := b.err; err != nil {
 		return nil, err
 	}

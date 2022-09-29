@@ -60,6 +60,8 @@ type AuthenticationScheme struct {
 }
 
 func (AuthenticationScheme) Fields() []*schema.Field {
+	authschemetyp := schema.Type(`AuthenticationSchemeType`).
+		ZeroVal(`InvalidAuthenticationScheme`)
 	return []*schema.Field{
 		schema.String(`Description`).Required(true),
 		schema.String(`DocumentationURI`).
@@ -67,8 +69,9 @@ func (AuthenticationScheme) Fields() []*schema.Field {
 		schema.String(`Name`).Required(true),
 		schema.String(`SpecURI`).
 			Unexported(`specUri`),
-		schema.NewField(`Type`, schema.Type(`*AuthenticationSchemeType`)).
-			Unexported(`typ`).JSON(`type`),
+		schema.NewField(`Type`, authschemetyp).
+			Unexported(`typ`).
+			JSON(`type`),
 	}
 }
 
@@ -394,7 +397,7 @@ func (ResourceType) Fields() []*schema.Field {
 		schema.String(`ID`),
 		schema.String(`Name`).Required(true),
 		schema.String(`Schema`).Required(true),
-		schema.NewField(`SchemaExtension`, schemaexttyp).Required(true),
+		schema.NewField(`SchemaExtensions`, schemaexttyp),
 		schema.NewField(`Schemas`, schemastyp),
 	}
 }

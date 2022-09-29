@@ -401,6 +401,8 @@ func (b *AssociatedGroupBuilder) Value(in string) *AssociatedGroupBuilder {
 func (b *AssociatedGroupBuilder) Build() (*AssociatedGroup, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.initialize)
+
 	if err := b.err; err != nil {
 		return nil, err
 	}

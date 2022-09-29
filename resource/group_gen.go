@@ -509,6 +509,8 @@ func (b *GroupBuilder) Meta(in *Meta) *GroupBuilder {
 func (b *GroupBuilder) Build() (*Group, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.initialize)
+
 	if err := b.err; err != nil {
 		return nil, err
 	}

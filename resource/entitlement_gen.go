@@ -401,6 +401,8 @@ func (b *EntitlementBuilder) Value(in string) *EntitlementBuilder {
 func (b *EntitlementBuilder) Build() (*Entitlement, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.initialize)
+
 	if err := b.err; err != nil {
 		return nil, err
 	}

@@ -348,6 +348,8 @@ func (b *GroupMemberBuilder) Type(in string) *GroupMemberBuilder {
 func (b *GroupMemberBuilder) Build() (*GroupMember, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.initialize)
+
 	if err := b.err; err != nil {
 		return nil, err
 	}

@@ -19,15 +19,15 @@ func init() {
 }
 
 type ResourceType struct {
-	mu              sync.RWMutex
-	description     *string
-	endpoint        *string
-	id              *string
-	name            *string
-	schema          *string
-	schemaExtension []*SchemaExtension
-	schemas         *schemas
-	extra           map[string]interface{}
+	mu               sync.RWMutex
+	description      *string
+	endpoint         *string
+	id               *string
+	name             *string
+	schema           *string
+	schemaExtensions []*SchemaExtension
+	schemas          *schemas
+	extra            map[string]interface{}
 }
 
 // These constants are used when the JSON field name is used.
@@ -35,13 +35,13 @@ type ResourceType struct {
 // complain about repeated constants, and therefore internally
 // this used throughout
 const (
-	ResourceTypeDescriptionKey     = "description"
-	ResourceTypeEndpointKey        = "endpoint"
-	ResourceTypeIDKey              = "id"
-	ResourceTypeNameKey            = "name"
-	ResourceTypeSchemaKey          = "schema"
-	ResourceTypeSchemaExtensionKey = "schemaExtension"
-	ResourceTypeSchemasKey         = "schemas"
+	ResourceTypeDescriptionKey      = "description"
+	ResourceTypeEndpointKey         = "endpoint"
+	ResourceTypeIDKey               = "id"
+	ResourceTypeNameKey             = "name"
+	ResourceTypeSchemaKey           = "schema"
+	ResourceTypeSchemaExtensionsKey = "schemaExtensions"
+	ResourceTypeSchemasKey          = "schemas"
 )
 
 // Get retrieves the value associated with a key
@@ -69,8 +69,8 @@ func (v *ResourceType) Get(key string, dst interface{}) error {
 		if val := v.schema; val != nil {
 			return blackmagic.AssignIfCompatible(dst, *val)
 		}
-	case ResourceTypeSchemaExtensionKey:
-		if val := v.schemaExtension; val != nil {
+	case ResourceTypeSchemaExtensionsKey:
+		if val := v.schemaExtensions; val != nil {
 			return blackmagic.AssignIfCompatible(dst, val)
 		}
 	case ResourceTypeSchemasKey:
@@ -124,12 +124,12 @@ func (v *ResourceType) Set(key string, value interface{}) error {
 			return fmt.Errorf(`expected value of type string for field schema, got %T`, value)
 		}
 		v.schema = &converted
-	case ResourceTypeSchemaExtensionKey:
+	case ResourceTypeSchemaExtensionsKey:
 		converted, ok := value.([]*SchemaExtension)
 		if !ok {
-			return fmt.Errorf(`expected value of type []*SchemaExtension for field schemaExtension, got %T`, value)
+			return fmt.Errorf(`expected value of type []*SchemaExtension for field schemaExtensions, got %T`, value)
 		}
-		v.schemaExtension = converted
+		v.schemaExtensions = converted
 	case ResourceTypeSchemasKey:
 		var object schemas
 		if err := object.Accept(value); err != nil {
@@ -175,10 +175,10 @@ func (v *ResourceType) HasSchema() bool {
 	return v.schema != nil
 }
 
-func (v *ResourceType) HasSchemaExtension() bool {
+func (v *ResourceType) HasSchemaExtensions() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return v.schemaExtension != nil
+	return v.schemaExtensions != nil
 }
 
 func (v *ResourceType) HasSchemas() bool {
@@ -232,10 +232,10 @@ func (v *ResourceType) Schema() string {
 	return ""
 }
 
-func (v *ResourceType) SchemaExtension() []*SchemaExtension {
+func (v *ResourceType) SchemaExtensions() []*SchemaExtension {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	if val := v.schemaExtension; val != nil {
+	if val := v.schemaExtensions; val != nil {
 		return val
 	}
 	return nil
@@ -266,8 +266,8 @@ func (v *ResourceType) Remove(key string) error {
 		v.name = nil
 	case ResourceTypeSchemaKey:
 		v.schema = nil
-	case ResourceTypeSchemaExtensionKey:
-		v.schemaExtension = nil
+	case ResourceTypeSchemaExtensionsKey:
+		v.schemaExtensions = nil
 	case ResourceTypeSchemasKey:
 		v.schemas = nil
 	default:
@@ -294,8 +294,8 @@ func (v *ResourceType) makePairs() []*fieldPair {
 	if val := v.schema; val != nil {
 		pairs = append(pairs, &fieldPair{Name: ResourceTypeSchemaKey, Value: *val})
 	}
-	if val := v.schemaExtension; len(val) > 0 {
-		pairs = append(pairs, &fieldPair{Name: ResourceTypeSchemaExtensionKey, Value: val})
+	if val := v.schemaExtensions; len(val) > 0 {
+		pairs = append(pairs, &fieldPair{Name: ResourceTypeSchemaExtensionsKey, Value: val})
 	}
 	if val := v.schemas; val != nil {
 		pairs = append(pairs, &fieldPair{Name: ResourceTypeSchemasKey, Value: val.Get()})
@@ -315,13 +315,13 @@ func (v *ResourceType) Clone() *ResourceType {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return &ResourceType{
-		description:     v.description,
-		endpoint:        v.endpoint,
-		id:              v.id,
-		name:            v.name,
-		schema:          v.schema,
-		schemaExtension: v.schemaExtension,
-		schemas:         v.schemas,
+		description:      v.description,
+		endpoint:         v.endpoint,
+		id:               v.id,
+		name:             v.name,
+		schema:           v.schema,
+		schemaExtensions: v.schemaExtensions,
+		schemas:          v.schemas,
 	}
 }
 
@@ -366,7 +366,7 @@ func (v *ResourceType) UnmarshalJSON(data []byte) error {
 	v.id = nil
 	v.name = nil
 	v.schema = nil
-	v.schemaExtension = nil
+	v.schemaExtensions = nil
 	v.schemas = nil
 
 	dec := json.NewDecoder(bytes.NewReader(data))
@@ -419,12 +419,12 @@ LOOP:
 					return fmt.Errorf(`failed to decode value for %q: %w`, ResourceTypeSchemaKey, err)
 				}
 				v.schema = &val
-			case ResourceTypeSchemaExtensionKey:
+			case ResourceTypeSchemaExtensionsKey:
 				var val []*SchemaExtension
 				if err := dec.Decode(&val); err != nil {
-					return fmt.Errorf(`failed to decode value for %q: %w`, ResourceTypeSchemaExtensionKey, err)
+					return fmt.Errorf(`failed to decode value for %q: %w`, ResourceTypeSchemaExtensionsKey, err)
 				}
-				v.schemaExtension = val
+				v.schemaExtensions = val
 			case ResourceTypeSchemasKey:
 				var val schemas
 				if err := dec.Decode(&val); err != nil {
@@ -532,7 +532,7 @@ func (b *ResourceTypeBuilder) Schema(in string) *ResourceTypeBuilder {
 	}
 	return b
 }
-func (b *ResourceTypeBuilder) SchemaExtension(in ...*SchemaExtension) *ResourceTypeBuilder {
+func (b *ResourceTypeBuilder) SchemaExtensions(in ...*SchemaExtension) *ResourceTypeBuilder {
 	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
@@ -540,7 +540,7 @@ func (b *ResourceTypeBuilder) SchemaExtension(in ...*SchemaExtension) *ResourceT
 		return b
 	}
 
-	if err := b.object.Set(ResourceTypeSchemaExtensionKey, in); err != nil {
+	if err := b.object.Set(ResourceTypeSchemaExtensionsKey, in); err != nil {
 		b.err = err
 	}
 	return b
@@ -562,6 +562,8 @@ func (b *ResourceTypeBuilder) Schemas(in ...string) *ResourceTypeBuilder {
 func (b *ResourceTypeBuilder) Build() (*ResourceType, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.initialize)
+
 	if err := b.err; err != nil {
 		return nil, err
 	}
@@ -573,9 +575,6 @@ func (b *ResourceTypeBuilder) Build() (*ResourceType, error) {
 	}
 	if b.object.schema == nil {
 		return nil, fmt.Errorf("required field 'Schema' not initialized")
-	}
-	if b.object.schemaExtension == nil {
-		return nil, fmt.Errorf("required field 'SchemaExtension' not initialized")
 	}
 	obj := b.object
 	b.once = sync.Once{}

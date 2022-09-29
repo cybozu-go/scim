@@ -1517,6 +1517,8 @@ func (b *UserBuilder) X509Certificates(in ...*X509Certificate) *UserBuilder {
 func (b *UserBuilder) Build() (*User, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.initialize)
+
 	if err := b.err; err != nil {
 		return nil, err
 	}

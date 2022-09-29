@@ -295,6 +295,8 @@ func (b *SchemaExtensionBuilder) Required(in bool) *SchemaExtensionBuilder {
 func (b *SchemaExtensionBuilder) Build() (*SchemaExtension, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.initialize)
+
 	if err := b.err; err != nil {
 		return nil, err
 	}

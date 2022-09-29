@@ -401,6 +401,8 @@ func (b *X509CertificateBuilder) Value(in string) *X509CertificateBuilder {
 func (b *X509CertificateBuilder) Build() (*X509Certificate, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.initialize)
+
 	if err := b.err; err != nil {
 		return nil, err
 	}

@@ -61,7 +61,7 @@ func (v *AuthenticationScheme) Get(key string, dst interface{}) error {
 		}
 	case AuthenticationSchemeTypeKey:
 		if val := v.typ; val != nil {
-			return blackmagic.AssignIfCompatible(dst, val)
+			return blackmagic.AssignIfCompatible(dst, *val)
 		}
 	default:
 		if v.extra != nil {
@@ -105,11 +105,11 @@ func (v *AuthenticationScheme) Set(key string, value interface{}) error {
 		}
 		v.specUri = &converted
 	case AuthenticationSchemeTypeKey:
-		converted, ok := value.(*AuthenticationSchemeType)
+		converted, ok := value.(AuthenticationSchemeType)
 		if !ok {
-			return fmt.Errorf(`expected value of type *AuthenticationSchemeType for field type, got %T`, value)
+			return fmt.Errorf(`expected value of type AuthenticationSchemeType for field type, got %T`, value)
 		}
-		v.typ = converted
+		v.typ = &converted
 	default:
 		if v.extra == nil {
 			v.extra = make(map[string]interface{})
@@ -185,13 +185,13 @@ func (v *AuthenticationScheme) SpecURI() string {
 	return ""
 }
 
-func (v *AuthenticationScheme) Type() *AuthenticationSchemeType {
+func (v *AuthenticationScheme) Type() AuthenticationSchemeType {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	if val := v.typ; val != nil {
-		return val
+		return *val
 	}
-	return nil
+	return InvalidAuthenticationScheme
 }
 
 // Remove removes the value associated with a key
@@ -232,7 +232,7 @@ func (v *AuthenticationScheme) makePairs() []*fieldPair {
 		pairs = append(pairs, &fieldPair{Name: AuthenticationSchemeSpecURIKey, Value: *val})
 	}
 	if val := v.typ; val != nil {
-		pairs = append(pairs, &fieldPair{Name: AuthenticationSchemeTypeKey, Value: val})
+		pairs = append(pairs, &fieldPair{Name: AuthenticationSchemeTypeKey, Value: *val})
 	}
 
 	for key, val := range v.extra {
@@ -344,11 +344,11 @@ LOOP:
 				}
 				v.specUri = &val
 			case AuthenticationSchemeTypeKey:
-				var val *AuthenticationSchemeType
+				var val AuthenticationSchemeType
 				if err := dec.Decode(&val); err != nil {
 					return fmt.Errorf(`failed to decode value for %q: %w`, AuthenticationSchemeTypeKey, err)
 				}
-				v.typ = val
+				v.typ = &val
 			default:
 				var val interface{}
 				if err := extraFieldsDecoder(tok, dec, &val); err != nil {
@@ -437,7 +437,7 @@ func (b *AuthenticationSchemeBuilder) SpecURI(in string) *AuthenticationSchemeBu
 	}
 	return b
 }
-func (b *AuthenticationSchemeBuilder) Type(in *AuthenticationSchemeType) *AuthenticationSchemeBuilder {
+func (b *AuthenticationSchemeBuilder) Type(in AuthenticationSchemeType) *AuthenticationSchemeBuilder {
 	b.once.Do(b.initialize)
 	b.mu.Lock()
 	defer b.mu.Unlock()
@@ -454,6 +454,8 @@ func (b *AuthenticationSchemeBuilder) Type(in *AuthenticationSchemeType) *Authen
 func (b *AuthenticationSchemeBuilder) Build() (*AuthenticationScheme, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.initialize)
+
 	if err := b.err; err != nil {
 		return nil, err
 	}

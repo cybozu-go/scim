@@ -297,6 +297,8 @@ func (b *PatchRequestBuilder) Schemas(in ...string) *PatchRequestBuilder {
 func (b *PatchRequestBuilder) Build() (*PatchRequest, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.initialize)
+
 	if err := b.err; err != nil {
 		return nil, err
 	}

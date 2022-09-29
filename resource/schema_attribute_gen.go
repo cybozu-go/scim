@@ -827,6 +827,8 @@ func (b *SchemaAttributeBuilder) Uniqueness(in Uniqueness) *SchemaAttributeBuild
 func (b *SchemaAttributeBuilder) Build() (*SchemaAttribute, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	b.once.Do(b.initialize)
+
 	if err := b.err; err != nil {
 		return nil, err
 	}

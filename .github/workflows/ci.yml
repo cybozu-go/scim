@@ -27,7 +27,6 @@ jobs:
       - name: Generate files
         run: |
           go generate
-          git diff
       - name: Test
         # TODO: make it smarter
         run: |

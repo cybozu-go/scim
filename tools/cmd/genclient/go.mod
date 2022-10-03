@@ -1,4 +1,4 @@
-module github.com/cybozu-go/scim/tools/cmd/genresources
+module github.com/cybozu-go/scim/tools/cmd/genclient
 
 go 1.17
 

@@ -1,0 +1,53 @@
+{{ define "ext/builder/initialize" }}
+{{- $schemaURI := .GetSchemaURI }}
+{{- if (ne $schemaURI "") }}{{- /* extensions are not allowed... TODO: come up with a better way to filter */}}
+{{- if (and (ne .Name "EnterpriseUser") (ne .Name "EnterpriseManager")) }}
+  b.object.schemas = &schemas{}
+  b.object.schemas.Add({{ .Name }}SchemaURI)
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{ define "ext/builder/footer" }}
+{{ $objectName := .Name -}}
+{{ if (and (ne $objectName "Meta") (ne $objectName "Schema")) }}
+{{ $builderName := .Name | printf "%sBuilder" -}}
+func (b *{{ $builderName }}) From(in *{{ $objectName }}) *{{ $builderName }} {
+  b.mu.Lock()
+  defer b.mu.Unlock()
+  b.once.Do(b.initialize)
+  if b.err != nil {
+    return b
+  }
+
+  var cloned {{ $objectName }}
+  if err := in.Clone(&cloned); err != nil {
+    b.err = err
+    return b
+  }
+
+  b.object = &cloned
+  return b
+}
+
+{{ if fieldByName $ "Schemas" }}
+func (b *{{ $builderName }}) Extension(uri string, value interface{}) *{{ $builderName }} {
+  b.mu.Lock()
+  defer b.mu.Unlock()
+  b.once.Do(b.initialize)
+  if b.err != nil {
+    return b
+  }
+  if b.object.schemas == nil {
+    b.object.schemas = &schemas{}
+    b.object.schemas.Add({{ $objectName }}SchemaURI)
+  }
+  b.object.schemas.Add(uri)
+  if err := b.object.Set(uri, value); err != nil {
+    b.err = err
+  }
+  return b
+}
+{{ end }}
+{{ end }}
+{{ end }}

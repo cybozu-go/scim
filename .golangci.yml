@@ -42,7 +42,9 @@ linters:
     - nestif
     - nlreturn
     - paralleltest
+    - revive
     - scopelint # deprecated
+    - stylecheck
     - tagliatelle
     - testpackage
     - thelper    # Tests are fine

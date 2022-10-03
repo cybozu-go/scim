@@ -1,4 +1,4 @@
-module github.com/cybozu-go/scim/tools/cmd/genresources
+module github.com/cybozu-go/scim/tools/cmd/genclient
 
 go 1.17
 
@@ -13,6 +13,7 @@ replace github.com/cybozu-go/scim => ../../..
 
 require (
 	github.com/fatih/color v1.13.0 // indirect
+	github.com/lestrrat-go/blackmagic v1.0.2-0.20220926062815-509018abad40 // indirect
 	github.com/lestrrat-go/option v1.0.0 // indirect
 	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect

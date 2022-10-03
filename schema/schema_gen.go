@@ -16,10 +16,10 @@ func init() {
 					Description("A Boolean value indicating the User's administrative status.").
 					Required(false).
 					CaseExact(false).
-					Required(false).
 					Mutability(resource.MutReadWrite).
 					Returned(resource.ReturnedDefault).
 					Uniqueness(resource.UniqNone).
+					GoAccessorName("Active").
 					MustBuild(),
 				resource.NewSchemaAttributeBuilder().
 					Name("addresses").
@@ -28,7 +28,6 @@ func init() {
 					Description("A physical mailing address for this User.  Canonical type values of 'work', 'home', and 'other'. This attribute is a complex type with the following sub-attributes.").
 					Required(false).
 					CaseExact(false).
-					Required(false).
 					Mutability(resource.MutReadWrite).
 					Returned(resource.ReturnedDefault).
 					Uniqueness(resource.UniqNone).
@@ -40,10 +39,10 @@ func init() {
 							Description("The full mailing address, formatted for display or use with a mailing label. This attribute MAY contain newlines.").
 							Required(false).
 							CaseExact(false).
-							Required(false).
 							Mutability(resource.MutReadWrite).
 							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
+							GoAccessorName("Formatted").
 							MustBuild(),
 						resource.NewSchemaAttributeBuilder().
 							Name("streetAddress").
@@ -52,10 +51,10 @@ func init() {
 							Description("The full street address component, which may include house number, street name, P.O. box, and multi-line extended street address information. This attribute MAY contain newlines.").
 							Required(false).
 							CaseExact(false).
-							Required(false).
 							Mutability(resource.MutReadWrite).
 							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
+							GoAccessorName("StreetAddress").
 							MustBuild(),
 						resource.NewSchemaAttributeBuilder().
 							Name("locality").
@@ -64,10 +63,10 @@ func init() {
 							Description("The city or locality component.").
 							Required(false).
 							CaseExact(false).
-							Required(false).
 							Mutability(resource.MutReadWrite).
 							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
+							GoAccessorName("Locality").
 							MustBuild(),
 						resource.NewSchemaAttributeBuilder().
 							Name("region").
@@ -76,10 +75,10 @@ func init() {
 							Description("The state or region component.").
 							Required(false).
 							CaseExact(false).
-							Required(false).
 							Mutability(resource.MutReadWrite).
 							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
+							GoAccessorName("Region").
 							MustBuild(),
 						resource.NewSchemaAttributeBuilder().
 							Name("postalCode").
@@ -88,10 +87,10 @@ func init() {
 							Description("The zip code or postal code component.").
 							Required(false).
 							CaseExact(false).
-							Required(false).
 							Mutability(resource.MutReadWrite).
 							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
+							GoAccessorName("PostalCode").
 							MustBuild(),
 						resource.NewSchemaAttributeBuilder().
 							Name("country").
@@ -100,10 +99,10 @@ func init() {
 							Description("The country name component.").
 							Required(false).
 							CaseExact(false).
-							Required(false).
 							Mutability(resource.MutReadWrite).
 							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
+							GoAccessorName("Country").
 							MustBuild(),
 						resource.NewSchemaAttributeBuilder().
 							Name("type").
@@ -112,12 +111,13 @@ func init() {
 							Description("A label indicating the attribute's function, e.g., 'work' or 'home'.").
 							Required(false).
 							CaseExact(false).
-							Required(false).
 							Mutability(resource.MutReadWrite).
 							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
+							GoAccessorName("Type").
 							MustBuild(),
 					).
+					GoAccessorName("Addresses").
 					MustBuild(),
 				resource.NewSchemaAttributeBuilder().
 					Name("displayName").
@@ -126,10 +126,10 @@ func init() {
 					Description("The name of the User, suitable for display to end-users. The name SHOULD be the full name of the User being described, if known.").
 					Required(false).
 					CaseExact(false).
-					Required(false).
 					Mutability(resource.MutReadWrite).
 					Returned(resource.ReturnedDefault).
 					Uniqueness(resource.UniqNone).
+					GoAccessorName("DisplayName").
 					MustBuild(),
 				resource.NewSchemaAttributeBuilder().
 					Name("emails").
@@ -138,7 +138,6 @@ func init() {
 					Description("Email addresses for the user. The value SHOULD be canonicalized by the service provider, e.g., 'bjensen@example.com' instead of 'bjensen@EXAMPLE.COM'. Canonical type values of 'work', 'home', and 'other'.").
 					Required(false).
 					CaseExact(false).
-					Required(false).
 					Mutability(resource.MutReadWrite).
 					Returned(resource.ReturnedDefault).
 					Uniqueness(resource.UniqNone).
@@ -150,10 +149,10 @@ func init() {
 							Description("Email addresses for the user. The value SHOULD be canonicalized by the service provider, e.g., 'bjensen@example.com' instead of 'bjensen@EXAMPLE.COM'.  Canonical type values of 'work', 'home', and 'other'.").
 							Required(false).
 							CaseExact(false).
-							Required(false).
 							Mutability(resource.MutReadWrite).
 							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
+							GoAccessorName("Value").
 							MustBuild(),
 						resource.NewSchemaAttributeBuilder().
 							Name("display").
@@ -162,10 +161,10 @@ func init() {
 							Description("A human-readable name, primarily used for display purposes. READ-ONLY.").
 							Required(false).
 							CaseExact(false).
-							Required(false).
 							Mutability(resource.MutReadWrite).
 							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
+							GoAccessorName("Display").
 							MustBuild(),
 						resource.NewSchemaAttributeBuilder().
 							Name("type").
@@ -174,10 +173,10 @@ func init() {
 							Description("A label indicating the attribute's function, e.g., 'work' or 'home'.").
 							Required(false).
 							CaseExact(false).
-							Required(false).
 							Mutability(resource.MutReadWrite).
 							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
+							GoAccessorName("Type").
 							MustBuild(),
 						resource.NewSchemaAttributeBuilder().
 							Name("primary").
@@ -186,12 +185,13 @@ func init() {
 							Description("A Boolean value indicating the 'primary' or preferred attribute value for this attribute, e.g., the preferred mailing address or primary email address. The primary attribute value 'true' MUST appear no more than once.").
 							Required(false).
 							CaseExact(false).
-							Required(false).
 							Mutability(resource.MutReadWrite).
 							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
+							GoAccessorName("Primary").
 							MustBuild(),
 					).
+					GoAccessorName("Emails").
 					MustBuild(),
 				resource.NewSchemaAttributeBuilder().
 					Name("entitlements").
@@ -200,7 +200,6 @@ func init() {
 					Description("A list of entitlements for the User that represent a thing the User has.").
 					Required(false).
 					CaseExact(false).
-					Required(false).
 					Mutability(resource.MutReadWrite).
 					Returned(resource.ReturnedDefault).
 					Uniqueness(resource.UniqNone).
@@ -212,10 +211,10 @@ func init() {
 							Description("The value of an entitlement.").
 							Required(false).
 							CaseExact(false).
-							Required(false).
 							Mutability(resource.MutReadWrite).
 							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
+							GoAccessorName("Value").
 							MustBuild(),
 						resource.NewSchemaAttributeBuilder().
 							Name("display").
@@ -224,10 +223,10 @@ func init() {
 							Description("A human-readable name, primarily used for display purposes. READ-ONLY.").
 							Required(false).
 							CaseExact(false).
-							Required(false).
 							Mutability(resource.MutReadWrite).
 							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
+							GoAccessorName("Display").
 							MustBuild(),
 						resource.NewSchemaAttributeBuilder().
 							Name("type").
@@ -236,10 +235,10 @@ func init() {
 							Description("A label indicating the attribute's function.").
 							Required(false).
 							CaseExact(false).
-							Required(false).
 							Mutability(resource.MutReadWrite).
 							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
+							GoAccessorName("Type").
 							MustBuild(),
 						resource.NewSchemaAttributeBuilder().
 							Name("primary").
@@ -248,12 +247,13 @@ func init() {
 							Description("A Boolean value indicating the 'primary' or preferred attribute value for this attribute. The primary attribute value 'true' MUST appear no more than once.").
 							Required(false).
 							CaseExact(false).
-							Required(false).
 							Mutability(resource.MutReadWrite).
 							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
+							GoAccessorName("Primary").
 							MustBuild(),
 					).
+					GoAccessorName("Entitlements").
 					MustBuild(),
 				resource.NewSchemaAttributeBuilder().
 					Name("externalId").
@@ -262,10 +262,10 @@ func init() {
 					Description("A String that is an identifier for the resource as defined by the provisioning client. The \"externalId\" may simplify identification of a resource between the provisioning client and the service provider by allowing the client to use a filter to locate the resource with an identifier from the provisioning domain, obviating the need to store a local mapping between the provisioning domain's identifier of the resource and the identifier used by the service provider. Each resource MAY include a non-empty \"externalId\" value. The value of the \"externalId\" attribute is always issued by the provisioning client and MUST NOT be specified by the service provider. The service provider MUST always interpret the externalId as scoped to the provisioning domain. While the server does not enforce uniqueness, it is assumed that the value's uniqueness is controlled by the client setting the value").
 					Required(false).
 					CaseExact(true).
-					Required(false).
 					Mutability(resource.MutReadWrite).
 					Returned(resource.ReturnedDefault).
 					Uniqueness(resource.UniqNone).
+					GoAccessorName("ExternalID").
 					MustBuild(),
 				resource.NewSchemaAttributeBuilder().
 					Name("groups").
@@ -274,7 +274,6 @@ func init() {
 					Description("A list of groups to which the user belongs, either through direct membership, through nested groups, or dynamically calculated.").
 					Required(false).
 					CaseExact(false).
-					Required(false).
 					Mutability(resource.MutReadOnly).
 					Returned(resource.ReturnedDefault).
 					Uniqueness(resource.UniqNone).
@@ -286,10 +285,10 @@ func init() {
 							Description("The identifier of the User's group.").
 							Required(false).
 							CaseExact(false).
-							Required(false).
 							Mutability(resource.MutReadOnly).
 							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
+							GoAccessorName("Value").
 							MustBuild(),
 						resource.NewSchemaAttributeBuilder().
 							Name("$ref").
@@ -298,10 +297,10 @@ func init() {
 							Description("The URI of the corresponding 'Group' resource to which the user belongs.").
 							Required(false).
 							CaseExact(false).
-							Required(false).
 							Mutability(resource.MutReadOnly).
 							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
+							GoAccessorName("Reference").
 							MustBuild(),
 						resource.NewSchemaAttributeBuilder().
 							Name("display").
@@ -310,10 +309,10 @@ func init() {
 							Description("A human-readable name, primarily used for display purposes. READ-ONLY.").
 							Required(false).
 							CaseExact(false).
-							Required(false).
 							Mutability(resource.MutReadOnly).
 							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
+							GoAccessorName("Display").
 							MustBuild(),
 						resource.NewSchemaAttributeBuilder().
 							Name("type").
@@ -322,12 +321,13 @@ func init() {
 							Description("A label indicating the attribute's function, e.g., 'direct' or 'indirect'.").
 							Required(false).
 							CaseExact(false).
-							Required(false).
 							Mutability(resource.MutReadOnly).
 							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
+							GoAccessorName("Type").
 							MustBuild(),
 					).
+					GoAccessorName("Groups").
 					MustBuild(),
 				resource.NewSchemaAttributeBuilder().
 					Name("id").
@@ -336,10 +336,10 @@ func init() {
 					Description("A unique identifier for a SCIM resource as defined by the service provider. Each representation of the resource MUST include a non-empty \"id\" value.  This identifier MUST be unique across the SCIM service provider's entire set of resources. It MUST be a stable, non-reassignable identifier that does not change when the same resource is returned in subsequent requests.  The value of the \"id\" attribute is always issued by the service provider and MUST NOT be specified by the client.  The string \"bulkId\" is a reserved keyword and MUST NOT be used within any unique identifier value.").
 					Required(true).
 					CaseExact(false).
-					Required(true).
 					Mutability(resource.MutReadOnly).
 					Returned(resource.ReturnedAlways).
 					Uniqueness(resource.UniqGlobal).
+					GoAccessorName("ID").
 					MustBuild(),
 				resource.NewSchemaAttributeBuilder().
 					Name("ims").
@@ -348,7 +348,6 @@ func init() {
 					Description("Instant messaging addresses for the User.").
 					Required(false).
 					CaseExact(false).
-					Required(false).
 					Mutability(resource.MutReadWrite).
 					Returned(resource.ReturnedDefault).
 					Uniqueness(resource.UniqNone).
@@ -360,10 +359,10 @@ func init() {
 							Description("Instant messaging address for the User.").
 							Required(false).
 							CaseExact(false).
-							Required(false).
 							Mutability(resource.MutReadWrite).
 							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
+							GoAccessorName("Value").
 							MustBuild(),
 						resource.NewSchemaAttributeBuilder().
 							Name("display").
@@ -372,10 +371,10 @@ func init() {
 							Description("A human-readable name, primarily used for display purposes. READ-ONLY.").
 							Required(false).
 							CaseExact(false).
-							Required(false).
 							Mutability(resource.MutReadWrite).
 							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
+							GoAccessorName("Display").
 							MustBuild(),
 						resource.NewSchemaAttributeBuilder().
 							Name("type").
@@ -384,10 +383,10 @@ func init() {
 							Description("A label indicating the attribute's function, e.g., 'aim', 'gtalk' 'xmpp'.").
 							Required(false).
 							CaseExact(false).
-							Required(false).
 							Mutability(resource.MutReadWrite).
 							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
+							GoAccessorName("Type").
 							MustBuild(),
 						resource.NewSchemaAttributeBuilder().
 							Name("primary").
@@ -396,12 +395,13 @@ func init() {
 							Description("A Boolean value indicating the 'primary' or preferred attribute value for this attribute, e.g., the preferred messenger or primary messenger. The primary attribute value 'true' MUST appear no more than once.").
 							Required(false).
 							CaseExact(false).
-							Required(false).
 							Mutability(resource.MutReadWrite).
 							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
+							GoAccessorName("Primary").
 							MustBuild(),
 					).
+					GoAccessorName("IMS").
 					MustBuild(),
 				resource.NewSchemaAttributeBuilder().
 					Name("locale").
@@ -410,10 +410,10 @@ func init() {
 					Description("Used to indicate the User's default location for purposes of localizing items such as currency, date time format, or numerical representations.").
 					Required(false).
 					CaseExact(false).
-					Required(false).
 					Mutability(resource.MutReadWrite).
 					Returned(resource.ReturnedDefault).
 					Uniqueness(resource.UniqNone).
+					GoAccessorName("Locale").
 					MustBuild(),
 				resource.NewSchemaAttributeBuilder().
 					Name("meta").
@@ -422,7 +422,6 @@ func init() {
 					Description("A complex attribute containing resource metadata. All \"meta\" sub-attributes are assigned by the service provider (have a \"mutability\" of \"readOnly\"), and all of these sub-attributes have a \"returned\" characteristic of \"default\".  This attribute SHALL be ignored when provided by clients.").
 					Required(false).
 					CaseExact(false).
-					Required(false).
 					Mutability(resource.MutReadOnly).
 					Returned(resource.ReturnedDefault).
 					Uniqueness(resource.UniqNone).
@@ -434,10 +433,10 @@ func init() {
 							Description("The name of the resource type of the resource").
 							Required(true).
 							CaseExact(true).
-							Required(true).
 							Mutability(resource.MutReadOnly).
 							Returned(resource.ReturnedAlways).
 							Uniqueness(resource.UniqNone).
+							GoAccessorName("ResourceType").
 							MustBuild(),
 						resource.NewSchemaAttributeBuilder().
 							Name("created").
@@ -446,12 +445,13 @@ func init() {
 							Description("The \"DateTime\" that the resource was added to the service provider").
 							Required(false).
 							CaseExact(false).
-							Required(false).
 							Mutability(resource.MutReadOnly).
 							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
+							GoAccessorName("Created").
 							MustBuild(),
 					).
+					GoAccessorName("Meta").
 					MustBuild(),
 				resource.NewSchemaAttributeBuilder().
 					Name("name").
@@ -460,7 +460,6 @@ func init() {
 					Description("The components of the user's real name. Providers MAY return just\nthe full name as a single string in the formatted sub-attribute, or they MAY\nreturn just the individual component attributes using the other sub-attributes\nor they MAY return both. If both variants are returned, they SHOULD be describing\nthe same name, with the formatted name indicating how the component attributes\nshould be combined.\n").
 					Required(false).
 					CaseExact(false).
-					Required(false).
 					Mutability(resource.MutReadWrite).
 					Returned(resource.ReturnedDefault).
 					Uniqueness(resource.UniqNone).
@@ -472,10 +471,10 @@ func init() {
 							Description("The full name, including all middle names, titles, and suffixes as appropriate, formatted for display (e.g., 'Ms. Barbara J Jensen, III').").
 							Required(false).
 							CaseExact(false).
-							Required(false).
 							Mutability(resource.MutReadWrite).
 							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
+							GoAccessorName("Formatted").
 							MustBuild(),
 						resource.NewSchemaAttributeBuilder().
 							Name("familyName").
@@ -484,10 +483,10 @@ func init() {
 							Description("The family name of the User, or last name in most Western languages (e.g., 'Jensen' given the full name 'Ms. Barbara J Jensen, III').").
 							Required(false).
 							CaseExact(false).
-							Required(false).
 							Mutability(resource.MutReadWrite).
 							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
+							GoAccessorName("FamilyName").
 							MustBuild(),
 						resource.NewSchemaAttributeBuilder().
 							Name("givenName").
@@ -496,10 +495,10 @@ func init() {
 							Description("The given name of the User, or first name in most Western languages (e.g., 'Barbara' given the full name 'Ms. Barbara J Jensen, III').").
 							Required(false).
 							CaseExact(false).
-							Required(false).
 							Mutability(resource.MutReadWrite).
 							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
+							GoAccessorName("GivenName").
 							MustBuild(),
 						resource.NewSchemaAttributeBuilder().
 							Name("middleName").
@@ -508,10 +507,10 @@ func init() {
 							Description("The middle name(s) of the User (e.g., 'Jane' given the full name 'Ms. Barbara J Jensen, III').").
 							Required(false).
 							CaseExact(false).
-							Required(false).
 							Mutability(resource.MutReadWrite).
 							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
+							GoAccessorName("MiddleName").
 							MustBuild(),
 						resource.NewSchemaAttributeBuilder().
 							Name("honorificPrefix").
@@ -520,10 +519,10 @@ func init() {
 							Description("The honorific prefix(es) of the User, or title in most Western languages (e.g., 'Ms.' given the full name 'Ms. Barbara J Jensen, III').").
 							Required(false).
 							CaseExact(false).
-							Required(false).
 							Mutability(resource.MutReadWrite).
 							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
+							GoAccessorName("HonorificPrefix").
 							MustBuild(),
 						resource.NewSchemaAttributeBuilder().
 							Name("honorificSuffix").
@@ -532,12 +531,13 @@ func init() {
 							Description("The honorific suffix(es) of the User, or suffix in most Western languages (e.g., 'III' given the full name 'Ms. Barbara J Jensen, III').").
 							Required(false).
 							CaseExact(false).
-							Required(false).
 							Mutability(resource.MutReadWrite).
 							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
+							GoAccessorName("HonorificSuffix").
 							MustBuild(),
 					).
+					GoAccessorName("Name").
 					MustBuild(),
 				resource.NewSchemaAttributeBuilder().
 					Name("nickName").
@@ -546,10 +546,10 @@ func init() {
 					Description("The casual way to address the user in real life, e.g., 'Bob' or 'Bobby' instead of 'Robert'. This attribute SHOULD NOT be used to represent a User's username (e.g., 'bjensen' or 'mpepperidge').").
 					Required(false).
 					CaseExact(false).
-					Required(false).
 					Mutability(resource.MutReadWrite).
 					Returned(resource.ReturnedDefault).
 					Uniqueness(resource.UniqNone).
+					GoAccessorName("NickName").
 					MustBuild(),
 				resource.NewSchemaAttributeBuilder().
 					Name("password").
@@ -558,10 +558,10 @@ func init() {
 					Description("The User's cleartext password. This attribute is intended to be used as a means to specify an initial password when creating a new User or to reset an existing User's password.").
 					Required(false).
 					CaseExact(false).
-					Required(false).
 					Mutability(resource.MutWriteOnly).
 					Returned(resource.ReturnedNever).
 					Uniqueness(resource.UniqNone).
+					GoAccessorName("Password").
 					MustBuild(),
 				resource.NewSchemaAttributeBuilder().
 					Name("phoneNumbers").
@@ -570,7 +570,6 @@ func init() {
 					Description("Phone numbers for the User. The value SHOULD be canonicalized by the service provider according to the format specified in RFC 3966, e.g., 'tel:+1-201-555-0123'.  Canonical type values of 'work', 'home', 'mobile', 'fax', 'pager', and 'other'.").
 					Required(false).
 					CaseExact(false).
-					Required(false).
 					Mutability(resource.MutReadWrite).
 					Returned(resource.ReturnedDefault).
 					Uniqueness(resource.UniqNone).
@@ -582,10 +581,10 @@ func init() {
 							Description("Phone number of the User.").
 							Required(false).
 							CaseExact(false).
-							Required(false).
 							Mutability(resource.MutReadWrite).
 							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
+							GoAccessorName("Value").
 							MustBuild(),
 						resource.NewSchemaAttributeBuilder().
 							Name("display").
@@ -594,10 +593,10 @@ func init() {
 							Description("A human-readable name, primarily used for display purposes. READ-ONLY.").
 							Required(false).
 							CaseExact(false).
-							Required(false).
 							Mutability(resource.MutReadWrite).
 							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
+							GoAccessorName("Display").
 							MustBuild(),
 						resource.NewSchemaAttributeBuilder().
 							Name("type").
@@ -606,10 +605,10 @@ func init() {
 							Description("A label indicating the attribute's function, e.g., 'work', 'home' 'mobile'.").
 							Required(false).
 							CaseExact(false).
-							Required(false).
 							Mutability(resource.MutReadWrite).
 							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
+							GoAccessorName("Type").
 							MustBuild(),
 						resource.NewSchemaAttributeBuilder().
 							Name("primary").
@@ -618,12 +617,13 @@ func init() {
 							Description("A Boolean value indicating the 'primary' or preferred attribute value for this attribute, e.g., the preferred phone number or primary phone number. The primary attribute value 'true' MUST appear no more than once.").
 							Required(false).
 							CaseExact(false).
-							Required(false).
 							Mutability(resource.MutReadWrite).
 							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
+							GoAccessorName("Primary").
 							MustBuild(),
 					).
+					GoAccessorName("PhoneNumbers").
 					MustBuild(),
 				resource.NewSchemaAttributeBuilder().
 					Name("photos").
@@ -632,7 +632,6 @@ func init() {
 					Description("URLs of photos of the User.").
 					Required(false).
 					CaseExact(false).
-					Required(false).
 					Mutability(resource.MutReadWrite).
 					Returned(resource.ReturnedDefault).
 					Uniqueness(resource.UniqNone).
@@ -644,10 +643,10 @@ func init() {
 							Description("URL of a photo of the User.").
 							Required(false).
 							CaseExact(false).
-							Required(false).
 							Mutability(resource.MutReadWrite).
 							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
+							GoAccessorName("Value").
 							MustBuild(),
 						resource.NewSchemaAttributeBuilder().
 							Name("display").
@@ -656,10 +655,10 @@ func init() {
 							Description("A human-readable name, primarily used for display purposes. READ-ONLY.").
 							Required(false).
 							CaseExact(false).
-							Required(false).
 							Mutability(resource.MutReadWrite).
 							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
+							GoAccessorName("Display").
 							MustBuild(),
 						resource.NewSchemaAttributeBuilder().
 							Name("type").
@@ -668,10 +667,10 @@ func init() {
 							Description("A label indicating the attribute's function, i.e., 'photo' or 'thumbnail'.").
 							Required(false).
 							CaseExact(false).
-							Required(false).
 							Mutability(resource.MutReadWrite).
 							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
+							GoAccessorName("Type").
 							MustBuild(),
 						resource.NewSchemaAttributeBuilder().
 							Name("primary").
@@ -680,12 +679,13 @@ func init() {
 							Description("A Boolean value indicating the 'primary' or preferred attribute value for this attribute, e.g., the preferred photo or thumbnail. The primary attribute value 'true' MUST appear no more than once.").
 							Required(false).
 							CaseExact(false).
-							Required(false).
 							Mutability(resource.MutReadWrite).
 							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
+							GoAccessorName("Primary").
 							MustBuild(),
 					).
+					GoAccessorName("Photos").
 					MustBuild(),
 				resource.NewSchemaAttributeBuilder().
 					Name("preferredLanguage").
@@ -694,10 +694,10 @@ func init() {
 					Description("Indicates the User's preferred written or spoken language. Generally used for selecting a localized user interface; e.g., 'en_US' specifies the language English and country US.").
 					Required(false).
 					CaseExact(false).
-					Required(false).
 					Mutability(resource.MutReadWrite).
 					Returned(resource.ReturnedDefault).
 					Uniqueness(resource.UniqNone).
+					GoAccessorName("PreferredLanguage").
 					MustBuild(),
 				resource.NewSchemaAttributeBuilder().
 					Name("profileUrl").
@@ -706,10 +706,10 @@ func init() {
 					Description("A fully qualified URL pointing to a page representing the User's online profile.").
 					Required(false).
 					CaseExact(false).
-					Required(false).
 					Mutability(resource.MutReadWrite).
 					Returned(resource.ReturnedDefault).
 					Uniqueness(resource.UniqNone).
+					GoAccessorName("ProfileURL").
 					MustBuild(),
 				resource.NewSchemaAttributeBuilder().
 					Name("roles").
@@ -718,7 +718,6 @@ func init() {
 					Description("A list of roles for the User that collectively represent who the User is, e.g., 'Student', 'Faculty'.").
 					Required(false).
 					CaseExact(false).
-					Required(false).
 					Mutability(resource.MutReadWrite).
 					Returned(resource.ReturnedDefault).
 					Uniqueness(resource.UniqNone).
@@ -730,10 +729,10 @@ func init() {
 							Description("The value of a role.").
 							Required(false).
 							CaseExact(false).
-							Required(false).
 							Mutability(resource.MutReadWrite).
 							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
+							GoAccessorName("Value").
 							MustBuild(),
 						resource.NewSchemaAttributeBuilder().
 							Name("display").
@@ -742,10 +741,10 @@ func init() {
 							Description("A human-readable name, primarily used for display purposes. READ-ONLY.").
 							Required(false).
 							CaseExact(false).
-							Required(false).
 							Mutability(resource.MutReadWrite).
 							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
+							GoAccessorName("Display").
 							MustBuild(),
 						resource.NewSchemaAttributeBuilder().
 							Name("type").
@@ -754,10 +753,10 @@ func init() {
 							Description("A label indicating the attribute's function.").
 							Required(false).
 							CaseExact(false).
-							Required(false).
 							Mutability(resource.MutReadWrite).
 							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
+							GoAccessorName("Type").
 							MustBuild(),
 						resource.NewSchemaAttributeBuilder().
 							Name("primary").
@@ -766,12 +765,13 @@ func init() {
 							Description("A Boolean value indicating the 'primary' or preferred attribute value for this attribute. The primary attribute value 'true' MUST appear no more than once.").
 							Required(false).
 							CaseExact(false).
-							Required(false).
 							Mutability(resource.MutReadWrite).
 							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
+							GoAccessorName("Primary").
 							MustBuild(),
 					).
+					GoAccessorName("Roles").
 					MustBuild(),
 				resource.NewSchemaAttributeBuilder().
 					Name("timezone").
@@ -780,10 +780,10 @@ func init() {
 					Description("The User's time zone in the 'Olson' time zone database format, e.g. 'America/Los_Angeles'.").
 					Required(false).
 					CaseExact(false).
-					Required(false).
 					Mutability(resource.MutReadWrite).
 					Returned(resource.ReturnedDefault).
 					Uniqueness(resource.UniqNone).
+					GoAccessorName("Timezone").
 					MustBuild(),
 				resource.NewSchemaAttributeBuilder().
 					Name("title").
@@ -792,10 +792,10 @@ func init() {
 					Description("The user's title, such as \"Vice President.\"").
 					Required(false).
 					CaseExact(false).
-					Required(false).
 					Mutability(resource.MutReadWrite).
 					Returned(resource.ReturnedDefault).
 					Uniqueness(resource.UniqNone).
+					GoAccessorName("Title").
 					MustBuild(),
 				resource.NewSchemaAttributeBuilder().
 					Name("userName").
@@ -804,10 +804,10 @@ func init() {
 					Description("Unique identifier for the User, typically used by the user to directly\nauthenticate to the service provider. Each User MUST include a non-empty userName\nvalue. This identifier MUST be unique across the service provider's entire set\nof Users. REQUIRED.\n").
 					Required(true).
 					CaseExact(false).
-					Required(true).
 					Mutability(resource.MutReadWrite).
 					Returned(resource.ReturnedDefault).
 					Uniqueness(resource.UniqServer).
+					GoAccessorName("UserName").
 					MustBuild(),
 				resource.NewSchemaAttributeBuilder().
 					Name("userType").
@@ -816,10 +816,10 @@ func init() {
 					Description("Used to identify the relationship between the organization and the user. Typical values used might be 'Contractor', 'Employee', 'Intern', 'Temp' 'External', and 'Unknown', but any value may be used.").
 					Required(false).
 					CaseExact(false).
-					Required(false).
 					Mutability(resource.MutReadWrite).
 					Returned(resource.ReturnedDefault).
 					Uniqueness(resource.UniqNone).
+					GoAccessorName("UserType").
 					MustBuild(),
 				resource.NewSchemaAttributeBuilder().
 					Name("x509Certificates").
@@ -828,7 +828,6 @@ func init() {
 					Description("A list of certificates issued to the User.").
 					Required(false).
 					CaseExact(false).
-					Required(false).
 					Mutability(resource.MutReadWrite).
 					Returned(resource.ReturnedDefault).
 					Uniqueness(resource.UniqNone).
@@ -840,10 +839,10 @@ func init() {
 							Description("The value of an X.509 certificate.").
 							Required(false).
 							CaseExact(false).
-							Required(false).
 							Mutability(resource.MutReadWrite).
 							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
+							GoAccessorName("Value").
 							MustBuild(),
 						resource.NewSchemaAttributeBuilder().
 							Name("display").
@@ -852,10 +851,10 @@ func init() {
 							Description("A human-readable name, primarily used for display purposes. READ-ONLY.").
 							Required(false).
 							CaseExact(false).
-							Required(false).
 							Mutability(resource.MutReadWrite).
 							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
+							GoAccessorName("Display").
 							MustBuild(),
 						resource.NewSchemaAttributeBuilder().
 							Name("type").
@@ -864,10 +863,10 @@ func init() {
 							Description("A label indicating the attribute's function.").
 							Required(false).
 							CaseExact(false).
-							Required(false).
 							Mutability(resource.MutReadWrite).
 							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
+							GoAccessorName("Type").
 							MustBuild(),
 						resource.NewSchemaAttributeBuilder().
 							Name("primary").
@@ -876,12 +875,13 @@ func init() {
 							Description("A Boolean value indicating the 'primary' or preferred attribute value for this attribute. The primary attribute value 'true' MUST appear no more than once.").
 							Required(false).
 							CaseExact(false).
-							Required(false).
 							Mutability(resource.MutReadWrite).
 							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
+							GoAccessorName("Primary").
 							MustBuild(),
 					).
+					GoAccessorName("X509Certificates").
 					MustBuild(),
 			).
 			Name("User").
@@ -903,10 +903,10 @@ func init() {
 					Description("A human-readable name for the Group.  REQUIRED.").
 					Required(false).
 					CaseExact(false).
-					Required(false).
 					Mutability(resource.MutReadWrite).
 					Returned(resource.ReturnedDefault).
 					Uniqueness(resource.UniqNone).
+					GoAccessorName("DisplayName").
 					MustBuild(),
 				resource.NewSchemaAttributeBuilder().
 					Name("externalId").
@@ -915,10 +915,10 @@ func init() {
 					Description("A String that is an identifier for the resource as defined by the provisioning client. The \"externalId\" may simplify identification of a resource between the provisioning client and the service provider by allowing the client to use a filter to locate the resource with an identifier from the provisioning domain, obviating the need to store a local mapping between the provisioning domain's identifier of the resource and the identifier used by the service provider. Each resource MAY include a non-empty \"externalId\" value. The value of the \"externalId\" attribute is always issued by the provisioning client and MUST NOT be specified by the service provider. The service provider MUST always interpret the externalId as scoped to the provisioning domain. While the server does not enforce uniqueness, it is assumed that the value's uniqueness is controlled by the client setting the value").
 					Required(false).
 					CaseExact(true).
-					Required(false).
 					Mutability(resource.MutReadWrite).
 					Returned(resource.ReturnedDefault).
 					Uniqueness(resource.UniqNone).
+					GoAccessorName("ExternalID").
 					MustBuild(),
 				resource.NewSchemaAttributeBuilder().
 					Name("id").
@@ -927,10 +927,10 @@ func init() {
 					Description("A unique identifier for a SCIM resource as defined by the service provider. Each representation of the resource MUST include a non-empty \"id\" value.  This identifier MUST be unique across the SCIM service provider's entire set of resources. It MUST be a stable, non-reassignable identifier that does not change when the same resource is returned in subsequent requests.  The value of the \"id\" attribute is always issued by the service provider and MUST NOT be specified by the client.  The string \"bulkId\" is a reserved keyword and MUST NOT be used within any unique identifier value.").
 					Required(true).
 					CaseExact(false).
-					Required(true).
 					Mutability(resource.MutReadOnly).
 					Returned(resource.ReturnedAlways).
 					Uniqueness(resource.UniqGlobal).
+					GoAccessorName("ID").
 					MustBuild(),
 				resource.NewSchemaAttributeBuilder().
 					Name("members").
@@ -939,7 +939,6 @@ func init() {
 					Description("A list of members of the Group.").
 					Required(false).
 					CaseExact(false).
-					Required(false).
 					Mutability(resource.MutReadWrite).
 					Returned(resource.ReturnedDefault).
 					Uniqueness(resource.UniqNone).
@@ -951,10 +950,10 @@ func init() {
 							Description("Identifier of the member of this Group.").
 							Required(false).
 							CaseExact(false).
-							Required(false).
 							Mutability(resource.MutImmutable).
 							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
+							GoAccessorName("Value").
 							MustBuild(),
 						resource.NewSchemaAttributeBuilder().
 							Name("$ref").
@@ -963,10 +962,10 @@ func init() {
 							Description("The URI corresponding to a SCIM resource that is a member of this Group.").
 							Required(false).
 							CaseExact(false).
-							Required(false).
 							Mutability(resource.MutImmutable).
 							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
+							GoAccessorName("Reference").
 							MustBuild(),
 						resource.NewSchemaAttributeBuilder().
 							Name("type").
@@ -975,12 +974,13 @@ func init() {
 							Description("A label indicating the type of resource, e.g., 'User' or 'Group'.").
 							Required(false).
 							CaseExact(false).
-							Required(false).
 							Mutability(resource.MutImmutable).
 							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
+							GoAccessorName("Type").
 							MustBuild(),
 					).
+					GoAccessorName("Members").
 					MustBuild(),
 				resource.NewSchemaAttributeBuilder().
 					Name("meta").
@@ -989,7 +989,6 @@ func init() {
 					Description("A complex attribute containing resource metadata. All \"meta\" sub-attributes are assigned by the service provider (have a \"mutability\" of \"readOnly\"), and all of these sub-attributes have a \"returned\" characteristic of \"default\".  This attribute SHALL be ignored when provided by clients.").
 					Required(false).
 					CaseExact(false).
-					Required(false).
 					Mutability(resource.MutReadOnly).
 					Returned(resource.ReturnedDefault).
 					Uniqueness(resource.UniqNone).
@@ -1001,10 +1000,10 @@ func init() {
 							Description("The name of the resource type of the resource").
 							Required(true).
 							CaseExact(true).
-							Required(true).
 							Mutability(resource.MutReadOnly).
 							Returned(resource.ReturnedAlways).
 							Uniqueness(resource.UniqNone).
+							GoAccessorName("ResourceType").
 							MustBuild(),
 						resource.NewSchemaAttributeBuilder().
 							Name("created").
@@ -1013,12 +1012,13 @@ func init() {
 							Description("The \"DateTime\" that the resource was added to the service provider").
 							Required(false).
 							CaseExact(false).
-							Required(false).
 							Mutability(resource.MutReadOnly).
 							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
+							GoAccessorName("Created").
 							MustBuild(),
 					).
+					GoAccessorName("Meta").
 					MustBuild(),
 			).
 			Name("Group").
@@ -1040,10 +1040,10 @@ func init() {
 					Description("Identifies the name of a cost center.").
 					Required(false).
 					CaseExact(false).
-					Required(false).
 					Mutability(resource.MutReadWrite).
 					Returned(resource.ReturnedDefault).
 					Uniqueness(resource.UniqNone).
+					GoAccessorName("CostCenter").
 					MustBuild(),
 				resource.NewSchemaAttributeBuilder().
 					Name("department").
@@ -1052,10 +1052,10 @@ func init() {
 					Description("Identifies the name of a department.").
 					Required(false).
 					CaseExact(false).
-					Required(false).
 					Mutability(resource.MutReadWrite).
 					Returned(resource.ReturnedDefault).
 					Uniqueness(resource.UniqNone).
+					GoAccessorName("Department").
 					MustBuild(),
 				resource.NewSchemaAttributeBuilder().
 					Name("division").
@@ -1064,10 +1064,10 @@ func init() {
 					Description("Identifies the name of a division.").
 					Required(false).
 					CaseExact(false).
-					Required(false).
 					Mutability(resource.MutReadWrite).
 					Returned(resource.ReturnedDefault).
 					Uniqueness(resource.UniqNone).
+					GoAccessorName("Division").
 					MustBuild(),
 				resource.NewSchemaAttributeBuilder().
 					Name("employeeNumber").
@@ -1076,10 +1076,10 @@ func init() {
 					Description("Numeric or alphanumeric identifier assigned to a person, typically based on order of hire or association with an organization.").
 					Required(false).
 					CaseExact(false).
-					Required(false).
 					Mutability(resource.MutReadWrite).
 					Returned(resource.ReturnedDefault).
 					Uniqueness(resource.UniqNone).
+					GoAccessorName("EmployeeNumber").
 					MustBuild(),
 				resource.NewSchemaAttributeBuilder().
 					Name("externalId").
@@ -1088,10 +1088,10 @@ func init() {
 					Description("A String that is an identifier for the resource as defined by the provisioning client. The \"externalId\" may simplify identification of a resource between the provisioning client and the service provider by allowing the client to use a filter to locate the resource with an identifier from the provisioning domain, obviating the need to store a local mapping between the provisioning domain's identifier of the resource and the identifier used by the service provider. Each resource MAY include a non-empty \"externalId\" value. The value of the \"externalId\" attribute is always issued by the provisioning client and MUST NOT be specified by the service provider. The service provider MUST always interpret the externalId as scoped to the provisioning domain. While the server does not enforce uniqueness, it is assumed that the value's uniqueness is controlled by the client setting the value").
 					Required(false).
 					CaseExact(true).
-					Required(false).
 					Mutability(resource.MutReadWrite).
 					Returned(resource.ReturnedDefault).
 					Uniqueness(resource.UniqNone).
+					GoAccessorName("ExternalID").
 					MustBuild(),
 				resource.NewSchemaAttributeBuilder().
 					Name("id").
@@ -1100,10 +1100,10 @@ func init() {
 					Description("A unique identifier for a SCIM resource as defined by the service provider. Each representation of the resource MUST include a non-empty \"id\" value.  This identifier MUST be unique across the SCIM service provider's entire set of resources. It MUST be a stable, non-reassignable identifier that does not change when the same resource is returned in subsequent requests.  The value of the \"id\" attribute is always issued by the service provider and MUST NOT be specified by the client.  The string \"bulkId\" is a reserved keyword and MUST NOT be used within any unique identifier value.").
 					Required(true).
 					CaseExact(false).
-					Required(true).
 					Mutability(resource.MutReadOnly).
 					Returned(resource.ReturnedAlways).
 					Uniqueness(resource.UniqGlobal).
+					GoAccessorName("ID").
 					MustBuild(),
 				resource.NewSchemaAttributeBuilder().
 					Name("manager").
@@ -1112,7 +1112,6 @@ func init() {
 					Description("The User's manager. A complex type that optionally allows service providers to represent organizational hierarchy by referencing the 'id' attribute of another User.").
 					Required(false).
 					CaseExact(false).
-					Required(false).
 					Mutability(resource.MutReadWrite).
 					Returned(resource.ReturnedDefault).
 					Uniqueness(resource.UniqNone).
@@ -1124,10 +1123,10 @@ func init() {
 							Description("The id of the SCIM resource representing the User's manager. REQUIRED.").
 							Required(false).
 							CaseExact(false).
-							Required(false).
 							Mutability(resource.MutReadWrite).
 							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
+							GoAccessorName("Value").
 							MustBuild(),
 						resource.NewSchemaAttributeBuilder().
 							Name("$ref").
@@ -1136,10 +1135,10 @@ func init() {
 							Description("The URI of the SCIM resource representing the User's manager. REQUIRED.").
 							Required(false).
 							CaseExact(false).
-							Required(false).
 							Mutability(resource.MutReadWrite).
 							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
+							GoAccessorName("Reference").
 							MustBuild(),
 						resource.NewSchemaAttributeBuilder().
 							Name("displayName").
@@ -1148,12 +1147,13 @@ func init() {
 							Description("The displayName of the User's manager.  OPTIONAL and READ-ONLY.").
 							Required(false).
 							CaseExact(false).
-							Required(false).
 							Mutability(resource.MutReadOnly).
 							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
+							GoAccessorName("DisplayName").
 							MustBuild(),
 					).
+					GoAccessorName("Manager").
 					MustBuild(),
 				resource.NewSchemaAttributeBuilder().
 					Name("meta").
@@ -1162,7 +1162,6 @@ func init() {
 					Description("A complex attribute containing resource metadata. All \"meta\" sub-attributes are assigned by the service provider (have a \"mutability\" of \"readOnly\"), and all of these sub-attributes have a \"returned\" characteristic of \"default\".  This attribute SHALL be ignored when provided by clients.").
 					Required(false).
 					CaseExact(false).
-					Required(false).
 					Mutability(resource.MutReadOnly).
 					Returned(resource.ReturnedDefault).
 					Uniqueness(resource.UniqNone).
@@ -1174,10 +1173,10 @@ func init() {
 							Description("The name of the resource type of the resource").
 							Required(true).
 							CaseExact(true).
-							Required(true).
 							Mutability(resource.MutReadOnly).
 							Returned(resource.ReturnedAlways).
 							Uniqueness(resource.UniqNone).
+							GoAccessorName("ResourceType").
 							MustBuild(),
 						resource.NewSchemaAttributeBuilder().
 							Name("created").
@@ -1186,12 +1185,13 @@ func init() {
 							Description("The \"DateTime\" that the resource was added to the service provider").
 							Required(false).
 							CaseExact(false).
-							Required(false).
 							Mutability(resource.MutReadOnly).
 							Returned(resource.ReturnedDefault).
 							Uniqueness(resource.UniqNone).
+							GoAccessorName("Created").
 							MustBuild(),
 					).
+					GoAccessorName("Meta").
 					MustBuild(),
 				resource.NewSchemaAttributeBuilder().
 					Name("organization").
@@ -1200,10 +1200,10 @@ func init() {
 					Description("Identifies the name of an organization.").
 					Required(false).
 					CaseExact(false).
-					Required(false).
 					Mutability(resource.MutReadWrite).
 					Returned(resource.ReturnedDefault).
 					Uniqueness(resource.UniqNone).
+					GoAccessorName("Organization").
 					MustBuild(),
 			).
 			Name("EnterpriseUser").

@@ -6,7 +6,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go: [ '1.18', '1.17' ]
+        go: [ '1.19', '1.18' ]
     name: Go ${{ matrix.go }} test
     steps:
       - name: Checkout repository
@@ -18,6 +18,15 @@ jobs:
         uses: actions/setup-go@v3
         with:
           go-version: ${{ matrix.go }}
+      - name: Install goyacc
+        run: |
+          go install golang.org/x/tools/cmd/goyacc@latest
+      - name: Install sketch
+        run: |
+          go install github.com/lestrrat-go/sketch/cmd/sketch@502e52b
+      - name: Generate files
+        run: |
+          go generate
       - name: Test
         # TODO: make it smarter
         run: |
@@ -25,6 +34,8 @@ jobs:
           go test
           popd
           go test -v -race -coverprofile=coverage.out -coverpkg=./... ./...
+      - name: Check Diff
+        run: ./tools/check-diff.sh
       - name: Upload code coverage to codecov
         if: matrix.go == '1.18'
         uses: codecov/codecov-action@v1

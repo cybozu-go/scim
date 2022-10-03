@@ -1,0 +1,70 @@
+{{ define "ext/object/header" }}
+{{- $schemaURI := .GetSchemaURI }}
+{{- if (ne $schemaURI "") }}
+const {{ .Name }}SchemaURI = {{ $schemaURI | printf "%q" }}
+{{ end }}
+func init() {
+  Register({{ .Name | printf "%q" }}, {{ if (eq $schemaURI "") }}""{{ else }}{{ .Name }}SchemaURI{{ end }}, {{ .Name }}{})
+  RegisterBuilder({{ .Name | printf "%q" }}, {{ if (eq $schemaURI "") }}""{{ else }}{{ .Name }}SchemaURI{{ end }}, {{ .Name }}Builder{})
+}
+{{ end }}
+
+{{ define "ext/object/footer" }}
+{{- $objectName := .Name }}
+// AsMap returns the resource as a Go map
+func (v *{{ $objectName }}) AsMap(m map[string]interface{}) error {
+  v.mu.RLock()
+  defer v.mu.RUnlock()
+
+  for _, key := range v.Keys() {
+    var val interface{}
+    if err := v.getNoLock(key, &val, false); err != nil {
+      return fmt.Errorf(`failed to retrieve value for key %q: %w`, key, err)
+    }
+    m[key] = val
+  }
+  return nil
+}
+
+// GetExtension takes into account extension uri, and fetches
+// the specified attribute from the extension object
+func (v *{{ $objectName }}) GetExtension(name, uri string, dst interface{}) error {
+  if uri == "" {
+    return v.Get(name, dst)
+  }
+  var ext interface{}
+  if err := v.Get(uri, &ext); err != nil {
+    return fmt.Errorf(`failed to fetch extension %q: %w`, uri, err)
+  }
+
+  getter, ok := ext.(interface{
+    Get(string, interface{}) error
+  })
+  if !ok {
+    return fmt.Errorf(`extension does not implement Get(string, interface{}) error`)
+  }
+  return getter.Get(name, dst)
+}
+
+func (*{{ $objectName }}) decodeExtraField(name string, dec *json.Decoder, dst interface{}) error {
+	// we can get an instance of the resource object
+	if rx, ok := registry.LookupByURI(name); ok {
+		if err := dec.Decode(&rx); err != nil {
+			return fmt.Errorf(`failed to decode value for key %q: %w`, name, err)
+		}
+		if err := blackmagic.AssignIfCompatible(dst, rx); err != nil {
+			return err
+		}
+	} else {
+		if err := dec.Decode(dst); err != nil {
+			return fmt.Errorf(`failed to decode value for key %q: %w`, name, err)
+		}
+	}
+	return nil
+}
+
+{{ $builderName := .Name | printf "%sBuilder" }}
+func (b *Builder) {{ $objectName }}() *{{ $builderName }} {
+  return &{{ $builderName }}{}
+}
+{{ end }}

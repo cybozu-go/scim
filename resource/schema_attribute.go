@@ -1,5 +1,30 @@
 package resource
 
+func (b *SchemaAttributeBuilder) GoAccessorName(name string) *SchemaAttributeBuilder {
+	b.object.goAccessorName = &name
+	return b
+}
+
+func (v *SchemaAttribute) GoAccessorName() string {
+	sp := v.goAccessorName
+	if sp == nil {
+		return ""
+	}
+	return *sp
+}
+
+// Attributes is an alias to `SubAttributes()` method, provided so that
+// resource.Schema and resource.SchemaAttribute can be used interchangeably
+func (v *SchemaAttribute) Attributes() []*SchemaAttribute {
+	return v.SubAttributes()
+}
+
+// Attributes is an alias to `SubAttributes()` method, provided so that
+// resource.Schema and resource.SchemaAttribute can be used interchangeably
+func (v *SchemaAttributeBuilder) Attributes(in ...*SchemaAttribute) *SchemaAttributeBuilder {
+	return v.SubAttributes(in...)
+}
+
 // CanWrite returns true if the mutability is either readWrite or writeOnly.
 //
 // The result is evaluated in context of the SCIM server, from the PoV of the

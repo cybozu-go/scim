@@ -9,6 +9,20 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestEnterpriseUser(t *testing.T) {
+	u, err := resource.NewUserBuilder().
+		UserName(`johndoe`).
+		Extension(resource.EnterpriseUserSchemaURI, resource.NewEnterpriseUserBuilder().
+			Organization(`IT`).MustBuild(),
+		).
+		Build()
+	require.NoError(t, err, `building resource.User should succeed`)
+
+	var eu resource.EnterpriseUser
+	require.NoError(t, u.Get(resource.EnterpriseUserSchemaURI, &eu), `u.Get(EnterpriseUserSchemaURI) should succeed`)
+	_ = &eu
+}
+
 func TestDateTime(t *testing.T) {
 	// Load the timezone that is not local
 	var tz *time.Location
@@ -127,11 +141,12 @@ func TestUser(t *testing.T) {
 	require.Equal(t, `bjensen@example.com`, u.UserName(), `values should match`)
 
 	t.Run("EnterpriseUser", func(t *testing.T) {
-		en, ok := u.Get(`employeeNumber`, resource.WithExtension(resource.EnterpriseUserSchemaURI))
-		require.True(t, ok, `u.Get("employeeNumber") should succeed`)
+		var en string
+		require.NoError(t, u.GetExtension(`employeeNumber`, resource.EnterpriseUserSchemaURI, &en), `u.GetExtension should succeed`)
 		require.Equal(t, `701984`, en)
-		cc, ok := u.Get(`costCenter`, resource.WithExtension(resource.EnterpriseUserSchemaURI))
-		require.True(t, ok, `u.Get("costCenter") should succeed`)
+
+		var cc string
+		require.NoError(t, u.GetExtension(`costCenter`, resource.EnterpriseUserSchemaURI, &cc), `u.GetExtension should succeed`)
 		require.Equal(t, `4130`, cc)
 	})
 	t.Run("Names", func(t *testing.T) {

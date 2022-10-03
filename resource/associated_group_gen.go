@@ -12,16 +12,17 @@ import (
 )
 
 func init() {
-	Register("EnterpriseManager", "", EnterpriseManager{})
-	RegisterBuilder("EnterpriseManager", "", EnterpriseManagerBuilder{})
+	Register("AssociatedGroup", "", AssociatedGroup{})
+	RegisterBuilder("AssociatedGroup", "", AssociatedGroupBuilder{})
 }
 
-type EnterpriseManager struct {
-	mu          sync.RWMutex
-	displayName *string
-	id          *string
-	ref         *string
-	extra       map[string]interface{}
+type AssociatedGroup struct {
+	mu      sync.RWMutex
+	display *string
+	ref     *string
+	typ     *string
+	value   *string
+	extra   map[string]interface{}
 }
 
 // These constants are used when the JSON field name is used.
@@ -29,13 +30,14 @@ type EnterpriseManager struct {
 // complain about repeated constants, and therefore internally
 // this used throughout
 const (
-	EnterpriseManagerDisplayNameKey = "displayName"
-	EnterpriseManagerIDKey          = "id"
-	EnterpriseManagerReferenceKey   = "$ref"
+	AssociatedGroupDisplayKey   = "display"
+	AssociatedGroupReferenceKey = "$ref"
+	AssociatedGroupTypeKey      = "type"
+	AssociatedGroupValueKey     = "value"
 )
 
 // Get retrieves the value associated with a key
-func (v *EnterpriseManager) Get(key string, dst interface{}) error {
+func (v *AssociatedGroup) Get(key string, dst interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.getNoLock(key, dst, false)
@@ -45,18 +47,22 @@ func (v *EnterpriseManager) Get(key string, dst interface{}) error {
 // it can be used from user-supplied code. Unlike Get, it avoids locking for
 // each call, so the user needs to explicitly lock the object before using,
 // but otherwise should be faster than sing Get directly
-func (v *EnterpriseManager) getNoLock(key string, dst interface{}, raw bool) error {
+func (v *AssociatedGroup) getNoLock(key string, dst interface{}, raw bool) error {
 	switch key {
-	case EnterpriseManagerDisplayNameKey:
-		if val := v.displayName; val != nil {
+	case AssociatedGroupDisplayKey:
+		if val := v.display; val != nil {
 			return blackmagic.AssignIfCompatible(dst, *val)
 		}
-	case EnterpriseManagerIDKey:
-		if val := v.id; val != nil {
-			return blackmagic.AssignIfCompatible(dst, *val)
-		}
-	case EnterpriseManagerReferenceKey:
+	case AssociatedGroupReferenceKey:
 		if val := v.ref; val != nil {
+			return blackmagic.AssignIfCompatible(dst, *val)
+		}
+	case AssociatedGroupTypeKey:
+		if val := v.typ; val != nil {
+			return blackmagic.AssignIfCompatible(dst, *val)
+		}
+	case AssociatedGroupValueKey:
+		if val := v.value; val != nil {
 			return blackmagic.AssignIfCompatible(dst, *val)
 		}
 	default:
@@ -72,28 +78,34 @@ func (v *EnterpriseManager) getNoLock(key string, dst interface{}, raw bool) err
 
 // Set sets the value of the specified field. The name must be a JSON
 // field name, not the Go name
-func (v *EnterpriseManager) Set(key string, value interface{}) error {
+func (v *AssociatedGroup) Set(key string, value interface{}) error {
 	v.mu.Lock()
 	defer v.mu.Unlock()
 	switch key {
-	case EnterpriseManagerDisplayNameKey:
+	case AssociatedGroupDisplayKey:
 		converted, ok := value.(string)
 		if !ok {
-			return fmt.Errorf(`expected value of type string for field displayName, got %T`, value)
+			return fmt.Errorf(`expected value of type string for field display, got %T`, value)
 		}
-		v.displayName = &converted
-	case EnterpriseManagerIDKey:
-		converted, ok := value.(string)
-		if !ok {
-			return fmt.Errorf(`expected value of type string for field id, got %T`, value)
-		}
-		v.id = &converted
-	case EnterpriseManagerReferenceKey:
+		v.display = &converted
+	case AssociatedGroupReferenceKey:
 		converted, ok := value.(string)
 		if !ok {
 			return fmt.Errorf(`expected value of type string for field $ref, got %T`, value)
 		}
 		v.ref = &converted
+	case AssociatedGroupTypeKey:
+		converted, ok := value.(string)
+		if !ok {
+			return fmt.Errorf(`expected value of type string for field type, got %T`, value)
+		}
+		v.typ = &converted
+	case AssociatedGroupValueKey:
+		converted, ok := value.(string)
+		if !ok {
+			return fmt.Errorf(`expected value of type string for field value, got %T`, value)
+		}
+		v.value = &converted
 	default:
 		if v.extra == nil {
 			v.extra = make(map[string]interface{})
@@ -105,14 +117,16 @@ func (v *EnterpriseManager) Set(key string, value interface{}) error {
 
 // Has returns true if the field specified by the argument has been populated.
 // The field name must be the JSON field name, not the Go-structure's field name.
-func (v *EnterpriseManager) Has(name string) bool {
+func (v *AssociatedGroup) Has(name string) bool {
 	switch name {
-	case EnterpriseManagerDisplayNameKey:
-		return v.displayName != nil
-	case EnterpriseManagerIDKey:
-		return v.id != nil
-	case EnterpriseManagerReferenceKey:
+	case AssociatedGroupDisplayKey:
+		return v.display != nil
+	case AssociatedGroupReferenceKey:
 		return v.ref != nil
+	case AssociatedGroupTypeKey:
+		return v.typ != nil
+	case AssociatedGroupValueKey:
+		return v.value != nil
 	default:
 		if v.extra != nil {
 			if _, ok := v.extra[name]; ok {
@@ -125,16 +139,19 @@ func (v *EnterpriseManager) Has(name string) bool {
 
 // Keys returns a slice of string comprising of JSON field names whose values
 // are present in the object.
-func (v *EnterpriseManager) Keys() []string {
-	keys := make([]string, 0, 3)
-	if v.displayName != nil {
-		keys = append(keys, EnterpriseManagerDisplayNameKey)
-	}
-	if v.id != nil {
-		keys = append(keys, EnterpriseManagerIDKey)
+func (v *AssociatedGroup) Keys() []string {
+	keys := make([]string, 0, 4)
+	if v.display != nil {
+		keys = append(keys, AssociatedGroupDisplayKey)
 	}
 	if v.ref != nil {
-		keys = append(keys, EnterpriseManagerReferenceKey)
+		keys = append(keys, AssociatedGroupReferenceKey)
+	}
+	if v.typ != nil {
+		keys = append(keys, AssociatedGroupTypeKey)
+	}
+	if v.value != nil {
+		keys = append(keys, AssociatedGroupValueKey)
 	}
 
 	if len(v.extra) > 0 {
@@ -146,46 +163,44 @@ func (v *EnterpriseManager) Keys() []string {
 	return keys
 }
 
-// HasDisplayName returns true if the field `displayName` has been populated
-func (v *EnterpriseManager) HasDisplayName() bool {
+// HasDisplay returns true if the field `display` has been populated
+func (v *AssociatedGroup) HasDisplay() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return v.displayName != nil
-}
-
-// HasID returns true if the field `id` has been populated
-func (v *EnterpriseManager) HasID() bool {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	return v.id != nil
+	return v.display != nil
 }
 
 // HasReference returns true if the field `$ref` has been populated
-func (v *EnterpriseManager) HasReference() bool {
+func (v *AssociatedGroup) HasReference() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.ref != nil
 }
 
-func (v *EnterpriseManager) DisplayName() string {
+// HasType returns true if the field `type` has been populated
+func (v *AssociatedGroup) HasType() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	if val := v.displayName; val != nil {
+	return v.typ != nil
+}
+
+// HasValue returns true if the field `value` has been populated
+func (v *AssociatedGroup) HasValue() bool {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	return v.value != nil
+}
+
+func (v *AssociatedGroup) Display() string {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	if val := v.display; val != nil {
 		return *val
 	}
 	return ""
 }
 
-func (v *EnterpriseManager) ID() string {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-	if val := v.id; val != nil {
-		return *val
-	}
-	return ""
-}
-
-func (v *EnterpriseManager) Reference() string {
+func (v *AssociatedGroup) Reference() string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	if val := v.ref; val != nil {
@@ -194,18 +209,38 @@ func (v *EnterpriseManager) Reference() string {
 	return ""
 }
 
+func (v *AssociatedGroup) Type() string {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	if val := v.typ; val != nil {
+		return *val
+	}
+	return ""
+}
+
+func (v *AssociatedGroup) Value() string {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	if val := v.value; val != nil {
+		return *val
+	}
+	return ""
+}
+
 // Remove removes the value associated with a key
-func (v *EnterpriseManager) Remove(key string) error {
+func (v *AssociatedGroup) Remove(key string) error {
 	v.mu.Lock()
 	defer v.mu.Unlock()
 
 	switch key {
-	case EnterpriseManagerDisplayNameKey:
-		v.displayName = nil
-	case EnterpriseManagerIDKey:
-		v.id = nil
-	case EnterpriseManagerReferenceKey:
+	case AssociatedGroupDisplayKey:
+		v.display = nil
+	case AssociatedGroupReferenceKey:
 		v.ref = nil
+	case AssociatedGroupTypeKey:
+		v.typ = nil
+	case AssociatedGroupValueKey:
+		v.value = nil
 	default:
 		delete(v.extra, key)
 	}
@@ -213,7 +248,7 @@ func (v *EnterpriseManager) Remove(key string) error {
 	return nil
 }
 
-func (v *EnterpriseManager) Clone(dst interface{}) error {
+func (v *AssociatedGroup) Clone(dst interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 
@@ -221,19 +256,20 @@ func (v *EnterpriseManager) Clone(dst interface{}) error {
 	for key, val := range v.extra {
 		extra[key] = val
 	}
-	return blackmagic.AssignIfCompatible(dst, &EnterpriseManager{
-		displayName: v.displayName,
-		id:          v.id,
-		ref:         v.ref,
-		extra:       extra,
+	return blackmagic.AssignIfCompatible(dst, &AssociatedGroup{
+		display: v.display,
+		ref:     v.ref,
+		typ:     v.typ,
+		value:   v.value,
+		extra:   extra,
 	})
 }
 
-// MarshalJSON serializes EnterpriseManager into JSON.
+// MarshalJSON serializes AssociatedGroup into JSON.
 // All pre-declared fields are included as long as a value is
 // assigned to them, as well as all extra fields. All of these
 // fields are sorted in alphabetical order.
-func (v *EnterpriseManager) MarshalJSON() ([]byte, error) {
+func (v *AssociatedGroup) MarshalJSON() ([]byte, error) {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 
@@ -261,19 +297,20 @@ func (v *EnterpriseManager) MarshalJSON() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-// UnmarshalJSON deserializes a piece of JSON data into EnterpriseManager.
+// UnmarshalJSON deserializes a piece of JSON data into AssociatedGroup.
 //
 // Pre-defined fields must be deserializable via "encoding/json" to their
 // respective Go types, otherwise an error is returned.
 //
 // Extra fields are stored in a special "extra" storage, which can only
 // be accessed via `Get()` and `Set()` methods.
-func (v *EnterpriseManager) UnmarshalJSON(data []byte) error {
+func (v *AssociatedGroup) UnmarshalJSON(data []byte) error {
 	v.mu.Lock()
 	defer v.mu.Unlock()
-	v.displayName = nil
-	v.id = nil
+	v.display = nil
 	v.ref = nil
+	v.typ = nil
+	v.value = nil
 
 	dec := json.NewDecoder(bytes.NewReader(data))
 	var extra map[string]interface{}
@@ -295,24 +332,30 @@ LOOP:
 			}
 		case string:
 			switch tok {
-			case EnterpriseManagerDisplayNameKey:
+			case AssociatedGroupDisplayKey:
 				var val string
 				if err := dec.Decode(&val); err != nil {
-					return fmt.Errorf(`failed to decode value for %q: %w`, EnterpriseManagerDisplayNameKey, err)
+					return fmt.Errorf(`failed to decode value for %q: %w`, AssociatedGroupDisplayKey, err)
 				}
-				v.displayName = &val
-			case EnterpriseManagerIDKey:
+				v.display = &val
+			case AssociatedGroupReferenceKey:
 				var val string
 				if err := dec.Decode(&val); err != nil {
-					return fmt.Errorf(`failed to decode value for %q: %w`, EnterpriseManagerIDKey, err)
-				}
-				v.id = &val
-			case EnterpriseManagerReferenceKey:
-				var val string
-				if err := dec.Decode(&val); err != nil {
-					return fmt.Errorf(`failed to decode value for %q: %w`, EnterpriseManagerReferenceKey, err)
+					return fmt.Errorf(`failed to decode value for %q: %w`, AssociatedGroupReferenceKey, err)
 				}
 				v.ref = &val
+			case AssociatedGroupTypeKey:
+				var val string
+				if err := dec.Decode(&val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, AssociatedGroupTypeKey, err)
+				}
+				v.typ = &val
+			case AssociatedGroupValueKey:
+				var val string
+				if err := dec.Decode(&val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, AssociatedGroupValueKey, err)
+				}
+				v.value = &val
 			default:
 				var val interface{}
 				if err := v.decodeExtraField(tok, dec, &val); err != nil {
@@ -332,36 +375,39 @@ LOOP:
 	return nil
 }
 
-type EnterpriseManagerBuilder struct {
+type AssociatedGroupBuilder struct {
 	mu     sync.Mutex
 	err    error
 	once   sync.Once
-	object *EnterpriseManager
+	object *AssociatedGroup
 }
 
-// NewEnterpriseManagerBuilder creates a new EnterpriseManagerBuilder instance.
-// EnterpriseManagerBuilder is safe to be used uninitialized as well.
-func NewEnterpriseManagerBuilder() *EnterpriseManagerBuilder {
-	return &EnterpriseManagerBuilder{}
+// NewAssociatedGroupBuilder creates a new AssociatedGroupBuilder instance.
+// AssociatedGroupBuilder is safe to be used uninitialized as well.
+func NewAssociatedGroupBuilder() *AssociatedGroupBuilder {
+	return &AssociatedGroupBuilder{}
 }
 
-func (b *EnterpriseManagerBuilder) initialize() {
+func (b *AssociatedGroupBuilder) initialize() {
 	b.err = nil
-	b.object = &EnterpriseManager{}
+	b.object = &AssociatedGroup{}
 }
-func (b *EnterpriseManagerBuilder) DisplayName(in string) *EnterpriseManagerBuilder {
-	return b.SetField(EnterpriseManagerDisplayNameKey, in)
+func (b *AssociatedGroupBuilder) Display(in string) *AssociatedGroupBuilder {
+	return b.SetField(AssociatedGroupDisplayKey, in)
 }
-func (b *EnterpriseManagerBuilder) ID(in string) *EnterpriseManagerBuilder {
-	return b.SetField(EnterpriseManagerIDKey, in)
+func (b *AssociatedGroupBuilder) Reference(in string) *AssociatedGroupBuilder {
+	return b.SetField(AssociatedGroupReferenceKey, in)
 }
-func (b *EnterpriseManagerBuilder) Reference(in string) *EnterpriseManagerBuilder {
-	return b.SetField(EnterpriseManagerReferenceKey, in)
+func (b *AssociatedGroupBuilder) Type(in string) *AssociatedGroupBuilder {
+	return b.SetField(AssociatedGroupTypeKey, in)
+}
+func (b *AssociatedGroupBuilder) Value(in string) *AssociatedGroupBuilder {
+	return b.SetField(AssociatedGroupValueKey, in)
 }
 
 // SetField sets the value of any field. The name should be the JSON field name.
 // Type check will only be performed for pre-defined types
-func (b *EnterpriseManagerBuilder) SetField(name string, value interface{}) *EnterpriseManagerBuilder {
+func (b *AssociatedGroupBuilder) SetField(name string, value interface{}) *AssociatedGroupBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 
@@ -375,7 +421,7 @@ func (b *EnterpriseManagerBuilder) SetField(name string, value interface{}) *Ent
 	}
 	return b
 }
-func (b *EnterpriseManagerBuilder) Build() (*EnterpriseManager, error) {
+func (b *AssociatedGroupBuilder) Build() (*AssociatedGroup, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 
@@ -388,7 +434,7 @@ func (b *EnterpriseManagerBuilder) Build() (*EnterpriseManager, error) {
 	b.once.Do(b.initialize)
 	return obj, nil
 }
-func (b *EnterpriseManagerBuilder) MustBuild() *EnterpriseManager {
+func (b *AssociatedGroupBuilder) MustBuild() *AssociatedGroup {
 	object, err := b.Build()
 	if err != nil {
 		panic(err)
@@ -396,7 +442,7 @@ func (b *EnterpriseManagerBuilder) MustBuild() *EnterpriseManager {
 	return object
 }
 
-func (b *EnterpriseManagerBuilder) From(in *EnterpriseManager) *EnterpriseManagerBuilder {
+func (b *AssociatedGroupBuilder) From(in *AssociatedGroup) *AssociatedGroupBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.once.Do(b.initialize)
@@ -404,7 +450,7 @@ func (b *EnterpriseManagerBuilder) From(in *EnterpriseManager) *EnterpriseManage
 		return b
 	}
 
-	var cloned EnterpriseManager
+	var cloned AssociatedGroup
 	if err := in.Clone(&cloned); err != nil {
 		b.err = err
 		return b
@@ -415,7 +461,7 @@ func (b *EnterpriseManagerBuilder) From(in *EnterpriseManager) *EnterpriseManage
 }
 
 // AsMap returns the resource as a Go map
-func (v *EnterpriseManager) AsMap(m map[string]interface{}) error {
+func (v *AssociatedGroup) AsMap(m map[string]interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 
@@ -431,7 +477,7 @@ func (v *EnterpriseManager) AsMap(m map[string]interface{}) error {
 
 // GetExtension takes into account extension uri, and fetches
 // the specified attribute from the extension object
-func (v *EnterpriseManager) GetExtension(name, uri string, dst interface{}) error {
+func (v *AssociatedGroup) GetExtension(name, uri string, dst interface{}) error {
 	if uri == "" {
 		return v.Get(name, dst)
 	}
@@ -449,7 +495,7 @@ func (v *EnterpriseManager) GetExtension(name, uri string, dst interface{}) erro
 	return getter.Get(name, dst)
 }
 
-func (*EnterpriseManager) decodeExtraField(name string, dec *json.Decoder, dst interface{}) error {
+func (*AssociatedGroup) decodeExtraField(name string, dec *json.Decoder, dst interface{}) error {
 	// we can get an instance of the resource object
 	if rx, ok := registry.LookupByURI(name); ok {
 		if err := dec.Decode(&rx); err != nil {
@@ -466,6 +512,6 @@ func (*EnterpriseManager) decodeExtraField(name string, dec *json.Decoder, dst i
 	return nil
 }
 
-func (b *Builder) EnterpriseManager() *EnterpriseManagerBuilder {
-	return &EnterpriseManagerBuilder{}
+func (b *Builder) AssociatedGroup() *AssociatedGroupBuilder {
+	return &AssociatedGroupBuilder{}
 }

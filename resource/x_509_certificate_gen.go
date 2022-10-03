@@ -12,16 +12,17 @@ import (
 )
 
 func init() {
-	Register("EnterpriseManager", "", EnterpriseManager{})
-	RegisterBuilder("EnterpriseManager", "", EnterpriseManagerBuilder{})
+	Register("X509Certificate", "", X509Certificate{})
+	RegisterBuilder("X509Certificate", "", X509CertificateBuilder{})
 }
 
-type EnterpriseManager struct {
-	mu          sync.RWMutex
-	displayName *string
-	id          *string
-	ref         *string
-	extra       map[string]interface{}
+type X509Certificate struct {
+	mu      sync.RWMutex
+	display *string
+	primary *bool
+	typ     *string
+	value   *string
+	extra   map[string]interface{}
 }
 
 // These constants are used when the JSON field name is used.
@@ -29,13 +30,14 @@ type EnterpriseManager struct {
 // complain about repeated constants, and therefore internally
 // this used throughout
 const (
-	EnterpriseManagerDisplayNameKey = "displayName"
-	EnterpriseManagerIDKey          = "id"
-	EnterpriseManagerReferenceKey   = "$ref"
+	X509CertificateDisplayKey = "display"
+	X509CertificatePrimaryKey = "primary"
+	X509CertificateTypeKey    = "type"
+	X509CertificateValueKey   = "value"
 )
 
 // Get retrieves the value associated with a key
-func (v *EnterpriseManager) Get(key string, dst interface{}) error {
+func (v *X509Certificate) Get(key string, dst interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.getNoLock(key, dst, false)
@@ -45,18 +47,22 @@ func (v *EnterpriseManager) Get(key string, dst interface{}) error {
 // it can be used from user-supplied code. Unlike Get, it avoids locking for
 // each call, so the user needs to explicitly lock the object before using,
 // but otherwise should be faster than sing Get directly
-func (v *EnterpriseManager) getNoLock(key string, dst interface{}, raw bool) error {
+func (v *X509Certificate) getNoLock(key string, dst interface{}, raw bool) error {
 	switch key {
-	case EnterpriseManagerDisplayNameKey:
-		if val := v.displayName; val != nil {
+	case X509CertificateDisplayKey:
+		if val := v.display; val != nil {
 			return blackmagic.AssignIfCompatible(dst, *val)
 		}
-	case EnterpriseManagerIDKey:
-		if val := v.id; val != nil {
+	case X509CertificatePrimaryKey:
+		if val := v.primary; val != nil {
 			return blackmagic.AssignIfCompatible(dst, *val)
 		}
-	case EnterpriseManagerReferenceKey:
-		if val := v.ref; val != nil {
+	case X509CertificateTypeKey:
+		if val := v.typ; val != nil {
+			return blackmagic.AssignIfCompatible(dst, *val)
+		}
+	case X509CertificateValueKey:
+		if val := v.value; val != nil {
 			return blackmagic.AssignIfCompatible(dst, *val)
 		}
 	default:
@@ -72,28 +78,34 @@ func (v *EnterpriseManager) getNoLock(key string, dst interface{}, raw bool) err
 
 // Set sets the value of the specified field. The name must be a JSON
 // field name, not the Go name
-func (v *EnterpriseManager) Set(key string, value interface{}) error {
+func (v *X509Certificate) Set(key string, value interface{}) error {
 	v.mu.Lock()
 	defer v.mu.Unlock()
 	switch key {
-	case EnterpriseManagerDisplayNameKey:
+	case X509CertificateDisplayKey:
 		converted, ok := value.(string)
 		if !ok {
-			return fmt.Errorf(`expected value of type string for field displayName, got %T`, value)
+			return fmt.Errorf(`expected value of type string for field display, got %T`, value)
 		}
-		v.displayName = &converted
-	case EnterpriseManagerIDKey:
+		v.display = &converted
+	case X509CertificatePrimaryKey:
+		converted, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf(`expected value of type bool for field primary, got %T`, value)
+		}
+		v.primary = &converted
+	case X509CertificateTypeKey:
 		converted, ok := value.(string)
 		if !ok {
-			return fmt.Errorf(`expected value of type string for field id, got %T`, value)
+			return fmt.Errorf(`expected value of type string for field type, got %T`, value)
 		}
-		v.id = &converted
-	case EnterpriseManagerReferenceKey:
+		v.typ = &converted
+	case X509CertificateValueKey:
 		converted, ok := value.(string)
 		if !ok {
-			return fmt.Errorf(`expected value of type string for field $ref, got %T`, value)
+			return fmt.Errorf(`expected value of type string for field value, got %T`, value)
 		}
-		v.ref = &converted
+		v.value = &converted
 	default:
 		if v.extra == nil {
 			v.extra = make(map[string]interface{})
@@ -105,14 +117,16 @@ func (v *EnterpriseManager) Set(key string, value interface{}) error {
 
 // Has returns true if the field specified by the argument has been populated.
 // The field name must be the JSON field name, not the Go-structure's field name.
-func (v *EnterpriseManager) Has(name string) bool {
+func (v *X509Certificate) Has(name string) bool {
 	switch name {
-	case EnterpriseManagerDisplayNameKey:
-		return v.displayName != nil
-	case EnterpriseManagerIDKey:
-		return v.id != nil
-	case EnterpriseManagerReferenceKey:
-		return v.ref != nil
+	case X509CertificateDisplayKey:
+		return v.display != nil
+	case X509CertificatePrimaryKey:
+		return v.primary != nil
+	case X509CertificateTypeKey:
+		return v.typ != nil
+	case X509CertificateValueKey:
+		return v.value != nil
 	default:
 		if v.extra != nil {
 			if _, ok := v.extra[name]; ok {
@@ -125,16 +139,19 @@ func (v *EnterpriseManager) Has(name string) bool {
 
 // Keys returns a slice of string comprising of JSON field names whose values
 // are present in the object.
-func (v *EnterpriseManager) Keys() []string {
-	keys := make([]string, 0, 3)
-	if v.displayName != nil {
-		keys = append(keys, EnterpriseManagerDisplayNameKey)
+func (v *X509Certificate) Keys() []string {
+	keys := make([]string, 0, 4)
+	if v.display != nil {
+		keys = append(keys, X509CertificateDisplayKey)
 	}
-	if v.id != nil {
-		keys = append(keys, EnterpriseManagerIDKey)
+	if v.primary != nil {
+		keys = append(keys, X509CertificatePrimaryKey)
 	}
-	if v.ref != nil {
-		keys = append(keys, EnterpriseManagerReferenceKey)
+	if v.typ != nil {
+		keys = append(keys, X509CertificateTypeKey)
+	}
+	if v.value != nil {
+		keys = append(keys, X509CertificateValueKey)
 	}
 
 	if len(v.extra) > 0 {
@@ -146,66 +163,84 @@ func (v *EnterpriseManager) Keys() []string {
 	return keys
 }
 
-// HasDisplayName returns true if the field `displayName` has been populated
-func (v *EnterpriseManager) HasDisplayName() bool {
+// HasDisplay returns true if the field `display` has been populated
+func (v *X509Certificate) HasDisplay() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return v.displayName != nil
+	return v.display != nil
 }
 
-// HasID returns true if the field `id` has been populated
-func (v *EnterpriseManager) HasID() bool {
+// HasPrimary returns true if the field `primary` has been populated
+func (v *X509Certificate) HasPrimary() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return v.id != nil
+	return v.primary != nil
 }
 
-// HasReference returns true if the field `$ref` has been populated
-func (v *EnterpriseManager) HasReference() bool {
+// HasType returns true if the field `type` has been populated
+func (v *X509Certificate) HasType() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return v.ref != nil
+	return v.typ != nil
 }
 
-func (v *EnterpriseManager) DisplayName() string {
+// HasValue returns true if the field `value` has been populated
+func (v *X509Certificate) HasValue() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	if val := v.displayName; val != nil {
+	return v.value != nil
+}
+
+func (v *X509Certificate) Display() string {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	if val := v.display; val != nil {
 		return *val
 	}
 	return ""
 }
 
-func (v *EnterpriseManager) ID() string {
+func (v *X509Certificate) Primary() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	if val := v.id; val != nil {
+	if val := v.primary; val != nil {
+		return *val
+	}
+	return false
+}
+
+func (v *X509Certificate) Type() string {
+	v.mu.RLock()
+	defer v.mu.RUnlock()
+	if val := v.typ; val != nil {
 		return *val
 	}
 	return ""
 }
 
-func (v *EnterpriseManager) Reference() string {
+func (v *X509Certificate) Value() string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	if val := v.ref; val != nil {
+	if val := v.value; val != nil {
 		return *val
 	}
 	return ""
 }
 
 // Remove removes the value associated with a key
-func (v *EnterpriseManager) Remove(key string) error {
+func (v *X509Certificate) Remove(key string) error {
 	v.mu.Lock()
 	defer v.mu.Unlock()
 
 	switch key {
-	case EnterpriseManagerDisplayNameKey:
-		v.displayName = nil
-	case EnterpriseManagerIDKey:
-		v.id = nil
-	case EnterpriseManagerReferenceKey:
-		v.ref = nil
+	case X509CertificateDisplayKey:
+		v.display = nil
+	case X509CertificatePrimaryKey:
+		v.primary = nil
+	case X509CertificateTypeKey:
+		v.typ = nil
+	case X509CertificateValueKey:
+		v.value = nil
 	default:
 		delete(v.extra, key)
 	}
@@ -213,7 +248,7 @@ func (v *EnterpriseManager) Remove(key string) error {
 	return nil
 }
 
-func (v *EnterpriseManager) Clone(dst interface{}) error {
+func (v *X509Certificate) Clone(dst interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 
@@ -221,19 +256,20 @@ func (v *EnterpriseManager) Clone(dst interface{}) error {
 	for key, val := range v.extra {
 		extra[key] = val
 	}
-	return blackmagic.AssignIfCompatible(dst, &EnterpriseManager{
-		displayName: v.displayName,
-		id:          v.id,
-		ref:         v.ref,
-		extra:       extra,
+	return blackmagic.AssignIfCompatible(dst, &X509Certificate{
+		display: v.display,
+		primary: v.primary,
+		typ:     v.typ,
+		value:   v.value,
+		extra:   extra,
 	})
 }
 
-// MarshalJSON serializes EnterpriseManager into JSON.
+// MarshalJSON serializes X509Certificate into JSON.
 // All pre-declared fields are included as long as a value is
 // assigned to them, as well as all extra fields. All of these
 // fields are sorted in alphabetical order.
-func (v *EnterpriseManager) MarshalJSON() ([]byte, error) {
+func (v *X509Certificate) MarshalJSON() ([]byte, error) {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 
@@ -261,19 +297,20 @@ func (v *EnterpriseManager) MarshalJSON() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-// UnmarshalJSON deserializes a piece of JSON data into EnterpriseManager.
+// UnmarshalJSON deserializes a piece of JSON data into X509Certificate.
 //
 // Pre-defined fields must be deserializable via "encoding/json" to their
 // respective Go types, otherwise an error is returned.
 //
 // Extra fields are stored in a special "extra" storage, which can only
 // be accessed via `Get()` and `Set()` methods.
-func (v *EnterpriseManager) UnmarshalJSON(data []byte) error {
+func (v *X509Certificate) UnmarshalJSON(data []byte) error {
 	v.mu.Lock()
 	defer v.mu.Unlock()
-	v.displayName = nil
-	v.id = nil
-	v.ref = nil
+	v.display = nil
+	v.primary = nil
+	v.typ = nil
+	v.value = nil
 
 	dec := json.NewDecoder(bytes.NewReader(data))
 	var extra map[string]interface{}
@@ -295,24 +332,30 @@ LOOP:
 			}
 		case string:
 			switch tok {
-			case EnterpriseManagerDisplayNameKey:
+			case X509CertificateDisplayKey:
 				var val string
 				if err := dec.Decode(&val); err != nil {
-					return fmt.Errorf(`failed to decode value for %q: %w`, EnterpriseManagerDisplayNameKey, err)
+					return fmt.Errorf(`failed to decode value for %q: %w`, X509CertificateDisplayKey, err)
 				}
-				v.displayName = &val
-			case EnterpriseManagerIDKey:
+				v.display = &val
+			case X509CertificatePrimaryKey:
+				var val bool
+				if err := dec.Decode(&val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, X509CertificatePrimaryKey, err)
+				}
+				v.primary = &val
+			case X509CertificateTypeKey:
 				var val string
 				if err := dec.Decode(&val); err != nil {
-					return fmt.Errorf(`failed to decode value for %q: %w`, EnterpriseManagerIDKey, err)
+					return fmt.Errorf(`failed to decode value for %q: %w`, X509CertificateTypeKey, err)
 				}
-				v.id = &val
-			case EnterpriseManagerReferenceKey:
+				v.typ = &val
+			case X509CertificateValueKey:
 				var val string
 				if err := dec.Decode(&val); err != nil {
-					return fmt.Errorf(`failed to decode value for %q: %w`, EnterpriseManagerReferenceKey, err)
+					return fmt.Errorf(`failed to decode value for %q: %w`, X509CertificateValueKey, err)
 				}
-				v.ref = &val
+				v.value = &val
 			default:
 				var val interface{}
 				if err := v.decodeExtraField(tok, dec, &val); err != nil {
@@ -332,36 +375,39 @@ LOOP:
 	return nil
 }
 
-type EnterpriseManagerBuilder struct {
+type X509CertificateBuilder struct {
 	mu     sync.Mutex
 	err    error
 	once   sync.Once
-	object *EnterpriseManager
+	object *X509Certificate
 }
 
-// NewEnterpriseManagerBuilder creates a new EnterpriseManagerBuilder instance.
-// EnterpriseManagerBuilder is safe to be used uninitialized as well.
-func NewEnterpriseManagerBuilder() *EnterpriseManagerBuilder {
-	return &EnterpriseManagerBuilder{}
+// NewX509CertificateBuilder creates a new X509CertificateBuilder instance.
+// X509CertificateBuilder is safe to be used uninitialized as well.
+func NewX509CertificateBuilder() *X509CertificateBuilder {
+	return &X509CertificateBuilder{}
 }
 
-func (b *EnterpriseManagerBuilder) initialize() {
+func (b *X509CertificateBuilder) initialize() {
 	b.err = nil
-	b.object = &EnterpriseManager{}
+	b.object = &X509Certificate{}
 }
-func (b *EnterpriseManagerBuilder) DisplayName(in string) *EnterpriseManagerBuilder {
-	return b.SetField(EnterpriseManagerDisplayNameKey, in)
+func (b *X509CertificateBuilder) Display(in string) *X509CertificateBuilder {
+	return b.SetField(X509CertificateDisplayKey, in)
 }
-func (b *EnterpriseManagerBuilder) ID(in string) *EnterpriseManagerBuilder {
-	return b.SetField(EnterpriseManagerIDKey, in)
+func (b *X509CertificateBuilder) Primary(in bool) *X509CertificateBuilder {
+	return b.SetField(X509CertificatePrimaryKey, in)
 }
-func (b *EnterpriseManagerBuilder) Reference(in string) *EnterpriseManagerBuilder {
-	return b.SetField(EnterpriseManagerReferenceKey, in)
+func (b *X509CertificateBuilder) Type(in string) *X509CertificateBuilder {
+	return b.SetField(X509CertificateTypeKey, in)
+}
+func (b *X509CertificateBuilder) Value(in string) *X509CertificateBuilder {
+	return b.SetField(X509CertificateValueKey, in)
 }
 
 // SetField sets the value of any field. The name should be the JSON field name.
 // Type check will only be performed for pre-defined types
-func (b *EnterpriseManagerBuilder) SetField(name string, value interface{}) *EnterpriseManagerBuilder {
+func (b *X509CertificateBuilder) SetField(name string, value interface{}) *X509CertificateBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 
@@ -375,7 +421,7 @@ func (b *EnterpriseManagerBuilder) SetField(name string, value interface{}) *Ent
 	}
 	return b
 }
-func (b *EnterpriseManagerBuilder) Build() (*EnterpriseManager, error) {
+func (b *X509CertificateBuilder) Build() (*X509Certificate, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 
@@ -388,7 +434,7 @@ func (b *EnterpriseManagerBuilder) Build() (*EnterpriseManager, error) {
 	b.once.Do(b.initialize)
 	return obj, nil
 }
-func (b *EnterpriseManagerBuilder) MustBuild() *EnterpriseManager {
+func (b *X509CertificateBuilder) MustBuild() *X509Certificate {
 	object, err := b.Build()
 	if err != nil {
 		panic(err)
@@ -396,7 +442,7 @@ func (b *EnterpriseManagerBuilder) MustBuild() *EnterpriseManager {
 	return object
 }
 
-func (b *EnterpriseManagerBuilder) From(in *EnterpriseManager) *EnterpriseManagerBuilder {
+func (b *X509CertificateBuilder) From(in *X509Certificate) *X509CertificateBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.once.Do(b.initialize)
@@ -404,7 +450,7 @@ func (b *EnterpriseManagerBuilder) From(in *EnterpriseManager) *EnterpriseManage
 		return b
 	}
 
-	var cloned EnterpriseManager
+	var cloned X509Certificate
 	if err := in.Clone(&cloned); err != nil {
 		b.err = err
 		return b
@@ -415,7 +461,7 @@ func (b *EnterpriseManagerBuilder) From(in *EnterpriseManager) *EnterpriseManage
 }
 
 // AsMap returns the resource as a Go map
-func (v *EnterpriseManager) AsMap(m map[string]interface{}) error {
+func (v *X509Certificate) AsMap(m map[string]interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 
@@ -431,7 +477,7 @@ func (v *EnterpriseManager) AsMap(m map[string]interface{}) error {
 
 // GetExtension takes into account extension uri, and fetches
 // the specified attribute from the extension object
-func (v *EnterpriseManager) GetExtension(name, uri string, dst interface{}) error {
+func (v *X509Certificate) GetExtension(name, uri string, dst interface{}) error {
 	if uri == "" {
 		return v.Get(name, dst)
 	}
@@ -449,7 +495,7 @@ func (v *EnterpriseManager) GetExtension(name, uri string, dst interface{}) erro
 	return getter.Get(name, dst)
 }
 
-func (*EnterpriseManager) decodeExtraField(name string, dec *json.Decoder, dst interface{}) error {
+func (*X509Certificate) decodeExtraField(name string, dec *json.Decoder, dst interface{}) error {
 	// we can get an instance of the resource object
 	if rx, ok := registry.LookupByURI(name); ok {
 		if err := dec.Decode(&rx); err != nil {
@@ -466,6 +512,6 @@ func (*EnterpriseManager) decodeExtraField(name string, dec *json.Decoder, dst i
 	return nil
 }
 
-func (b *Builder) EnterpriseManager() *EnterpriseManagerBuilder {
-	return &EnterpriseManagerBuilder{}
+func (b *Builder) X509Certificate() *X509CertificateBuilder {
+	return &X509CertificateBuilder{}
 }

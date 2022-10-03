@@ -84,7 +84,7 @@ func (v *ResourceType) getNoLock(key string, dst interface{}, raw bool) error {
 	case ResourceTypeSchemasKey:
 		if val := v.schemas; val != nil {
 			if raw {
-				return blackmagic.AssignIfCompatible(dst, *val)
+				return blackmagic.AssignIfCompatible(dst, val)
 			}
 			return blackmagic.AssignIfCompatible(dst, val.GetValue())
 		}

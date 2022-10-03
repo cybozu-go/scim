@@ -84,7 +84,7 @@ func (v *SearchRequest) getNoLock(key string, dst interface{}, raw bool) error {
 	case SearchRequestSchemasKey:
 		if val := v.schemas; val != nil {
 			if raw {
-				return blackmagic.AssignIfCompatible(dst, *val)
+				return blackmagic.AssignIfCompatible(dst, val)
 			}
 			return blackmagic.AssignIfCompatible(dst, val.GetValue())
 		}

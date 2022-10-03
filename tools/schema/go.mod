@@ -2,11 +2,9 @@ module github.com/cybozu-go/scim/tools/schema
 
 go 1.19
 
-require github.com/lestrrat-go/sketch v0.0.0-20221003000612-502ab5c3d5cf
+require github.com/lestrrat-go/sketch v0.0.0-20221003002212-502e52b3ce3b
 
 require (
-	github.com/lestrrat-go/multifs v0.0.0-20220929095432-73523184bb48 // indirect
 	github.com/lestrrat-go/option v1.0.0 // indirect
 	github.com/lestrrat-go/xstrings v0.0.0-20210804220435-4dd8b234342b // indirect
-	github.com/stretchr/testify v1.8.0 // indirect
 )

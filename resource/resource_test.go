@@ -9,6 +9,20 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestEnterpriseUser(t *testing.T) {
+	u, err := resource.NewUserBuilder().
+		UserName(`johndoe`).
+		Extension(resource.EnterpriseUserSchemaURI, resource.NewEnterpriseUserBuilder().
+			Organization(`IT`).MustBuild(),
+		).
+		Build()
+	require.NoError(t, err, `building resource.User should succeed`)
+
+	var eu resource.EnterpriseUser
+	require.NoError(t, u.Get(resource.EnterpriseUserSchemaURI, &eu), `u.Get(EnterpriseUserSchemaURI) should succeed`)
+	_ = &eu
+}
+
 func TestDateTime(t *testing.T) {
 	// Load the timezone that is not local
 	var tz *time.Location

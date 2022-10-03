@@ -319,7 +319,8 @@ func generateCall(o *codegen.Output, svc Service, call *codegen.Object) error {
 		rt := reflect.TypeOf(builder)
 		for i := 0; i < rt.NumMethod(); i++ {
 			m := rt.Method(i)
-			if m.Name == `Build` || m.Name == `MustBuild` || m.Name == `From` || m.Name == `Extension` {
+			switch m.Name {
+			case `Build`, `MustBuild`, `From`, `Extension`, `SetField`:
 				continue
 			}
 			if len(allowed) > 0 {

@@ -52,6 +52,14 @@ const (
 func (v *ServiceProviderConfig) Get(key string, dst interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
+	return v.getNoLock(key, dst, false)
+}
+
+// getNoLock is a utility method that is called from Get, MarshalJSON, etc, but
+// it can be used from user-supplied code. Unlike Get, it avoids locking for
+// each call, so the user needs to explicitly lock the object before using,
+// but otherwise should be faster than sing Get directly
+func (v *ServiceProviderConfig) getNoLock(key string, dst interface{}, raw bool) error {
 	switch key {
 	case ServiceProviderConfigAuthenticationSchemesKey:
 		if val := v.authenticationSchemes; val != nil {
@@ -83,7 +91,10 @@ func (v *ServiceProviderConfig) Get(key string, dst interface{}) error {
 		}
 	case ServiceProviderConfigSchemasKey:
 		if val := v.schemas; val != nil {
-			return blackmagic.AssignIfCompatible(dst, val.Get())
+			if raw {
+				return blackmagic.AssignIfCompatible(dst, *val)
+			}
+			return blackmagic.AssignIfCompatible(dst, val.GetValue())
 		}
 	case ServiceProviderConfigSortKey:
 		if val := v.sort; val != nil {
@@ -150,7 +161,7 @@ func (v *ServiceProviderConfig) Set(key string, value interface{}) error {
 		v.patch = converted
 	case ServiceProviderConfigSchemasKey:
 		var object schemas
-		if err := object.Accept(value); err != nil {
+		if err := object.AcceptValue(value); err != nil {
 			return fmt.Errorf(`failed to accept value: %w`, err)
 		}
 		v.schemas = &object
@@ -169,54 +180,136 @@ func (v *ServiceProviderConfig) Set(key string, value interface{}) error {
 	return nil
 }
 
+// Has returns true if the field specified by the argument has been populated.
+// The field name must be the JSON field name, not the Go-structure's field name.
+func (v *ServiceProviderConfig) Has(name string) bool {
+	switch name {
+	case ServiceProviderConfigAuthenticationSchemesKey:
+		return v.authenticationSchemes != nil
+	case ServiceProviderConfigBulkKey:
+		return v.bulk != nil
+	case ServiceProviderConfigChangePasswordKey:
+		return v.changePassword != nil
+	case ServiceProviderConfigDocumentationURIKey:
+		return v.documentationURI != nil
+	case ServiceProviderConfigETagKey:
+		return v.etag != nil
+	case ServiceProviderConfigFilterKey:
+		return v.filter != nil
+	case ServiceProviderConfigPatchKey:
+		return v.patch != nil
+	case ServiceProviderConfigSchemasKey:
+		return v.schemas != nil
+	case ServiceProviderConfigSortKey:
+		return v.sort != nil
+	default:
+		if v.extra != nil {
+			if _, ok := v.extra[name]; ok {
+				return true
+			}
+		}
+		return false
+	}
+}
+
+// Keys returns a slice of string comprising of JSON field names whose values
+// are present in the object.
+func (v *ServiceProviderConfig) Keys() []string {
+	keys := make([]string, 0, 9)
+	if v.authenticationSchemes != nil {
+		keys = append(keys, ServiceProviderConfigAuthenticationSchemesKey)
+	}
+	if v.bulk != nil {
+		keys = append(keys, ServiceProviderConfigBulkKey)
+	}
+	if v.changePassword != nil {
+		keys = append(keys, ServiceProviderConfigChangePasswordKey)
+	}
+	if v.documentationURI != nil {
+		keys = append(keys, ServiceProviderConfigDocumentationURIKey)
+	}
+	if v.etag != nil {
+		keys = append(keys, ServiceProviderConfigETagKey)
+	}
+	if v.filter != nil {
+		keys = append(keys, ServiceProviderConfigFilterKey)
+	}
+	if v.patch != nil {
+		keys = append(keys, ServiceProviderConfigPatchKey)
+	}
+	if v.schemas != nil {
+		keys = append(keys, ServiceProviderConfigSchemasKey)
+	}
+	if v.sort != nil {
+		keys = append(keys, ServiceProviderConfigSortKey)
+	}
+
+	if len(v.extra) > 0 {
+		for k := range v.extra {
+			keys = append(keys, k)
+		}
+	}
+	sort.Strings(keys)
+	return keys
+}
+
+// HasAuthenticationSchemes returns true if the field `authenticationSchemes` has been populated
 func (v *ServiceProviderConfig) HasAuthenticationSchemes() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.authenticationSchemes != nil
 }
 
+// HasBulk returns true if the field `bulk` has been populated
 func (v *ServiceProviderConfig) HasBulk() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.bulk != nil
 }
 
+// HasChangePassword returns true if the field `changePassword` has been populated
 func (v *ServiceProviderConfig) HasChangePassword() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.changePassword != nil
 }
 
+// HasDocumentationURI returns true if the field `documentationUri` has been populated
 func (v *ServiceProviderConfig) HasDocumentationURI() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.documentationURI != nil
 }
 
+// HasETag returns true if the field `etag` has been populated
 func (v *ServiceProviderConfig) HasETag() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.etag != nil
 }
 
+// HasFilter returns true if the field `filter` has been populated
 func (v *ServiceProviderConfig) HasFilter() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.filter != nil
 }
 
+// HasPatch returns true if the field `patch` has been populated
 func (v *ServiceProviderConfig) HasPatch() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.patch != nil
 }
 
+// HasSchemas returns true if the field `schemas` has been populated
 func (v *ServiceProviderConfig) HasSchemas() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.schemas != nil
 }
 
+// HasSort returns true if the field `sort` has been populated
 func (v *ServiceProviderConfig) HasSort() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -290,7 +383,7 @@ func (v *ServiceProviderConfig) Schemas() []string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	if val := v.schemas; val != nil {
-		return val.Get()
+		return val.GetValue()
 	}
 	return nil
 }
@@ -335,50 +428,15 @@ func (v *ServiceProviderConfig) Remove(key string) error {
 	return nil
 }
 
-func (v *ServiceProviderConfig) makePairs() []*fieldPair {
-	pairs := make([]*fieldPair, 0, 9)
-	if val := v.authenticationSchemes; len(val) > 0 {
-		pairs = append(pairs, &fieldPair{Name: ServiceProviderConfigAuthenticationSchemesKey, Value: val})
-	}
-	if val := v.bulk; val != nil {
-		pairs = append(pairs, &fieldPair{Name: ServiceProviderConfigBulkKey, Value: val})
-	}
-	if val := v.changePassword; val != nil {
-		pairs = append(pairs, &fieldPair{Name: ServiceProviderConfigChangePasswordKey, Value: val})
-	}
-	if val := v.documentationURI; val != nil {
-		pairs = append(pairs, &fieldPair{Name: ServiceProviderConfigDocumentationURIKey, Value: *val})
-	}
-	if val := v.etag; val != nil {
-		pairs = append(pairs, &fieldPair{Name: ServiceProviderConfigETagKey, Value: val})
-	}
-	if val := v.filter; val != nil {
-		pairs = append(pairs, &fieldPair{Name: ServiceProviderConfigFilterKey, Value: val})
-	}
-	if val := v.patch; val != nil {
-		pairs = append(pairs, &fieldPair{Name: ServiceProviderConfigPatchKey, Value: val})
-	}
-	if val := v.schemas; val != nil {
-		pairs = append(pairs, &fieldPair{Name: ServiceProviderConfigSchemasKey, Value: val.Get()})
-	}
-	if val := v.sort; val != nil {
-		pairs = append(pairs, &fieldPair{Name: ServiceProviderConfigSortKey, Value: val})
-	}
-
-	for key, val := range v.extra {
-		pairs = append(pairs, &fieldPair{Name: key, Value: val})
-	}
-
-	sort.Slice(pairs, func(i, j int) bool {
-		return pairs[i].Name < pairs[j].Name
-	})
-	return pairs
-}
-
-func (v *ServiceProviderConfig) Clone() *ServiceProviderConfig {
+func (v *ServiceProviderConfig) Clone(dst interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return &ServiceProviderConfig{
+
+	extra := make(map[string]interface{})
+	for key, val := range v.extra {
+		extra[key] = val
+	}
+	return blackmagic.AssignIfCompatible(dst, &ServiceProviderConfig{
 		authenticationSchemes: v.authenticationSchemes,
 		bulk:                  v.bulk,
 		changePassword:        v.changePassword,
@@ -388,7 +446,8 @@ func (v *ServiceProviderConfig) Clone() *ServiceProviderConfig {
 		patch:                 v.patch,
 		schemas:               v.schemas,
 		sort:                  v.sort,
-	}
+		extra:                 extra,
+	})
 }
 
 // MarshalJSON serializes ServiceProviderConfig into JSON.
@@ -396,21 +455,27 @@ func (v *ServiceProviderConfig) Clone() *ServiceProviderConfig {
 // assigned to them, as well as all extra fields. All of these
 // fields are sorted in alphabetical order.
 func (v *ServiceProviderConfig) MarshalJSON() ([]byte, error) {
-	pairs := v.makePairs()
+	v.mu.RLock()
+	defer v.mu.RUnlock()
 
 	var buf bytes.Buffer
 	enc := json.NewEncoder(&buf)
 	buf.WriteByte('{')
-	for i, pair := range pairs {
+	for i, k := range v.Keys() {
+		var val interface{}
+		if err := v.getNoLock(k, &val, true); err != nil {
+			return nil, fmt.Errorf(`failed to retrieve value for field %q: %w`, k, err)
+		}
+
 		if i > 0 {
 			buf.WriteByte(',')
 		}
-		if err := enc.Encode(pair.Name); err != nil {
+		if err := enc.Encode(k); err != nil {
 			return nil, fmt.Errorf(`failed to encode map key name: %w`, err)
 		}
 		buf.WriteByte(':')
-		if err := enc.Encode(pair.Value); err != nil {
-			return nil, fmt.Errorf(`failed to encode map value for %q: %w`, pair.Name, err)
+		if err := enc.Encode(val); err != nil {
+			return nil, fmt.Errorf(`failed to encode map value for %q: %w`, k, err)
 		}
 	}
 	buf.WriteByte('}')
@@ -464,17 +529,17 @@ LOOP:
 				}
 				v.authenticationSchemes = val
 			case ServiceProviderConfigBulkKey:
-				var val *BulkSupport
+				var val BulkSupport
 				if err := dec.Decode(&val); err != nil {
 					return fmt.Errorf(`failed to decode value for %q: %w`, ServiceProviderConfigBulkKey, err)
 				}
-				v.bulk = val
+				v.bulk = &val
 			case ServiceProviderConfigChangePasswordKey:
-				var val *GenericSupport
+				var val GenericSupport
 				if err := dec.Decode(&val); err != nil {
 					return fmt.Errorf(`failed to decode value for %q: %w`, ServiceProviderConfigChangePasswordKey, err)
 				}
-				v.changePassword = val
+				v.changePassword = &val
 			case ServiceProviderConfigDocumentationURIKey:
 				var val string
 				if err := dec.Decode(&val); err != nil {
@@ -482,23 +547,23 @@ LOOP:
 				}
 				v.documentationURI = &val
 			case ServiceProviderConfigETagKey:
-				var val *GenericSupport
+				var val GenericSupport
 				if err := dec.Decode(&val); err != nil {
 					return fmt.Errorf(`failed to decode value for %q: %w`, ServiceProviderConfigETagKey, err)
 				}
-				v.etag = val
+				v.etag = &val
 			case ServiceProviderConfigFilterKey:
-				var val *FilterSupport
+				var val FilterSupport
 				if err := dec.Decode(&val); err != nil {
 					return fmt.Errorf(`failed to decode value for %q: %w`, ServiceProviderConfigFilterKey, err)
 				}
-				v.filter = val
+				v.filter = &val
 			case ServiceProviderConfigPatchKey:
-				var val *GenericSupport
+				var val GenericSupport
 				if err := dec.Decode(&val); err != nil {
 					return fmt.Errorf(`failed to decode value for %q: %w`, ServiceProviderConfigPatchKey, err)
 				}
-				v.patch = val
+				v.patch = &val
 			case ServiceProviderConfigSchemasKey:
 				var val schemas
 				if err := dec.Decode(&val); err != nil {
@@ -506,15 +571,15 @@ LOOP:
 				}
 				v.schemas = &val
 			case ServiceProviderConfigSortKey:
-				var val *GenericSupport
+				var val GenericSupport
 				if err := dec.Decode(&val); err != nil {
 					return fmt.Errorf(`failed to decode value for %q: %w`, ServiceProviderConfigSortKey, err)
 				}
-				v.sort = val
+				v.sort = &val
 			default:
 				var val interface{}
-				if err := extraFieldsDecoder(tok, dec, &val); err != nil {
-					return err
+				if err := v.decodeExtraField(tok, dec, &val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, tok, err)
 				}
 				if extra == nil {
 					extra = make(map[string]interface{})
@@ -550,118 +615,36 @@ func (b *ServiceProviderConfigBuilder) initialize() {
 	b.object.schemas.Add(ServiceProviderConfigSchemaURI)
 }
 func (b *ServiceProviderConfigBuilder) AuthenticationSchemes(in ...*AuthenticationScheme) *ServiceProviderConfigBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(ServiceProviderConfigAuthenticationSchemesKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(ServiceProviderConfigAuthenticationSchemesKey, in)
 }
 func (b *ServiceProviderConfigBuilder) Bulk(in *BulkSupport) *ServiceProviderConfigBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(ServiceProviderConfigBulkKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(ServiceProviderConfigBulkKey, in)
 }
 func (b *ServiceProviderConfigBuilder) ChangePassword(in *GenericSupport) *ServiceProviderConfigBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(ServiceProviderConfigChangePasswordKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(ServiceProviderConfigChangePasswordKey, in)
 }
 func (b *ServiceProviderConfigBuilder) DocumentationURI(in string) *ServiceProviderConfigBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(ServiceProviderConfigDocumentationURIKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(ServiceProviderConfigDocumentationURIKey, in)
 }
 func (b *ServiceProviderConfigBuilder) ETag(in *GenericSupport) *ServiceProviderConfigBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(ServiceProviderConfigETagKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(ServiceProviderConfigETagKey, in)
 }
 func (b *ServiceProviderConfigBuilder) Filter(in *FilterSupport) *ServiceProviderConfigBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(ServiceProviderConfigFilterKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(ServiceProviderConfigFilterKey, in)
 }
 func (b *ServiceProviderConfigBuilder) Patch(in *GenericSupport) *ServiceProviderConfigBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(ServiceProviderConfigPatchKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(ServiceProviderConfigPatchKey, in)
 }
 func (b *ServiceProviderConfigBuilder) Schemas(in ...string) *ServiceProviderConfigBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(ServiceProviderConfigSchemasKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(ServiceProviderConfigSchemasKey, in)
 }
 func (b *ServiceProviderConfigBuilder) Sort(in *GenericSupport) *ServiceProviderConfigBuilder {
+	return b.SetField(ServiceProviderConfigSortKey, in)
+}
+
+// SetField sets the value of any field. The name should be the JSON field name.
+// Type check will only be performed for pre-defined types
+func (b *ServiceProviderConfigBuilder) SetField(name string, value interface{}) *ServiceProviderConfigBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 
@@ -670,12 +653,11 @@ func (b *ServiceProviderConfigBuilder) Sort(in *GenericSupport) *ServiceProvider
 		return b
 	}
 
-	if err := b.object.Set(ServiceProviderConfigSortKey, in); err != nil {
+	if err := b.object.Set(name, value); err != nil {
 		b.err = err
 	}
 	return b
 }
-
 func (b *ServiceProviderConfigBuilder) Build() (*ServiceProviderConfig, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
@@ -707,7 +689,6 @@ func (b *ServiceProviderConfigBuilder) Build() (*ServiceProviderConfig, error) {
 	b.once.Do(b.initialize)
 	return obj, nil
 }
-
 func (b *ServiceProviderConfigBuilder) MustBuild() *ServiceProviderConfig {
 	object, err := b.Build()
 	if err != nil {
@@ -720,7 +701,17 @@ func (b *ServiceProviderConfigBuilder) From(in *ServiceProviderConfig) *ServiceP
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.once.Do(b.initialize)
-	b.object = in.Clone()
+	if b.err != nil {
+		return b
+	}
+
+	var cloned ServiceProviderConfig
+	if err := in.Clone(&cloned); err != nil {
+		b.err = err
+		return b
+	}
+
+	b.object = &cloned
 	return b
 }
 
@@ -742,11 +733,16 @@ func (b *ServiceProviderConfigBuilder) Extension(uri string, value interface{}) 
 	return b
 }
 
-func (v *ServiceProviderConfig) AsMap(dst map[string]interface{}) error {
+// AsMap returns the resource as a Go map
+func (v *ServiceProviderConfig) AsMap(m map[string]interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	for _, pair := range v.makePairs() {
-		dst[pair.Name] = pair.Value
+
+	for _, key := range v.Keys() {
+		var val interface{}
+		if err := v.getNoLock(key, &val, false); err != nil {
+			m[key] = val
+		}
 	}
 	return nil
 }
@@ -769,6 +765,23 @@ func (v *ServiceProviderConfig) GetExtension(name, uri string, dst interface{}) 
 		return fmt.Errorf(`extension does not implement Get(string, interface{}) error`)
 	}
 	return getter.Get(name, dst)
+}
+
+func (*ServiceProviderConfig) decodeExtraField(name string, dec *json.Decoder, dst interface{}) error {
+	// we can get an instance of the resource object
+	if rx, ok := registry.LookupByURI(name); ok {
+		if err := dec.Decode(&rx); err != nil {
+			return fmt.Errorf(`failed to decode value for key %q: %w`, name, err)
+		}
+		if err := blackmagic.AssignIfCompatible(dst, rx); err != nil {
+			return err
+		}
+	} else {
+		if err := dec.Decode(dst); err != nil {
+			return fmt.Errorf(`failed to decode value for key %q: %w`, name, err)
+		}
+	}
+	return nil
 }
 
 func (b *Builder) ServiceProviderConfig() *ServiceProviderConfigBuilder {

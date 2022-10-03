@@ -2,7 +2,7 @@ module github.com/cybozu-go/scim/tools/schema
 
 go 1.19
 
-require github.com/lestrrat-go/sketch v0.0.0-20220929123716-f53fc8a8bdc8
+require github.com/lestrrat-go/sketch v0.0.0-20221003000612-502ab5c3d5cf
 
 require (
 	github.com/lestrrat-go/multifs v0.0.0-20220929095432-73523184bb48 // indirect

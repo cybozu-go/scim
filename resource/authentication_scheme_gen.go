@@ -42,6 +42,14 @@ const (
 func (v *AuthenticationScheme) Get(key string, dst interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
+	return v.getNoLock(key, dst, false)
+}
+
+// getNoLock is a utility method that is called from Get, MarshalJSON, etc, but
+// it can be used from user-supplied code. Unlike Get, it avoids locking for
+// each call, so the user needs to explicitly lock the object before using,
+// but otherwise should be faster than sing Get directly
+func (v *AuthenticationScheme) getNoLock(key string, dst interface{}, raw bool) error {
 	switch key {
 	case AuthenticationSchemeDescriptionKey:
 		if val := v.description; val != nil {
@@ -119,30 +127,88 @@ func (v *AuthenticationScheme) Set(key string, value interface{}) error {
 	return nil
 }
 
+// Has returns true if the field specified by the argument has been populated.
+// The field name must be the JSON field name, not the Go-structure's field name.
+func (v *AuthenticationScheme) Has(name string) bool {
+	switch name {
+	case AuthenticationSchemeDescriptionKey:
+		return v.description != nil
+	case AuthenticationSchemeDocumentationURIKey:
+		return v.documentationURI != nil
+	case AuthenticationSchemeNameKey:
+		return v.name != nil
+	case AuthenticationSchemeSpecURIKey:
+		return v.specURI != nil
+	case AuthenticationSchemeTypeKey:
+		return v.typ != nil
+	default:
+		if v.extra != nil {
+			if _, ok := v.extra[name]; ok {
+				return true
+			}
+		}
+		return false
+	}
+}
+
+// Keys returns a slice of string comprising of JSON field names whose values
+// are present in the object.
+func (v *AuthenticationScheme) Keys() []string {
+	keys := make([]string, 0, 5)
+	if v.description != nil {
+		keys = append(keys, AuthenticationSchemeDescriptionKey)
+	}
+	if v.documentationURI != nil {
+		keys = append(keys, AuthenticationSchemeDocumentationURIKey)
+	}
+	if v.name != nil {
+		keys = append(keys, AuthenticationSchemeNameKey)
+	}
+	if v.specURI != nil {
+		keys = append(keys, AuthenticationSchemeSpecURIKey)
+	}
+	if v.typ != nil {
+		keys = append(keys, AuthenticationSchemeTypeKey)
+	}
+
+	if len(v.extra) > 0 {
+		for k := range v.extra {
+			keys = append(keys, k)
+		}
+	}
+	sort.Strings(keys)
+	return keys
+}
+
+// HasDescription returns true if the field `description` has been populated
 func (v *AuthenticationScheme) HasDescription() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.description != nil
 }
 
+// HasDocumentationURI returns true if the field `documentationUri` has been populated
 func (v *AuthenticationScheme) HasDocumentationURI() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.documentationURI != nil
 }
 
+// HasName returns true if the field `name` has been populated
 func (v *AuthenticationScheme) HasName() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.name != nil
 }
 
+// HasSpecURI returns true if the field `specUri` has been populated
 func (v *AuthenticationScheme) HasSpecURI() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.specURI != nil
 }
 
+// HasType returns true if the field `type` has been populated
 func (v *AuthenticationScheme) HasType() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -217,44 +283,22 @@ func (v *AuthenticationScheme) Remove(key string) error {
 	return nil
 }
 
-func (v *AuthenticationScheme) makePairs() []*fieldPair {
-	pairs := make([]*fieldPair, 0, 5)
-	if val := v.description; val != nil {
-		pairs = append(pairs, &fieldPair{Name: AuthenticationSchemeDescriptionKey, Value: *val})
-	}
-	if val := v.documentationURI; val != nil {
-		pairs = append(pairs, &fieldPair{Name: AuthenticationSchemeDocumentationURIKey, Value: *val})
-	}
-	if val := v.name; val != nil {
-		pairs = append(pairs, &fieldPair{Name: AuthenticationSchemeNameKey, Value: *val})
-	}
-	if val := v.specURI; val != nil {
-		pairs = append(pairs, &fieldPair{Name: AuthenticationSchemeSpecURIKey, Value: *val})
-	}
-	if val := v.typ; val != nil {
-		pairs = append(pairs, &fieldPair{Name: AuthenticationSchemeTypeKey, Value: *val})
-	}
-
-	for key, val := range v.extra {
-		pairs = append(pairs, &fieldPair{Name: key, Value: val})
-	}
-
-	sort.Slice(pairs, func(i, j int) bool {
-		return pairs[i].Name < pairs[j].Name
-	})
-	return pairs
-}
-
-func (v *AuthenticationScheme) Clone() *AuthenticationScheme {
+func (v *AuthenticationScheme) Clone(dst interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return &AuthenticationScheme{
+
+	extra := make(map[string]interface{})
+	for key, val := range v.extra {
+		extra[key] = val
+	}
+	return blackmagic.AssignIfCompatible(dst, &AuthenticationScheme{
 		description:      v.description,
 		documentationURI: v.documentationURI,
 		name:             v.name,
 		specURI:          v.specURI,
 		typ:              v.typ,
-	}
+		extra:            extra,
+	})
 }
 
 // MarshalJSON serializes AuthenticationScheme into JSON.
@@ -262,21 +306,27 @@ func (v *AuthenticationScheme) Clone() *AuthenticationScheme {
 // assigned to them, as well as all extra fields. All of these
 // fields are sorted in alphabetical order.
 func (v *AuthenticationScheme) MarshalJSON() ([]byte, error) {
-	pairs := v.makePairs()
+	v.mu.RLock()
+	defer v.mu.RUnlock()
 
 	var buf bytes.Buffer
 	enc := json.NewEncoder(&buf)
 	buf.WriteByte('{')
-	for i, pair := range pairs {
+	for i, k := range v.Keys() {
+		var val interface{}
+		if err := v.getNoLock(k, &val, true); err != nil {
+			return nil, fmt.Errorf(`failed to retrieve value for field %q: %w`, k, err)
+		}
+
 		if i > 0 {
 			buf.WriteByte(',')
 		}
-		if err := enc.Encode(pair.Name); err != nil {
+		if err := enc.Encode(k); err != nil {
 			return nil, fmt.Errorf(`failed to encode map key name: %w`, err)
 		}
 		buf.WriteByte(':')
-		if err := enc.Encode(pair.Value); err != nil {
-			return nil, fmt.Errorf(`failed to encode map value for %q: %w`, pair.Name, err)
+		if err := enc.Encode(val); err != nil {
+			return nil, fmt.Errorf(`failed to encode map value for %q: %w`, k, err)
 		}
 	}
 	buf.WriteByte('}')
@@ -351,8 +401,8 @@ LOOP:
 				v.typ = &val
 			default:
 				var val interface{}
-				if err := extraFieldsDecoder(tok, dec, &val); err != nil {
-					return err
+				if err := v.decodeExtraField(tok, dec, &val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, tok, err)
 				}
 				if extra == nil {
 					extra = make(map[string]interface{})
@@ -386,62 +436,24 @@ func (b *AuthenticationSchemeBuilder) initialize() {
 	b.object = &AuthenticationScheme{}
 }
 func (b *AuthenticationSchemeBuilder) Description(in string) *AuthenticationSchemeBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(AuthenticationSchemeDescriptionKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(AuthenticationSchemeDescriptionKey, in)
 }
 func (b *AuthenticationSchemeBuilder) DocumentationURI(in string) *AuthenticationSchemeBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(AuthenticationSchemeDocumentationURIKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(AuthenticationSchemeDocumentationURIKey, in)
 }
 func (b *AuthenticationSchemeBuilder) Name(in string) *AuthenticationSchemeBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(AuthenticationSchemeNameKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(AuthenticationSchemeNameKey, in)
 }
 func (b *AuthenticationSchemeBuilder) SpecURI(in string) *AuthenticationSchemeBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(AuthenticationSchemeSpecURIKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(AuthenticationSchemeSpecURIKey, in)
 }
 func (b *AuthenticationSchemeBuilder) Type(in AuthenticationSchemeType) *AuthenticationSchemeBuilder {
+	return b.SetField(AuthenticationSchemeTypeKey, in)
+}
+
+// SetField sets the value of any field. The name should be the JSON field name.
+// Type check will only be performed for pre-defined types
+func (b *AuthenticationSchemeBuilder) SetField(name string, value interface{}) *AuthenticationSchemeBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 
@@ -450,12 +462,11 @@ func (b *AuthenticationSchemeBuilder) Type(in AuthenticationSchemeType) *Authent
 		return b
 	}
 
-	if err := b.object.Set(AuthenticationSchemeTypeKey, in); err != nil {
+	if err := b.object.Set(name, value); err != nil {
 		b.err = err
 	}
 	return b
 }
-
 func (b *AuthenticationSchemeBuilder) Build() (*AuthenticationScheme, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
@@ -475,7 +486,6 @@ func (b *AuthenticationSchemeBuilder) Build() (*AuthenticationScheme, error) {
 	b.once.Do(b.initialize)
 	return obj, nil
 }
-
 func (b *AuthenticationSchemeBuilder) MustBuild() *AuthenticationScheme {
 	object, err := b.Build()
 	if err != nil {
@@ -488,15 +498,30 @@ func (b *AuthenticationSchemeBuilder) From(in *AuthenticationScheme) *Authentica
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.once.Do(b.initialize)
-	b.object = in.Clone()
+	if b.err != nil {
+		return b
+	}
+
+	var cloned AuthenticationScheme
+	if err := in.Clone(&cloned); err != nil {
+		b.err = err
+		return b
+	}
+
+	b.object = &cloned
 	return b
 }
 
-func (v *AuthenticationScheme) AsMap(dst map[string]interface{}) error {
+// AsMap returns the resource as a Go map
+func (v *AuthenticationScheme) AsMap(m map[string]interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	for _, pair := range v.makePairs() {
-		dst[pair.Name] = pair.Value
+
+	for _, key := range v.Keys() {
+		var val interface{}
+		if err := v.getNoLock(key, &val, false); err != nil {
+			m[key] = val
+		}
 	}
 	return nil
 }
@@ -519,6 +544,23 @@ func (v *AuthenticationScheme) GetExtension(name, uri string, dst interface{}) e
 		return fmt.Errorf(`extension does not implement Get(string, interface{}) error`)
 	}
 	return getter.Get(name, dst)
+}
+
+func (*AuthenticationScheme) decodeExtraField(name string, dec *json.Decoder, dst interface{}) error {
+	// we can get an instance of the resource object
+	if rx, ok := registry.LookupByURI(name); ok {
+		if err := dec.Decode(&rx); err != nil {
+			return fmt.Errorf(`failed to decode value for key %q: %w`, name, err)
+		}
+		if err := blackmagic.AssignIfCompatible(dst, rx); err != nil {
+			return err
+		}
+	} else {
+		if err := dec.Decode(dst); err != nil {
+			return fmt.Errorf(`failed to decode value for key %q: %w`, name, err)
+		}
+	}
+	return nil
 }
 
 func (b *Builder) AuthenticationScheme() *AuthenticationSchemeBuilder {

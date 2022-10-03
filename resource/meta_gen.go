@@ -17,7 +17,7 @@ func init() {
 	RegisterBuilder("Meta", "", MetaBuilder{})
 }
 
-// Meta represents the `meta` field included in SCIM responses. See https://datatracker.ietf.org/doc/html/rfc7643#section-3.1 for details
+// represents the `meta` field included in SCIM responses. See https://datatracker.ietf.org/doc/html/rfc7643#section-3.1 for details
 type Meta struct {
 	mu           sync.RWMutex
 	resourceType *string
@@ -44,6 +44,14 @@ const (
 func (v *Meta) Get(key string, dst interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
+	return v.getNoLock(key, dst, false)
+}
+
+// getNoLock is a utility method that is called from Get, MarshalJSON, etc, but
+// it can be used from user-supplied code. Unlike Get, it avoids locking for
+// each call, so the user needs to explicitly lock the object before using,
+// but otherwise should be faster than sing Get directly
+func (v *Meta) getNoLock(key string, dst interface{}, raw bool) error {
 	switch key {
 	case MetaResourceTypeKey:
 		if val := v.resourceType; val != nil {
@@ -121,30 +129,88 @@ func (v *Meta) Set(key string, value interface{}) error {
 	return nil
 }
 
+// Has returns true if the field specified by the argument has been populated.
+// The field name must be the JSON field name, not the Go-structure's field name.
+func (v *Meta) Has(name string) bool {
+	switch name {
+	case MetaResourceTypeKey:
+		return v.resourceType != nil
+	case MetaLocationKey:
+		return v.location != nil
+	case MetaVersionKey:
+		return v.version != nil
+	case MetaCreatedKey:
+		return v.created != nil
+	case MetaLastModifiedKey:
+		return v.lastModified != nil
+	default:
+		if v.extra != nil {
+			if _, ok := v.extra[name]; ok {
+				return true
+			}
+		}
+		return false
+	}
+}
+
+// Keys returns a slice of string comprising of JSON field names whose values
+// are present in the object.
+func (v *Meta) Keys() []string {
+	keys := make([]string, 0, 5)
+	if v.resourceType != nil {
+		keys = append(keys, MetaResourceTypeKey)
+	}
+	if v.location != nil {
+		keys = append(keys, MetaLocationKey)
+	}
+	if v.version != nil {
+		keys = append(keys, MetaVersionKey)
+	}
+	if v.created != nil {
+		keys = append(keys, MetaCreatedKey)
+	}
+	if v.lastModified != nil {
+		keys = append(keys, MetaLastModifiedKey)
+	}
+
+	if len(v.extra) > 0 {
+		for k := range v.extra {
+			keys = append(keys, k)
+		}
+	}
+	sort.Strings(keys)
+	return keys
+}
+
+// HasResourceType returns true if the field `resourceType` has been populated
 func (v *Meta) HasResourceType() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.resourceType != nil
 }
 
+// HasLocation returns true if the field `location` has been populated
 func (v *Meta) HasLocation() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.location != nil
 }
 
+// HasVersion returns true if the field `version` has been populated
 func (v *Meta) HasVersion() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.version != nil
 }
 
+// HasCreated returns true if the field `created` has been populated
 func (v *Meta) HasCreated() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.created != nil
 }
 
+// HasLastModified returns true if the field `lastModified` has been populated
 func (v *Meta) HasLastModified() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -219,44 +285,22 @@ func (v *Meta) Remove(key string) error {
 	return nil
 }
 
-func (v *Meta) makePairs() []*fieldPair {
-	pairs := make([]*fieldPair, 0, 5)
-	if val := v.resourceType; val != nil {
-		pairs = append(pairs, &fieldPair{Name: MetaResourceTypeKey, Value: *val})
-	}
-	if val := v.location; val != nil {
-		pairs = append(pairs, &fieldPair{Name: MetaLocationKey, Value: *val})
-	}
-	if val := v.version; val != nil {
-		pairs = append(pairs, &fieldPair{Name: MetaVersionKey, Value: *val})
-	}
-	if val := v.created; val != nil {
-		pairs = append(pairs, &fieldPair{Name: MetaCreatedKey, Value: *val})
-	}
-	if val := v.lastModified; val != nil {
-		pairs = append(pairs, &fieldPair{Name: MetaLastModifiedKey, Value: *val})
-	}
-
-	for key, val := range v.extra {
-		pairs = append(pairs, &fieldPair{Name: key, Value: val})
-	}
-
-	sort.Slice(pairs, func(i, j int) bool {
-		return pairs[i].Name < pairs[j].Name
-	})
-	return pairs
-}
-
-func (v *Meta) Clone() *Meta {
+func (v *Meta) Clone(dst interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return &Meta{
+
+	extra := make(map[string]interface{})
+	for key, val := range v.extra {
+		extra[key] = val
+	}
+	return blackmagic.AssignIfCompatible(dst, &Meta{
 		resourceType: v.resourceType,
 		location:     v.location,
 		version:      v.version,
 		created:      v.created,
 		lastModified: v.lastModified,
-	}
+		extra:        extra,
+	})
 }
 
 // MarshalJSON serializes Meta into JSON.
@@ -264,21 +308,27 @@ func (v *Meta) Clone() *Meta {
 // assigned to them, as well as all extra fields. All of these
 // fields are sorted in alphabetical order.
 func (v *Meta) MarshalJSON() ([]byte, error) {
-	pairs := v.makePairs()
+	v.mu.RLock()
+	defer v.mu.RUnlock()
 
 	var buf bytes.Buffer
 	enc := json.NewEncoder(&buf)
 	buf.WriteByte('{')
-	for i, pair := range pairs {
+	for i, k := range v.Keys() {
+		var val interface{}
+		if err := v.getNoLock(k, &val, true); err != nil {
+			return nil, fmt.Errorf(`failed to retrieve value for field %q: %w`, k, err)
+		}
+
 		if i > 0 {
 			buf.WriteByte(',')
 		}
-		if err := enc.Encode(pair.Name); err != nil {
+		if err := enc.Encode(k); err != nil {
 			return nil, fmt.Errorf(`failed to encode map key name: %w`, err)
 		}
 		buf.WriteByte(':')
-		if err := enc.Encode(pair.Value); err != nil {
-			return nil, fmt.Errorf(`failed to encode map value for %q: %w`, pair.Name, err)
+		if err := enc.Encode(val); err != nil {
+			return nil, fmt.Errorf(`failed to encode map value for %q: %w`, k, err)
 		}
 	}
 	buf.WriteByte('}')
@@ -353,8 +403,8 @@ LOOP:
 				v.lastModified = &val
 			default:
 				var val interface{}
-				if err := extraFieldsDecoder(tok, dec, &val); err != nil {
-					return err
+				if err := v.decodeExtraField(tok, dec, &val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, tok, err)
 				}
 				if extra == nil {
 					extra = make(map[string]interface{})
@@ -388,62 +438,24 @@ func (b *MetaBuilder) initialize() {
 	b.object = &Meta{}
 }
 func (b *MetaBuilder) ResourceType(in string) *MetaBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(MetaResourceTypeKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(MetaResourceTypeKey, in)
 }
 func (b *MetaBuilder) Location(in string) *MetaBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(MetaLocationKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(MetaLocationKey, in)
 }
 func (b *MetaBuilder) Version(in string) *MetaBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(MetaVersionKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(MetaVersionKey, in)
 }
 func (b *MetaBuilder) Created(in time.Time) *MetaBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(MetaCreatedKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(MetaCreatedKey, in)
 }
 func (b *MetaBuilder) LastModified(in time.Time) *MetaBuilder {
+	return b.SetField(MetaLastModifiedKey, in)
+}
+
+// SetField sets the value of any field. The name should be the JSON field name.
+// Type check will only be performed for pre-defined types
+func (b *MetaBuilder) SetField(name string, value interface{}) *MetaBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 
@@ -452,12 +464,11 @@ func (b *MetaBuilder) LastModified(in time.Time) *MetaBuilder {
 		return b
 	}
 
-	if err := b.object.Set(MetaLastModifiedKey, in); err != nil {
+	if err := b.object.Set(name, value); err != nil {
 		b.err = err
 	}
 	return b
 }
-
 func (b *MetaBuilder) Build() (*Meta, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
@@ -471,7 +482,6 @@ func (b *MetaBuilder) Build() (*Meta, error) {
 	b.once.Do(b.initialize)
 	return obj, nil
 }
-
 func (b *MetaBuilder) MustBuild() *Meta {
 	object, err := b.Build()
 	if err != nil {
@@ -480,11 +490,16 @@ func (b *MetaBuilder) MustBuild() *Meta {
 	return object
 }
 
-func (v *Meta) AsMap(dst map[string]interface{}) error {
+// AsMap returns the resource as a Go map
+func (v *Meta) AsMap(m map[string]interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	for _, pair := range v.makePairs() {
-		dst[pair.Name] = pair.Value
+
+	for _, key := range v.Keys() {
+		var val interface{}
+		if err := v.getNoLock(key, &val, false); err != nil {
+			m[key] = val
+		}
 	}
 	return nil
 }
@@ -507,6 +522,23 @@ func (v *Meta) GetExtension(name, uri string, dst interface{}) error {
 		return fmt.Errorf(`extension does not implement Get(string, interface{}) error`)
 	}
 	return getter.Get(name, dst)
+}
+
+func (*Meta) decodeExtraField(name string, dec *json.Decoder, dst interface{}) error {
+	// we can get an instance of the resource object
+	if rx, ok := registry.LookupByURI(name); ok {
+		if err := dec.Decode(&rx); err != nil {
+			return fmt.Errorf(`failed to decode value for key %q: %w`, name, err)
+		}
+		if err := blackmagic.AssignIfCompatible(dst, rx); err != nil {
+			return err
+		}
+	} else {
+		if err := dec.Decode(dst); err != nil {
+			return fmt.Errorf(`failed to decode value for key %q: %w`, name, err)
+		}
+	}
+	return nil
 }
 
 func (b *Builder) Meta() *MetaBuilder {

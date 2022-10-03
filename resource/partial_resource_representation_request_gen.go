@@ -36,6 +36,14 @@ const (
 func (v *PartialResourceRepresentationRequest) Get(key string, dst interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
+	return v.getNoLock(key, dst, false)
+}
+
+// getNoLock is a utility method that is called from Get, MarshalJSON, etc, but
+// it can be used from user-supplied code. Unlike Get, it avoids locking for
+// each call, so the user needs to explicitly lock the object before using,
+// but otherwise should be faster than sing Get directly
+func (v *PartialResourceRepresentationRequest) getNoLock(key string, dst interface{}, raw bool) error {
 	switch key {
 	case PartialResourceRepresentationRequestAttributesKey:
 		if val := v.attributes; val != nil {
@@ -83,12 +91,52 @@ func (v *PartialResourceRepresentationRequest) Set(key string, value interface{}
 	return nil
 }
 
+// Has returns true if the field specified by the argument has been populated.
+// The field name must be the JSON field name, not the Go-structure's field name.
+func (v *PartialResourceRepresentationRequest) Has(name string) bool {
+	switch name {
+	case PartialResourceRepresentationRequestAttributesKey:
+		return v.attributes != nil
+	case PartialResourceRepresentationRequestExcludedAttributesKey:
+		return v.excludedAttributes != nil
+	default:
+		if v.extra != nil {
+			if _, ok := v.extra[name]; ok {
+				return true
+			}
+		}
+		return false
+	}
+}
+
+// Keys returns a slice of string comprising of JSON field names whose values
+// are present in the object.
+func (v *PartialResourceRepresentationRequest) Keys() []string {
+	keys := make([]string, 0, 2)
+	if v.attributes != nil {
+		keys = append(keys, PartialResourceRepresentationRequestAttributesKey)
+	}
+	if v.excludedAttributes != nil {
+		keys = append(keys, PartialResourceRepresentationRequestExcludedAttributesKey)
+	}
+
+	if len(v.extra) > 0 {
+		for k := range v.extra {
+			keys = append(keys, k)
+		}
+	}
+	sort.Strings(keys)
+	return keys
+}
+
+// HasAttributes returns true if the field `attributes` has been populated
 func (v *PartialResourceRepresentationRequest) HasAttributes() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.attributes != nil
 }
 
+// HasExcludedAttributes returns true if the field `excludedAttributes` has been populated
 func (v *PartialResourceRepresentationRequest) HasExcludedAttributes() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -130,32 +178,19 @@ func (v *PartialResourceRepresentationRequest) Remove(key string) error {
 	return nil
 }
 
-func (v *PartialResourceRepresentationRequest) makePairs() []*fieldPair {
-	pairs := make([]*fieldPair, 0, 2)
-	if val := v.attributes; len(val) > 0 {
-		pairs = append(pairs, &fieldPair{Name: PartialResourceRepresentationRequestAttributesKey, Value: val})
-	}
-	if val := v.excludedAttributes; len(val) > 0 {
-		pairs = append(pairs, &fieldPair{Name: PartialResourceRepresentationRequestExcludedAttributesKey, Value: val})
-	}
-
-	for key, val := range v.extra {
-		pairs = append(pairs, &fieldPair{Name: key, Value: val})
-	}
-
-	sort.Slice(pairs, func(i, j int) bool {
-		return pairs[i].Name < pairs[j].Name
-	})
-	return pairs
-}
-
-func (v *PartialResourceRepresentationRequest) Clone() *PartialResourceRepresentationRequest {
+func (v *PartialResourceRepresentationRequest) Clone(dst interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return &PartialResourceRepresentationRequest{
+
+	extra := make(map[string]interface{})
+	for key, val := range v.extra {
+		extra[key] = val
+	}
+	return blackmagic.AssignIfCompatible(dst, &PartialResourceRepresentationRequest{
 		attributes:         v.attributes,
 		excludedAttributes: v.excludedAttributes,
-	}
+		extra:              extra,
+	})
 }
 
 // MarshalJSON serializes PartialResourceRepresentationRequest into JSON.
@@ -163,21 +198,27 @@ func (v *PartialResourceRepresentationRequest) Clone() *PartialResourceRepresent
 // assigned to them, as well as all extra fields. All of these
 // fields are sorted in alphabetical order.
 func (v *PartialResourceRepresentationRequest) MarshalJSON() ([]byte, error) {
-	pairs := v.makePairs()
+	v.mu.RLock()
+	defer v.mu.RUnlock()
 
 	var buf bytes.Buffer
 	enc := json.NewEncoder(&buf)
 	buf.WriteByte('{')
-	for i, pair := range pairs {
+	for i, k := range v.Keys() {
+		var val interface{}
+		if err := v.getNoLock(k, &val, true); err != nil {
+			return nil, fmt.Errorf(`failed to retrieve value for field %q: %w`, k, err)
+		}
+
 		if i > 0 {
 			buf.WriteByte(',')
 		}
-		if err := enc.Encode(pair.Name); err != nil {
+		if err := enc.Encode(k); err != nil {
 			return nil, fmt.Errorf(`failed to encode map key name: %w`, err)
 		}
 		buf.WriteByte(':')
-		if err := enc.Encode(pair.Value); err != nil {
-			return nil, fmt.Errorf(`failed to encode map value for %q: %w`, pair.Name, err)
+		if err := enc.Encode(val); err != nil {
+			return nil, fmt.Errorf(`failed to encode map value for %q: %w`, k, err)
 		}
 	}
 	buf.WriteByte('}')
@@ -231,8 +272,8 @@ LOOP:
 				v.excludedAttributes = val
 			default:
 				var val interface{}
-				if err := extraFieldsDecoder(tok, dec, &val); err != nil {
-					return err
+				if err := v.decodeExtraField(tok, dec, &val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, tok, err)
 				}
 				if extra == nil {
 					extra = make(map[string]interface{})
@@ -266,20 +307,15 @@ func (b *PartialResourceRepresentationRequestBuilder) initialize() {
 	b.object = &PartialResourceRepresentationRequest{}
 }
 func (b *PartialResourceRepresentationRequestBuilder) Attributes(in ...string) *PartialResourceRepresentationRequestBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(PartialResourceRepresentationRequestAttributesKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(PartialResourceRepresentationRequestAttributesKey, in)
 }
 func (b *PartialResourceRepresentationRequestBuilder) ExcludedAttributes(in ...string) *PartialResourceRepresentationRequestBuilder {
+	return b.SetField(PartialResourceRepresentationRequestExcludedAttributesKey, in)
+}
+
+// SetField sets the value of any field. The name should be the JSON field name.
+// Type check will only be performed for pre-defined types
+func (b *PartialResourceRepresentationRequestBuilder) SetField(name string, value interface{}) *PartialResourceRepresentationRequestBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 
@@ -288,12 +324,11 @@ func (b *PartialResourceRepresentationRequestBuilder) ExcludedAttributes(in ...s
 		return b
 	}
 
-	if err := b.object.Set(PartialResourceRepresentationRequestExcludedAttributesKey, in); err != nil {
+	if err := b.object.Set(name, value); err != nil {
 		b.err = err
 	}
 	return b
 }
-
 func (b *PartialResourceRepresentationRequestBuilder) Build() (*PartialResourceRepresentationRequest, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
@@ -307,7 +342,6 @@ func (b *PartialResourceRepresentationRequestBuilder) Build() (*PartialResourceR
 	b.once.Do(b.initialize)
 	return obj, nil
 }
-
 func (b *PartialResourceRepresentationRequestBuilder) MustBuild() *PartialResourceRepresentationRequest {
 	object, err := b.Build()
 	if err != nil {
@@ -320,15 +354,30 @@ func (b *PartialResourceRepresentationRequestBuilder) From(in *PartialResourceRe
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.once.Do(b.initialize)
-	b.object = in.Clone()
+	if b.err != nil {
+		return b
+	}
+
+	var cloned PartialResourceRepresentationRequest
+	if err := in.Clone(&cloned); err != nil {
+		b.err = err
+		return b
+	}
+
+	b.object = &cloned
 	return b
 }
 
-func (v *PartialResourceRepresentationRequest) AsMap(dst map[string]interface{}) error {
+// AsMap returns the resource as a Go map
+func (v *PartialResourceRepresentationRequest) AsMap(m map[string]interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	for _, pair := range v.makePairs() {
-		dst[pair.Name] = pair.Value
+
+	for _, key := range v.Keys() {
+		var val interface{}
+		if err := v.getNoLock(key, &val, false); err != nil {
+			m[key] = val
+		}
 	}
 	return nil
 }
@@ -351,6 +400,23 @@ func (v *PartialResourceRepresentationRequest) GetExtension(name, uri string, ds
 		return fmt.Errorf(`extension does not implement Get(string, interface{}) error`)
 	}
 	return getter.Get(name, dst)
+}
+
+func (*PartialResourceRepresentationRequest) decodeExtraField(name string, dec *json.Decoder, dst interface{}) error {
+	// we can get an instance of the resource object
+	if rx, ok := registry.LookupByURI(name); ok {
+		if err := dec.Decode(&rx); err != nil {
+			return fmt.Errorf(`failed to decode value for key %q: %w`, name, err)
+		}
+		if err := blackmagic.AssignIfCompatible(dst, rx); err != nil {
+			return err
+		}
+	} else {
+		if err := dec.Decode(dst); err != nil {
+			return fmt.Errorf(`failed to decode value for key %q: %w`, name, err)
+		}
+	}
+	return nil
 }
 
 func (b *Builder) PartialResourceRepresentationRequest() *PartialResourceRepresentationRequestBuilder {

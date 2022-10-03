@@ -7,11 +7,11 @@ import (
 
 type PhoneNumberValue string
 
-func (v *PhoneNumberValue) Get() string {
+func (v *PhoneNumberValue) GetValue() string {
 	return string(*v)
 }
 
-func (v *PhoneNumberValue) Accept(in interface{}) error {
+func (v *PhoneNumberValue) AcceptValue(in interface{}) error {
 	switch in := in.(type) {
 	case string:
 		// This is a very simplified version of validating RFC3966.

@@ -40,6 +40,14 @@ const (
 func (v *PhoneNumber) Get(key string, dst interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
+	return v.getNoLock(key, dst, false)
+}
+
+// getNoLock is a utility method that is called from Get, MarshalJSON, etc, but
+// it can be used from user-supplied code. Unlike Get, it avoids locking for
+// each call, so the user needs to explicitly lock the object before using,
+// but otherwise should be faster than sing Get directly
+func (v *PhoneNumber) getNoLock(key string, dst interface{}, raw bool) error {
 	switch key {
 	case PhoneNumberDisplayKey:
 		if val := v.display; val != nil {
@@ -55,7 +63,10 @@ func (v *PhoneNumber) Get(key string, dst interface{}) error {
 		}
 	case PhoneNumberValueKey:
 		if val := v.value; val != nil {
-			return blackmagic.AssignIfCompatible(dst, val.Get())
+			if raw {
+				return blackmagic.AssignIfCompatible(dst, *val)
+			}
+			return blackmagic.AssignIfCompatible(dst, val.GetValue())
 		}
 	default:
 		if v.extra != nil {
@@ -94,7 +105,7 @@ func (v *PhoneNumber) Set(key string, value interface{}) error {
 		v.typ = &converted
 	case PhoneNumberValueKey:
 		var object PhoneNumberValue
-		if err := object.Accept(value); err != nil {
+		if err := object.AcceptValue(value); err != nil {
 			return fmt.Errorf(`failed to accept value: %w`, err)
 		}
 		v.value = &object
@@ -107,24 +118,76 @@ func (v *PhoneNumber) Set(key string, value interface{}) error {
 	return nil
 }
 
+// Has returns true if the field specified by the argument has been populated.
+// The field name must be the JSON field name, not the Go-structure's field name.
+func (v *PhoneNumber) Has(name string) bool {
+	switch name {
+	case PhoneNumberDisplayKey:
+		return v.display != nil
+	case PhoneNumberPrimaryKey:
+		return v.primary != nil
+	case PhoneNumberTypeKey:
+		return v.typ != nil
+	case PhoneNumberValueKey:
+		return v.value != nil
+	default:
+		if v.extra != nil {
+			if _, ok := v.extra[name]; ok {
+				return true
+			}
+		}
+		return false
+	}
+}
+
+// Keys returns a slice of string comprising of JSON field names whose values
+// are present in the object.
+func (v *PhoneNumber) Keys() []string {
+	keys := make([]string, 0, 4)
+	if v.display != nil {
+		keys = append(keys, PhoneNumberDisplayKey)
+	}
+	if v.primary != nil {
+		keys = append(keys, PhoneNumberPrimaryKey)
+	}
+	if v.typ != nil {
+		keys = append(keys, PhoneNumberTypeKey)
+	}
+	if v.value != nil {
+		keys = append(keys, PhoneNumberValueKey)
+	}
+
+	if len(v.extra) > 0 {
+		for k := range v.extra {
+			keys = append(keys, k)
+		}
+	}
+	sort.Strings(keys)
+	return keys
+}
+
+// HasDisplay returns true if the field `display` has been populated
 func (v *PhoneNumber) HasDisplay() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.display != nil
 }
 
+// HasPrimary returns true if the field `primary` has been populated
 func (v *PhoneNumber) HasPrimary() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.primary != nil
 }
 
+// HasType returns true if the field `type` has been populated
 func (v *PhoneNumber) HasType() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.typ != nil
 }
 
+// HasValue returns true if the field `value` has been populated
 func (v *PhoneNumber) HasValue() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -162,7 +225,7 @@ func (v *PhoneNumber) Value() string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	if val := v.value; val != nil {
-		return val.Get()
+		return val.GetValue()
 	}
 	return ""
 }
@@ -188,40 +251,21 @@ func (v *PhoneNumber) Remove(key string) error {
 	return nil
 }
 
-func (v *PhoneNumber) makePairs() []*fieldPair {
-	pairs := make([]*fieldPair, 0, 4)
-	if val := v.display; val != nil {
-		pairs = append(pairs, &fieldPair{Name: PhoneNumberDisplayKey, Value: *val})
-	}
-	if val := v.primary; val != nil {
-		pairs = append(pairs, &fieldPair{Name: PhoneNumberPrimaryKey, Value: *val})
-	}
-	if val := v.typ; val != nil {
-		pairs = append(pairs, &fieldPair{Name: PhoneNumberTypeKey, Value: *val})
-	}
-	if val := v.value; val != nil {
-		pairs = append(pairs, &fieldPair{Name: PhoneNumberValueKey, Value: val.Get()})
-	}
-
-	for key, val := range v.extra {
-		pairs = append(pairs, &fieldPair{Name: key, Value: val})
-	}
-
-	sort.Slice(pairs, func(i, j int) bool {
-		return pairs[i].Name < pairs[j].Name
-	})
-	return pairs
-}
-
-func (v *PhoneNumber) Clone() *PhoneNumber {
+func (v *PhoneNumber) Clone(dst interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return &PhoneNumber{
+
+	extra := make(map[string]interface{})
+	for key, val := range v.extra {
+		extra[key] = val
+	}
+	return blackmagic.AssignIfCompatible(dst, &PhoneNumber{
 		display: v.display,
 		primary: v.primary,
 		typ:     v.typ,
 		value:   v.value,
-	}
+		extra:   extra,
+	})
 }
 
 // MarshalJSON serializes PhoneNumber into JSON.
@@ -229,21 +273,27 @@ func (v *PhoneNumber) Clone() *PhoneNumber {
 // assigned to them, as well as all extra fields. All of these
 // fields are sorted in alphabetical order.
 func (v *PhoneNumber) MarshalJSON() ([]byte, error) {
-	pairs := v.makePairs()
+	v.mu.RLock()
+	defer v.mu.RUnlock()
 
 	var buf bytes.Buffer
 	enc := json.NewEncoder(&buf)
 	buf.WriteByte('{')
-	for i, pair := range pairs {
+	for i, k := range v.Keys() {
+		var val interface{}
+		if err := v.getNoLock(k, &val, true); err != nil {
+			return nil, fmt.Errorf(`failed to retrieve value for field %q: %w`, k, err)
+		}
+
 		if i > 0 {
 			buf.WriteByte(',')
 		}
-		if err := enc.Encode(pair.Name); err != nil {
+		if err := enc.Encode(k); err != nil {
 			return nil, fmt.Errorf(`failed to encode map key name: %w`, err)
 		}
 		buf.WriteByte(':')
-		if err := enc.Encode(pair.Value); err != nil {
-			return nil, fmt.Errorf(`failed to encode map value for %q: %w`, pair.Name, err)
+		if err := enc.Encode(val); err != nil {
+			return nil, fmt.Errorf(`failed to encode map value for %q: %w`, k, err)
 		}
 	}
 	buf.WriteByte('}')
@@ -311,8 +361,8 @@ LOOP:
 				v.value = &val
 			default:
 				var val interface{}
-				if err := extraFieldsDecoder(tok, dec, &val); err != nil {
-					return err
+				if err := v.decodeExtraField(tok, dec, &val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, tok, err)
 				}
 				if extra == nil {
 					extra = make(map[string]interface{})
@@ -346,48 +396,21 @@ func (b *PhoneNumberBuilder) initialize() {
 	b.object = &PhoneNumber{}
 }
 func (b *PhoneNumberBuilder) Display(in string) *PhoneNumberBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(PhoneNumberDisplayKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(PhoneNumberDisplayKey, in)
 }
 func (b *PhoneNumberBuilder) Primary(in bool) *PhoneNumberBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(PhoneNumberPrimaryKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(PhoneNumberPrimaryKey, in)
 }
 func (b *PhoneNumberBuilder) Type(in string) *PhoneNumberBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(PhoneNumberTypeKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(PhoneNumberTypeKey, in)
 }
 func (b *PhoneNumberBuilder) Value(in string) *PhoneNumberBuilder {
+	return b.SetField(PhoneNumberValueKey, in)
+}
+
+// SetField sets the value of any field. The name should be the JSON field name.
+// Type check will only be performed for pre-defined types
+func (b *PhoneNumberBuilder) SetField(name string, value interface{}) *PhoneNumberBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 
@@ -396,12 +419,11 @@ func (b *PhoneNumberBuilder) Value(in string) *PhoneNumberBuilder {
 		return b
 	}
 
-	if err := b.object.Set(PhoneNumberValueKey, in); err != nil {
+	if err := b.object.Set(name, value); err != nil {
 		b.err = err
 	}
 	return b
 }
-
 func (b *PhoneNumberBuilder) Build() (*PhoneNumber, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
@@ -415,7 +437,6 @@ func (b *PhoneNumberBuilder) Build() (*PhoneNumber, error) {
 	b.once.Do(b.initialize)
 	return obj, nil
 }
-
 func (b *PhoneNumberBuilder) MustBuild() *PhoneNumber {
 	object, err := b.Build()
 	if err != nil {
@@ -428,15 +449,30 @@ func (b *PhoneNumberBuilder) From(in *PhoneNumber) *PhoneNumberBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.once.Do(b.initialize)
-	b.object = in.Clone()
+	if b.err != nil {
+		return b
+	}
+
+	var cloned PhoneNumber
+	if err := in.Clone(&cloned); err != nil {
+		b.err = err
+		return b
+	}
+
+	b.object = &cloned
 	return b
 }
 
-func (v *PhoneNumber) AsMap(dst map[string]interface{}) error {
+// AsMap returns the resource as a Go map
+func (v *PhoneNumber) AsMap(m map[string]interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	for _, pair := range v.makePairs() {
-		dst[pair.Name] = pair.Value
+
+	for _, key := range v.Keys() {
+		var val interface{}
+		if err := v.getNoLock(key, &val, false); err != nil {
+			m[key] = val
+		}
 	}
 	return nil
 }
@@ -459,6 +495,23 @@ func (v *PhoneNumber) GetExtension(name, uri string, dst interface{}) error {
 		return fmt.Errorf(`extension does not implement Get(string, interface{}) error`)
 	}
 	return getter.Get(name, dst)
+}
+
+func (*PhoneNumber) decodeExtraField(name string, dec *json.Decoder, dst interface{}) error {
+	// we can get an instance of the resource object
+	if rx, ok := registry.LookupByURI(name); ok {
+		if err := dec.Decode(&rx); err != nil {
+			return fmt.Errorf(`failed to decode value for key %q: %w`, name, err)
+		}
+		if err := blackmagic.AssignIfCompatible(dst, rx); err != nil {
+			return err
+		}
+	} else {
+		if err := dec.Decode(dst); err != nil {
+			return fmt.Errorf(`failed to decode value for key %q: %w`, name, err)
+		}
+	}
+	return nil
 }
 
 func (b *Builder) PhoneNumber() *PhoneNumberBuilder {

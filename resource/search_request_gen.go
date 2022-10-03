@@ -52,6 +52,14 @@ const (
 func (v *SearchRequest) Get(key string, dst interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
+	return v.getNoLock(key, dst, false)
+}
+
+// getNoLock is a utility method that is called from Get, MarshalJSON, etc, but
+// it can be used from user-supplied code. Unlike Get, it avoids locking for
+// each call, so the user needs to explicitly lock the object before using,
+// but otherwise should be faster than sing Get directly
+func (v *SearchRequest) getNoLock(key string, dst interface{}, raw bool) error {
 	switch key {
 	case SearchRequestAttributesKey:
 		if val := v.attributes; val != nil {
@@ -75,7 +83,10 @@ func (v *SearchRequest) Get(key string, dst interface{}) error {
 		}
 	case SearchRequestSchemasKey:
 		if val := v.schemas; val != nil {
-			return blackmagic.AssignIfCompatible(dst, val.Get())
+			if raw {
+				return blackmagic.AssignIfCompatible(dst, *val)
+			}
+			return blackmagic.AssignIfCompatible(dst, val.GetValue())
 		}
 	case SearchRequestSortByKey:
 		if val := v.sortBy; val != nil {
@@ -138,7 +149,7 @@ func (v *SearchRequest) Set(key string, value interface{}) error {
 		v.schema = &converted
 	case SearchRequestSchemasKey:
 		var object schemas
-		if err := object.Accept(value); err != nil {
+		if err := object.AcceptValue(value); err != nil {
 			return fmt.Errorf(`failed to accept value: %w`, err)
 		}
 		v.schemas = &object
@@ -169,54 +180,136 @@ func (v *SearchRequest) Set(key string, value interface{}) error {
 	return nil
 }
 
+// Has returns true if the field specified by the argument has been populated.
+// The field name must be the JSON field name, not the Go-structure's field name.
+func (v *SearchRequest) Has(name string) bool {
+	switch name {
+	case SearchRequestAttributesKey:
+		return v.attributes != nil
+	case SearchRequestCountKey:
+		return v.count != nil
+	case SearchRequestExcludedAttributesKey:
+		return v.excludedAttributes != nil
+	case SearchRequestFilterKey:
+		return v.filter != nil
+	case SearchRequestSchemaKey:
+		return v.schema != nil
+	case SearchRequestSchemasKey:
+		return v.schemas != nil
+	case SearchRequestSortByKey:
+		return v.sortBy != nil
+	case SearchRequestSortOrderKey:
+		return v.sortOrder != nil
+	case SearchRequestStartIndexKey:
+		return v.startIndex != nil
+	default:
+		if v.extra != nil {
+			if _, ok := v.extra[name]; ok {
+				return true
+			}
+		}
+		return false
+	}
+}
+
+// Keys returns a slice of string comprising of JSON field names whose values
+// are present in the object.
+func (v *SearchRequest) Keys() []string {
+	keys := make([]string, 0, 9)
+	if v.attributes != nil {
+		keys = append(keys, SearchRequestAttributesKey)
+	}
+	if v.count != nil {
+		keys = append(keys, SearchRequestCountKey)
+	}
+	if v.excludedAttributes != nil {
+		keys = append(keys, SearchRequestExcludedAttributesKey)
+	}
+	if v.filter != nil {
+		keys = append(keys, SearchRequestFilterKey)
+	}
+	if v.schema != nil {
+		keys = append(keys, SearchRequestSchemaKey)
+	}
+	if v.schemas != nil {
+		keys = append(keys, SearchRequestSchemasKey)
+	}
+	if v.sortBy != nil {
+		keys = append(keys, SearchRequestSortByKey)
+	}
+	if v.sortOrder != nil {
+		keys = append(keys, SearchRequestSortOrderKey)
+	}
+	if v.startIndex != nil {
+		keys = append(keys, SearchRequestStartIndexKey)
+	}
+
+	if len(v.extra) > 0 {
+		for k := range v.extra {
+			keys = append(keys, k)
+		}
+	}
+	sort.Strings(keys)
+	return keys
+}
+
+// HasAttributes returns true if the field `attributes` has been populated
 func (v *SearchRequest) HasAttributes() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.attributes != nil
 }
 
+// HasCount returns true if the field `count` has been populated
 func (v *SearchRequest) HasCount() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.count != nil
 }
 
+// HasExcludedAttributes returns true if the field `excludedAttributes` has been populated
 func (v *SearchRequest) HasExcludedAttributes() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.excludedAttributes != nil
 }
 
+// HasFilter returns true if the field `filter` has been populated
 func (v *SearchRequest) HasFilter() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.filter != nil
 }
 
+// HasSchema returns true if the field `schema` has been populated
 func (v *SearchRequest) HasSchema() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.schema != nil
 }
 
+// HasSchemas returns true if the field `schemas` has been populated
 func (v *SearchRequest) HasSchemas() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.schemas != nil
 }
 
+// HasSortBy returns true if the field `sortBy` has been populated
 func (v *SearchRequest) HasSortBy() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.sortBy != nil
 }
 
+// HasSortOrder returns true if the field `sortOrder` has been populated
 func (v *SearchRequest) HasSortOrder() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.sortOrder != nil
 }
 
+// HasStartIndex returns true if the field `startIndex` has been populated
 func (v *SearchRequest) HasStartIndex() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -272,7 +365,7 @@ func (v *SearchRequest) Schemas() []string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	if val := v.schemas; val != nil {
-		return val.Get()
+		return val.GetValue()
 	}
 	return nil
 }
@@ -335,50 +428,15 @@ func (v *SearchRequest) Remove(key string) error {
 	return nil
 }
 
-func (v *SearchRequest) makePairs() []*fieldPair {
-	pairs := make([]*fieldPair, 0, 9)
-	if val := v.attributes; len(val) > 0 {
-		pairs = append(pairs, &fieldPair{Name: SearchRequestAttributesKey, Value: val})
-	}
-	if val := v.count; val != nil {
-		pairs = append(pairs, &fieldPair{Name: SearchRequestCountKey, Value: *val})
-	}
-	if val := v.excludedAttributes; len(val) > 0 {
-		pairs = append(pairs, &fieldPair{Name: SearchRequestExcludedAttributesKey, Value: val})
-	}
-	if val := v.filter; val != nil {
-		pairs = append(pairs, &fieldPair{Name: SearchRequestFilterKey, Value: *val})
-	}
-	if val := v.schema; val != nil {
-		pairs = append(pairs, &fieldPair{Name: SearchRequestSchemaKey, Value: *val})
-	}
-	if val := v.schemas; val != nil {
-		pairs = append(pairs, &fieldPair{Name: SearchRequestSchemasKey, Value: val.Get()})
-	}
-	if val := v.sortBy; val != nil {
-		pairs = append(pairs, &fieldPair{Name: SearchRequestSortByKey, Value: *val})
-	}
-	if val := v.sortOrder; val != nil {
-		pairs = append(pairs, &fieldPair{Name: SearchRequestSortOrderKey, Value: *val})
-	}
-	if val := v.startIndex; val != nil {
-		pairs = append(pairs, &fieldPair{Name: SearchRequestStartIndexKey, Value: *val})
-	}
-
-	for key, val := range v.extra {
-		pairs = append(pairs, &fieldPair{Name: key, Value: val})
-	}
-
-	sort.Slice(pairs, func(i, j int) bool {
-		return pairs[i].Name < pairs[j].Name
-	})
-	return pairs
-}
-
-func (v *SearchRequest) Clone() *SearchRequest {
+func (v *SearchRequest) Clone(dst interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return &SearchRequest{
+
+	extra := make(map[string]interface{})
+	for key, val := range v.extra {
+		extra[key] = val
+	}
+	return blackmagic.AssignIfCompatible(dst, &SearchRequest{
 		attributes:         v.attributes,
 		count:              v.count,
 		excludedAttributes: v.excludedAttributes,
@@ -388,7 +446,8 @@ func (v *SearchRequest) Clone() *SearchRequest {
 		sortBy:             v.sortBy,
 		sortOrder:          v.sortOrder,
 		startIndex:         v.startIndex,
-	}
+		extra:              extra,
+	})
 }
 
 // MarshalJSON serializes SearchRequest into JSON.
@@ -396,21 +455,27 @@ func (v *SearchRequest) Clone() *SearchRequest {
 // assigned to them, as well as all extra fields. All of these
 // fields are sorted in alphabetical order.
 func (v *SearchRequest) MarshalJSON() ([]byte, error) {
-	pairs := v.makePairs()
+	v.mu.RLock()
+	defer v.mu.RUnlock()
 
 	var buf bytes.Buffer
 	enc := json.NewEncoder(&buf)
 	buf.WriteByte('{')
-	for i, pair := range pairs {
+	for i, k := range v.Keys() {
+		var val interface{}
+		if err := v.getNoLock(k, &val, true); err != nil {
+			return nil, fmt.Errorf(`failed to retrieve value for field %q: %w`, k, err)
+		}
+
 		if i > 0 {
 			buf.WriteByte(',')
 		}
-		if err := enc.Encode(pair.Name); err != nil {
+		if err := enc.Encode(k); err != nil {
 			return nil, fmt.Errorf(`failed to encode map key name: %w`, err)
 		}
 		buf.WriteByte(':')
-		if err := enc.Encode(pair.Value); err != nil {
-			return nil, fmt.Errorf(`failed to encode map value for %q: %w`, pair.Name, err)
+		if err := enc.Encode(val); err != nil {
+			return nil, fmt.Errorf(`failed to encode map value for %q: %w`, k, err)
 		}
 	}
 	buf.WriteByte('}')
@@ -513,8 +578,8 @@ LOOP:
 				v.startIndex = &val
 			default:
 				var val interface{}
-				if err := extraFieldsDecoder(tok, dec, &val); err != nil {
-					return err
+				if err := v.decodeExtraField(tok, dec, &val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, tok, err)
 				}
 				if extra == nil {
 					extra = make(map[string]interface{})
@@ -550,118 +615,36 @@ func (b *SearchRequestBuilder) initialize() {
 	b.object.schemas.Add(SearchRequestSchemaURI)
 }
 func (b *SearchRequestBuilder) Attributes(in ...string) *SearchRequestBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(SearchRequestAttributesKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(SearchRequestAttributesKey, in)
 }
 func (b *SearchRequestBuilder) Count(in int) *SearchRequestBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(SearchRequestCountKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(SearchRequestCountKey, in)
 }
 func (b *SearchRequestBuilder) ExcludedAttributes(in ...string) *SearchRequestBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(SearchRequestExcludedAttributesKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(SearchRequestExcludedAttributesKey, in)
 }
 func (b *SearchRequestBuilder) Filter(in string) *SearchRequestBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(SearchRequestFilterKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(SearchRequestFilterKey, in)
 }
 func (b *SearchRequestBuilder) Schema(in string) *SearchRequestBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(SearchRequestSchemaKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(SearchRequestSchemaKey, in)
 }
 func (b *SearchRequestBuilder) Schemas(in ...string) *SearchRequestBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(SearchRequestSchemasKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(SearchRequestSchemasKey, in)
 }
 func (b *SearchRequestBuilder) SortBy(in string) *SearchRequestBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(SearchRequestSortByKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(SearchRequestSortByKey, in)
 }
 func (b *SearchRequestBuilder) SortOrder(in string) *SearchRequestBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(SearchRequestSortOrderKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(SearchRequestSortOrderKey, in)
 }
 func (b *SearchRequestBuilder) StartIndex(in int) *SearchRequestBuilder {
+	return b.SetField(SearchRequestStartIndexKey, in)
+}
+
+// SetField sets the value of any field. The name should be the JSON field name.
+// Type check will only be performed for pre-defined types
+func (b *SearchRequestBuilder) SetField(name string, value interface{}) *SearchRequestBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 
@@ -670,12 +653,11 @@ func (b *SearchRequestBuilder) StartIndex(in int) *SearchRequestBuilder {
 		return b
 	}
 
-	if err := b.object.Set(SearchRequestStartIndexKey, in); err != nil {
+	if err := b.object.Set(name, value); err != nil {
 		b.err = err
 	}
 	return b
 }
-
 func (b *SearchRequestBuilder) Build() (*SearchRequest, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
@@ -689,7 +671,6 @@ func (b *SearchRequestBuilder) Build() (*SearchRequest, error) {
 	b.once.Do(b.initialize)
 	return obj, nil
 }
-
 func (b *SearchRequestBuilder) MustBuild() *SearchRequest {
 	object, err := b.Build()
 	if err != nil {
@@ -702,7 +683,17 @@ func (b *SearchRequestBuilder) From(in *SearchRequest) *SearchRequestBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.once.Do(b.initialize)
-	b.object = in.Clone()
+	if b.err != nil {
+		return b
+	}
+
+	var cloned SearchRequest
+	if err := in.Clone(&cloned); err != nil {
+		b.err = err
+		return b
+	}
+
+	b.object = &cloned
 	return b
 }
 
@@ -724,11 +715,16 @@ func (b *SearchRequestBuilder) Extension(uri string, value interface{}) *SearchR
 	return b
 }
 
-func (v *SearchRequest) AsMap(dst map[string]interface{}) error {
+// AsMap returns the resource as a Go map
+func (v *SearchRequest) AsMap(m map[string]interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	for _, pair := range v.makePairs() {
-		dst[pair.Name] = pair.Value
+
+	for _, key := range v.Keys() {
+		var val interface{}
+		if err := v.getNoLock(key, &val, false); err != nil {
+			m[key] = val
+		}
 	}
 	return nil
 }
@@ -751,6 +747,23 @@ func (v *SearchRequest) GetExtension(name, uri string, dst interface{}) error {
 		return fmt.Errorf(`extension does not implement Get(string, interface{}) error`)
 	}
 	return getter.Get(name, dst)
+}
+
+func (*SearchRequest) decodeExtraField(name string, dec *json.Decoder, dst interface{}) error {
+	// we can get an instance of the resource object
+	if rx, ok := registry.LookupByURI(name); ok {
+		if err := dec.Decode(&rx); err != nil {
+			return fmt.Errorf(`failed to decode value for key %q: %w`, name, err)
+		}
+		if err := blackmagic.AssignIfCompatible(dst, rx); err != nil {
+			return err
+		}
+	} else {
+		if err := dec.Decode(dst); err != nil {
+			return fmt.Errorf(`failed to decode value for key %q: %w`, name, err)
+		}
+	}
+	return nil
 }
 
 func (b *Builder) SearchRequest() *SearchRequestBuilder {

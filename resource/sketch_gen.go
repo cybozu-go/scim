@@ -6,17 +6,9 @@ import (
 	"fmt"
 )
 
-// extraFieldDecoder is used to decode fields that are not defined
-// within an object. You may override it to provide custom behavior
-var extraFieldsDecoder func(string, *json.Decoder, interface{}) error
-
 type fieldPair struct {
 	Name  string
 	Value interface{}
-}
-
-func init() {
-	extraFieldsDecoder = defaultDecodeExtra
 }
 
 func defaultDecodeExtra(name string, dec *json.Decoder, dst interface{}) error {

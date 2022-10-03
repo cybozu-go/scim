@@ -57,6 +57,14 @@ const (
 func (v *SchemaAttribute) Get(key string, dst interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
+	return v.getNoLock(key, dst, false)
+}
+
+// getNoLock is a utility method that is called from Get, MarshalJSON, etc, but
+// it can be used from user-supplied code. Unlike Get, it avoids locking for
+// each call, so the user needs to explicitly lock the object before using,
+// but otherwise should be faster than sing Get directly
+func (v *SchemaAttribute) getNoLock(key string, dst interface{}, raw bool) error {
 	switch key {
 	case SchemaAttributeCanonicalValuesKey:
 		if val := v.canonicalValues; val != nil {
@@ -204,72 +212,172 @@ func (v *SchemaAttribute) Set(key string, value interface{}) error {
 	return nil
 }
 
+// Has returns true if the field specified by the argument has been populated.
+// The field name must be the JSON field name, not the Go-structure's field name.
+func (v *SchemaAttribute) Has(name string) bool {
+	switch name {
+	case SchemaAttributeCanonicalValuesKey:
+		return v.canonicalValues != nil
+	case SchemaAttributeCaseExactKey:
+		return v.caseExact != nil
+	case SchemaAttributeDescriptionKey:
+		return v.description != nil
+	case SchemaAttributeMultiValuedKey:
+		return v.multiValued != nil
+	case SchemaAttributeMutabilityKey:
+		return v.mutability != nil
+	case SchemaAttributeNameKey:
+		return v.name != nil
+	case SchemaAttributeReferenceTypesKey:
+		return v.referenceTypes != nil
+	case SchemaAttributeRequiredKey:
+		return v.required != nil
+	case SchemaAttributeReturnedKey:
+		return v.returned != nil
+	case SchemaAttributeSubAttributesKey:
+		return v.subAttributes != nil
+	case SchemaAttributeTypeKey:
+		return v.typ != nil
+	case SchemaAttributeUniquenessKey:
+		return v.uniqueness != nil
+	default:
+		if v.extra != nil {
+			if _, ok := v.extra[name]; ok {
+				return true
+			}
+		}
+		return false
+	}
+}
+
+// Keys returns a slice of string comprising of JSON field names whose values
+// are present in the object.
+func (v *SchemaAttribute) Keys() []string {
+	keys := make([]string, 0, 13)
+	if v.canonicalValues != nil {
+		keys = append(keys, SchemaAttributeCanonicalValuesKey)
+	}
+	if v.caseExact != nil {
+		keys = append(keys, SchemaAttributeCaseExactKey)
+	}
+	if v.description != nil {
+		keys = append(keys, SchemaAttributeDescriptionKey)
+	}
+	if v.multiValued != nil {
+		keys = append(keys, SchemaAttributeMultiValuedKey)
+	}
+	if v.mutability != nil {
+		keys = append(keys, SchemaAttributeMutabilityKey)
+	}
+	if v.name != nil {
+		keys = append(keys, SchemaAttributeNameKey)
+	}
+	if v.referenceTypes != nil {
+		keys = append(keys, SchemaAttributeReferenceTypesKey)
+	}
+	if v.required != nil {
+		keys = append(keys, SchemaAttributeRequiredKey)
+	}
+	if v.returned != nil {
+		keys = append(keys, SchemaAttributeReturnedKey)
+	}
+	if v.subAttributes != nil {
+		keys = append(keys, SchemaAttributeSubAttributesKey)
+	}
+	if v.typ != nil {
+		keys = append(keys, SchemaAttributeTypeKey)
+	}
+	if v.uniqueness != nil {
+		keys = append(keys, SchemaAttributeUniquenessKey)
+	}
+
+	if len(v.extra) > 0 {
+		for k := range v.extra {
+			keys = append(keys, k)
+		}
+	}
+	sort.Strings(keys)
+	return keys
+}
+
+// HasCanonicalValues returns true if the field `canonicalValues` has been populated
 func (v *SchemaAttribute) HasCanonicalValues() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.canonicalValues != nil
 }
 
+// HasCaseExact returns true if the field `caseExact` has been populated
 func (v *SchemaAttribute) HasCaseExact() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.caseExact != nil
 }
 
+// HasDescription returns true if the field `description` has been populated
 func (v *SchemaAttribute) HasDescription() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.description != nil
 }
 
+// HasMultiValued returns true if the field `multiValued` has been populated
 func (v *SchemaAttribute) HasMultiValued() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.multiValued != nil
 }
 
+// HasMutability returns true if the field `mutability` has been populated
 func (v *SchemaAttribute) HasMutability() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.mutability != nil
 }
 
+// HasName returns true if the field `name` has been populated
 func (v *SchemaAttribute) HasName() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.name != nil
 }
 
+// HasReferenceTypes returns true if the field `referenceTypes` has been populated
 func (v *SchemaAttribute) HasReferenceTypes() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.referenceTypes != nil
 }
 
+// HasRequired returns true if the field `required` has been populated
 func (v *SchemaAttribute) HasRequired() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.required != nil
 }
 
+// HasReturned returns true if the field `returned` has been populated
 func (v *SchemaAttribute) HasReturned() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.returned != nil
 }
 
+// HasSubAttributes returns true if the field `subAttributes` has been populated
 func (v *SchemaAttribute) HasSubAttributes() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.subAttributes != nil
 }
 
+// HasType returns true if the field `type` has been populated
 func (v *SchemaAttribute) HasType() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.typ != nil
 }
 
+// HasUniqueness returns true if the field `uniqueness` has been populated
 func (v *SchemaAttribute) HasUniqueness() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -421,59 +529,15 @@ func (v *SchemaAttribute) Remove(key string) error {
 	return nil
 }
 
-func (v *SchemaAttribute) makePairs() []*fieldPair {
-	pairs := make([]*fieldPair, 0, 13)
-	if val := v.canonicalValues; len(val) > 0 {
-		pairs = append(pairs, &fieldPair{Name: SchemaAttributeCanonicalValuesKey, Value: val})
-	}
-	if val := v.caseExact; val != nil {
-		pairs = append(pairs, &fieldPair{Name: SchemaAttributeCaseExactKey, Value: *val})
-	}
-	if val := v.description; val != nil {
-		pairs = append(pairs, &fieldPair{Name: SchemaAttributeDescriptionKey, Value: *val})
-	}
-	if val := v.multiValued; val != nil {
-		pairs = append(pairs, &fieldPair{Name: SchemaAttributeMultiValuedKey, Value: *val})
-	}
-	if val := v.mutability; val != nil {
-		pairs = append(pairs, &fieldPair{Name: SchemaAttributeMutabilityKey, Value: *val})
-	}
-	if val := v.name; val != nil {
-		pairs = append(pairs, &fieldPair{Name: SchemaAttributeNameKey, Value: *val})
-	}
-	if val := v.referenceTypes; len(val) > 0 {
-		pairs = append(pairs, &fieldPair{Name: SchemaAttributeReferenceTypesKey, Value: val})
-	}
-	if val := v.required; val != nil {
-		pairs = append(pairs, &fieldPair{Name: SchemaAttributeRequiredKey, Value: *val})
-	}
-	if val := v.returned; val != nil {
-		pairs = append(pairs, &fieldPair{Name: SchemaAttributeReturnedKey, Value: *val})
-	}
-	if val := v.subAttributes; len(val) > 0 {
-		pairs = append(pairs, &fieldPair{Name: SchemaAttributeSubAttributesKey, Value: val})
-	}
-	if val := v.typ; val != nil {
-		pairs = append(pairs, &fieldPair{Name: SchemaAttributeTypeKey, Value: *val})
-	}
-	if val := v.uniqueness; val != nil {
-		pairs = append(pairs, &fieldPair{Name: SchemaAttributeUniquenessKey, Value: *val})
-	}
-
-	for key, val := range v.extra {
-		pairs = append(pairs, &fieldPair{Name: key, Value: val})
-	}
-
-	sort.Slice(pairs, func(i, j int) bool {
-		return pairs[i].Name < pairs[j].Name
-	})
-	return pairs
-}
-
-func (v *SchemaAttribute) Clone() *SchemaAttribute {
+func (v *SchemaAttribute) Clone(dst interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return &SchemaAttribute{
+
+	extra := make(map[string]interface{})
+	for key, val := range v.extra {
+		extra[key] = val
+	}
+	return blackmagic.AssignIfCompatible(dst, &SchemaAttribute{
 		canonicalValues: v.canonicalValues,
 		caseExact:       v.caseExact,
 		description:     v.description,
@@ -487,7 +551,8 @@ func (v *SchemaAttribute) Clone() *SchemaAttribute {
 		typ:             v.typ,
 		uniqueness:      v.uniqueness,
 		goAccessorName:  v.goAccessorName,
-	}
+		extra:           extra,
+	})
 }
 
 // MarshalJSON serializes SchemaAttribute into JSON.
@@ -495,21 +560,27 @@ func (v *SchemaAttribute) Clone() *SchemaAttribute {
 // assigned to them, as well as all extra fields. All of these
 // fields are sorted in alphabetical order.
 func (v *SchemaAttribute) MarshalJSON() ([]byte, error) {
-	pairs := v.makePairs()
+	v.mu.RLock()
+	defer v.mu.RUnlock()
 
 	var buf bytes.Buffer
 	enc := json.NewEncoder(&buf)
 	buf.WriteByte('{')
-	for i, pair := range pairs {
+	for i, k := range v.Keys() {
+		var val interface{}
+		if err := v.getNoLock(k, &val, true); err != nil {
+			return nil, fmt.Errorf(`failed to retrieve value for field %q: %w`, k, err)
+		}
+
 		if i > 0 {
 			buf.WriteByte(',')
 		}
-		if err := enc.Encode(pair.Name); err != nil {
+		if err := enc.Encode(k); err != nil {
 			return nil, fmt.Errorf(`failed to encode map key name: %w`, err)
 		}
 		buf.WriteByte(':')
-		if err := enc.Encode(pair.Value); err != nil {
-			return nil, fmt.Errorf(`failed to encode map value for %q: %w`, pair.Name, err)
+		if err := enc.Encode(val); err != nil {
+			return nil, fmt.Errorf(`failed to encode map value for %q: %w`, k, err)
 		}
 	}
 	buf.WriteByte('}')
@@ -633,8 +704,8 @@ LOOP:
 				v.uniqueness = &val
 			default:
 				var val interface{}
-				if err := extraFieldsDecoder(tok, dec, &val); err != nil {
-					return err
+				if err := v.decodeExtraField(tok, dec, &val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, tok, err)
 				}
 				if extra == nil {
 					extra = make(map[string]interface{})
@@ -668,160 +739,45 @@ func (b *SchemaAttributeBuilder) initialize() {
 	b.object = &SchemaAttribute{}
 }
 func (b *SchemaAttributeBuilder) CanonicalValues(in ...interface{}) *SchemaAttributeBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(SchemaAttributeCanonicalValuesKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(SchemaAttributeCanonicalValuesKey, in)
 }
 func (b *SchemaAttributeBuilder) CaseExact(in bool) *SchemaAttributeBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(SchemaAttributeCaseExactKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(SchemaAttributeCaseExactKey, in)
 }
 func (b *SchemaAttributeBuilder) Description(in string) *SchemaAttributeBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(SchemaAttributeDescriptionKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(SchemaAttributeDescriptionKey, in)
 }
 func (b *SchemaAttributeBuilder) MultiValued(in bool) *SchemaAttributeBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(SchemaAttributeMultiValuedKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(SchemaAttributeMultiValuedKey, in)
 }
 func (b *SchemaAttributeBuilder) Mutability(in Mutability) *SchemaAttributeBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(SchemaAttributeMutabilityKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(SchemaAttributeMutabilityKey, in)
 }
 func (b *SchemaAttributeBuilder) Name(in string) *SchemaAttributeBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(SchemaAttributeNameKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(SchemaAttributeNameKey, in)
 }
 func (b *SchemaAttributeBuilder) ReferenceTypes(in ...string) *SchemaAttributeBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(SchemaAttributeReferenceTypesKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(SchemaAttributeReferenceTypesKey, in)
 }
 func (b *SchemaAttributeBuilder) Required(in bool) *SchemaAttributeBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(SchemaAttributeRequiredKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(SchemaAttributeRequiredKey, in)
 }
 func (b *SchemaAttributeBuilder) Returned(in Returned) *SchemaAttributeBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(SchemaAttributeReturnedKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(SchemaAttributeReturnedKey, in)
 }
 func (b *SchemaAttributeBuilder) SubAttributes(in ...*SchemaAttribute) *SchemaAttributeBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(SchemaAttributeSubAttributesKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(SchemaAttributeSubAttributesKey, in)
 }
 func (b *SchemaAttributeBuilder) Type(in DataType) *SchemaAttributeBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(SchemaAttributeTypeKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(SchemaAttributeTypeKey, in)
 }
 func (b *SchemaAttributeBuilder) Uniqueness(in Uniqueness) *SchemaAttributeBuilder {
+	return b.SetField(SchemaAttributeUniquenessKey, in)
+}
+
+// SetField sets the value of any field. The name should be the JSON field name.
+// Type check will only be performed for pre-defined types
+func (b *SchemaAttributeBuilder) SetField(name string, value interface{}) *SchemaAttributeBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 
@@ -830,12 +786,11 @@ func (b *SchemaAttributeBuilder) Uniqueness(in Uniqueness) *SchemaAttributeBuild
 		return b
 	}
 
-	if err := b.object.Set(SchemaAttributeUniquenessKey, in); err != nil {
+	if err := b.object.Set(name, value); err != nil {
 		b.err = err
 	}
 	return b
 }
-
 func (b *SchemaAttributeBuilder) Build() (*SchemaAttribute, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
@@ -855,7 +810,6 @@ func (b *SchemaAttributeBuilder) Build() (*SchemaAttribute, error) {
 	b.once.Do(b.initialize)
 	return obj, nil
 }
-
 func (b *SchemaAttributeBuilder) MustBuild() *SchemaAttribute {
 	object, err := b.Build()
 	if err != nil {
@@ -868,15 +822,30 @@ func (b *SchemaAttributeBuilder) From(in *SchemaAttribute) *SchemaAttributeBuild
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.once.Do(b.initialize)
-	b.object = in.Clone()
+	if b.err != nil {
+		return b
+	}
+
+	var cloned SchemaAttribute
+	if err := in.Clone(&cloned); err != nil {
+		b.err = err
+		return b
+	}
+
+	b.object = &cloned
 	return b
 }
 
-func (v *SchemaAttribute) AsMap(dst map[string]interface{}) error {
+// AsMap returns the resource as a Go map
+func (v *SchemaAttribute) AsMap(m map[string]interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	for _, pair := range v.makePairs() {
-		dst[pair.Name] = pair.Value
+
+	for _, key := range v.Keys() {
+		var val interface{}
+		if err := v.getNoLock(key, &val, false); err != nil {
+			m[key] = val
+		}
 	}
 	return nil
 }
@@ -899,6 +868,23 @@ func (v *SchemaAttribute) GetExtension(name, uri string, dst interface{}) error 
 		return fmt.Errorf(`extension does not implement Get(string, interface{}) error`)
 	}
 	return getter.Get(name, dst)
+}
+
+func (*SchemaAttribute) decodeExtraField(name string, dec *json.Decoder, dst interface{}) error {
+	// we can get an instance of the resource object
+	if rx, ok := registry.LookupByURI(name); ok {
+		if err := dec.Decode(&rx); err != nil {
+			return fmt.Errorf(`failed to decode value for key %q: %w`, name, err)
+		}
+		if err := blackmagic.AssignIfCompatible(dst, rx); err != nil {
+			return err
+		}
+	} else {
+		if err := dec.Decode(dst); err != nil {
+			return fmt.Errorf(`failed to decode value for key %q: %w`, name, err)
+		}
+	}
+	return nil
 }
 
 func (b *Builder) SchemaAttribute() *SchemaAttributeBuilder {

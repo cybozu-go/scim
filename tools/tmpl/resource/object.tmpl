@@ -11,11 +11,16 @@ func init() {
 
 {{ define "ext/object/footer" }}
 {{- $objectName := .Name }}
-func (v *{{ $objectName }}) AsMap(dst map[string]interface{}) error {
+// AsMap returns the resource as a Go map
+func (v *{{ $objectName }}) AsMap(m map[string]interface{}) error {
   v.mu.RLock()
   defer v.mu.RUnlock()
-  for _, pair := range v.makePairs() {
-    dst[pair.Name] = pair.Value
+
+  for _, key := range v.Keys() {
+    var val interface{}
+    if err := v.getNoLock(key, &val, false); err != nil {
+      m[key] = val
+    }
   }
   return nil
 }
@@ -38,6 +43,23 @@ func (v *{{ $objectName }}) GetExtension(name, uri string, dst interface{}) erro
     return fmt.Errorf(`extension does not implement Get(string, interface{}) error`)
   }
   return getter.Get(name, dst)
+}
+
+func (*{{ $objectName }}) decodeExtraField(name string, dec *json.Decoder, dst interface{}) error {
+	// we can get an instance of the resource object
+	if rx, ok := registry.LookupByURI(name); ok {
+		if err := dec.Decode(&rx); err != nil {
+			return fmt.Errorf(`failed to decode value for key %q: %w`, name, err)
+		}
+		if err := blackmagic.AssignIfCompatible(dst, rx); err != nil {
+			return err
+		}
+	} else {
+		if err := dec.Decode(dst); err != nil {
+			return fmt.Errorf(`failed to decode value for key %q: %w`, name, err)
+		}
+	}
+	return nil
 }
 
 {{ $builderName := .Name | printf "%sBuilder" }}

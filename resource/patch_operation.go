@@ -7,7 +7,7 @@ import (
 
 type PatchOperationValue json.RawMessage
 
-func (v *PatchOperationValue) Get() interface{} {
+func (v *PatchOperationValue) GetValue() interface{} {
 	var dst interface{}
 	if err := json.Unmarshal(*v, &dst); err != nil {
 		return nil
@@ -15,7 +15,7 @@ func (v *PatchOperationValue) Get() interface{} {
 	return dst
 }
 
-func (v *PatchOperationValue) Accept(in interface{}) error {
+func (v *PatchOperationValue) AcceptValue(in interface{}) error {
 	serialized, err := json.Marshal(in)
 	if err != nil {
 		return fmt.Errorf(`failed to marshal value: %w`, err)

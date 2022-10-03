@@ -38,6 +38,14 @@ const (
 func (v *EnterpriseManager) Get(key string, dst interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
+	return v.getNoLock(key, dst, false)
+}
+
+// getNoLock is a utility method that is called from Get, MarshalJSON, etc, but
+// it can be used from user-supplied code. Unlike Get, it avoids locking for
+// each call, so the user needs to explicitly lock the object before using,
+// but otherwise should be faster than sing Get directly
+func (v *EnterpriseManager) getNoLock(key string, dst interface{}, raw bool) error {
 	switch key {
 	case EnterpriseManagerDisplayNameKey:
 		if val := v.displayName; val != nil {
@@ -95,18 +103,64 @@ func (v *EnterpriseManager) Set(key string, value interface{}) error {
 	return nil
 }
 
+// Has returns true if the field specified by the argument has been populated.
+// The field name must be the JSON field name, not the Go-structure's field name.
+func (v *EnterpriseManager) Has(name string) bool {
+	switch name {
+	case EnterpriseManagerDisplayNameKey:
+		return v.displayName != nil
+	case EnterpriseManagerIDKey:
+		return v.id != nil
+	case EnterpriseManagerReferenceKey:
+		return v.ref != nil
+	default:
+		if v.extra != nil {
+			if _, ok := v.extra[name]; ok {
+				return true
+			}
+		}
+		return false
+	}
+}
+
+// Keys returns a slice of string comprising of JSON field names whose values
+// are present in the object.
+func (v *EnterpriseManager) Keys() []string {
+	keys := make([]string, 0, 3)
+	if v.displayName != nil {
+		keys = append(keys, EnterpriseManagerDisplayNameKey)
+	}
+	if v.id != nil {
+		keys = append(keys, EnterpriseManagerIDKey)
+	}
+	if v.ref != nil {
+		keys = append(keys, EnterpriseManagerReferenceKey)
+	}
+
+	if len(v.extra) > 0 {
+		for k := range v.extra {
+			keys = append(keys, k)
+		}
+	}
+	sort.Strings(keys)
+	return keys
+}
+
+// HasDisplayName returns true if the field `displayName` has been populated
 func (v *EnterpriseManager) HasDisplayName() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.displayName != nil
 }
 
+// HasID returns true if the field `id` has been populated
 func (v *EnterpriseManager) HasID() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.id != nil
 }
 
+// HasReference returns true if the field `$ref` has been populated
 func (v *EnterpriseManager) HasReference() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -159,36 +213,20 @@ func (v *EnterpriseManager) Remove(key string) error {
 	return nil
 }
 
-func (v *EnterpriseManager) makePairs() []*fieldPair {
-	pairs := make([]*fieldPair, 0, 3)
-	if val := v.displayName; val != nil {
-		pairs = append(pairs, &fieldPair{Name: EnterpriseManagerDisplayNameKey, Value: *val})
-	}
-	if val := v.id; val != nil {
-		pairs = append(pairs, &fieldPair{Name: EnterpriseManagerIDKey, Value: *val})
-	}
-	if val := v.ref; val != nil {
-		pairs = append(pairs, &fieldPair{Name: EnterpriseManagerReferenceKey, Value: *val})
-	}
-
-	for key, val := range v.extra {
-		pairs = append(pairs, &fieldPair{Name: key, Value: val})
-	}
-
-	sort.Slice(pairs, func(i, j int) bool {
-		return pairs[i].Name < pairs[j].Name
-	})
-	return pairs
-}
-
-func (v *EnterpriseManager) Clone() *EnterpriseManager {
+func (v *EnterpriseManager) Clone(dst interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return &EnterpriseManager{
+
+	extra := make(map[string]interface{})
+	for key, val := range v.extra {
+		extra[key] = val
+	}
+	return blackmagic.AssignIfCompatible(dst, &EnterpriseManager{
 		displayName: v.displayName,
 		id:          v.id,
 		ref:         v.ref,
-	}
+		extra:       extra,
+	})
 }
 
 // MarshalJSON serializes EnterpriseManager into JSON.
@@ -196,21 +234,27 @@ func (v *EnterpriseManager) Clone() *EnterpriseManager {
 // assigned to them, as well as all extra fields. All of these
 // fields are sorted in alphabetical order.
 func (v *EnterpriseManager) MarshalJSON() ([]byte, error) {
-	pairs := v.makePairs()
+	v.mu.RLock()
+	defer v.mu.RUnlock()
 
 	var buf bytes.Buffer
 	enc := json.NewEncoder(&buf)
 	buf.WriteByte('{')
-	for i, pair := range pairs {
+	for i, k := range v.Keys() {
+		var val interface{}
+		if err := v.getNoLock(k, &val, true); err != nil {
+			return nil, fmt.Errorf(`failed to retrieve value for field %q: %w`, k, err)
+		}
+
 		if i > 0 {
 			buf.WriteByte(',')
 		}
-		if err := enc.Encode(pair.Name); err != nil {
+		if err := enc.Encode(k); err != nil {
 			return nil, fmt.Errorf(`failed to encode map key name: %w`, err)
 		}
 		buf.WriteByte(':')
-		if err := enc.Encode(pair.Value); err != nil {
-			return nil, fmt.Errorf(`failed to encode map value for %q: %w`, pair.Name, err)
+		if err := enc.Encode(val); err != nil {
+			return nil, fmt.Errorf(`failed to encode map value for %q: %w`, k, err)
 		}
 	}
 	buf.WriteByte('}')
@@ -271,8 +315,8 @@ LOOP:
 				v.ref = &val
 			default:
 				var val interface{}
-				if err := extraFieldsDecoder(tok, dec, &val); err != nil {
-					return err
+				if err := v.decodeExtraField(tok, dec, &val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, tok, err)
 				}
 				if extra == nil {
 					extra = make(map[string]interface{})
@@ -306,34 +350,18 @@ func (b *EnterpriseManagerBuilder) initialize() {
 	b.object = &EnterpriseManager{}
 }
 func (b *EnterpriseManagerBuilder) DisplayName(in string) *EnterpriseManagerBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(EnterpriseManagerDisplayNameKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(EnterpriseManagerDisplayNameKey, in)
 }
 func (b *EnterpriseManagerBuilder) ID(in string) *EnterpriseManagerBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(EnterpriseManagerIDKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(EnterpriseManagerIDKey, in)
 }
 func (b *EnterpriseManagerBuilder) Reference(in string) *EnterpriseManagerBuilder {
+	return b.SetField(EnterpriseManagerReferenceKey, in)
+}
+
+// SetField sets the value of any field. The name should be the JSON field name.
+// Type check will only be performed for pre-defined types
+func (b *EnterpriseManagerBuilder) SetField(name string, value interface{}) *EnterpriseManagerBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 
@@ -342,12 +370,11 @@ func (b *EnterpriseManagerBuilder) Reference(in string) *EnterpriseManagerBuilde
 		return b
 	}
 
-	if err := b.object.Set(EnterpriseManagerReferenceKey, in); err != nil {
+	if err := b.object.Set(name, value); err != nil {
 		b.err = err
 	}
 	return b
 }
-
 func (b *EnterpriseManagerBuilder) Build() (*EnterpriseManager, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
@@ -361,7 +388,6 @@ func (b *EnterpriseManagerBuilder) Build() (*EnterpriseManager, error) {
 	b.once.Do(b.initialize)
 	return obj, nil
 }
-
 func (b *EnterpriseManagerBuilder) MustBuild() *EnterpriseManager {
 	object, err := b.Build()
 	if err != nil {
@@ -374,15 +400,30 @@ func (b *EnterpriseManagerBuilder) From(in *EnterpriseManager) *EnterpriseManage
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.once.Do(b.initialize)
-	b.object = in.Clone()
+	if b.err != nil {
+		return b
+	}
+
+	var cloned EnterpriseManager
+	if err := in.Clone(&cloned); err != nil {
+		b.err = err
+		return b
+	}
+
+	b.object = &cloned
 	return b
 }
 
-func (v *EnterpriseManager) AsMap(dst map[string]interface{}) error {
+// AsMap returns the resource as a Go map
+func (v *EnterpriseManager) AsMap(m map[string]interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	for _, pair := range v.makePairs() {
-		dst[pair.Name] = pair.Value
+
+	for _, key := range v.Keys() {
+		var val interface{}
+		if err := v.getNoLock(key, &val, false); err != nil {
+			m[key] = val
+		}
 	}
 	return nil
 }
@@ -405,6 +446,23 @@ func (v *EnterpriseManager) GetExtension(name, uri string, dst interface{}) erro
 		return fmt.Errorf(`extension does not implement Get(string, interface{}) error`)
 	}
 	return getter.Get(name, dst)
+}
+
+func (*EnterpriseManager) decodeExtraField(name string, dec *json.Decoder, dst interface{}) error {
+	// we can get an instance of the resource object
+	if rx, ok := registry.LookupByURI(name); ok {
+		if err := dec.Decode(&rx); err != nil {
+			return fmt.Errorf(`failed to decode value for key %q: %w`, name, err)
+		}
+		if err := blackmagic.AssignIfCompatible(dst, rx); err != nil {
+			return err
+		}
+	} else {
+		if err := dec.Decode(dst); err != nil {
+			return fmt.Errorf(`failed to decode value for key %q: %w`, name, err)
+		}
+	}
+	return nil
 }
 
 func (b *Builder) EnterpriseManager() *EnterpriseManagerBuilder {

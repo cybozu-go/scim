@@ -46,6 +46,14 @@ const (
 func (v *Group) Get(key string, dst interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
+	return v.getNoLock(key, dst, false)
+}
+
+// getNoLock is a utility method that is called from Get, MarshalJSON, etc, but
+// it can be used from user-supplied code. Unlike Get, it avoids locking for
+// each call, so the user needs to explicitly lock the object before using,
+// but otherwise should be faster than sing Get directly
+func (v *Group) getNoLock(key string, dst interface{}, raw bool) error {
 	switch key {
 	case GroupDisplayNameKey:
 		if val := v.displayName; val != nil {
@@ -65,7 +73,10 @@ func (v *Group) Get(key string, dst interface{}) error {
 		}
 	case GroupSchemasKey:
 		if val := v.schemas; val != nil {
-			return blackmagic.AssignIfCompatible(dst, val.Get())
+			if raw {
+				return blackmagic.AssignIfCompatible(dst, *val)
+			}
+			return blackmagic.AssignIfCompatible(dst, val.GetValue())
 		}
 	case GroupMetaKey:
 		if val := v.meta; val != nil {
@@ -114,7 +125,7 @@ func (v *Group) Set(key string, value interface{}) error {
 		v.members = converted
 	case GroupSchemasKey:
 		var object schemas
-		if err := object.Accept(value); err != nil {
+		if err := object.AcceptValue(value); err != nil {
 			return fmt.Errorf(`failed to accept value: %w`, err)
 		}
 		v.schemas = &object
@@ -133,36 +144,100 @@ func (v *Group) Set(key string, value interface{}) error {
 	return nil
 }
 
+// Has returns true if the field specified by the argument has been populated.
+// The field name must be the JSON field name, not the Go-structure's field name.
+func (v *Group) Has(name string) bool {
+	switch name {
+	case GroupDisplayNameKey:
+		return v.displayName != nil
+	case GroupExternalIDKey:
+		return v.externalID != nil
+	case GroupIDKey:
+		return v.id != nil
+	case GroupMembersKey:
+		return v.members != nil
+	case GroupSchemasKey:
+		return v.schemas != nil
+	case GroupMetaKey:
+		return v.meta != nil
+	default:
+		if v.extra != nil {
+			if _, ok := v.extra[name]; ok {
+				return true
+			}
+		}
+		return false
+	}
+}
+
+// Keys returns a slice of string comprising of JSON field names whose values
+// are present in the object.
+func (v *Group) Keys() []string {
+	keys := make([]string, 0, 6)
+	if v.displayName != nil {
+		keys = append(keys, GroupDisplayNameKey)
+	}
+	if v.externalID != nil {
+		keys = append(keys, GroupExternalIDKey)
+	}
+	if v.id != nil {
+		keys = append(keys, GroupIDKey)
+	}
+	if v.members != nil {
+		keys = append(keys, GroupMembersKey)
+	}
+	if v.schemas != nil {
+		keys = append(keys, GroupSchemasKey)
+	}
+	if v.meta != nil {
+		keys = append(keys, GroupMetaKey)
+	}
+
+	if len(v.extra) > 0 {
+		for k := range v.extra {
+			keys = append(keys, k)
+		}
+	}
+	sort.Strings(keys)
+	return keys
+}
+
+// HasDisplayName returns true if the field `displayName` has been populated
 func (v *Group) HasDisplayName() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.displayName != nil
 }
 
+// HasExternalID returns true if the field `externalId` has been populated
 func (v *Group) HasExternalID() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.externalID != nil
 }
 
+// HasID returns true if the field `id` has been populated
 func (v *Group) HasID() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.id != nil
 }
 
+// HasMembers returns true if the field `members` has been populated
 func (v *Group) HasMembers() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.members != nil
 }
 
+// HasSchemas returns true if the field `schemas` has been populated
 func (v *Group) HasSchemas() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.schemas != nil
 }
 
+// HasMeta returns true if the field `meta` has been populated
 func (v *Group) HasMeta() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -209,7 +284,7 @@ func (v *Group) Schemas() []string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	if val := v.schemas; val != nil {
-		return val.Get()
+		return val.GetValue()
 	}
 	return nil
 }
@@ -248,48 +323,23 @@ func (v *Group) Remove(key string) error {
 	return nil
 }
 
-func (v *Group) makePairs() []*fieldPair {
-	pairs := make([]*fieldPair, 0, 6)
-	if val := v.displayName; val != nil {
-		pairs = append(pairs, &fieldPair{Name: GroupDisplayNameKey, Value: *val})
-	}
-	if val := v.externalID; val != nil {
-		pairs = append(pairs, &fieldPair{Name: GroupExternalIDKey, Value: *val})
-	}
-	if val := v.id; val != nil {
-		pairs = append(pairs, &fieldPair{Name: GroupIDKey, Value: *val})
-	}
-	if val := v.members; len(val) > 0 {
-		pairs = append(pairs, &fieldPair{Name: GroupMembersKey, Value: val})
-	}
-	if val := v.schemas; val != nil {
-		pairs = append(pairs, &fieldPair{Name: GroupSchemasKey, Value: val.Get()})
-	}
-	if val := v.meta; val != nil {
-		pairs = append(pairs, &fieldPair{Name: GroupMetaKey, Value: val})
-	}
-
-	for key, val := range v.extra {
-		pairs = append(pairs, &fieldPair{Name: key, Value: val})
-	}
-
-	sort.Slice(pairs, func(i, j int) bool {
-		return pairs[i].Name < pairs[j].Name
-	})
-	return pairs
-}
-
-func (v *Group) Clone() *Group {
+func (v *Group) Clone(dst interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return &Group{
+
+	extra := make(map[string]interface{})
+	for key, val := range v.extra {
+		extra[key] = val
+	}
+	return blackmagic.AssignIfCompatible(dst, &Group{
 		displayName: v.displayName,
 		externalID:  v.externalID,
 		id:          v.id,
 		members:     v.members,
 		schemas:     v.schemas,
 		meta:        v.meta,
-	}
+		extra:       extra,
+	})
 }
 
 // MarshalJSON serializes Group into JSON.
@@ -297,21 +347,27 @@ func (v *Group) Clone() *Group {
 // assigned to them, as well as all extra fields. All of these
 // fields are sorted in alphabetical order.
 func (v *Group) MarshalJSON() ([]byte, error) {
-	pairs := v.makePairs()
+	v.mu.RLock()
+	defer v.mu.RUnlock()
 
 	var buf bytes.Buffer
 	enc := json.NewEncoder(&buf)
 	buf.WriteByte('{')
-	for i, pair := range pairs {
+	for i, k := range v.Keys() {
+		var val interface{}
+		if err := v.getNoLock(k, &val, true); err != nil {
+			return nil, fmt.Errorf(`failed to retrieve value for field %q: %w`, k, err)
+		}
+
 		if i > 0 {
 			buf.WriteByte(',')
 		}
-		if err := enc.Encode(pair.Name); err != nil {
+		if err := enc.Encode(k); err != nil {
 			return nil, fmt.Errorf(`failed to encode map key name: %w`, err)
 		}
 		buf.WriteByte(':')
-		if err := enc.Encode(pair.Value); err != nil {
-			return nil, fmt.Errorf(`failed to encode map value for %q: %w`, pair.Name, err)
+		if err := enc.Encode(val); err != nil {
+			return nil, fmt.Errorf(`failed to encode map value for %q: %w`, k, err)
 		}
 	}
 	buf.WriteByte('}')
@@ -386,15 +442,15 @@ LOOP:
 				}
 				v.schemas = &val
 			case GroupMetaKey:
-				var val *Meta
+				var val Meta
 				if err := dec.Decode(&val); err != nil {
 					return fmt.Errorf(`failed to decode value for %q: %w`, GroupMetaKey, err)
 				}
-				v.meta = val
+				v.meta = &val
 			default:
 				var val interface{}
-				if err := extraFieldsDecoder(tok, dec, &val); err != nil {
-					return err
+				if err := v.decodeExtraField(tok, dec, &val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, tok, err)
 				}
 				if extra == nil {
 					extra = make(map[string]interface{})
@@ -430,76 +486,27 @@ func (b *GroupBuilder) initialize() {
 	b.object.schemas.Add(GroupSchemaURI)
 }
 func (b *GroupBuilder) DisplayName(in string) *GroupBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(GroupDisplayNameKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(GroupDisplayNameKey, in)
 }
 func (b *GroupBuilder) ExternalID(in string) *GroupBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(GroupExternalIDKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(GroupExternalIDKey, in)
 }
 func (b *GroupBuilder) ID(in string) *GroupBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(GroupIDKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(GroupIDKey, in)
 }
 func (b *GroupBuilder) Members(in ...*GroupMember) *GroupBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(GroupMembersKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(GroupMembersKey, in)
 }
 func (b *GroupBuilder) Schemas(in ...string) *GroupBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(GroupSchemasKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(GroupSchemasKey, in)
 }
 func (b *GroupBuilder) Meta(in *Meta) *GroupBuilder {
+	return b.SetField(GroupMetaKey, in)
+}
+
+// SetField sets the value of any field. The name should be the JSON field name.
+// Type check will only be performed for pre-defined types
+func (b *GroupBuilder) SetField(name string, value interface{}) *GroupBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 
@@ -508,12 +515,11 @@ func (b *GroupBuilder) Meta(in *Meta) *GroupBuilder {
 		return b
 	}
 
-	if err := b.object.Set(GroupMetaKey, in); err != nil {
+	if err := b.object.Set(name, value); err != nil {
 		b.err = err
 	}
 	return b
 }
-
 func (b *GroupBuilder) Build() (*Group, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
@@ -527,7 +533,6 @@ func (b *GroupBuilder) Build() (*Group, error) {
 	b.once.Do(b.initialize)
 	return obj, nil
 }
-
 func (b *GroupBuilder) MustBuild() *Group {
 	object, err := b.Build()
 	if err != nil {
@@ -540,7 +545,17 @@ func (b *GroupBuilder) From(in *Group) *GroupBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.once.Do(b.initialize)
-	b.object = in.Clone()
+	if b.err != nil {
+		return b
+	}
+
+	var cloned Group
+	if err := in.Clone(&cloned); err != nil {
+		b.err = err
+		return b
+	}
+
+	b.object = &cloned
 	return b
 }
 
@@ -562,11 +577,16 @@ func (b *GroupBuilder) Extension(uri string, value interface{}) *GroupBuilder {
 	return b
 }
 
-func (v *Group) AsMap(dst map[string]interface{}) error {
+// AsMap returns the resource as a Go map
+func (v *Group) AsMap(m map[string]interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	for _, pair := range v.makePairs() {
-		dst[pair.Name] = pair.Value
+
+	for _, key := range v.Keys() {
+		var val interface{}
+		if err := v.getNoLock(key, &val, false); err != nil {
+			m[key] = val
+		}
 	}
 	return nil
 }
@@ -589,6 +609,23 @@ func (v *Group) GetExtension(name, uri string, dst interface{}) error {
 		return fmt.Errorf(`extension does not implement Get(string, interface{}) error`)
 	}
 	return getter.Get(name, dst)
+}
+
+func (*Group) decodeExtraField(name string, dec *json.Decoder, dst interface{}) error {
+	// we can get an instance of the resource object
+	if rx, ok := registry.LookupByURI(name); ok {
+		if err := dec.Decode(&rx); err != nil {
+			return fmt.Errorf(`failed to decode value for key %q: %w`, name, err)
+		}
+		if err := blackmagic.AssignIfCompatible(dst, rx); err != nil {
+			return err
+		}
+	} else {
+		if err := dec.Decode(dst); err != nil {
+			return fmt.Errorf(`failed to decode value for key %q: %w`, name, err)
+		}
+	}
+	return nil
 }
 
 func (b *Builder) Group() *GroupBuilder {

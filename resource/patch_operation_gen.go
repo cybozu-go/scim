@@ -44,6 +44,14 @@ const (
 func (v *PatchOperation) Get(key string, dst interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
+	return v.getNoLock(key, dst, false)
+}
+
+// getNoLock is a utility method that is called from Get, MarshalJSON, etc, but
+// it can be used from user-supplied code. Unlike Get, it avoids locking for
+// each call, so the user needs to explicitly lock the object before using,
+// but otherwise should be faster than sing Get directly
+func (v *PatchOperation) getNoLock(key string, dst interface{}, raw bool) error {
 	switch key {
 	case PatchOperationExternalIDKey:
 		if val := v.externalID; val != nil {
@@ -67,7 +75,10 @@ func (v *PatchOperation) Get(key string, dst interface{}) error {
 		}
 	case PatchOperationValueKey:
 		if val := v.value; val != nil {
-			return blackmagic.AssignIfCompatible(dst, val.Get())
+			if raw {
+				return blackmagic.AssignIfCompatible(dst, *val)
+			}
+			return blackmagic.AssignIfCompatible(dst, val.GetValue())
 		}
 	default:
 		if v.extra != nil {
@@ -118,7 +129,7 @@ func (v *PatchOperation) Set(key string, value interface{}) error {
 		v.path = &converted
 	case PatchOperationValueKey:
 		var object PatchOperationValue
-		if err := object.Accept(value); err != nil {
+		if err := object.AcceptValue(value); err != nil {
 			return fmt.Errorf(`failed to accept value: %w`, err)
 		}
 		v.value = &object
@@ -131,36 +142,100 @@ func (v *PatchOperation) Set(key string, value interface{}) error {
 	return nil
 }
 
+// Has returns true if the field specified by the argument has been populated.
+// The field name must be the JSON field name, not the Go-structure's field name.
+func (v *PatchOperation) Has(name string) bool {
+	switch name {
+	case PatchOperationExternalIDKey:
+		return v.externalID != nil
+	case PatchOperationIDKey:
+		return v.id != nil
+	case PatchOperationMetaKey:
+		return v.meta != nil
+	case PatchOperationOpKey:
+		return v.op != nil
+	case PatchOperationPathKey:
+		return v.path != nil
+	case PatchOperationValueKey:
+		return v.value != nil
+	default:
+		if v.extra != nil {
+			if _, ok := v.extra[name]; ok {
+				return true
+			}
+		}
+		return false
+	}
+}
+
+// Keys returns a slice of string comprising of JSON field names whose values
+// are present in the object.
+func (v *PatchOperation) Keys() []string {
+	keys := make([]string, 0, 6)
+	if v.externalID != nil {
+		keys = append(keys, PatchOperationExternalIDKey)
+	}
+	if v.id != nil {
+		keys = append(keys, PatchOperationIDKey)
+	}
+	if v.meta != nil {
+		keys = append(keys, PatchOperationMetaKey)
+	}
+	if v.op != nil {
+		keys = append(keys, PatchOperationOpKey)
+	}
+	if v.path != nil {
+		keys = append(keys, PatchOperationPathKey)
+	}
+	if v.value != nil {
+		keys = append(keys, PatchOperationValueKey)
+	}
+
+	if len(v.extra) > 0 {
+		for k := range v.extra {
+			keys = append(keys, k)
+		}
+	}
+	sort.Strings(keys)
+	return keys
+}
+
+// HasExternalID returns true if the field `externalId` has been populated
 func (v *PatchOperation) HasExternalID() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.externalID != nil
 }
 
+// HasID returns true if the field `id` has been populated
 func (v *PatchOperation) HasID() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.id != nil
 }
 
+// HasMeta returns true if the field `meta` has been populated
 func (v *PatchOperation) HasMeta() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.meta != nil
 }
 
+// HasOp returns true if the field `op` has been populated
 func (v *PatchOperation) HasOp() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.op != nil
 }
 
+// HasPath returns true if the field `path` has been populated
 func (v *PatchOperation) HasPath() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.path != nil
 }
 
+// HasValue returns true if the field `value` has been populated
 func (v *PatchOperation) HasValue() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -216,7 +291,7 @@ func (v *PatchOperation) Value() interface{} {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	if val := v.value; val != nil {
-		return val.Get()
+		return val.GetValue()
 	}
 	return nil
 }
@@ -246,48 +321,23 @@ func (v *PatchOperation) Remove(key string) error {
 	return nil
 }
 
-func (v *PatchOperation) makePairs() []*fieldPair {
-	pairs := make([]*fieldPair, 0, 6)
-	if val := v.externalID; val != nil {
-		pairs = append(pairs, &fieldPair{Name: PatchOperationExternalIDKey, Value: *val})
-	}
-	if val := v.id; val != nil {
-		pairs = append(pairs, &fieldPair{Name: PatchOperationIDKey, Value: *val})
-	}
-	if val := v.meta; val != nil {
-		pairs = append(pairs, &fieldPair{Name: PatchOperationMetaKey, Value: val})
-	}
-	if val := v.op; val != nil {
-		pairs = append(pairs, &fieldPair{Name: PatchOperationOpKey, Value: *val})
-	}
-	if val := v.path; val != nil {
-		pairs = append(pairs, &fieldPair{Name: PatchOperationPathKey, Value: *val})
-	}
-	if val := v.value; val != nil {
-		pairs = append(pairs, &fieldPair{Name: PatchOperationValueKey, Value: val.Get()})
-	}
-
-	for key, val := range v.extra {
-		pairs = append(pairs, &fieldPair{Name: key, Value: val})
-	}
-
-	sort.Slice(pairs, func(i, j int) bool {
-		return pairs[i].Name < pairs[j].Name
-	})
-	return pairs
-}
-
-func (v *PatchOperation) Clone() *PatchOperation {
+func (v *PatchOperation) Clone(dst interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return &PatchOperation{
+
+	extra := make(map[string]interface{})
+	for key, val := range v.extra {
+		extra[key] = val
+	}
+	return blackmagic.AssignIfCompatible(dst, &PatchOperation{
 		externalID: v.externalID,
 		id:         v.id,
 		meta:       v.meta,
 		op:         v.op,
 		path:       v.path,
 		value:      v.value,
-	}
+		extra:      extra,
+	})
 }
 
 // MarshalJSON serializes PatchOperation into JSON.
@@ -295,21 +345,27 @@ func (v *PatchOperation) Clone() *PatchOperation {
 // assigned to them, as well as all extra fields. All of these
 // fields are sorted in alphabetical order.
 func (v *PatchOperation) MarshalJSON() ([]byte, error) {
-	pairs := v.makePairs()
+	v.mu.RLock()
+	defer v.mu.RUnlock()
 
 	var buf bytes.Buffer
 	enc := json.NewEncoder(&buf)
 	buf.WriteByte('{')
-	for i, pair := range pairs {
+	for i, k := range v.Keys() {
+		var val interface{}
+		if err := v.getNoLock(k, &val, true); err != nil {
+			return nil, fmt.Errorf(`failed to retrieve value for field %q: %w`, k, err)
+		}
+
 		if i > 0 {
 			buf.WriteByte(',')
 		}
-		if err := enc.Encode(pair.Name); err != nil {
+		if err := enc.Encode(k); err != nil {
 			return nil, fmt.Errorf(`failed to encode map key name: %w`, err)
 		}
 		buf.WriteByte(':')
-		if err := enc.Encode(pair.Value); err != nil {
-			return nil, fmt.Errorf(`failed to encode map value for %q: %w`, pair.Name, err)
+		if err := enc.Encode(val); err != nil {
+			return nil, fmt.Errorf(`failed to encode map value for %q: %w`, k, err)
 		}
 	}
 	buf.WriteByte('}')
@@ -366,11 +422,11 @@ LOOP:
 				}
 				v.id = &val
 			case PatchOperationMetaKey:
-				var val *Meta
+				var val Meta
 				if err := dec.Decode(&val); err != nil {
 					return fmt.Errorf(`failed to decode value for %q: %w`, PatchOperationMetaKey, err)
 				}
-				v.meta = val
+				v.meta = &val
 			case PatchOperationOpKey:
 				var val PatchOperationType
 				if err := dec.Decode(&val); err != nil {
@@ -391,8 +447,8 @@ LOOP:
 				v.value = &val
 			default:
 				var val interface{}
-				if err := extraFieldsDecoder(tok, dec, &val); err != nil {
-					return err
+				if err := v.decodeExtraField(tok, dec, &val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, tok, err)
 				}
 				if extra == nil {
 					extra = make(map[string]interface{})
@@ -426,76 +482,27 @@ func (b *PatchOperationBuilder) initialize() {
 	b.object = &PatchOperation{}
 }
 func (b *PatchOperationBuilder) ExternalID(in string) *PatchOperationBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(PatchOperationExternalIDKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(PatchOperationExternalIDKey, in)
 }
 func (b *PatchOperationBuilder) ID(in string) *PatchOperationBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(PatchOperationIDKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(PatchOperationIDKey, in)
 }
 func (b *PatchOperationBuilder) Meta(in *Meta) *PatchOperationBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(PatchOperationMetaKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(PatchOperationMetaKey, in)
 }
 func (b *PatchOperationBuilder) Op(in PatchOperationType) *PatchOperationBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(PatchOperationOpKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(PatchOperationOpKey, in)
 }
 func (b *PatchOperationBuilder) Path(in string) *PatchOperationBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(PatchOperationPathKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(PatchOperationPathKey, in)
 }
 func (b *PatchOperationBuilder) Value(in interface{}) *PatchOperationBuilder {
+	return b.SetField(PatchOperationValueKey, in)
+}
+
+// SetField sets the value of any field. The name should be the JSON field name.
+// Type check will only be performed for pre-defined types
+func (b *PatchOperationBuilder) SetField(name string, value interface{}) *PatchOperationBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 
@@ -504,12 +511,11 @@ func (b *PatchOperationBuilder) Value(in interface{}) *PatchOperationBuilder {
 		return b
 	}
 
-	if err := b.object.Set(PatchOperationValueKey, in); err != nil {
+	if err := b.object.Set(name, value); err != nil {
 		b.err = err
 	}
 	return b
 }
-
 func (b *PatchOperationBuilder) Build() (*PatchOperation, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
@@ -523,7 +529,6 @@ func (b *PatchOperationBuilder) Build() (*PatchOperation, error) {
 	b.once.Do(b.initialize)
 	return obj, nil
 }
-
 func (b *PatchOperationBuilder) MustBuild() *PatchOperation {
 	object, err := b.Build()
 	if err != nil {
@@ -536,15 +541,30 @@ func (b *PatchOperationBuilder) From(in *PatchOperation) *PatchOperationBuilder 
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.once.Do(b.initialize)
-	b.object = in.Clone()
+	if b.err != nil {
+		return b
+	}
+
+	var cloned PatchOperation
+	if err := in.Clone(&cloned); err != nil {
+		b.err = err
+		return b
+	}
+
+	b.object = &cloned
 	return b
 }
 
-func (v *PatchOperation) AsMap(dst map[string]interface{}) error {
+// AsMap returns the resource as a Go map
+func (v *PatchOperation) AsMap(m map[string]interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	for _, pair := range v.makePairs() {
-		dst[pair.Name] = pair.Value
+
+	for _, key := range v.Keys() {
+		var val interface{}
+		if err := v.getNoLock(key, &val, false); err != nil {
+			m[key] = val
+		}
 	}
 	return nil
 }
@@ -567,6 +587,23 @@ func (v *PatchOperation) GetExtension(name, uri string, dst interface{}) error {
 		return fmt.Errorf(`extension does not implement Get(string, interface{}) error`)
 	}
 	return getter.Get(name, dst)
+}
+
+func (*PatchOperation) decodeExtraField(name string, dec *json.Decoder, dst interface{}) error {
+	// we can get an instance of the resource object
+	if rx, ok := registry.LookupByURI(name); ok {
+		if err := dec.Decode(&rx); err != nil {
+			return fmt.Errorf(`failed to decode value for key %q: %w`, name, err)
+		}
+		if err := blackmagic.AssignIfCompatible(dst, rx); err != nil {
+			return err
+		}
+	} else {
+		if err := dec.Decode(dst); err != nil {
+			return fmt.Errorf(`failed to decode value for key %q: %w`, name, err)
+		}
+	}
+	return nil
 }
 
 func (b *Builder) PatchOperation() *PatchOperationBuilder {

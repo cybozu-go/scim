@@ -18,7 +18,7 @@ func init() {
 	RegisterBuilder("User", UserSchemaURI, UserBuilder{})
 }
 
-// User represents a User resource as defined in the SCIM RFC
+// represents a User resource as defined in the SCIM RFC
 type User struct {
 	mu                sync.RWMutex
 	active            *bool
@@ -85,6 +85,14 @@ const (
 func (v *User) Get(key string, dst interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
+	return v.getNoLock(key, dst, false)
+}
+
+// getNoLock is a utility method that is called from Get, MarshalJSON, etc, but
+// it can be used from user-supplied code. Unlike Get, it avoids locking for
+// each call, so the user needs to explicitly lock the object before using,
+// but otherwise should be faster than sing Get directly
+func (v *User) getNoLock(key string, dst interface{}, raw bool) error {
 	switch key {
 	case UserActiveKey:
 		if val := v.active; val != nil {
@@ -164,7 +172,10 @@ func (v *User) Get(key string, dst interface{}) error {
 		}
 	case UserSchemasKey:
 		if val := v.schemas; val != nil {
-			return blackmagic.AssignIfCompatible(dst, val.Get())
+			if raw {
+				return blackmagic.AssignIfCompatible(dst, *val)
+			}
+			return blackmagic.AssignIfCompatible(dst, val.GetValue())
 		}
 	case UserTimezoneKey:
 		if val := v.timezone; val != nil {
@@ -319,7 +330,7 @@ func (v *User) Set(key string, value interface{}) error {
 		v.roles = converted
 	case UserSchemasKey:
 		var object schemas
-		if err := object.Accept(value); err != nil {
+		if err := object.AcceptValue(value); err != nil {
 			return fmt.Errorf(`failed to accept value: %w`, err)
 		}
 		v.schemas = &object
@@ -362,150 +373,328 @@ func (v *User) Set(key string, value interface{}) error {
 	return nil
 }
 
+// Has returns true if the field specified by the argument has been populated.
+// The field name must be the JSON field name, not the Go-structure's field name.
+func (v *User) Has(name string) bool {
+	switch name {
+	case UserActiveKey:
+		return v.active != nil
+	case UserAddressesKey:
+		return v.addresses != nil
+	case UserDisplayNameKey:
+		return v.displayName != nil
+	case UserEmailsKey:
+		return v.emails != nil
+	case UserEntitlementsKey:
+		return v.entitlements != nil
+	case UserExternalIDKey:
+		return v.externalID != nil
+	case UserGroupsKey:
+		return v.groups != nil
+	case UserIDKey:
+		return v.id != nil
+	case UserIMSKey:
+		return v.ims != nil
+	case UserLocaleKey:
+		return v.locale != nil
+	case UserMetaKey:
+		return v.meta != nil
+	case UserNameKey:
+		return v.name != nil
+	case UserNickNameKey:
+		return v.nickName != nil
+	case UserPasswordKey:
+		return v.password != nil
+	case UserPhoneNumbersKey:
+		return v.phoneNumbers != nil
+	case UserPhotosKey:
+		return v.photos != nil
+	case UserPreferredLanguageKey:
+		return v.preferredLanguage != nil
+	case UserProfileURLKey:
+		return v.profileURL != nil
+	case UserRolesKey:
+		return v.roles != nil
+	case UserSchemasKey:
+		return v.schemas != nil
+	case UserTimezoneKey:
+		return v.timezone != nil
+	case UserTitleKey:
+		return v.title != nil
+	case UserUserNameKey:
+		return v.userName != nil
+	case UserUserTypeKey:
+		return v.userType != nil
+	case UserX509CertificatesKey:
+		return v.x509Certificates != nil
+	default:
+		if v.extra != nil {
+			if _, ok := v.extra[name]; ok {
+				return true
+			}
+		}
+		return false
+	}
+}
+
+// Keys returns a slice of string comprising of JSON field names whose values
+// are present in the object.
+func (v *User) Keys() []string {
+	keys := make([]string, 0, 25)
+	if v.active != nil {
+		keys = append(keys, UserActiveKey)
+	}
+	if v.addresses != nil {
+		keys = append(keys, UserAddressesKey)
+	}
+	if v.displayName != nil {
+		keys = append(keys, UserDisplayNameKey)
+	}
+	if v.emails != nil {
+		keys = append(keys, UserEmailsKey)
+	}
+	if v.entitlements != nil {
+		keys = append(keys, UserEntitlementsKey)
+	}
+	if v.externalID != nil {
+		keys = append(keys, UserExternalIDKey)
+	}
+	if v.groups != nil {
+		keys = append(keys, UserGroupsKey)
+	}
+	if v.id != nil {
+		keys = append(keys, UserIDKey)
+	}
+	if v.ims != nil {
+		keys = append(keys, UserIMSKey)
+	}
+	if v.locale != nil {
+		keys = append(keys, UserLocaleKey)
+	}
+	if v.meta != nil {
+		keys = append(keys, UserMetaKey)
+	}
+	if v.name != nil {
+		keys = append(keys, UserNameKey)
+	}
+	if v.nickName != nil {
+		keys = append(keys, UserNickNameKey)
+	}
+	if v.password != nil {
+		keys = append(keys, UserPasswordKey)
+	}
+	if v.phoneNumbers != nil {
+		keys = append(keys, UserPhoneNumbersKey)
+	}
+	if v.photos != nil {
+		keys = append(keys, UserPhotosKey)
+	}
+	if v.preferredLanguage != nil {
+		keys = append(keys, UserPreferredLanguageKey)
+	}
+	if v.profileURL != nil {
+		keys = append(keys, UserProfileURLKey)
+	}
+	if v.roles != nil {
+		keys = append(keys, UserRolesKey)
+	}
+	if v.schemas != nil {
+		keys = append(keys, UserSchemasKey)
+	}
+	if v.timezone != nil {
+		keys = append(keys, UserTimezoneKey)
+	}
+	if v.title != nil {
+		keys = append(keys, UserTitleKey)
+	}
+	if v.userName != nil {
+		keys = append(keys, UserUserNameKey)
+	}
+	if v.userType != nil {
+		keys = append(keys, UserUserTypeKey)
+	}
+	if v.x509Certificates != nil {
+		keys = append(keys, UserX509CertificatesKey)
+	}
+
+	if len(v.extra) > 0 {
+		for k := range v.extra {
+			keys = append(keys, k)
+		}
+	}
+	sort.Strings(keys)
+	return keys
+}
+
+// HasActive returns true if the field `active` has been populated
 func (v *User) HasActive() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.active != nil
 }
 
+// HasAddresses returns true if the field `addresses` has been populated
 func (v *User) HasAddresses() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.addresses != nil
 }
 
+// HasDisplayName returns true if the field `displayName` has been populated
 func (v *User) HasDisplayName() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.displayName != nil
 }
 
+// HasEmails returns true if the field `emails` has been populated
 func (v *User) HasEmails() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.emails != nil
 }
 
+// HasEntitlements returns true if the field `entitlements` has been populated
 func (v *User) HasEntitlements() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.entitlements != nil
 }
 
+// HasExternalID returns true if the field `externalId` has been populated
 func (v *User) HasExternalID() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.externalID != nil
 }
 
+// HasGroups returns true if the field `groups` has been populated
 func (v *User) HasGroups() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.groups != nil
 }
 
+// HasID returns true if the field `id` has been populated
 func (v *User) HasID() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.id != nil
 }
 
+// HasIMS returns true if the field `ims` has been populated
 func (v *User) HasIMS() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.ims != nil
 }
 
+// HasLocale returns true if the field `locale` has been populated
 func (v *User) HasLocale() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.locale != nil
 }
 
+// HasMeta returns true if the field `meta` has been populated
 func (v *User) HasMeta() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.meta != nil
 }
 
+// HasName returns true if the field `name` has been populated
 func (v *User) HasName() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.name != nil
 }
 
+// HasNickName returns true if the field `nickName` has been populated
 func (v *User) HasNickName() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.nickName != nil
 }
 
+// HasPassword returns true if the field `password` has been populated
 func (v *User) HasPassword() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.password != nil
 }
 
+// HasPhoneNumbers returns true if the field `phoneNumbers` has been populated
 func (v *User) HasPhoneNumbers() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.phoneNumbers != nil
 }
 
+// HasPhotos returns true if the field `photos` has been populated
 func (v *User) HasPhotos() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.photos != nil
 }
 
+// HasPreferredLanguage returns true if the field `preferredLanguage` has been populated
 func (v *User) HasPreferredLanguage() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.preferredLanguage != nil
 }
 
+// HasProfileURL returns true if the field `profileUrl` has been populated
 func (v *User) HasProfileURL() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.profileURL != nil
 }
 
+// HasRoles returns true if the field `roles` has been populated
 func (v *User) HasRoles() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.roles != nil
 }
 
+// HasSchemas returns true if the field `schemas` has been populated
 func (v *User) HasSchemas() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.schemas != nil
 }
 
+// HasTimezone returns true if the field `timezone` has been populated
 func (v *User) HasTimezone() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.timezone != nil
 }
 
+// HasTitle returns true if the field `title` has been populated
 func (v *User) HasTitle() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.title != nil
 }
 
+// HasUserName returns true if the field `userName` has been populated
 func (v *User) HasUserName() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.userName != nil
 }
 
+// HasUserType returns true if the field `userType` has been populated
 func (v *User) HasUserType() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.userType != nil
 }
 
+// HasX509Certificates returns true if the field `x509Certificates` has been populated
 func (v *User) HasX509Certificates() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -687,7 +876,7 @@ func (v *User) Schemas() []string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	if val := v.schemas; val != nil {
-		return val.Get()
+		return val.GetValue()
 	}
 	return nil
 }
@@ -800,98 +989,15 @@ func (v *User) Remove(key string) error {
 	return nil
 }
 
-func (v *User) makePairs() []*fieldPair {
-	pairs := make([]*fieldPair, 0, 25)
-	if val := v.active; val != nil {
-		pairs = append(pairs, &fieldPair{Name: UserActiveKey, Value: *val})
-	}
-	if val := v.addresses; len(val) > 0 {
-		pairs = append(pairs, &fieldPair{Name: UserAddressesKey, Value: val})
-	}
-	if val := v.displayName; val != nil {
-		pairs = append(pairs, &fieldPair{Name: UserDisplayNameKey, Value: *val})
-	}
-	if val := v.emails; len(val) > 0 {
-		pairs = append(pairs, &fieldPair{Name: UserEmailsKey, Value: val})
-	}
-	if val := v.entitlements; len(val) > 0 {
-		pairs = append(pairs, &fieldPair{Name: UserEntitlementsKey, Value: val})
-	}
-	if val := v.externalID; val != nil {
-		pairs = append(pairs, &fieldPair{Name: UserExternalIDKey, Value: *val})
-	}
-	if val := v.groups; len(val) > 0 {
-		pairs = append(pairs, &fieldPair{Name: UserGroupsKey, Value: val})
-	}
-	if val := v.id; val != nil {
-		pairs = append(pairs, &fieldPair{Name: UserIDKey, Value: *val})
-	}
-	if val := v.ims; len(val) > 0 {
-		pairs = append(pairs, &fieldPair{Name: UserIMSKey, Value: val})
-	}
-	if val := v.locale; val != nil {
-		pairs = append(pairs, &fieldPair{Name: UserLocaleKey, Value: *val})
-	}
-	if val := v.meta; val != nil {
-		pairs = append(pairs, &fieldPair{Name: UserMetaKey, Value: val})
-	}
-	if val := v.name; val != nil {
-		pairs = append(pairs, &fieldPair{Name: UserNameKey, Value: val})
-	}
-	if val := v.nickName; val != nil {
-		pairs = append(pairs, &fieldPair{Name: UserNickNameKey, Value: *val})
-	}
-	if val := v.password; val != nil {
-		pairs = append(pairs, &fieldPair{Name: UserPasswordKey, Value: *val})
-	}
-	if val := v.phoneNumbers; len(val) > 0 {
-		pairs = append(pairs, &fieldPair{Name: UserPhoneNumbersKey, Value: val})
-	}
-	if val := v.photos; len(val) > 0 {
-		pairs = append(pairs, &fieldPair{Name: UserPhotosKey, Value: val})
-	}
-	if val := v.preferredLanguage; val != nil {
-		pairs = append(pairs, &fieldPair{Name: UserPreferredLanguageKey, Value: *val})
-	}
-	if val := v.profileURL; val != nil {
-		pairs = append(pairs, &fieldPair{Name: UserProfileURLKey, Value: *val})
-	}
-	if val := v.roles; len(val) > 0 {
-		pairs = append(pairs, &fieldPair{Name: UserRolesKey, Value: val})
-	}
-	if val := v.schemas; val != nil {
-		pairs = append(pairs, &fieldPair{Name: UserSchemasKey, Value: val.Get()})
-	}
-	if val := v.timezone; val != nil {
-		pairs = append(pairs, &fieldPair{Name: UserTimezoneKey, Value: *val})
-	}
-	if val := v.title; val != nil {
-		pairs = append(pairs, &fieldPair{Name: UserTitleKey, Value: *val})
-	}
-	if val := v.userName; val != nil {
-		pairs = append(pairs, &fieldPair{Name: UserUserNameKey, Value: *val})
-	}
-	if val := v.userType; val != nil {
-		pairs = append(pairs, &fieldPair{Name: UserUserTypeKey, Value: *val})
-	}
-	if val := v.x509Certificates; len(val) > 0 {
-		pairs = append(pairs, &fieldPair{Name: UserX509CertificatesKey, Value: val})
-	}
-
-	for key, val := range v.extra {
-		pairs = append(pairs, &fieldPair{Name: key, Value: val})
-	}
-
-	sort.Slice(pairs, func(i, j int) bool {
-		return pairs[i].Name < pairs[j].Name
-	})
-	return pairs
-}
-
-func (v *User) Clone() *User {
+func (v *User) Clone(dst interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return &User{
+
+	extra := make(map[string]interface{})
+	for key, val := range v.extra {
+		extra[key] = val
+	}
+	return blackmagic.AssignIfCompatible(dst, &User{
 		active:            v.active,
 		addresses:         v.addresses,
 		displayName:       v.displayName,
@@ -917,7 +1023,8 @@ func (v *User) Clone() *User {
 		userName:          v.userName,
 		userType:          v.userType,
 		x509Certificates:  v.x509Certificates,
-	}
+		extra:             extra,
+	})
 }
 
 // MarshalJSON serializes User into JSON.
@@ -925,21 +1032,27 @@ func (v *User) Clone() *User {
 // assigned to them, as well as all extra fields. All of these
 // fields are sorted in alphabetical order.
 func (v *User) MarshalJSON() ([]byte, error) {
-	pairs := v.makePairs()
+	v.mu.RLock()
+	defer v.mu.RUnlock()
 
 	var buf bytes.Buffer
 	enc := json.NewEncoder(&buf)
 	buf.WriteByte('{')
-	for i, pair := range pairs {
+	for i, k := range v.Keys() {
+		var val interface{}
+		if err := v.getNoLock(k, &val, true); err != nil {
+			return nil, fmt.Errorf(`failed to retrieve value for field %q: %w`, k, err)
+		}
+
 		if i > 0 {
 			buf.WriteByte(',')
 		}
-		if err := enc.Encode(pair.Name); err != nil {
+		if err := enc.Encode(k); err != nil {
 			return nil, fmt.Errorf(`failed to encode map key name: %w`, err)
 		}
 		buf.WriteByte(':')
-		if err := enc.Encode(pair.Value); err != nil {
-			return nil, fmt.Errorf(`failed to encode map value for %q: %w`, pair.Name, err)
+		if err := enc.Encode(val); err != nil {
+			return nil, fmt.Errorf(`failed to encode map value for %q: %w`, k, err)
 		}
 	}
 	buf.WriteByte('}')
@@ -1063,17 +1176,17 @@ LOOP:
 				}
 				v.locale = &val
 			case UserMetaKey:
-				var val *Meta
+				var val Meta
 				if err := dec.Decode(&val); err != nil {
 					return fmt.Errorf(`failed to decode value for %q: %w`, UserMetaKey, err)
 				}
-				v.meta = val
+				v.meta = &val
 			case UserNameKey:
-				var val *Names
+				var val Names
 				if err := dec.Decode(&val); err != nil {
 					return fmt.Errorf(`failed to decode value for %q: %w`, UserNameKey, err)
 				}
-				v.name = val
+				v.name = &val
 			case UserNickNameKey:
 				var val string
 				if err := dec.Decode(&val); err != nil {
@@ -1154,8 +1267,8 @@ LOOP:
 				v.x509Certificates = val
 			default:
 				var val interface{}
-				if err := extraFieldsDecoder(tok, dec, &val); err != nil {
-					return err
+				if err := v.decodeExtraField(tok, dec, &val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, tok, err)
 				}
 				if extra == nil {
 					extra = make(map[string]interface{})
@@ -1191,342 +1304,84 @@ func (b *UserBuilder) initialize() {
 	b.object.schemas.Add(UserSchemaURI)
 }
 func (b *UserBuilder) Active(in bool) *UserBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(UserActiveKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(UserActiveKey, in)
 }
 func (b *UserBuilder) Addresses(in ...*Address) *UserBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(UserAddressesKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(UserAddressesKey, in)
 }
 func (b *UserBuilder) DisplayName(in string) *UserBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(UserDisplayNameKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(UserDisplayNameKey, in)
 }
 func (b *UserBuilder) Emails(in ...*Email) *UserBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(UserEmailsKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(UserEmailsKey, in)
 }
 func (b *UserBuilder) Entitlements(in ...*Entitlement) *UserBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(UserEntitlementsKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(UserEntitlementsKey, in)
 }
 func (b *UserBuilder) ExternalID(in string) *UserBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(UserExternalIDKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(UserExternalIDKey, in)
 }
 func (b *UserBuilder) Groups(in ...*AssociatedGroup) *UserBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(UserGroupsKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(UserGroupsKey, in)
 }
 func (b *UserBuilder) ID(in string) *UserBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(UserIDKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(UserIDKey, in)
 }
 func (b *UserBuilder) IMS(in ...*IMS) *UserBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(UserIMSKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(UserIMSKey, in)
 }
 func (b *UserBuilder) Locale(in string) *UserBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(UserLocaleKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(UserLocaleKey, in)
 }
 func (b *UserBuilder) Meta(in *Meta) *UserBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(UserMetaKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(UserMetaKey, in)
 }
 func (b *UserBuilder) Name(in *Names) *UserBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(UserNameKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(UserNameKey, in)
 }
 func (b *UserBuilder) NickName(in string) *UserBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(UserNickNameKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(UserNickNameKey, in)
 }
 func (b *UserBuilder) Password(in string) *UserBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(UserPasswordKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(UserPasswordKey, in)
 }
 func (b *UserBuilder) PhoneNumbers(in ...*PhoneNumber) *UserBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(UserPhoneNumbersKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(UserPhoneNumbersKey, in)
 }
 func (b *UserBuilder) Photos(in ...*Photo) *UserBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(UserPhotosKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(UserPhotosKey, in)
 }
 func (b *UserBuilder) PreferredLanguage(in string) *UserBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(UserPreferredLanguageKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(UserPreferredLanguageKey, in)
 }
 func (b *UserBuilder) ProfileURL(in string) *UserBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(UserProfileURLKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(UserProfileURLKey, in)
 }
 func (b *UserBuilder) Roles(in ...*Role) *UserBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(UserRolesKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(UserRolesKey, in)
 }
 func (b *UserBuilder) Schemas(in ...string) *UserBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(UserSchemasKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(UserSchemasKey, in)
 }
 func (b *UserBuilder) Timezone(in string) *UserBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(UserTimezoneKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(UserTimezoneKey, in)
 }
 func (b *UserBuilder) Title(in string) *UserBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(UserTitleKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(UserTitleKey, in)
 }
 func (b *UserBuilder) UserName(in string) *UserBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(UserUserNameKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(UserUserNameKey, in)
 }
 func (b *UserBuilder) UserType(in string) *UserBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(UserUserTypeKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(UserUserTypeKey, in)
 }
 func (b *UserBuilder) X509Certificates(in ...*X509Certificate) *UserBuilder {
+	return b.SetField(UserX509CertificatesKey, in)
+}
+
+// SetField sets the value of any field. The name should be the JSON field name.
+// Type check will only be performed for pre-defined types
+func (b *UserBuilder) SetField(name string, value interface{}) *UserBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 
@@ -1535,12 +1390,11 @@ func (b *UserBuilder) X509Certificates(in ...*X509Certificate) *UserBuilder {
 		return b
 	}
 
-	if err := b.object.Set(UserX509CertificatesKey, in); err != nil {
+	if err := b.object.Set(name, value); err != nil {
 		b.err = err
 	}
 	return b
 }
-
 func (b *UserBuilder) Build() (*User, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
@@ -1557,7 +1411,6 @@ func (b *UserBuilder) Build() (*User, error) {
 	b.once.Do(b.initialize)
 	return obj, nil
 }
-
 func (b *UserBuilder) MustBuild() *User {
 	object, err := b.Build()
 	if err != nil {
@@ -1570,7 +1423,17 @@ func (b *UserBuilder) From(in *User) *UserBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.once.Do(b.initialize)
-	b.object = in.Clone()
+	if b.err != nil {
+		return b
+	}
+
+	var cloned User
+	if err := in.Clone(&cloned); err != nil {
+		b.err = err
+		return b
+	}
+
+	b.object = &cloned
 	return b
 }
 
@@ -1592,11 +1455,16 @@ func (b *UserBuilder) Extension(uri string, value interface{}) *UserBuilder {
 	return b
 }
 
-func (v *User) AsMap(dst map[string]interface{}) error {
+// AsMap returns the resource as a Go map
+func (v *User) AsMap(m map[string]interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	for _, pair := range v.makePairs() {
-		dst[pair.Name] = pair.Value
+
+	for _, key := range v.Keys() {
+		var val interface{}
+		if err := v.getNoLock(key, &val, false); err != nil {
+			m[key] = val
+		}
 	}
 	return nil
 }
@@ -1619,6 +1487,23 @@ func (v *User) GetExtension(name, uri string, dst interface{}) error {
 		return fmt.Errorf(`extension does not implement Get(string, interface{}) error`)
 	}
 	return getter.Get(name, dst)
+}
+
+func (*User) decodeExtraField(name string, dec *json.Decoder, dst interface{}) error {
+	// we can get an instance of the resource object
+	if rx, ok := registry.LookupByURI(name); ok {
+		if err := dec.Decode(&rx); err != nil {
+			return fmt.Errorf(`failed to decode value for key %q: %w`, name, err)
+		}
+		if err := blackmagic.AssignIfCompatible(dst, rx); err != nil {
+			return err
+		}
+	} else {
+		if err := dec.Decode(dst); err != nil {
+			return fmt.Errorf(`failed to decode value for key %q: %w`, name, err)
+		}
+	}
+	return nil
 }
 
 func (b *Builder) User() *UserBuilder {

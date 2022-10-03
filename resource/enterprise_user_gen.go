@@ -48,6 +48,14 @@ const (
 func (v *EnterpriseUser) Get(key string, dst interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
+	return v.getNoLock(key, dst, false)
+}
+
+// getNoLock is a utility method that is called from Get, MarshalJSON, etc, but
+// it can be used from user-supplied code. Unlike Get, it avoids locking for
+// each call, so the user needs to explicitly lock the object before using,
+// but otherwise should be faster than sing Get directly
+func (v *EnterpriseUser) getNoLock(key string, dst interface{}, raw bool) error {
 	switch key {
 	case EnterpriseUserCostCenterKey:
 		if val := v.costCenter; val != nil {
@@ -75,7 +83,10 @@ func (v *EnterpriseUser) Get(key string, dst interface{}) error {
 		}
 	case EnterpriseUserSchemasKey:
 		if val := v.schemas; val != nil {
-			return blackmagic.AssignIfCompatible(dst, val.Get())
+			if raw {
+				return blackmagic.AssignIfCompatible(dst, *val)
+			}
+			return blackmagic.AssignIfCompatible(dst, val.GetValue())
 		}
 	default:
 		if v.extra != nil {
@@ -132,7 +143,7 @@ func (v *EnterpriseUser) Set(key string, value interface{}) error {
 		v.organization = &converted
 	case EnterpriseUserSchemasKey:
 		var object schemas
-		if err := object.Accept(value); err != nil {
+		if err := object.AcceptValue(value); err != nil {
 			return fmt.Errorf(`failed to accept value: %w`, err)
 		}
 		v.schemas = &object
@@ -145,42 +156,112 @@ func (v *EnterpriseUser) Set(key string, value interface{}) error {
 	return nil
 }
 
+// Has returns true if the field specified by the argument has been populated.
+// The field name must be the JSON field name, not the Go-structure's field name.
+func (v *EnterpriseUser) Has(name string) bool {
+	switch name {
+	case EnterpriseUserCostCenterKey:
+		return v.costCenter != nil
+	case EnterpriseUserDepartmentKey:
+		return v.department != nil
+	case EnterpriseUserDivisionKey:
+		return v.division != nil
+	case EnterpriseUserEmployeeNumberKey:
+		return v.employeeNumber != nil
+	case EnterpriseUserManagerKey:
+		return v.manager != nil
+	case EnterpriseUserOrganizationKey:
+		return v.organization != nil
+	case EnterpriseUserSchemasKey:
+		return v.schemas != nil
+	default:
+		if v.extra != nil {
+			if _, ok := v.extra[name]; ok {
+				return true
+			}
+		}
+		return false
+	}
+}
+
+// Keys returns a slice of string comprising of JSON field names whose values
+// are present in the object.
+func (v *EnterpriseUser) Keys() []string {
+	keys := make([]string, 0, 7)
+	if v.costCenter != nil {
+		keys = append(keys, EnterpriseUserCostCenterKey)
+	}
+	if v.department != nil {
+		keys = append(keys, EnterpriseUserDepartmentKey)
+	}
+	if v.division != nil {
+		keys = append(keys, EnterpriseUserDivisionKey)
+	}
+	if v.employeeNumber != nil {
+		keys = append(keys, EnterpriseUserEmployeeNumberKey)
+	}
+	if v.manager != nil {
+		keys = append(keys, EnterpriseUserManagerKey)
+	}
+	if v.organization != nil {
+		keys = append(keys, EnterpriseUserOrganizationKey)
+	}
+	if v.schemas != nil {
+		keys = append(keys, EnterpriseUserSchemasKey)
+	}
+
+	if len(v.extra) > 0 {
+		for k := range v.extra {
+			keys = append(keys, k)
+		}
+	}
+	sort.Strings(keys)
+	return keys
+}
+
+// HasCostCenter returns true if the field `costCenter` has been populated
 func (v *EnterpriseUser) HasCostCenter() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.costCenter != nil
 }
 
+// HasDepartment returns true if the field `department` has been populated
 func (v *EnterpriseUser) HasDepartment() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.department != nil
 }
 
+// HasDivision returns true if the field `division` has been populated
 func (v *EnterpriseUser) HasDivision() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.division != nil
 }
 
+// HasEmployeeNumber returns true if the field `employeeNumber` has been populated
 func (v *EnterpriseUser) HasEmployeeNumber() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.employeeNumber != nil
 }
 
+// HasManager returns true if the field `manager` has been populated
 func (v *EnterpriseUser) HasManager() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.manager != nil
 }
 
+// HasOrganization returns true if the field `organization` has been populated
 func (v *EnterpriseUser) HasOrganization() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.organization != nil
 }
 
+// HasSchemas returns true if the field `schemas` has been populated
 func (v *EnterpriseUser) HasSchemas() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -245,7 +326,7 @@ func (v *EnterpriseUser) Schemas() []string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	if val := v.schemas; val != nil {
-		return val.Get()
+		return val.GetValue()
 	}
 	return nil
 }
@@ -277,44 +358,15 @@ func (v *EnterpriseUser) Remove(key string) error {
 	return nil
 }
 
-func (v *EnterpriseUser) makePairs() []*fieldPair {
-	pairs := make([]*fieldPair, 0, 7)
-	if val := v.costCenter; val != nil {
-		pairs = append(pairs, &fieldPair{Name: EnterpriseUserCostCenterKey, Value: *val})
-	}
-	if val := v.department; val != nil {
-		pairs = append(pairs, &fieldPair{Name: EnterpriseUserDepartmentKey, Value: *val})
-	}
-	if val := v.division; val != nil {
-		pairs = append(pairs, &fieldPair{Name: EnterpriseUserDivisionKey, Value: *val})
-	}
-	if val := v.employeeNumber; val != nil {
-		pairs = append(pairs, &fieldPair{Name: EnterpriseUserEmployeeNumberKey, Value: *val})
-	}
-	if val := v.manager; val != nil {
-		pairs = append(pairs, &fieldPair{Name: EnterpriseUserManagerKey, Value: val})
-	}
-	if val := v.organization; val != nil {
-		pairs = append(pairs, &fieldPair{Name: EnterpriseUserOrganizationKey, Value: *val})
-	}
-	if val := v.schemas; val != nil {
-		pairs = append(pairs, &fieldPair{Name: EnterpriseUserSchemasKey, Value: val.Get()})
-	}
-
-	for key, val := range v.extra {
-		pairs = append(pairs, &fieldPair{Name: key, Value: val})
-	}
-
-	sort.Slice(pairs, func(i, j int) bool {
-		return pairs[i].Name < pairs[j].Name
-	})
-	return pairs
-}
-
-func (v *EnterpriseUser) Clone() *EnterpriseUser {
+func (v *EnterpriseUser) Clone(dst interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return &EnterpriseUser{
+
+	extra := make(map[string]interface{})
+	for key, val := range v.extra {
+		extra[key] = val
+	}
+	return blackmagic.AssignIfCompatible(dst, &EnterpriseUser{
 		costCenter:     v.costCenter,
 		department:     v.department,
 		division:       v.division,
@@ -322,7 +374,8 @@ func (v *EnterpriseUser) Clone() *EnterpriseUser {
 		manager:        v.manager,
 		organization:   v.organization,
 		schemas:        v.schemas,
-	}
+		extra:          extra,
+	})
 }
 
 // MarshalJSON serializes EnterpriseUser into JSON.
@@ -330,21 +383,27 @@ func (v *EnterpriseUser) Clone() *EnterpriseUser {
 // assigned to them, as well as all extra fields. All of these
 // fields are sorted in alphabetical order.
 func (v *EnterpriseUser) MarshalJSON() ([]byte, error) {
-	pairs := v.makePairs()
+	v.mu.RLock()
+	defer v.mu.RUnlock()
 
 	var buf bytes.Buffer
 	enc := json.NewEncoder(&buf)
 	buf.WriteByte('{')
-	for i, pair := range pairs {
+	for i, k := range v.Keys() {
+		var val interface{}
+		if err := v.getNoLock(k, &val, true); err != nil {
+			return nil, fmt.Errorf(`failed to retrieve value for field %q: %w`, k, err)
+		}
+
 		if i > 0 {
 			buf.WriteByte(',')
 		}
-		if err := enc.Encode(pair.Name); err != nil {
+		if err := enc.Encode(k); err != nil {
 			return nil, fmt.Errorf(`failed to encode map key name: %w`, err)
 		}
 		buf.WriteByte(':')
-		if err := enc.Encode(pair.Value); err != nil {
-			return nil, fmt.Errorf(`failed to encode map value for %q: %w`, pair.Name, err)
+		if err := enc.Encode(val); err != nil {
+			return nil, fmt.Errorf(`failed to encode map value for %q: %w`, k, err)
 		}
 	}
 	buf.WriteByte('}')
@@ -414,11 +473,11 @@ LOOP:
 				}
 				v.employeeNumber = &val
 			case EnterpriseUserManagerKey:
-				var val *EnterpriseManager
+				var val EnterpriseManager
 				if err := dec.Decode(&val); err != nil {
 					return fmt.Errorf(`failed to decode value for %q: %w`, EnterpriseUserManagerKey, err)
 				}
-				v.manager = val
+				v.manager = &val
 			case EnterpriseUserOrganizationKey:
 				var val string
 				if err := dec.Decode(&val); err != nil {
@@ -433,8 +492,8 @@ LOOP:
 				v.schemas = &val
 			default:
 				var val interface{}
-				if err := extraFieldsDecoder(tok, dec, &val); err != nil {
-					return err
+				if err := v.decodeExtraField(tok, dec, &val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, tok, err)
 				}
 				if extra == nil {
 					extra = make(map[string]interface{})
@@ -468,90 +527,30 @@ func (b *EnterpriseUserBuilder) initialize() {
 	b.object = &EnterpriseUser{}
 }
 func (b *EnterpriseUserBuilder) CostCenter(in string) *EnterpriseUserBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(EnterpriseUserCostCenterKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(EnterpriseUserCostCenterKey, in)
 }
 func (b *EnterpriseUserBuilder) Department(in string) *EnterpriseUserBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(EnterpriseUserDepartmentKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(EnterpriseUserDepartmentKey, in)
 }
 func (b *EnterpriseUserBuilder) Division(in string) *EnterpriseUserBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(EnterpriseUserDivisionKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(EnterpriseUserDivisionKey, in)
 }
 func (b *EnterpriseUserBuilder) EmployeeNumber(in string) *EnterpriseUserBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(EnterpriseUserEmployeeNumberKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(EnterpriseUserEmployeeNumberKey, in)
 }
 func (b *EnterpriseUserBuilder) Manager(in *EnterpriseManager) *EnterpriseUserBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(EnterpriseUserManagerKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(EnterpriseUserManagerKey, in)
 }
 func (b *EnterpriseUserBuilder) Organization(in string) *EnterpriseUserBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(EnterpriseUserOrganizationKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(EnterpriseUserOrganizationKey, in)
 }
 func (b *EnterpriseUserBuilder) Schemas(in ...string) *EnterpriseUserBuilder {
+	return b.SetField(EnterpriseUserSchemasKey, in)
+}
+
+// SetField sets the value of any field. The name should be the JSON field name.
+// Type check will only be performed for pre-defined types
+func (b *EnterpriseUserBuilder) SetField(name string, value interface{}) *EnterpriseUserBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 
@@ -560,12 +559,11 @@ func (b *EnterpriseUserBuilder) Schemas(in ...string) *EnterpriseUserBuilder {
 		return b
 	}
 
-	if err := b.object.Set(EnterpriseUserSchemasKey, in); err != nil {
+	if err := b.object.Set(name, value); err != nil {
 		b.err = err
 	}
 	return b
 }
-
 func (b *EnterpriseUserBuilder) Build() (*EnterpriseUser, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
@@ -579,7 +577,6 @@ func (b *EnterpriseUserBuilder) Build() (*EnterpriseUser, error) {
 	b.once.Do(b.initialize)
 	return obj, nil
 }
-
 func (b *EnterpriseUserBuilder) MustBuild() *EnterpriseUser {
 	object, err := b.Build()
 	if err != nil {
@@ -592,7 +589,17 @@ func (b *EnterpriseUserBuilder) From(in *EnterpriseUser) *EnterpriseUserBuilder 
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.once.Do(b.initialize)
-	b.object = in.Clone()
+	if b.err != nil {
+		return b
+	}
+
+	var cloned EnterpriseUser
+	if err := in.Clone(&cloned); err != nil {
+		b.err = err
+		return b
+	}
+
+	b.object = &cloned
 	return b
 }
 
@@ -614,11 +621,16 @@ func (b *EnterpriseUserBuilder) Extension(uri string, value interface{}) *Enterp
 	return b
 }
 
-func (v *EnterpriseUser) AsMap(dst map[string]interface{}) error {
+// AsMap returns the resource as a Go map
+func (v *EnterpriseUser) AsMap(m map[string]interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	for _, pair := range v.makePairs() {
-		dst[pair.Name] = pair.Value
+
+	for _, key := range v.Keys() {
+		var val interface{}
+		if err := v.getNoLock(key, &val, false); err != nil {
+			m[key] = val
+		}
 	}
 	return nil
 }
@@ -641,6 +653,23 @@ func (v *EnterpriseUser) GetExtension(name, uri string, dst interface{}) error {
 		return fmt.Errorf(`extension does not implement Get(string, interface{}) error`)
 	}
 	return getter.Get(name, dst)
+}
+
+func (*EnterpriseUser) decodeExtraField(name string, dec *json.Decoder, dst interface{}) error {
+	// we can get an instance of the resource object
+	if rx, ok := registry.LookupByURI(name); ok {
+		if err := dec.Decode(&rx); err != nil {
+			return fmt.Errorf(`failed to decode value for key %q: %w`, name, err)
+		}
+		if err := blackmagic.AssignIfCompatible(dst, rx); err != nil {
+			return err
+		}
+	} else {
+		if err := dec.Decode(dst); err != nil {
+			return fmt.Errorf(`failed to decode value for key %q: %w`, name, err)
+		}
+	}
+	return nil
 }
 
 func (b *Builder) EnterpriseUser() *EnterpriseUserBuilder {

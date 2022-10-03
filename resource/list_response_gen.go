@@ -44,6 +44,14 @@ const (
 func (v *ListResponse) Get(key string, dst interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
+	return v.getNoLock(key, dst, false)
+}
+
+// getNoLock is a utility method that is called from Get, MarshalJSON, etc, but
+// it can be used from user-supplied code. Unlike Get, it avoids locking for
+// each call, so the user needs to explicitly lock the object before using,
+// but otherwise should be faster than sing Get directly
+func (v *ListResponse) getNoLock(key string, dst interface{}, raw bool) error {
 	switch key {
 	case ListResponseItemsPerPageKey:
 		if val := v.itemsPerPage; val != nil {
@@ -63,7 +71,10 @@ func (v *ListResponse) Get(key string, dst interface{}) error {
 		}
 	case ListResponseSchemasKey:
 		if val := v.schemas; val != nil {
-			return blackmagic.AssignIfCompatible(dst, val.Get())
+			if raw {
+				return blackmagic.AssignIfCompatible(dst, *val)
+			}
+			return blackmagic.AssignIfCompatible(dst, val.GetValue())
 		}
 	default:
 		if v.extra != nil {
@@ -108,7 +119,7 @@ func (v *ListResponse) Set(key string, value interface{}) error {
 		v.totalResults = &converted
 	case ListResponseSchemasKey:
 		var object schemas
-		if err := object.Accept(value); err != nil {
+		if err := object.AcceptValue(value); err != nil {
 			return fmt.Errorf(`failed to accept value: %w`, err)
 		}
 		v.schemas = &object
@@ -121,30 +132,88 @@ func (v *ListResponse) Set(key string, value interface{}) error {
 	return nil
 }
 
+// Has returns true if the field specified by the argument has been populated.
+// The field name must be the JSON field name, not the Go-structure's field name.
+func (v *ListResponse) Has(name string) bool {
+	switch name {
+	case ListResponseItemsPerPageKey:
+		return v.itemsPerPage != nil
+	case ListResponseResourcesKey:
+		return v.resources != nil
+	case ListResponseStartIndexKey:
+		return v.startIndex != nil
+	case ListResponseTotalResultsKey:
+		return v.totalResults != nil
+	case ListResponseSchemasKey:
+		return v.schemas != nil
+	default:
+		if v.extra != nil {
+			if _, ok := v.extra[name]; ok {
+				return true
+			}
+		}
+		return false
+	}
+}
+
+// Keys returns a slice of string comprising of JSON field names whose values
+// are present in the object.
+func (v *ListResponse) Keys() []string {
+	keys := make([]string, 0, 5)
+	if v.itemsPerPage != nil {
+		keys = append(keys, ListResponseItemsPerPageKey)
+	}
+	if v.resources != nil {
+		keys = append(keys, ListResponseResourcesKey)
+	}
+	if v.startIndex != nil {
+		keys = append(keys, ListResponseStartIndexKey)
+	}
+	if v.totalResults != nil {
+		keys = append(keys, ListResponseTotalResultsKey)
+	}
+	if v.schemas != nil {
+		keys = append(keys, ListResponseSchemasKey)
+	}
+
+	if len(v.extra) > 0 {
+		for k := range v.extra {
+			keys = append(keys, k)
+		}
+	}
+	sort.Strings(keys)
+	return keys
+}
+
+// HasItemsPerPage returns true if the field `itemsPerPage` has been populated
 func (v *ListResponse) HasItemsPerPage() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.itemsPerPage != nil
 }
 
+// HasResources returns true if the field `resources` has been populated
 func (v *ListResponse) HasResources() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.resources != nil
 }
 
+// HasStartIndex returns true if the field `startIndex` has been populated
 func (v *ListResponse) HasStartIndex() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.startIndex != nil
 }
 
+// HasTotalResults returns true if the field `totalResults` has been populated
 func (v *ListResponse) HasTotalResults() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.totalResults != nil
 }
 
+// HasSchemas returns true if the field `schemas` has been populated
 func (v *ListResponse) HasSchemas() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -191,7 +260,7 @@ func (v *ListResponse) Schemas() []string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	if val := v.schemas; val != nil {
-		return val.Get()
+		return val.GetValue()
 	}
 	return nil
 }
@@ -219,44 +288,22 @@ func (v *ListResponse) Remove(key string) error {
 	return nil
 }
 
-func (v *ListResponse) makePairs() []*fieldPair {
-	pairs := make([]*fieldPair, 0, 5)
-	if val := v.itemsPerPage; val != nil {
-		pairs = append(pairs, &fieldPair{Name: ListResponseItemsPerPageKey, Value: *val})
-	}
-	if val := v.resources; len(val) > 0 {
-		pairs = append(pairs, &fieldPair{Name: ListResponseResourcesKey, Value: val})
-	}
-	if val := v.startIndex; val != nil {
-		pairs = append(pairs, &fieldPair{Name: ListResponseStartIndexKey, Value: *val})
-	}
-	if val := v.totalResults; val != nil {
-		pairs = append(pairs, &fieldPair{Name: ListResponseTotalResultsKey, Value: *val})
-	}
-	if val := v.schemas; val != nil {
-		pairs = append(pairs, &fieldPair{Name: ListResponseSchemasKey, Value: val.Get()})
-	}
-
-	for key, val := range v.extra {
-		pairs = append(pairs, &fieldPair{Name: key, Value: val})
-	}
-
-	sort.Slice(pairs, func(i, j int) bool {
-		return pairs[i].Name < pairs[j].Name
-	})
-	return pairs
-}
-
-func (v *ListResponse) Clone() *ListResponse {
+func (v *ListResponse) Clone(dst interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return &ListResponse{
+
+	extra := make(map[string]interface{})
+	for key, val := range v.extra {
+		extra[key] = val
+	}
+	return blackmagic.AssignIfCompatible(dst, &ListResponse{
 		itemsPerPage: v.itemsPerPage,
 		resources:    v.resources,
 		startIndex:   v.startIndex,
 		totalResults: v.totalResults,
 		schemas:      v.schemas,
-	}
+		extra:        extra,
+	})
 }
 
 // MarshalJSON serializes ListResponse into JSON.
@@ -264,21 +311,27 @@ func (v *ListResponse) Clone() *ListResponse {
 // assigned to them, as well as all extra fields. All of these
 // fields are sorted in alphabetical order.
 func (v *ListResponse) MarshalJSON() ([]byte, error) {
-	pairs := v.makePairs()
+	v.mu.RLock()
+	defer v.mu.RUnlock()
 
 	var buf bytes.Buffer
 	enc := json.NewEncoder(&buf)
 	buf.WriteByte('{')
-	for i, pair := range pairs {
+	for i, k := range v.Keys() {
+		var val interface{}
+		if err := v.getNoLock(k, &val, true); err != nil {
+			return nil, fmt.Errorf(`failed to retrieve value for field %q: %w`, k, err)
+		}
+
 		if i > 0 {
 			buf.WriteByte(',')
 		}
-		if err := enc.Encode(pair.Name); err != nil {
+		if err := enc.Encode(k); err != nil {
 			return nil, fmt.Errorf(`failed to encode map key name: %w`, err)
 		}
 		buf.WriteByte(':')
-		if err := enc.Encode(pair.Value); err != nil {
-			return nil, fmt.Errorf(`failed to encode map value for %q: %w`, pair.Name, err)
+		if err := enc.Encode(val); err != nil {
+			return nil, fmt.Errorf(`failed to encode map value for %q: %w`, k, err)
 		}
 	}
 	buf.WriteByte('}')
@@ -305,62 +358,24 @@ func (b *ListResponseBuilder) initialize() {
 	b.object.schemas.Add(ListResponseSchemaURI)
 }
 func (b *ListResponseBuilder) ItemsPerPage(in int) *ListResponseBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(ListResponseItemsPerPageKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(ListResponseItemsPerPageKey, in)
 }
 func (b *ListResponseBuilder) Resources(in ...interface{}) *ListResponseBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(ListResponseResourcesKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(ListResponseResourcesKey, in)
 }
 func (b *ListResponseBuilder) StartIndex(in int) *ListResponseBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(ListResponseStartIndexKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(ListResponseStartIndexKey, in)
 }
 func (b *ListResponseBuilder) TotalResults(in int) *ListResponseBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(ListResponseTotalResultsKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(ListResponseTotalResultsKey, in)
 }
 func (b *ListResponseBuilder) Schemas(in ...string) *ListResponseBuilder {
+	return b.SetField(ListResponseSchemasKey, in)
+}
+
+// SetField sets the value of any field. The name should be the JSON field name.
+// Type check will only be performed for pre-defined types
+func (b *ListResponseBuilder) SetField(name string, value interface{}) *ListResponseBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 
@@ -369,12 +384,11 @@ func (b *ListResponseBuilder) Schemas(in ...string) *ListResponseBuilder {
 		return b
 	}
 
-	if err := b.object.Set(ListResponseSchemasKey, in); err != nil {
+	if err := b.object.Set(name, value); err != nil {
 		b.err = err
 	}
 	return b
 }
-
 func (b *ListResponseBuilder) Build() (*ListResponse, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
@@ -388,7 +402,6 @@ func (b *ListResponseBuilder) Build() (*ListResponse, error) {
 	b.once.Do(b.initialize)
 	return obj, nil
 }
-
 func (b *ListResponseBuilder) MustBuild() *ListResponse {
 	object, err := b.Build()
 	if err != nil {
@@ -401,7 +414,17 @@ func (b *ListResponseBuilder) From(in *ListResponse) *ListResponseBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.once.Do(b.initialize)
-	b.object = in.Clone()
+	if b.err != nil {
+		return b
+	}
+
+	var cloned ListResponse
+	if err := in.Clone(&cloned); err != nil {
+		b.err = err
+		return b
+	}
+
+	b.object = &cloned
 	return b
 }
 
@@ -423,11 +446,16 @@ func (b *ListResponseBuilder) Extension(uri string, value interface{}) *ListResp
 	return b
 }
 
-func (v *ListResponse) AsMap(dst map[string]interface{}) error {
+// AsMap returns the resource as a Go map
+func (v *ListResponse) AsMap(m map[string]interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	for _, pair := range v.makePairs() {
-		dst[pair.Name] = pair.Value
+
+	for _, key := range v.Keys() {
+		var val interface{}
+		if err := v.getNoLock(key, &val, false); err != nil {
+			m[key] = val
+		}
 	}
 	return nil
 }
@@ -450,6 +478,23 @@ func (v *ListResponse) GetExtension(name, uri string, dst interface{}) error {
 		return fmt.Errorf(`extension does not implement Get(string, interface{}) error`)
 	}
 	return getter.Get(name, dst)
+}
+
+func (*ListResponse) decodeExtraField(name string, dec *json.Decoder, dst interface{}) error {
+	// we can get an instance of the resource object
+	if rx, ok := registry.LookupByURI(name); ok {
+		if err := dec.Decode(&rx); err != nil {
+			return fmt.Errorf(`failed to decode value for key %q: %w`, name, err)
+		}
+		if err := blackmagic.AssignIfCompatible(dst, rx); err != nil {
+			return err
+		}
+	} else {
+		if err := dec.Decode(dst); err != nil {
+			return fmt.Errorf(`failed to decode value for key %q: %w`, name, err)
+		}
+	}
+	return nil
 }
 
 func (b *Builder) ListResponse() *ListResponseBuilder {

@@ -7,8 +7,6 @@ import (
 	"fmt"
 	"sort"
 	"sync"
-
-	"github.com/lestrrat-go/blackmagic"
 )
 
 // schemas is a container for schemas. it dedupes schema URIs,
@@ -42,7 +40,7 @@ func (s *schemas) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (s *schemas) Accept(v interface{}) error {
+func (s *schemas) AcceptValue(v interface{}) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -59,7 +57,7 @@ func (s *schemas) Accept(v interface{}) error {
 	return nil
 }
 
-func (s *schemas) Get() []string {
+func (s *schemas) GetValue() []string {
 	return s.List()
 }
 
@@ -166,24 +164,3 @@ const (
 	PatchRemove  PatchOperationType = `remove`
 	PatchReplace PatchOperationType = `replace`
 )
-
-func decodeExtra(name string, dec *json.Decoder, dst interface{}) error {
-	// we can get an instance of the resource object
-	if rx, ok := registry.LookupByURI(name); ok {
-		if err := dec.Decode(&rx); err != nil {
-			return fmt.Errorf(`failed to decode value for key %q: %w`, name, err)
-		}
-		if err := blackmagic.AssignIfCompatible(dst, rx); err != nil {
-			return err
-		}
-	} else {
-		if err := dec.Decode(dst); err != nil {
-			return fmt.Errorf(`failed to decode value for key %q: %w`, name, err)
-		}
-	}
-	return nil
-}
-
-func init() {
-	extraFieldsDecoder = decodeExtra
-}

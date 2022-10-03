@@ -16,7 +16,17 @@ func (b *{{ $builderName }}) From(in *{{ $objectName }}) *{{ $builderName }} {
   b.mu.Lock()
   defer b.mu.Unlock()
   b.once.Do(b.initialize)
-  b.object = in.Clone()
+  if b.err != nil {
+    return b
+  }
+
+  var cloned {{ $objectName }}
+  if err := in.Clone(&cloned); err != nil {
+    b.err = err
+    return b
+  }
+
+  b.object = &cloned
   return b
 }
 

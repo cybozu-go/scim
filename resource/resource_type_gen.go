@@ -48,6 +48,14 @@ const (
 func (v *ResourceType) Get(key string, dst interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
+	return v.getNoLock(key, dst, false)
+}
+
+// getNoLock is a utility method that is called from Get, MarshalJSON, etc, but
+// it can be used from user-supplied code. Unlike Get, it avoids locking for
+// each call, so the user needs to explicitly lock the object before using,
+// but otherwise should be faster than sing Get directly
+func (v *ResourceType) getNoLock(key string, dst interface{}, raw bool) error {
 	switch key {
 	case ResourceTypeDescriptionKey:
 		if val := v.description; val != nil {
@@ -75,7 +83,10 @@ func (v *ResourceType) Get(key string, dst interface{}) error {
 		}
 	case ResourceTypeSchemasKey:
 		if val := v.schemas; val != nil {
-			return blackmagic.AssignIfCompatible(dst, val.Get())
+			if raw {
+				return blackmagic.AssignIfCompatible(dst, *val)
+			}
+			return blackmagic.AssignIfCompatible(dst, val.GetValue())
 		}
 	default:
 		if v.extra != nil {
@@ -132,7 +143,7 @@ func (v *ResourceType) Set(key string, value interface{}) error {
 		v.schemaExtensions = converted
 	case ResourceTypeSchemasKey:
 		var object schemas
-		if err := object.Accept(value); err != nil {
+		if err := object.AcceptValue(value); err != nil {
 			return fmt.Errorf(`failed to accept value: %w`, err)
 		}
 		v.schemas = &object
@@ -145,42 +156,112 @@ func (v *ResourceType) Set(key string, value interface{}) error {
 	return nil
 }
 
+// Has returns true if the field specified by the argument has been populated.
+// The field name must be the JSON field name, not the Go-structure's field name.
+func (v *ResourceType) Has(name string) bool {
+	switch name {
+	case ResourceTypeDescriptionKey:
+		return v.description != nil
+	case ResourceTypeEndpointKey:
+		return v.endpoint != nil
+	case ResourceTypeIDKey:
+		return v.id != nil
+	case ResourceTypeNameKey:
+		return v.name != nil
+	case ResourceTypeSchemaKey:
+		return v.schema != nil
+	case ResourceTypeSchemaExtensionsKey:
+		return v.schemaExtensions != nil
+	case ResourceTypeSchemasKey:
+		return v.schemas != nil
+	default:
+		if v.extra != nil {
+			if _, ok := v.extra[name]; ok {
+				return true
+			}
+		}
+		return false
+	}
+}
+
+// Keys returns a slice of string comprising of JSON field names whose values
+// are present in the object.
+func (v *ResourceType) Keys() []string {
+	keys := make([]string, 0, 7)
+	if v.description != nil {
+		keys = append(keys, ResourceTypeDescriptionKey)
+	}
+	if v.endpoint != nil {
+		keys = append(keys, ResourceTypeEndpointKey)
+	}
+	if v.id != nil {
+		keys = append(keys, ResourceTypeIDKey)
+	}
+	if v.name != nil {
+		keys = append(keys, ResourceTypeNameKey)
+	}
+	if v.schema != nil {
+		keys = append(keys, ResourceTypeSchemaKey)
+	}
+	if v.schemaExtensions != nil {
+		keys = append(keys, ResourceTypeSchemaExtensionsKey)
+	}
+	if v.schemas != nil {
+		keys = append(keys, ResourceTypeSchemasKey)
+	}
+
+	if len(v.extra) > 0 {
+		for k := range v.extra {
+			keys = append(keys, k)
+		}
+	}
+	sort.Strings(keys)
+	return keys
+}
+
+// HasDescription returns true if the field `description` has been populated
 func (v *ResourceType) HasDescription() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.description != nil
 }
 
+// HasEndpoint returns true if the field `endpoint` has been populated
 func (v *ResourceType) HasEndpoint() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.endpoint != nil
 }
 
+// HasID returns true if the field `id` has been populated
 func (v *ResourceType) HasID() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.id != nil
 }
 
+// HasName returns true if the field `name` has been populated
 func (v *ResourceType) HasName() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.name != nil
 }
 
+// HasSchema returns true if the field `schema` has been populated
 func (v *ResourceType) HasSchema() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.schema != nil
 }
 
+// HasSchemaExtensions returns true if the field `schemaExtensions` has been populated
 func (v *ResourceType) HasSchemaExtensions() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.schemaExtensions != nil
 }
 
+// HasSchemas returns true if the field `schemas` has been populated
 func (v *ResourceType) HasSchemas() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -245,7 +326,7 @@ func (v *ResourceType) Schemas() []string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	if val := v.schemas; val != nil {
-		return val.Get()
+		return val.GetValue()
 	}
 	return nil
 }
@@ -277,44 +358,15 @@ func (v *ResourceType) Remove(key string) error {
 	return nil
 }
 
-func (v *ResourceType) makePairs() []*fieldPair {
-	pairs := make([]*fieldPair, 0, 7)
-	if val := v.description; val != nil {
-		pairs = append(pairs, &fieldPair{Name: ResourceTypeDescriptionKey, Value: *val})
-	}
-	if val := v.endpoint; val != nil {
-		pairs = append(pairs, &fieldPair{Name: ResourceTypeEndpointKey, Value: *val})
-	}
-	if val := v.id; val != nil {
-		pairs = append(pairs, &fieldPair{Name: ResourceTypeIDKey, Value: *val})
-	}
-	if val := v.name; val != nil {
-		pairs = append(pairs, &fieldPair{Name: ResourceTypeNameKey, Value: *val})
-	}
-	if val := v.schema; val != nil {
-		pairs = append(pairs, &fieldPair{Name: ResourceTypeSchemaKey, Value: *val})
-	}
-	if val := v.schemaExtensions; len(val) > 0 {
-		pairs = append(pairs, &fieldPair{Name: ResourceTypeSchemaExtensionsKey, Value: val})
-	}
-	if val := v.schemas; val != nil {
-		pairs = append(pairs, &fieldPair{Name: ResourceTypeSchemasKey, Value: val.Get()})
-	}
-
-	for key, val := range v.extra {
-		pairs = append(pairs, &fieldPair{Name: key, Value: val})
-	}
-
-	sort.Slice(pairs, func(i, j int) bool {
-		return pairs[i].Name < pairs[j].Name
-	})
-	return pairs
-}
-
-func (v *ResourceType) Clone() *ResourceType {
+func (v *ResourceType) Clone(dst interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return &ResourceType{
+
+	extra := make(map[string]interface{})
+	for key, val := range v.extra {
+		extra[key] = val
+	}
+	return blackmagic.AssignIfCompatible(dst, &ResourceType{
 		description:      v.description,
 		endpoint:         v.endpoint,
 		id:               v.id,
@@ -322,7 +374,8 @@ func (v *ResourceType) Clone() *ResourceType {
 		schema:           v.schema,
 		schemaExtensions: v.schemaExtensions,
 		schemas:          v.schemas,
-	}
+		extra:            extra,
+	})
 }
 
 // MarshalJSON serializes ResourceType into JSON.
@@ -330,21 +383,27 @@ func (v *ResourceType) Clone() *ResourceType {
 // assigned to them, as well as all extra fields. All of these
 // fields are sorted in alphabetical order.
 func (v *ResourceType) MarshalJSON() ([]byte, error) {
-	pairs := v.makePairs()
+	v.mu.RLock()
+	defer v.mu.RUnlock()
 
 	var buf bytes.Buffer
 	enc := json.NewEncoder(&buf)
 	buf.WriteByte('{')
-	for i, pair := range pairs {
+	for i, k := range v.Keys() {
+		var val interface{}
+		if err := v.getNoLock(k, &val, true); err != nil {
+			return nil, fmt.Errorf(`failed to retrieve value for field %q: %w`, k, err)
+		}
+
 		if i > 0 {
 			buf.WriteByte(',')
 		}
-		if err := enc.Encode(pair.Name); err != nil {
+		if err := enc.Encode(k); err != nil {
 			return nil, fmt.Errorf(`failed to encode map key name: %w`, err)
 		}
 		buf.WriteByte(':')
-		if err := enc.Encode(pair.Value); err != nil {
-			return nil, fmt.Errorf(`failed to encode map value for %q: %w`, pair.Name, err)
+		if err := enc.Encode(val); err != nil {
+			return nil, fmt.Errorf(`failed to encode map value for %q: %w`, k, err)
 		}
 	}
 	buf.WriteByte('}')
@@ -433,8 +492,8 @@ LOOP:
 				v.schemas = &val
 			default:
 				var val interface{}
-				if err := extraFieldsDecoder(tok, dec, &val); err != nil {
-					return err
+				if err := v.decodeExtraField(tok, dec, &val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, tok, err)
 				}
 				if extra == nil {
 					extra = make(map[string]interface{})
@@ -470,90 +529,30 @@ func (b *ResourceTypeBuilder) initialize() {
 	b.object.schemas.Add(ResourceTypeSchemaURI)
 }
 func (b *ResourceTypeBuilder) Description(in string) *ResourceTypeBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(ResourceTypeDescriptionKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(ResourceTypeDescriptionKey, in)
 }
 func (b *ResourceTypeBuilder) Endpoint(in string) *ResourceTypeBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(ResourceTypeEndpointKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(ResourceTypeEndpointKey, in)
 }
 func (b *ResourceTypeBuilder) ID(in string) *ResourceTypeBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(ResourceTypeIDKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(ResourceTypeIDKey, in)
 }
 func (b *ResourceTypeBuilder) Name(in string) *ResourceTypeBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(ResourceTypeNameKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(ResourceTypeNameKey, in)
 }
 func (b *ResourceTypeBuilder) Schema(in string) *ResourceTypeBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(ResourceTypeSchemaKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(ResourceTypeSchemaKey, in)
 }
 func (b *ResourceTypeBuilder) SchemaExtensions(in ...*SchemaExtension) *ResourceTypeBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(ResourceTypeSchemaExtensionsKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(ResourceTypeSchemaExtensionsKey, in)
 }
 func (b *ResourceTypeBuilder) Schemas(in ...string) *ResourceTypeBuilder {
+	return b.SetField(ResourceTypeSchemasKey, in)
+}
+
+// SetField sets the value of any field. The name should be the JSON field name.
+// Type check will only be performed for pre-defined types
+func (b *ResourceTypeBuilder) SetField(name string, value interface{}) *ResourceTypeBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 
@@ -562,12 +561,11 @@ func (b *ResourceTypeBuilder) Schemas(in ...string) *ResourceTypeBuilder {
 		return b
 	}
 
-	if err := b.object.Set(ResourceTypeSchemasKey, in); err != nil {
+	if err := b.object.Set(name, value); err != nil {
 		b.err = err
 	}
 	return b
 }
-
 func (b *ResourceTypeBuilder) Build() (*ResourceType, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
@@ -590,7 +588,6 @@ func (b *ResourceTypeBuilder) Build() (*ResourceType, error) {
 	b.once.Do(b.initialize)
 	return obj, nil
 }
-
 func (b *ResourceTypeBuilder) MustBuild() *ResourceType {
 	object, err := b.Build()
 	if err != nil {
@@ -603,7 +600,17 @@ func (b *ResourceTypeBuilder) From(in *ResourceType) *ResourceTypeBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.once.Do(b.initialize)
-	b.object = in.Clone()
+	if b.err != nil {
+		return b
+	}
+
+	var cloned ResourceType
+	if err := in.Clone(&cloned); err != nil {
+		b.err = err
+		return b
+	}
+
+	b.object = &cloned
 	return b
 }
 
@@ -625,11 +632,16 @@ func (b *ResourceTypeBuilder) Extension(uri string, value interface{}) *Resource
 	return b
 }
 
-func (v *ResourceType) AsMap(dst map[string]interface{}) error {
+// AsMap returns the resource as a Go map
+func (v *ResourceType) AsMap(m map[string]interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	for _, pair := range v.makePairs() {
-		dst[pair.Name] = pair.Value
+
+	for _, key := range v.Keys() {
+		var val interface{}
+		if err := v.getNoLock(key, &val, false); err != nil {
+			m[key] = val
+		}
 	}
 	return nil
 }
@@ -652,6 +664,23 @@ func (v *ResourceType) GetExtension(name, uri string, dst interface{}) error {
 		return fmt.Errorf(`extension does not implement Get(string, interface{}) error`)
 	}
 	return getter.Get(name, dst)
+}
+
+func (*ResourceType) decodeExtraField(name string, dec *json.Decoder, dst interface{}) error {
+	// we can get an instance of the resource object
+	if rx, ok := registry.LookupByURI(name); ok {
+		if err := dec.Decode(&rx); err != nil {
+			return fmt.Errorf(`failed to decode value for key %q: %w`, name, err)
+		}
+		if err := blackmagic.AssignIfCompatible(dst, rx); err != nil {
+			return err
+		}
+	} else {
+		if err := dec.Decode(dst); err != nil {
+			return fmt.Errorf(`failed to decode value for key %q: %w`, name, err)
+		}
+	}
+	return nil
 }
 
 func (b *Builder) ResourceType() *ResourceTypeBuilder {

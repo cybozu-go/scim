@@ -40,6 +40,14 @@ const (
 func (v *Entitlement) Get(key string, dst interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
+	return v.getNoLock(key, dst, false)
+}
+
+// getNoLock is a utility method that is called from Get, MarshalJSON, etc, but
+// it can be used from user-supplied code. Unlike Get, it avoids locking for
+// each call, so the user needs to explicitly lock the object before using,
+// but otherwise should be faster than sing Get directly
+func (v *Entitlement) getNoLock(key string, dst interface{}, raw bool) error {
 	switch key {
 	case EntitlementDisplayKey:
 		if val := v.display; val != nil {
@@ -107,24 +115,76 @@ func (v *Entitlement) Set(key string, value interface{}) error {
 	return nil
 }
 
+// Has returns true if the field specified by the argument has been populated.
+// The field name must be the JSON field name, not the Go-structure's field name.
+func (v *Entitlement) Has(name string) bool {
+	switch name {
+	case EntitlementDisplayKey:
+		return v.display != nil
+	case EntitlementPrimaryKey:
+		return v.primary != nil
+	case EntitlementTypeKey:
+		return v.typ != nil
+	case EntitlementValueKey:
+		return v.value != nil
+	default:
+		if v.extra != nil {
+			if _, ok := v.extra[name]; ok {
+				return true
+			}
+		}
+		return false
+	}
+}
+
+// Keys returns a slice of string comprising of JSON field names whose values
+// are present in the object.
+func (v *Entitlement) Keys() []string {
+	keys := make([]string, 0, 4)
+	if v.display != nil {
+		keys = append(keys, EntitlementDisplayKey)
+	}
+	if v.primary != nil {
+		keys = append(keys, EntitlementPrimaryKey)
+	}
+	if v.typ != nil {
+		keys = append(keys, EntitlementTypeKey)
+	}
+	if v.value != nil {
+		keys = append(keys, EntitlementValueKey)
+	}
+
+	if len(v.extra) > 0 {
+		for k := range v.extra {
+			keys = append(keys, k)
+		}
+	}
+	sort.Strings(keys)
+	return keys
+}
+
+// HasDisplay returns true if the field `display` has been populated
 func (v *Entitlement) HasDisplay() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.display != nil
 }
 
+// HasPrimary returns true if the field `primary` has been populated
 func (v *Entitlement) HasPrimary() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.primary != nil
 }
 
+// HasType returns true if the field `type` has been populated
 func (v *Entitlement) HasType() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.typ != nil
 }
 
+// HasValue returns true if the field `value` has been populated
 func (v *Entitlement) HasValue() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -188,40 +248,21 @@ func (v *Entitlement) Remove(key string) error {
 	return nil
 }
 
-func (v *Entitlement) makePairs() []*fieldPair {
-	pairs := make([]*fieldPair, 0, 4)
-	if val := v.display; val != nil {
-		pairs = append(pairs, &fieldPair{Name: EntitlementDisplayKey, Value: *val})
-	}
-	if val := v.primary; val != nil {
-		pairs = append(pairs, &fieldPair{Name: EntitlementPrimaryKey, Value: *val})
-	}
-	if val := v.typ; val != nil {
-		pairs = append(pairs, &fieldPair{Name: EntitlementTypeKey, Value: *val})
-	}
-	if val := v.value; val != nil {
-		pairs = append(pairs, &fieldPair{Name: EntitlementValueKey, Value: *val})
-	}
-
-	for key, val := range v.extra {
-		pairs = append(pairs, &fieldPair{Name: key, Value: val})
-	}
-
-	sort.Slice(pairs, func(i, j int) bool {
-		return pairs[i].Name < pairs[j].Name
-	})
-	return pairs
-}
-
-func (v *Entitlement) Clone() *Entitlement {
+func (v *Entitlement) Clone(dst interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return &Entitlement{
+
+	extra := make(map[string]interface{})
+	for key, val := range v.extra {
+		extra[key] = val
+	}
+	return blackmagic.AssignIfCompatible(dst, &Entitlement{
 		display: v.display,
 		primary: v.primary,
 		typ:     v.typ,
 		value:   v.value,
-	}
+		extra:   extra,
+	})
 }
 
 // MarshalJSON serializes Entitlement into JSON.
@@ -229,21 +270,27 @@ func (v *Entitlement) Clone() *Entitlement {
 // assigned to them, as well as all extra fields. All of these
 // fields are sorted in alphabetical order.
 func (v *Entitlement) MarshalJSON() ([]byte, error) {
-	pairs := v.makePairs()
+	v.mu.RLock()
+	defer v.mu.RUnlock()
 
 	var buf bytes.Buffer
 	enc := json.NewEncoder(&buf)
 	buf.WriteByte('{')
-	for i, pair := range pairs {
+	for i, k := range v.Keys() {
+		var val interface{}
+		if err := v.getNoLock(k, &val, true); err != nil {
+			return nil, fmt.Errorf(`failed to retrieve value for field %q: %w`, k, err)
+		}
+
 		if i > 0 {
 			buf.WriteByte(',')
 		}
-		if err := enc.Encode(pair.Name); err != nil {
+		if err := enc.Encode(k); err != nil {
 			return nil, fmt.Errorf(`failed to encode map key name: %w`, err)
 		}
 		buf.WriteByte(':')
-		if err := enc.Encode(pair.Value); err != nil {
-			return nil, fmt.Errorf(`failed to encode map value for %q: %w`, pair.Name, err)
+		if err := enc.Encode(val); err != nil {
+			return nil, fmt.Errorf(`failed to encode map value for %q: %w`, k, err)
 		}
 	}
 	buf.WriteByte('}')
@@ -311,8 +358,8 @@ LOOP:
 				v.value = &val
 			default:
 				var val interface{}
-				if err := extraFieldsDecoder(tok, dec, &val); err != nil {
-					return err
+				if err := v.decodeExtraField(tok, dec, &val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, tok, err)
 				}
 				if extra == nil {
 					extra = make(map[string]interface{})
@@ -346,48 +393,21 @@ func (b *EntitlementBuilder) initialize() {
 	b.object = &Entitlement{}
 }
 func (b *EntitlementBuilder) Display(in string) *EntitlementBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(EntitlementDisplayKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(EntitlementDisplayKey, in)
 }
 func (b *EntitlementBuilder) Primary(in bool) *EntitlementBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(EntitlementPrimaryKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(EntitlementPrimaryKey, in)
 }
 func (b *EntitlementBuilder) Type(in string) *EntitlementBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(EntitlementTypeKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(EntitlementTypeKey, in)
 }
 func (b *EntitlementBuilder) Value(in string) *EntitlementBuilder {
+	return b.SetField(EntitlementValueKey, in)
+}
+
+// SetField sets the value of any field. The name should be the JSON field name.
+// Type check will only be performed for pre-defined types
+func (b *EntitlementBuilder) SetField(name string, value interface{}) *EntitlementBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 
@@ -396,12 +416,11 @@ func (b *EntitlementBuilder) Value(in string) *EntitlementBuilder {
 		return b
 	}
 
-	if err := b.object.Set(EntitlementValueKey, in); err != nil {
+	if err := b.object.Set(name, value); err != nil {
 		b.err = err
 	}
 	return b
 }
-
 func (b *EntitlementBuilder) Build() (*Entitlement, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
@@ -415,7 +434,6 @@ func (b *EntitlementBuilder) Build() (*Entitlement, error) {
 	b.once.Do(b.initialize)
 	return obj, nil
 }
-
 func (b *EntitlementBuilder) MustBuild() *Entitlement {
 	object, err := b.Build()
 	if err != nil {
@@ -428,15 +446,30 @@ func (b *EntitlementBuilder) From(in *Entitlement) *EntitlementBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.once.Do(b.initialize)
-	b.object = in.Clone()
+	if b.err != nil {
+		return b
+	}
+
+	var cloned Entitlement
+	if err := in.Clone(&cloned); err != nil {
+		b.err = err
+		return b
+	}
+
+	b.object = &cloned
 	return b
 }
 
-func (v *Entitlement) AsMap(dst map[string]interface{}) error {
+// AsMap returns the resource as a Go map
+func (v *Entitlement) AsMap(m map[string]interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	for _, pair := range v.makePairs() {
-		dst[pair.Name] = pair.Value
+
+	for _, key := range v.Keys() {
+		var val interface{}
+		if err := v.getNoLock(key, &val, false); err != nil {
+			m[key] = val
+		}
 	}
 	return nil
 }
@@ -459,6 +492,23 @@ func (v *Entitlement) GetExtension(name, uri string, dst interface{}) error {
 		return fmt.Errorf(`extension does not implement Get(string, interface{}) error`)
 	}
 	return getter.Get(name, dst)
+}
+
+func (*Entitlement) decodeExtraField(name string, dec *json.Decoder, dst interface{}) error {
+	// we can get an instance of the resource object
+	if rx, ok := registry.LookupByURI(name); ok {
+		if err := dec.Decode(&rx); err != nil {
+			return fmt.Errorf(`failed to decode value for key %q: %w`, name, err)
+		}
+		if err := blackmagic.AssignIfCompatible(dst, rx); err != nil {
+			return err
+		}
+	} else {
+		if err := dec.Decode(dst); err != nil {
+			return fmt.Errorf(`failed to decode value for key %q: %w`, name, err)
+		}
+	}
+	return nil
 }
 
 func (b *Builder) Entitlement() *EntitlementBuilder {

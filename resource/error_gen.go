@@ -38,6 +38,14 @@ const (
 func (v *Error) Get(key string, dst interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
+	return v.getNoLock(key, dst, false)
+}
+
+// getNoLock is a utility method that is called from Get, MarshalJSON, etc, but
+// it can be used from user-supplied code. Unlike Get, it avoids locking for
+// each call, so the user needs to explicitly lock the object before using,
+// but otherwise should be faster than sing Get directly
+func (v *Error) getNoLock(key string, dst interface{}, raw bool) error {
 	switch key {
 	case ErrorDetailKey:
 		if val := v.detail; val != nil {
@@ -95,18 +103,64 @@ func (v *Error) Set(key string, value interface{}) error {
 	return nil
 }
 
+// Has returns true if the field specified by the argument has been populated.
+// The field name must be the JSON field name, not the Go-structure's field name.
+func (v *Error) Has(name string) bool {
+	switch name {
+	case ErrorDetailKey:
+		return v.detail != nil
+	case ErrorSCIMTypeKey:
+		return v.scimType != nil
+	case ErrorStatusKey:
+		return v.status != nil
+	default:
+		if v.extra != nil {
+			if _, ok := v.extra[name]; ok {
+				return true
+			}
+		}
+		return false
+	}
+}
+
+// Keys returns a slice of string comprising of JSON field names whose values
+// are present in the object.
+func (v *Error) Keys() []string {
+	keys := make([]string, 0, 3)
+	if v.detail != nil {
+		keys = append(keys, ErrorDetailKey)
+	}
+	if v.scimType != nil {
+		keys = append(keys, ErrorSCIMTypeKey)
+	}
+	if v.status != nil {
+		keys = append(keys, ErrorStatusKey)
+	}
+
+	if len(v.extra) > 0 {
+		for k := range v.extra {
+			keys = append(keys, k)
+		}
+	}
+	sort.Strings(keys)
+	return keys
+}
+
+// HasDetail returns true if the field `detail` has been populated
 func (v *Error) HasDetail() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.detail != nil
 }
 
+// HasSCIMType returns true if the field `scimType` has been populated
 func (v *Error) HasSCIMType() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.scimType != nil
 }
 
+// HasStatus returns true if the field `status` has been populated
 func (v *Error) HasStatus() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -159,36 +213,20 @@ func (v *Error) Remove(key string) error {
 	return nil
 }
 
-func (v *Error) makePairs() []*fieldPair {
-	pairs := make([]*fieldPair, 0, 3)
-	if val := v.detail; val != nil {
-		pairs = append(pairs, &fieldPair{Name: ErrorDetailKey, Value: *val})
-	}
-	if val := v.scimType; val != nil {
-		pairs = append(pairs, &fieldPair{Name: ErrorSCIMTypeKey, Value: *val})
-	}
-	if val := v.status; val != nil {
-		pairs = append(pairs, &fieldPair{Name: ErrorStatusKey, Value: *val})
-	}
-
-	for key, val := range v.extra {
-		pairs = append(pairs, &fieldPair{Name: key, Value: val})
-	}
-
-	sort.Slice(pairs, func(i, j int) bool {
-		return pairs[i].Name < pairs[j].Name
-	})
-	return pairs
-}
-
-func (v *Error) Clone() *Error {
+func (v *Error) Clone(dst interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return &Error{
+
+	extra := make(map[string]interface{})
+	for key, val := range v.extra {
+		extra[key] = val
+	}
+	return blackmagic.AssignIfCompatible(dst, &Error{
 		detail:   v.detail,
 		scimType: v.scimType,
 		status:   v.status,
-	}
+		extra:    extra,
+	})
 }
 
 // MarshalJSON serializes Error into JSON.
@@ -196,21 +234,27 @@ func (v *Error) Clone() *Error {
 // assigned to them, as well as all extra fields. All of these
 // fields are sorted in alphabetical order.
 func (v *Error) MarshalJSON() ([]byte, error) {
-	pairs := v.makePairs()
+	v.mu.RLock()
+	defer v.mu.RUnlock()
 
 	var buf bytes.Buffer
 	enc := json.NewEncoder(&buf)
 	buf.WriteByte('{')
-	for i, pair := range pairs {
+	for i, k := range v.Keys() {
+		var val interface{}
+		if err := v.getNoLock(k, &val, true); err != nil {
+			return nil, fmt.Errorf(`failed to retrieve value for field %q: %w`, k, err)
+		}
+
 		if i > 0 {
 			buf.WriteByte(',')
 		}
-		if err := enc.Encode(pair.Name); err != nil {
+		if err := enc.Encode(k); err != nil {
 			return nil, fmt.Errorf(`failed to encode map key name: %w`, err)
 		}
 		buf.WriteByte(':')
-		if err := enc.Encode(pair.Value); err != nil {
-			return nil, fmt.Errorf(`failed to encode map value for %q: %w`, pair.Name, err)
+		if err := enc.Encode(val); err != nil {
+			return nil, fmt.Errorf(`failed to encode map value for %q: %w`, k, err)
 		}
 	}
 	buf.WriteByte('}')
@@ -271,8 +315,8 @@ LOOP:
 				v.status = &val
 			default:
 				var val interface{}
-				if err := extraFieldsDecoder(tok, dec, &val); err != nil {
-					return err
+				if err := v.decodeExtraField(tok, dec, &val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, tok, err)
 				}
 				if extra == nil {
 					extra = make(map[string]interface{})
@@ -306,34 +350,18 @@ func (b *ErrorBuilder) initialize() {
 	b.object = &Error{}
 }
 func (b *ErrorBuilder) Detail(in string) *ErrorBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(ErrorDetailKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(ErrorDetailKey, in)
 }
 func (b *ErrorBuilder) SCIMType(in ErrorType) *ErrorBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(ErrorSCIMTypeKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(ErrorSCIMTypeKey, in)
 }
 func (b *ErrorBuilder) Status(in int) *ErrorBuilder {
+	return b.SetField(ErrorStatusKey, in)
+}
+
+// SetField sets the value of any field. The name should be the JSON field name.
+// Type check will only be performed for pre-defined types
+func (b *ErrorBuilder) SetField(name string, value interface{}) *ErrorBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 
@@ -342,12 +370,11 @@ func (b *ErrorBuilder) Status(in int) *ErrorBuilder {
 		return b
 	}
 
-	if err := b.object.Set(ErrorStatusKey, in); err != nil {
+	if err := b.object.Set(name, value); err != nil {
 		b.err = err
 	}
 	return b
 }
-
 func (b *ErrorBuilder) Build() (*Error, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
@@ -361,7 +388,6 @@ func (b *ErrorBuilder) Build() (*Error, error) {
 	b.once.Do(b.initialize)
 	return obj, nil
 }
-
 func (b *ErrorBuilder) MustBuild() *Error {
 	object, err := b.Build()
 	if err != nil {
@@ -374,15 +400,30 @@ func (b *ErrorBuilder) From(in *Error) *ErrorBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.once.Do(b.initialize)
-	b.object = in.Clone()
+	if b.err != nil {
+		return b
+	}
+
+	var cloned Error
+	if err := in.Clone(&cloned); err != nil {
+		b.err = err
+		return b
+	}
+
+	b.object = &cloned
 	return b
 }
 
-func (v *Error) AsMap(dst map[string]interface{}) error {
+// AsMap returns the resource as a Go map
+func (v *Error) AsMap(m map[string]interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	for _, pair := range v.makePairs() {
-		dst[pair.Name] = pair.Value
+
+	for _, key := range v.Keys() {
+		var val interface{}
+		if err := v.getNoLock(key, &val, false); err != nil {
+			m[key] = val
+		}
 	}
 	return nil
 }
@@ -405,6 +446,23 @@ func (v *Error) GetExtension(name, uri string, dst interface{}) error {
 		return fmt.Errorf(`extension does not implement Get(string, interface{}) error`)
 	}
 	return getter.Get(name, dst)
+}
+
+func (*Error) decodeExtraField(name string, dec *json.Decoder, dst interface{}) error {
+	// we can get an instance of the resource object
+	if rx, ok := registry.LookupByURI(name); ok {
+		if err := dec.Decode(&rx); err != nil {
+			return fmt.Errorf(`failed to decode value for key %q: %w`, name, err)
+		}
+		if err := blackmagic.AssignIfCompatible(dst, rx); err != nil {
+			return err
+		}
+	} else {
+		if err := dec.Decode(dst); err != nil {
+			return fmt.Errorf(`failed to decode value for key %q: %w`, name, err)
+		}
+	}
+	return nil
 }
 
 func (b *Builder) Error() *ErrorBuilder {

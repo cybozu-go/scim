@@ -44,6 +44,14 @@ const (
 func (v *Names) Get(key string, dst interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
+	return v.getNoLock(key, dst, false)
+}
+
+// getNoLock is a utility method that is called from Get, MarshalJSON, etc, but
+// it can be used from user-supplied code. Unlike Get, it avoids locking for
+// each call, so the user needs to explicitly lock the object before using,
+// but otherwise should be faster than sing Get directly
+func (v *Names) getNoLock(key string, dst interface{}, raw bool) error {
 	switch key {
 	case NamesFamilyNameKey:
 		if val := v.familyName; val != nil {
@@ -131,36 +139,100 @@ func (v *Names) Set(key string, value interface{}) error {
 	return nil
 }
 
+// Has returns true if the field specified by the argument has been populated.
+// The field name must be the JSON field name, not the Go-structure's field name.
+func (v *Names) Has(name string) bool {
+	switch name {
+	case NamesFamilyNameKey:
+		return v.familyName != nil
+	case NamesFormattedKey:
+		return v.formatted != nil
+	case NamesGivenNameKey:
+		return v.givenName != nil
+	case NamesHonorificPrefixKey:
+		return v.honorificPrefix != nil
+	case NamesHonorificSuffixKey:
+		return v.honorificSuffix != nil
+	case NamesMiddleNameKey:
+		return v.middleName != nil
+	default:
+		if v.extra != nil {
+			if _, ok := v.extra[name]; ok {
+				return true
+			}
+		}
+		return false
+	}
+}
+
+// Keys returns a slice of string comprising of JSON field names whose values
+// are present in the object.
+func (v *Names) Keys() []string {
+	keys := make([]string, 0, 6)
+	if v.familyName != nil {
+		keys = append(keys, NamesFamilyNameKey)
+	}
+	if v.formatted != nil {
+		keys = append(keys, NamesFormattedKey)
+	}
+	if v.givenName != nil {
+		keys = append(keys, NamesGivenNameKey)
+	}
+	if v.honorificPrefix != nil {
+		keys = append(keys, NamesHonorificPrefixKey)
+	}
+	if v.honorificSuffix != nil {
+		keys = append(keys, NamesHonorificSuffixKey)
+	}
+	if v.middleName != nil {
+		keys = append(keys, NamesMiddleNameKey)
+	}
+
+	if len(v.extra) > 0 {
+		for k := range v.extra {
+			keys = append(keys, k)
+		}
+	}
+	sort.Strings(keys)
+	return keys
+}
+
+// HasFamilyName returns true if the field `familyName` has been populated
 func (v *Names) HasFamilyName() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.familyName != nil
 }
 
+// HasFormatted returns true if the field `formatted` has been populated
 func (v *Names) HasFormatted() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.formatted != nil
 }
 
+// HasGivenName returns true if the field `givenName` has been populated
 func (v *Names) HasGivenName() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.givenName != nil
 }
 
+// HasHonorificPrefix returns true if the field `honorificPrefix` has been populated
 func (v *Names) HasHonorificPrefix() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.honorificPrefix != nil
 }
 
+// HasHonorificSuffix returns true if the field `honorificSuffix` has been populated
 func (v *Names) HasHonorificSuffix() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.honorificSuffix != nil
 }
 
+// HasMiddleName returns true if the field `middleName` has been populated
 func (v *Names) HasMiddleName() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -246,48 +318,23 @@ func (v *Names) Remove(key string) error {
 	return nil
 }
 
-func (v *Names) makePairs() []*fieldPair {
-	pairs := make([]*fieldPair, 0, 6)
-	if val := v.familyName; val != nil {
-		pairs = append(pairs, &fieldPair{Name: NamesFamilyNameKey, Value: *val})
-	}
-	if val := v.formatted; val != nil {
-		pairs = append(pairs, &fieldPair{Name: NamesFormattedKey, Value: *val})
-	}
-	if val := v.givenName; val != nil {
-		pairs = append(pairs, &fieldPair{Name: NamesGivenNameKey, Value: *val})
-	}
-	if val := v.honorificPrefix; val != nil {
-		pairs = append(pairs, &fieldPair{Name: NamesHonorificPrefixKey, Value: *val})
-	}
-	if val := v.honorificSuffix; val != nil {
-		pairs = append(pairs, &fieldPair{Name: NamesHonorificSuffixKey, Value: *val})
-	}
-	if val := v.middleName; val != nil {
-		pairs = append(pairs, &fieldPair{Name: NamesMiddleNameKey, Value: *val})
-	}
-
-	for key, val := range v.extra {
-		pairs = append(pairs, &fieldPair{Name: key, Value: val})
-	}
-
-	sort.Slice(pairs, func(i, j int) bool {
-		return pairs[i].Name < pairs[j].Name
-	})
-	return pairs
-}
-
-func (v *Names) Clone() *Names {
+func (v *Names) Clone(dst interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return &Names{
+
+	extra := make(map[string]interface{})
+	for key, val := range v.extra {
+		extra[key] = val
+	}
+	return blackmagic.AssignIfCompatible(dst, &Names{
 		familyName:      v.familyName,
 		formatted:       v.formatted,
 		givenName:       v.givenName,
 		honorificPrefix: v.honorificPrefix,
 		honorificSuffix: v.honorificSuffix,
 		middleName:      v.middleName,
-	}
+		extra:           extra,
+	})
 }
 
 // MarshalJSON serializes Names into JSON.
@@ -295,21 +342,27 @@ func (v *Names) Clone() *Names {
 // assigned to them, as well as all extra fields. All of these
 // fields are sorted in alphabetical order.
 func (v *Names) MarshalJSON() ([]byte, error) {
-	pairs := v.makePairs()
+	v.mu.RLock()
+	defer v.mu.RUnlock()
 
 	var buf bytes.Buffer
 	enc := json.NewEncoder(&buf)
 	buf.WriteByte('{')
-	for i, pair := range pairs {
+	for i, k := range v.Keys() {
+		var val interface{}
+		if err := v.getNoLock(k, &val, true); err != nil {
+			return nil, fmt.Errorf(`failed to retrieve value for field %q: %w`, k, err)
+		}
+
 		if i > 0 {
 			buf.WriteByte(',')
 		}
-		if err := enc.Encode(pair.Name); err != nil {
+		if err := enc.Encode(k); err != nil {
 			return nil, fmt.Errorf(`failed to encode map key name: %w`, err)
 		}
 		buf.WriteByte(':')
-		if err := enc.Encode(pair.Value); err != nil {
-			return nil, fmt.Errorf(`failed to encode map value for %q: %w`, pair.Name, err)
+		if err := enc.Encode(val); err != nil {
+			return nil, fmt.Errorf(`failed to encode map value for %q: %w`, k, err)
 		}
 	}
 	buf.WriteByte('}')
@@ -391,8 +444,8 @@ LOOP:
 				v.middleName = &val
 			default:
 				var val interface{}
-				if err := extraFieldsDecoder(tok, dec, &val); err != nil {
-					return err
+				if err := v.decodeExtraField(tok, dec, &val); err != nil {
+					return fmt.Errorf(`failed to decode value for %q: %w`, tok, err)
 				}
 				if extra == nil {
 					extra = make(map[string]interface{})
@@ -426,76 +479,27 @@ func (b *NamesBuilder) initialize() {
 	b.object = &Names{}
 }
 func (b *NamesBuilder) FamilyName(in string) *NamesBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(NamesFamilyNameKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(NamesFamilyNameKey, in)
 }
 func (b *NamesBuilder) Formatted(in string) *NamesBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(NamesFormattedKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(NamesFormattedKey, in)
 }
 func (b *NamesBuilder) GivenName(in string) *NamesBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(NamesGivenNameKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(NamesGivenNameKey, in)
 }
 func (b *NamesBuilder) HonorificPrefix(in string) *NamesBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(NamesHonorificPrefixKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(NamesHonorificPrefixKey, in)
 }
 func (b *NamesBuilder) HonorificSuffix(in string) *NamesBuilder {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.once.Do(b.initialize)
-	if b.err != nil {
-		return b
-	}
-
-	if err := b.object.Set(NamesHonorificSuffixKey, in); err != nil {
-		b.err = err
-	}
-	return b
+	return b.SetField(NamesHonorificSuffixKey, in)
 }
 func (b *NamesBuilder) MiddleName(in string) *NamesBuilder {
+	return b.SetField(NamesMiddleNameKey, in)
+}
+
+// SetField sets the value of any field. The name should be the JSON field name.
+// Type check will only be performed for pre-defined types
+func (b *NamesBuilder) SetField(name string, value interface{}) *NamesBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 
@@ -504,12 +508,11 @@ func (b *NamesBuilder) MiddleName(in string) *NamesBuilder {
 		return b
 	}
 
-	if err := b.object.Set(NamesMiddleNameKey, in); err != nil {
+	if err := b.object.Set(name, value); err != nil {
 		b.err = err
 	}
 	return b
 }
-
 func (b *NamesBuilder) Build() (*Names, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
@@ -523,7 +526,6 @@ func (b *NamesBuilder) Build() (*Names, error) {
 	b.once.Do(b.initialize)
 	return obj, nil
 }
-
 func (b *NamesBuilder) MustBuild() *Names {
 	object, err := b.Build()
 	if err != nil {
@@ -536,15 +538,30 @@ func (b *NamesBuilder) From(in *Names) *NamesBuilder {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.once.Do(b.initialize)
-	b.object = in.Clone()
+	if b.err != nil {
+		return b
+	}
+
+	var cloned Names
+	if err := in.Clone(&cloned); err != nil {
+		b.err = err
+		return b
+	}
+
+	b.object = &cloned
 	return b
 }
 
-func (v *Names) AsMap(dst map[string]interface{}) error {
+// AsMap returns the resource as a Go map
+func (v *Names) AsMap(m map[string]interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	for _, pair := range v.makePairs() {
-		dst[pair.Name] = pair.Value
+
+	for _, key := range v.Keys() {
+		var val interface{}
+		if err := v.getNoLock(key, &val, false); err != nil {
+			m[key] = val
+		}
 	}
 	return nil
 }
@@ -567,6 +584,23 @@ func (v *Names) GetExtension(name, uri string, dst interface{}) error {
 		return fmt.Errorf(`extension does not implement Get(string, interface{}) error`)
 	}
 	return getter.Get(name, dst)
+}
+
+func (*Names) decodeExtraField(name string, dec *json.Decoder, dst interface{}) error {
+	// we can get an instance of the resource object
+	if rx, ok := registry.LookupByURI(name); ok {
+		if err := dec.Decode(&rx); err != nil {
+			return fmt.Errorf(`failed to decode value for key %q: %w`, name, err)
+		}
+		if err := blackmagic.AssignIfCompatible(dst, rx); err != nil {
+			return err
+		}
+	} else {
+		if err := dec.Decode(dst); err != nil {
+			return fmt.Errorf(`failed to decode value for key %q: %w`, name, err)
+		}
+	}
+	return nil
 }
 
 func (b *Builder) Names() *NamesBuilder {

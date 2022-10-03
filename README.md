@@ -35,6 +35,7 @@ func ExampleClient_UserCreate() {
   user, err := cl.User().Create().
     DisplayName(`Daisuke Maki`).
     ExternalID(`lestrrat`).
+    UserName(`lestrrat`).
     Do(context.TODO())
   if err != nil {
     fmt.Printf("failed to create user: %s", err)

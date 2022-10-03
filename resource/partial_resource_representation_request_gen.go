@@ -376,8 +376,9 @@ func (v *PartialResourceRepresentationRequest) AsMap(m map[string]interface{}) e
 	for _, key := range v.Keys() {
 		var val interface{}
 		if err := v.getNoLock(key, &val, false); err != nil {
-			m[key] = val
+			return fmt.Errorf(`failed to retrieve value for key %q: %w`, key, err)
 		}
+		m[key] = val
 	}
 	return nil
 }

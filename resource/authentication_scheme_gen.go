@@ -520,8 +520,9 @@ func (v *AuthenticationScheme) AsMap(m map[string]interface{}) error {
 	for _, key := range v.Keys() {
 		var val interface{}
 		if err := v.getNoLock(key, &val, false); err != nil {
-			m[key] = val
+			return fmt.Errorf(`failed to retrieve value for key %q: %w`, key, err)
 		}
+		m[key] = val
 	}
 	return nil
 }

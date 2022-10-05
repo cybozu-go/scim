@@ -502,6 +502,15 @@ LOOP:
 			}
 		}
 	}
+	if v.endpoint == nil {
+		return fmt.Errorf(`required field endpoint is missing for object ResourceType`)
+	}
+	if v.name == nil {
+		return fmt.Errorf(`required field name is missing for object ResourceType`)
+	}
+	if v.schema == nil {
+		return fmt.Errorf(`required field schema is missing for object ResourceType`)
+	}
 
 	if extra != nil {
 		v.extra = extra
@@ -521,7 +530,6 @@ type ResourceTypeBuilder struct {
 func NewResourceTypeBuilder() *ResourceTypeBuilder {
 	return &ResourceTypeBuilder{}
 }
-
 func (b *ResourceTypeBuilder) initialize() {
 	b.err = nil
 	b.object = &ResourceType{}

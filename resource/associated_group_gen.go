@@ -387,7 +387,6 @@ type AssociatedGroupBuilder struct {
 func NewAssociatedGroupBuilder() *AssociatedGroupBuilder {
 	return &AssociatedGroupBuilder{}
 }
-
 func (b *AssociatedGroupBuilder) initialize() {
 	b.err = nil
 	b.object = &AssociatedGroup{}

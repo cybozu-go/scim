@@ -301,7 +301,6 @@ type FilterSupportBuilder struct {
 func NewFilterSupportBuilder() *FilterSupportBuilder {
 	return &FilterSupportBuilder{}
 }
-
 func (b *FilterSupportBuilder) initialize() {
 	b.err = nil
 	b.object = &FilterSupport{}

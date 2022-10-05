@@ -432,7 +432,6 @@ type MetaBuilder struct {
 func NewMetaBuilder() *MetaBuilder {
 	return &MetaBuilder{}
 }
-
 func (b *MetaBuilder) initialize() {
 	b.err = nil
 	b.object = &Meta{}

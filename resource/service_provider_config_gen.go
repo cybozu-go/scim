@@ -588,6 +588,24 @@ LOOP:
 			}
 		}
 	}
+	if v.authenticationSchemes == nil {
+		return fmt.Errorf(`required field authenticationSchemes is missing for object ServiceProviderConfig`)
+	}
+	if v.bulk == nil {
+		return fmt.Errorf(`required field bulk is missing for object ServiceProviderConfig`)
+	}
+	if v.changePassword == nil {
+		return fmt.Errorf(`required field changePassword is missing for object ServiceProviderConfig`)
+	}
+	if v.filter == nil {
+		return fmt.Errorf(`required field filter is missing for object ServiceProviderConfig`)
+	}
+	if v.patch == nil {
+		return fmt.Errorf(`required field patch is missing for object ServiceProviderConfig`)
+	}
+	if v.sort == nil {
+		return fmt.Errorf(`required field sort is missing for object ServiceProviderConfig`)
+	}
 
 	if extra != nil {
 		v.extra = extra
@@ -607,7 +625,6 @@ type ServiceProviderConfigBuilder struct {
 func NewServiceProviderConfigBuilder() *ServiceProviderConfigBuilder {
 	return &ServiceProviderConfigBuilder{}
 }
-
 func (b *ServiceProviderConfigBuilder) initialize() {
 	b.err = nil
 	b.object = &ServiceProviderConfig{}

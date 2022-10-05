@@ -473,7 +473,6 @@ type NamesBuilder struct {
 func NewNamesBuilder() *NamesBuilder {
 	return &NamesBuilder{}
 }
-
 func (b *NamesBuilder) initialize() {
 	b.err = nil
 	b.object = &Names{}

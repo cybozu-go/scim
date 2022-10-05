@@ -521,7 +521,6 @@ type EnterpriseUserBuilder struct {
 func NewEnterpriseUserBuilder() *EnterpriseUserBuilder {
 	return &EnterpriseUserBuilder{}
 }
-
 func (b *EnterpriseUserBuilder) initialize() {
 	b.err = nil
 	b.object = &EnterpriseUser{}

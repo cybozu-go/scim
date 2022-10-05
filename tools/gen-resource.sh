@@ -6,7 +6,7 @@ set -e
 sketch \
 	--verbose \
 	--tmpl-dir=$DIR/tmpl/resource \
-	--exclude='decodeExtraField$' \
+	--exclude-symbol='decodeExtraField$' \
 	--with-key-name-prefix \
 	-d $(cd $DIR/../resource; pwd -P) \
 	$DIR/schema 

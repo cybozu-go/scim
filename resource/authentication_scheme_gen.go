@@ -411,6 +411,12 @@ LOOP:
 			}
 		}
 	}
+	if v.description == nil {
+		return fmt.Errorf(`required field description is missing for object AuthenticationScheme`)
+	}
+	if v.name == nil {
+		return fmt.Errorf(`required field name is missing for object AuthenticationScheme`)
+	}
 
 	if extra != nil {
 		v.extra = extra
@@ -430,7 +436,6 @@ type AuthenticationSchemeBuilder struct {
 func NewAuthenticationSchemeBuilder() *AuthenticationSchemeBuilder {
 	return &AuthenticationSchemeBuilder{}
 }
-
 func (b *AuthenticationSchemeBuilder) initialize() {
 	b.err = nil
 	b.object = &AuthenticationScheme{}

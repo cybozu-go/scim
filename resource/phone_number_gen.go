@@ -390,7 +390,6 @@ type PhoneNumberBuilder struct {
 func NewPhoneNumberBuilder() *PhoneNumberBuilder {
 	return &PhoneNumberBuilder{}
 }
-
 func (b *PhoneNumberBuilder) initialize() {
 	b.err = nil
 	b.object = &PhoneNumber{}

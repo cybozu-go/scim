@@ -516,7 +516,6 @@ type AddressBuilder struct {
 func NewAddressBuilder() *AddressBuilder {
 	return &AddressBuilder{}
 }
-
 func (b *AddressBuilder) initialize() {
 	b.err = nil
 	b.object = &Address{}

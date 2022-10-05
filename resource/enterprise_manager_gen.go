@@ -344,7 +344,6 @@ type EnterpriseManagerBuilder struct {
 func NewEnterpriseManagerBuilder() *EnterpriseManagerBuilder {
 	return &EnterpriseManagerBuilder{}
 }
-
 func (b *EnterpriseManagerBuilder) initialize() {
 	b.err = nil
 	b.object = &EnterpriseManager{}

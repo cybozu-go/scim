@@ -478,7 +478,6 @@ type GroupBuilder struct {
 func NewGroupBuilder() *GroupBuilder {
 	return &GroupBuilder{}
 }
-
 func (b *GroupBuilder) initialize() {
 	b.err = nil
 	b.object = &Group{}

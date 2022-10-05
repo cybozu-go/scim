@@ -1277,6 +1277,9 @@ LOOP:
 			}
 		}
 	}
+	if v.userName == nil {
+		return fmt.Errorf(`required field userName is missing for object User`)
+	}
 
 	if extra != nil {
 		v.extra = extra
@@ -1296,7 +1299,6 @@ type UserBuilder struct {
 func NewUserBuilder() *UserBuilder {
 	return &UserBuilder{}
 }
-
 func (b *UserBuilder) initialize() {
 	b.err = nil
 	b.object = &User{}

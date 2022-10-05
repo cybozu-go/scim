@@ -387,7 +387,6 @@ type RoleBuilder struct {
 func NewRoleBuilder() *RoleBuilder {
 	return &RoleBuilder{}
 }
-
 func (b *RoleBuilder) initialize() {
 	b.err = nil
 	b.object = &Role{}

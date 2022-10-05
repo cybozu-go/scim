@@ -344,7 +344,6 @@ type ErrorBuilder struct {
 func NewErrorBuilder() *ErrorBuilder {
 	return &ErrorBuilder{}
 }
-
 func (b *ErrorBuilder) initialize() {
 	b.err = nil
 	b.object = &Error{}

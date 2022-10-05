@@ -387,7 +387,6 @@ type IMSBuilder struct {
 func NewIMSBuilder() *IMSBuilder {
 	return &IMSBuilder{}
 }
-
 func (b *IMSBuilder) initialize() {
 	b.err = nil
 	b.object = &IMS{}

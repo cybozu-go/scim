@@ -607,7 +607,6 @@ type SearchRequestBuilder struct {
 func NewSearchRequestBuilder() *SearchRequestBuilder {
 	return &SearchRequestBuilder{}
 }
-
 func (b *SearchRequestBuilder) initialize() {
 	b.err = nil
 	b.object = &SearchRequest{}

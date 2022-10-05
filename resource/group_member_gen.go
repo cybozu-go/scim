@@ -325,6 +325,9 @@ LOOP:
 			}
 		}
 	}
+	if v.value == nil {
+		return fmt.Errorf(`required field value is missing for object GroupMember`)
+	}
 
 	if extra != nil {
 		v.extra = extra
@@ -344,7 +347,6 @@ type GroupMemberBuilder struct {
 func NewGroupMemberBuilder() *GroupMemberBuilder {
 	return &GroupMemberBuilder{}
 }
-
 func (b *GroupMemberBuilder) initialize() {
 	b.err = nil
 	b.object = &GroupMember{}

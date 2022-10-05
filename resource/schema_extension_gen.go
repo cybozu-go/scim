@@ -282,6 +282,12 @@ LOOP:
 			}
 		}
 	}
+	if v.schema == nil {
+		return fmt.Errorf(`required field schema is missing for object SchemaExtension`)
+	}
+	if v.required == nil {
+		return fmt.Errorf(`required field required is missing for object SchemaExtension`)
+	}
 
 	if extra != nil {
 		v.extra = extra
@@ -301,7 +307,6 @@ type SchemaExtensionBuilder struct {
 func NewSchemaExtensionBuilder() *SchemaExtensionBuilder {
 	return &SchemaExtensionBuilder{}
 }
-
 func (b *SchemaExtensionBuilder) initialize() {
 	b.err = nil
 	b.object = &SchemaExtension{}

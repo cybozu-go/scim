@@ -247,7 +247,7 @@ type ListResponse struct {
 	scimSchemaBase
 }
 
-func (ListResponse) GenerateMethod(name string) bool {
+func (ListResponse) GenerateSymbol(name string) bool {
 	return name != `object.method.UnmarshalJSON` &&
 		name != `object.method.decodeExtraField`
 }

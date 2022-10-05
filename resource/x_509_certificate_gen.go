@@ -387,7 +387,6 @@ type X509CertificateBuilder struct {
 func NewX509CertificateBuilder() *X509CertificateBuilder {
 	return &X509CertificateBuilder{}
 }
-
 func (b *X509CertificateBuilder) initialize() {
 	b.err = nil
 	b.object = &X509Certificate{}

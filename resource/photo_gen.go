@@ -387,7 +387,6 @@ type PhotoBuilder struct {
 func NewPhotoBuilder() *PhotoBuilder {
 	return &PhotoBuilder{}
 }
-
 func (b *PhotoBuilder) initialize() {
 	b.err = nil
 	b.object = &Photo{}

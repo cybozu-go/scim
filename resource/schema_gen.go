@@ -369,6 +369,15 @@ LOOP:
 			}
 		}
 	}
+	if v.attributes == nil {
+		return fmt.Errorf(`required field attributes is missing for object Schema`)
+	}
+	if v.id == nil {
+		return fmt.Errorf(`required field id is missing for object Schema`)
+	}
+	if v.name == nil {
+		return fmt.Errorf(`required field name is missing for object Schema`)
+	}
 
 	if extra != nil {
 		v.extra = extra
@@ -388,7 +397,6 @@ type SchemaBuilder struct {
 func NewSchemaBuilder() *SchemaBuilder {
 	return &SchemaBuilder{}
 }
-
 func (b *SchemaBuilder) initialize() {
 	b.err = nil
 	b.object = &Schema{}

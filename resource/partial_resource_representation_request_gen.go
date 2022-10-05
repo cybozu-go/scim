@@ -301,7 +301,6 @@ type PartialResourceRepresentationRequestBuilder struct {
 func NewPartialResourceRepresentationRequestBuilder() *PartialResourceRepresentationRequestBuilder {
 	return &PartialResourceRepresentationRequestBuilder{}
 }
-
 func (b *PartialResourceRepresentationRequestBuilder) initialize() {
 	b.err = nil
 	b.object = &PartialResourceRepresentationRequest{}

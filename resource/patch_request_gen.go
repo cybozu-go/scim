@@ -306,7 +306,6 @@ type PatchRequestBuilder struct {
 func NewPatchRequestBuilder() *PatchRequestBuilder {
 	return &PatchRequestBuilder{}
 }
-
 func (b *PatchRequestBuilder) initialize() {
 	b.err = nil
 	b.object = &PatchRequest{}

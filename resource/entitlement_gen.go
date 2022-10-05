@@ -387,7 +387,6 @@ type EntitlementBuilder struct {
 func NewEntitlementBuilder() *EntitlementBuilder {
 	return &EntitlementBuilder{}
 }
-
 func (b *EntitlementBuilder) initialize() {
 	b.err = nil
 	b.object = &Entitlement{}

@@ -387,7 +387,6 @@ type EmailBuilder struct {
 func NewEmailBuilder() *EmailBuilder {
 	return &EmailBuilder{}
 }
-
 func (b *EmailBuilder) initialize() {
 	b.err = nil
 	b.object = &Email{}

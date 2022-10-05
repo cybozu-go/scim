@@ -325,6 +325,15 @@ LOOP:
 			}
 		}
 	}
+	if v.maxOperations == nil {
+		return fmt.Errorf(`required field maxOperations is missing for object BulkSupport`)
+	}
+	if v.maxPayloadSize == nil {
+		return fmt.Errorf(`required field maxPayloadSize is missing for object BulkSupport`)
+	}
+	if v.supported == nil {
+		return fmt.Errorf(`required field supported is missing for object BulkSupport`)
+	}
 
 	if extra != nil {
 		v.extra = extra
@@ -344,7 +353,6 @@ type BulkSupportBuilder struct {
 func NewBulkSupportBuilder() *BulkSupportBuilder {
 	return &BulkSupportBuilder{}
 }
-
 func (b *BulkSupportBuilder) initialize() {
 	b.err = nil
 	b.object = &BulkSupport{}

@@ -39,6 +39,7 @@ common:
       - name: "created"
         type: "string"
         description: "The \"DateTime\" that the resource was added to the service provider"
+        multiValued: false
         required: false
         caseExact: false
         mutability: "readOnly"

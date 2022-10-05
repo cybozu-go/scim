@@ -239,6 +239,9 @@ LOOP:
 			}
 		}
 	}
+	if v.supported == nil {
+		return fmt.Errorf(`required field supported is missing for object GenericSupport`)
+	}
 
 	if extra != nil {
 		v.extra = extra
@@ -258,7 +261,6 @@ type GenericSupportBuilder struct {
 func NewGenericSupportBuilder() *GenericSupportBuilder {
 	return &GenericSupportBuilder{}
 }
-
 func (b *GenericSupportBuilder) initialize() {
 	b.err = nil
 	b.object = &GenericSupport{}

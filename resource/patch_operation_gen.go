@@ -476,7 +476,6 @@ type PatchOperationBuilder struct {
 func NewPatchOperationBuilder() *PatchOperationBuilder {
 	return &PatchOperationBuilder{}
 }
-
 func (b *PatchOperationBuilder) initialize() {
 	b.err = nil
 	b.object = &PatchOperation{}

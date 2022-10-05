@@ -714,6 +714,12 @@ LOOP:
 			}
 		}
 	}
+	if v.multiValued == nil {
+		return fmt.Errorf(`required field multiValued is missing for object SchemaAttribute`)
+	}
+	if v.typ == nil {
+		return fmt.Errorf(`required field type is missing for object SchemaAttribute`)
+	}
 
 	if extra != nil {
 		v.extra = extra
@@ -733,7 +739,6 @@ type SchemaAttributeBuilder struct {
 func NewSchemaAttributeBuilder() *SchemaAttributeBuilder {
 	return &SchemaAttributeBuilder{}
 }
-
 func (b *SchemaAttributeBuilder) initialize() {
 	b.err = nil
 	b.object = &SchemaAttribute{}

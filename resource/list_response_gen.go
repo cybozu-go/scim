@@ -350,7 +350,6 @@ type ListResponseBuilder struct {
 func NewListResponseBuilder() *ListResponseBuilder {
 	return &ListResponseBuilder{}
 }
-
 func (b *ListResponseBuilder) initialize() {
 	b.err = nil
 	b.object = &ListResponse{}

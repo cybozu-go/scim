@@ -46,12 +46,20 @@ func (s *schemas) AcceptValue(v interface{}) error {
 
 	storage := make(map[string]struct{})
 	switch v := v.(type) {
+	case []interface{}:
+		for i, e := range v {
+			es, ok := e.(string)
+			if !ok {
+				return fmt.Errorf(`failed to accept value for schemas: element %d of []interface{} was %T (expected string)`, i, e)
+			}
+			storage[es] = struct{}{}
+		}
 	case []string:
 		for _, e := range v {
 			storage[e] = struct{}{}
 		}
 	default:
-		return fmt.Errorf(`schemas can only accept []string values (got %T)`, v)
+		return fmt.Errorf(`schemas can only accept []string values (got %[1]T): %[1]v`, v)
 	}
 	s.storage = storage
 	return nil

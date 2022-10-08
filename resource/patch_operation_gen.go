@@ -137,6 +137,7 @@ func (v *PatchOperation) Set(key string, value interface{}) error {
 		if v.extra == nil {
 			v.extra = make(map[string]interface{})
 		}
+
 		v.extra[key] = value
 	}
 	return nil
@@ -325,9 +326,12 @@ func (v *PatchOperation) Clone(dst interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 
-	extra := make(map[string]interface{})
-	for key, val := range v.extra {
-		extra[key] = val
+	var extra map[string]interface{}
+	if len(v.extra) > 0 {
+		extra = make(map[string]interface{})
+		for key, val := range v.extra {
+			extra[key] = val
+		}
 	}
 	return blackmagic.AssignIfCompatible(dst, &PatchOperation{
 		externalID: v.externalID,
@@ -440,9 +444,14 @@ LOOP:
 				}
 				v.path = &val
 			case PatchOperationValueKey:
+				var acceptValue interface{}
+				if err := dec.Decode(&acceptValue); err != nil {
+					return fmt.Errorf(`failed to decode vlaue for %q: %w`, PatchOperationValueKey, err)
+				}
 				var val PatchOperationValue
-				if err := dec.Decode(&val); err != nil {
-					return fmt.Errorf(`failed to decode value for %q: %w`, PatchOperationValueKey, err)
+				err = val.AcceptValue(acceptValue)
+				if err != nil {
+					return fmt.Errorf(`failed to accept value for %q: %w`, PatchOperationValueKey, err)
 				}
 				v.value = &val
 			default:

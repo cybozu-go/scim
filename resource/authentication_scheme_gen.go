@@ -122,6 +122,7 @@ func (v *AuthenticationScheme) Set(key string, value interface{}) error {
 		if v.extra == nil {
 			v.extra = make(map[string]interface{})
 		}
+
 		v.extra[key] = value
 	}
 	return nil
@@ -287,9 +288,12 @@ func (v *AuthenticationScheme) Clone(dst interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 
-	extra := make(map[string]interface{})
-	for key, val := range v.extra {
-		extra[key] = val
+	var extra map[string]interface{}
+	if len(v.extra) > 0 {
+		extra = make(map[string]interface{})
+		for key, val := range v.extra {
+			extra[key] = val
+		}
 	}
 	return blackmagic.AssignIfCompatible(dst, &AuthenticationScheme{
 		description:      v.description,

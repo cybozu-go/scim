@@ -139,6 +139,7 @@ func (v *Group) Set(key string, value interface{}) error {
 		if v.extra == nil {
 			v.extra = make(map[string]interface{})
 		}
+
 		v.extra[key] = value
 	}
 	return nil
@@ -327,9 +328,12 @@ func (v *Group) Clone(dst interface{}) error {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 
-	extra := make(map[string]interface{})
-	for key, val := range v.extra {
-		extra[key] = val
+	var extra map[string]interface{}
+	if len(v.extra) > 0 {
+		extra = make(map[string]interface{})
+		for key, val := range v.extra {
+			extra[key] = val
+		}
 	}
 	return blackmagic.AssignIfCompatible(dst, &Group{
 		displayName: v.displayName,
@@ -436,9 +440,14 @@ LOOP:
 				}
 				v.members = val
 			case GroupSchemasKey:
+				var acceptValue interface{}
+				if err := dec.Decode(&acceptValue); err != nil {
+					return fmt.Errorf(`failed to decode vlaue for %q: %w`, GroupSchemasKey, err)
+				}
 				var val schemas
-				if err := dec.Decode(&val); err != nil {
-					return fmt.Errorf(`failed to decode value for %q: %w`, GroupSchemasKey, err)
+				err = val.AcceptValue(acceptValue)
+				if err != nil {
+					return fmt.Errorf(`failed to accept value for %q: %w`, GroupSchemasKey, err)
 				}
 				v.schemas = &val
 			case GroupMetaKey:

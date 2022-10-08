@@ -23,7 +23,7 @@ jobs:
           go install golang.org/x/tools/cmd/goyacc@latest
       - name: Install sketch
         run: |
-          go install github.com/lestrrat-go/sketch/cmd/sketch@1723046
+          go install github.com/lestrrat-go/sketch/cmd/sketch@19193a1bad10561db579b8cccc92325b3c982327
       - name: Generate files
         run: |
           go generate

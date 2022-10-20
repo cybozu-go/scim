@@ -85,11 +85,8 @@ func _main() error {
 			o.R(`,`)
 		}
 		o.L(`).`)
-		o.L(`Name(%q).`, r.Name())
 		o.L(`MustBuild()`)
-
-		o.L(`Register(%q, s)`, r.Name())
-		o.L(`Register(resource.%sSchemaURI, s)`, r.Name())
+		o.L(`Register(s)`)
 		o.L(`}`)
 	}
 	o.L(`}`)

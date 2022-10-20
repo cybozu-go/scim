@@ -884,10 +884,8 @@ func init() {
 					GoAccessorName("X509Certificates").
 					MustBuild(),
 			).
-			Name("User").
 			MustBuild()
-		Register("User", s)
-		Register(resource.UserSchemaURI, s)
+		Register(s)
 	}
 
 	{
@@ -1021,10 +1019,8 @@ func init() {
 					GoAccessorName("Meta").
 					MustBuild(),
 			).
-			Name("Group").
 			MustBuild()
-		Register("Group", s)
-		Register(resource.GroupSchemaURI, s)
+		Register(s)
 	}
 
 	{
@@ -1206,9 +1202,7 @@ func init() {
 					GoAccessorName("Organization").
 					MustBuild(),
 			).
-			Name("EnterpriseUser").
 			MustBuild()
-		Register("EnterpriseUser", s)
-		Register(resource.EnterpriseUserSchemaURI, s)
+		Register(s)
 	}
 }

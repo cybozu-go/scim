@@ -1,16 +1,23 @@
 //go:generate ../tools/cmd/genschema.sh
 
+// Package schema contains the schema for SCIM resources.
+// You can only query top-level schema, but you can drill down
+// into each sub-attributes as necessary.
 package schema
 
-import "github.com/cybozu-go/scim/resource"
+import (
+	"github.com/cybozu-go/scim/resource"
+)
 
 var schemaByType = make(map[string]*resource.Schema)
 var schemaByURI = make(map[string]*resource.Schema)
 
 // Registers a system schema so that it can be queried by clients
-func Register(s string, schema *resource.Schema) {
-	schemaByType[s] = schema
-	schemaByURI[schema.ID()] = schema
+func Register(schema *resource.Schema) {
+	schemaByType[schema.Name()] = schema
+	if uri := schema.ID(); uri != "" {
+		schemaByURI[uri] = schema
+	}
 }
 
 // Get returns a schema by its schema URI
